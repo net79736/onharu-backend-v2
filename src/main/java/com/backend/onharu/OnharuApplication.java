@@ -9,5 +9,4 @@ public class OnharuApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(OnharuApplication.class, args);
 	}
-
 }
