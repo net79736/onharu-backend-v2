@@ -1,3 +1,23 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
+  profiles:
+    active: dev
+    include: swagger
   application:
     name: onharu
+
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 100m # 세션 유지 시간 (100분)
+
+# Logging 설정
+logging:
+  level:
+    root: INFO
+    com.backend.onharu: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: false
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
