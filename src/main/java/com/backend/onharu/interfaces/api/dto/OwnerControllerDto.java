@@ -73,44 +73,4 @@ public class OwnerControllerDto {
             String businessNumber
     ) {
     }
-
-    /**
-     * 매장 회원가입 요청 DTO
-     * 사용자 정보, 사업자 정보, 사업자 등록 서류 파일을 함께 받습니다.
-     */
-    public record SignUpOwnerRequest(
-            @Schema(description = "비밀번호", example = "password123!")
-            String password,
-
-            @Schema(description = "비밀번호 확인", example = "password123!")
-            String passwordConfirm,
-
-            @Schema(description = "이름", example = "홍길동")
-            String name,
-
-            @Schema(description = "전화번호", example = "01012345678")
-            String phone,
-
-            @Schema(description = "매장명", example = "따뜻한 식당")
-            String storeName,
-
-            @Schema(description = "사업자 번호", example = "1234567890")
-            String businessNumber,
-
-            @Schema(description = "레벨 ID", example = "1")
-            String levelId
-    ) {
-    }
-
-    /**
-     * 매장 회원가입 응답 DTO
-     */
-    public record SignUpOwnerResponse(
-            @Schema(description = "사용자 ID", example = "1")
-            Long userId,
-
-            @Schema(description = "사업자 ID", example = "1")
-            Long ownerId
-    ) {
-    }
 }

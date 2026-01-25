@@ -15,6 +15,7 @@ import lombok.Getter;
 public enum ErrorType implements IErrorType {
     NOT_FOUND(ErrorCode.NOT_FOUND, "리소스를 찾을 수 없습니다.", LogLevel.ERROR),
     BAD_REQUEST(ErrorCode.BAD_REQUEST, "잘못된 요청입니다.", LogLevel.ERROR),
+    FORBIDDEN(ErrorCode.FORBIDDEN, "접근 권한이 없습니다.", LogLevel.WARN),
     INTERNAL_SERVER_ERROR(ErrorCode.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.", LogLevel.ERROR),
     KEY_NOT_FOUND_OR_NULL(ErrorCode.INTERNAL_SERVER_ERROR, "키를 찾을 수 없거나 null입니다.", LogLevel.ERROR);    
 
