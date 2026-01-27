@@ -7,11 +7,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
+import com.backend.onharu.application.UserFacade;
+import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
+import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.controller.IUserController;
 import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpChildRequest;
@@ -35,48 +38,85 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserControllerImpl implements IUserController {
 
-    /**
-     * 아동 회원가입
-     * 
-     * POST /users/signup/child
-     * 아동 회원가입을 진행합니다. 사용자 정보와 증명서 파일을 함께 받습니다.
-     *
-     * @param request 아동 회원가입 요청
-     * @param certificateFile 증명서 파일
-     * @return 회원가입 결과
-     */
-    @Override
-    @PostMapping("/signup/child")
-    public ResponseEntity<ResponseDTO<SignUpChildResponse>> signUpChild(
-            @RequestPart SignUpChildRequest request,
-            @RequestPart MultipartFile certificateFile
-    ) {
-        log.info("아동 회원가입 요청: request={}, fileName={}", request, certificateFile.getOriginalFilename());
-        
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseDTO.success(null));
-    }
+    private final UserFacade userFacade;
 
     /**
      * 사업자 회원가입
-     * 
+     *
      * POST /users/signup/owner
-     * 사업자 회원가입을 진행합니다. 사용자 정보, 사업자 정보, 사업자 등록 서류 파일을 함께 받습니다.
+     * 사업자 회원가입을 진행합니다. 사용자 정보와 사업자 정보를 함께 받습니다.
      *
      * @param request 사업자 회원가입 요청
-     * @param businessRegistrationFile 사업자 등록 서류 파일
      * @return 회원가입 결과
      */
     @Override
     @PostMapping("/signup/owner")
     public ResponseEntity<ResponseDTO<SignUpOwnerResponse>> signUpOwner(
-            @RequestPart SignUpOwnerRequest request,
-            @RequestPart MultipartFile businessRegistrationFile
+            @RequestBody SignUpOwnerRequest request
     ) {
-        log.info("사업자 회원가입 요청: request={}, fileName={}", request, businessRegistrationFile.getOriginalFilename());
-        
+        log.info("사업자 회원가입 요청: request={}", request);
+
+        // Command 생성
+        SignUpOwnerCommand command = new SignUpOwnerCommand(
+                request.loginId(),
+                request.password(),
+                request.passwordConfirm(),
+                request.name(),
+                request.phone(),
+                request.storeName(),
+                request.businessNumber(),
+                request.levelId()
+        );
+
+        // 회원가입 처리
+        User user = userFacade.signUpOwner(command);
+
+        // 응답 생성
+        SignUpOwnerResponse response = new SignUpOwnerResponse(
+                user.getId()
+        );
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
+    }
+
+    /**
+     * 아동 회원가입
+     *
+     * POST /users/signup/child
+     * 아동 회원가입을 진행합니다. 사용자 정보와 증명서 파일 URL을 함께 받습니다.
+     *
+     * @param request 아동 회원가입 요청 (증명서 파일 URL 포함)
+     * @return 회원가입 결과
+     */
+    @Override
+    @PostMapping("/signup/child")
+    public ResponseEntity<ResponseDTO<SignUpChildResponse>> signUpChild(
+            @RequestBody SignUpChildRequest request
+    ) {
+        log.info("아동 회원가입 요청: request={}", request);
+
+        // Command 생성
+        SignUpChildCommand command = new SignUpChildCommand(
+                request.loginId(),
+                request.password(),
+                request.passwordConfirm(),
+                request.name(),
+                request.phone(),
+                request.certificate()
+        );
+
+        // 회원가입 처리
+        User user = userFacade.signUpChild(command);
+
+        // 응답 생성
+        SignUpChildResponse response = new SignUpChildResponse(
+                user.getId(),
+                user.getLoginId()
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseDTO.success(response));
     }
 
     /**
@@ -103,25 +143,21 @@ public class UserControllerImpl implements IUserController {
      * 사용자 프로필 수정
      * 
      * PUT /users/{userId}/profile
-     * Spring Security Context에서 현재 사용자의 역할을 확인하여 역할별 프로필을 수정합니다.
-     *
+     * 사용자 프로필을 수정합니다.
+     * 
      * @param userId 사용자 ID
-     * @param childRequest 아동 프로필 수정 요청 (아동인 경우)
-     * @param ownerRequest 사업자 프로필 수정 요청 (사업자인 경우)
-     * @param certificateFile 증명서 파일 (아동인 경우)
-     * @param businessRegistrationFile 사업자 등록 서류 파일 (사업자인 경우)
-     * @return 수정 결과
+     * @param childRequest 아동 프로필 수정 요청
+     * @param ownerRequest 사업자 프로필 수정 요청
+     * @return
      */
     @Override
     @PutMapping("/{userId}/profile")
     public ResponseEntity<ResponseDTO<Void>> updateProfile(
             @PathVariable Long userId,
-            @RequestPart(required = false) UpdateChildProfileRequest childRequest,
-            @RequestPart(required = false) UpdateOwnerProfileRequest ownerRequest,
-            @RequestPart(required = false) MultipartFile certificateFile,
-            @RequestPart(required = false) MultipartFile businessRegistrationFile
+            @RequestBody UpdateChildProfileRequest childRequest,
+            @RequestBody UpdateOwnerProfileRequest ownerRequest
     ) {
-        log.info("사용자 프로필 수정 요청: userId={}", userId);
+        log.info("사용자 프로필 수정 요청: userId={}, childRequest={}, ownerRequest={}", userId, childRequest, ownerRequest);
         
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));

@@ -50,8 +50,8 @@ public class UserControllerDto {
      * 사용자 정보와 증명서 파일을 함께 받습니다.
      */
     public record SignUpChildRequest(
-            @Schema(description = "아동 사용자 ID", example = "child123")
-            String userId,
+            @Schema(description = "로그인 ID", example = "user123")
+            String loginId,
 
             @Schema(description = "비밀번호", example = "password123!")
             String password,
@@ -87,6 +87,9 @@ public class UserControllerDto {
      * 사용자 정보, 사업자 정보, 사업자 등록 서류 파일을 함께 받습니다.
      */
     public record SignUpOwnerRequest(
+            @Schema(description = "로그인 ID", example = "user123")
+            String loginId,
+
             @Schema(description = "비밀번호", example = "password123!")
             String password,
 
@@ -115,10 +118,7 @@ public class UserControllerDto {
      */
     public record SignUpOwnerResponse(
             @Schema(description = "사용자 ID", example = "1")
-            Long userId,
-
-            @Schema(description = "사업자 ID", example = "1")
-            Long ownerId
+            Long userId
     ) {
     }
 

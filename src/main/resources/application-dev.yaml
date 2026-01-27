@@ -23,6 +23,14 @@ spring:
         format_sql: ${JPA_FORMAT_SQL}
         highlight_sql: ${JPA_HIGHLIGHT_SQL}
 
+# MinIO 설정 (로컬 개발용)
+minio:
+  url: ${MINIO_URL:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  region: ${MINIO_REGION:us-east-1}
+  bucket: ${MINIO_BUCKET:onharu-minio}
+
 # 서버 설정
 server:
   port: 8080
