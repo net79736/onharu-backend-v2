@@ -1,4 +1,4 @@
-package com.backend.onharu.interfaces.api.config;
+package com.backend.onharu.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

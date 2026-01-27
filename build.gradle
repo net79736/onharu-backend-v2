@@ -37,6 +37,18 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // commons-io 파일 처리 라이브러리
+    implementation 'commons-io:commons-io:2.14.0'
+
+    // Apache Commons 의존성 추가
+    implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation 'org.apache.commons:commons-lang3:3.17.0'
+
+	// AWS S3 SDK 의존성 추가
+	implementation platform('software.amazon.awssdk:bom:2.20.26')
+	implementation 'software.amazon.awssdk:s3'
+	implementation 'software.amazon.awssdk:auth'
 }
 
 tasks.named('test') {

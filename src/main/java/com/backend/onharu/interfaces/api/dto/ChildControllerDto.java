@@ -15,12 +15,6 @@ public class ChildControllerDto {
     ) {
     }
 
-    public record UpdateChildProfileRequest(
-            @Schema(description = "닉네임", example = "온하루친구")
-            String nickname
-    ) {
-    }
-
     public record GetChildReservationsResponse(
             List<ReservationResponse> reservations
     ) {
@@ -160,43 +154,6 @@ public class ChildControllerDto {
 
             @Schema(description = "이미지 경로", example = "/images/store1.jpg")
             String image
-    ) {
-    }
-
-    /**
-     * 아동 회원가입 요청 DTO
-     * 사용자 정보와 증명서 파일을 함께 받습니다.
-     */
-    public record SignUpChildRequest(
-            @Schema(description = "아동 사용자 ID", example = "child123")
-            String userId,
-
-            @Schema(description = "비밀번호", example = "password123!")
-            String password,
-
-            @Schema(description = "비밀번호 확인", example = "password123!")
-            String passwordConfirm,
-
-            @Schema(description = "이름", example = "홍길동")
-            String name,
-
-            @Schema(description = "전화번호", example = "01012345678")
-            String phone,
-
-            @Schema(description = "아동 증명서 파일 경로", example = "/certificates/certificate.pdf")
-            String certificate
-    ) {
-    }
-
-    /**
-     * 아동 회원가입 응답 DTO
-     */
-    public record SignUpChildResponse(
-            @Schema(description = "ID", example = "1")
-            Long id,
-
-            @Schema(description = "아동 사용자 ID", example = "child123")
-            String userId
     ) {
     }
 }
