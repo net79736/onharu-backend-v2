@@ -1,6 +1,5 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
-import com.backend.onharu.interfaces.api.controller.IReservationController;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.onharu.domain.upload.service.StorageService;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
+import com.backend.onharu.interfaces.api.controller.IS3Controller;
 import com.backend.onharu.interfaces.api.dto.S3ControllerDto.S3FileUploadResponse;
 import com.backend.onharu.interfaces.api.dto.S3ControllerDto.S3UploadRequest;
 
@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/upload")
 @RequiredArgsConstructor
-public class S3ControllerImpl implements IReservationController.IS3Controller {
+public class S3ControllerImpl implements IS3Controller {
 
     private final StorageService storageService;
 
