@@ -30,7 +30,7 @@ public class OwnerCommandService {
     public Owner createOwner(CreateOwnerCommand command) {
         Owner owner = Owner.builder()
                 .user(command.user())
-                .levelId(command.levelId())
+                .level(command.level())
                 .businessNumber(command.businessNumber())
                 .build();
 

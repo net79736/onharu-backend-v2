@@ -3,6 +3,7 @@ package com.backend.onharu.domain.owner.dto;
 import static com.backend.onharu.domain.support.error.ErrorType.Owner.BUSINESS_NUMBER_MUST_NOT_BE_BLANK;
 import static com.backend.onharu.domain.support.error.ErrorType.Owner.LEVEL_ID_MUST_NOT_BE_NULL;
 
+import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.domain.user.model.User;
@@ -17,14 +18,14 @@ public class OwnerCommand {
      */
     public record CreateOwnerCommand(
             User user,
-            Long levelId,
+            Level level,
             String businessNumber
     ) {
         public CreateOwnerCommand {
             if (user == null || user.getId() == null) {
                 throw new CoreException(ErrorType.User.USER_ID_MUST_NOT_BE_NULL);
             }
-            if (levelId == null) {
+            if (level == null) {
                 throw new CoreException(LEVEL_ID_MUST_NOT_BE_NULL);
             }
             if (businessNumber == null || businessNumber.isBlank()) {
