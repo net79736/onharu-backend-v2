@@ -1,5 +1,6 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -52,7 +53,7 @@ public class UserControllerImpl implements IUserController {
     @Override
     @PostMapping("/signup/owner")
     public ResponseEntity<ResponseDTO<SignUpOwnerResponse>> signUpOwner(
-            @RequestBody SignUpOwnerRequest request
+            @Valid @RequestBody SignUpOwnerRequest request
     ) {
         log.info("사업자 회원가입 요청: request={}", request);
 
@@ -92,7 +93,7 @@ public class UserControllerImpl implements IUserController {
     @Override
     @PostMapping("/signup/child")
     public ResponseEntity<ResponseDTO<SignUpChildResponse>> signUpChild(
-            @RequestBody SignUpChildRequest request
+            @Valid @RequestBody SignUpChildRequest request
     ) {
         log.info("아동 회원가입 요청: request={}", request);
 
@@ -155,8 +156,8 @@ public class UserControllerImpl implements IUserController {
     @PutMapping("/{userId}/profile")
     public ResponseEntity<ResponseDTO<Void>> updateProfile(
             @PathVariable Long userId,
-            @RequestBody UpdateChildProfileRequest childRequest,
-            @RequestBody UpdateOwnerProfileRequest ownerRequest
+            @Valid @RequestBody UpdateChildProfileRequest childRequest,
+            @Valid @RequestBody UpdateOwnerProfileRequest ownerRequest
     ) {
         log.info("사용자 프로필 수정 요청: userId={}, childRequest={}, ownerRequest={}", userId, childRequest, ownerRequest);
         
