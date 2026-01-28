@@ -7,6 +7,7 @@ import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.controller.ILevelController;
 import com.backend.onharu.interfaces.api.dto.LevelControllerDto.CreateLevelRequest;
 import com.backend.onharu.interfaces.api.dto.LevelControllerDto.CreateLevelResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -41,7 +42,7 @@ public class LevelControllerImpl implements ILevelController {
     @Override
     @PostMapping
     public ResponseEntity<ResponseDTO<CreateLevelResponse>> createLevel(
-            @RequestBody CreateLevelRequest request
+            @Valid @RequestBody CreateLevelRequest request
     ) {
         log.info("등급 생성 요청: request={}", request);
 
