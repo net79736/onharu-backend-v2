@@ -7,6 +7,11 @@ import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetOwnerResponse;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingDetailResponse;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingListResponse;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateOwnerRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,5 +49,50 @@ public interface IOwnerController {
     ResponseEntity<ResponseDTO<GetOwnerResponse>> getMyBusiness(
             @Schema(description = "사업자 ID", example = "1")
             Long ownerId
+    );
+
+    @Operation(summary = "예약 관리 목록 조회", description = "사업자의 예약 목록을 조회합니다.")
+    ResponseEntity<ResponseDTO<GetStoreBookingListResponse>> getStoreBookings();
+
+    @Operation(summary = "예약 관리 상세 조회", description = "사업자의 특정 예약의 상세 정보를 조회합니다.")
+    ResponseEntity<ResponseDTO<GetStoreBookingDetailResponse>> getStoreBooking(
+            @Schema(description = "예약 ID", example = "1")
+            Long reservationId
+    );
+
+    @Operation(summary = "예약 승인", description = "사업자가 예약을 승인합니다.")
+    ResponseEntity<ResponseDTO<Void>> approveBook(
+            @Schema(description = "예약 ID", example = "1")
+            Long reservationId
+    );
+
+    @Operation(summary = "예약 거절", description = "사업자가 예약을 거절합니다.")
+    ResponseEntity<ResponseDTO<Void>> rejectBook(
+            @Schema(description = "예약 ID", example = "1")
+            Long reservationId
+    );
+
+    @Operation(summary = "예약 가능한 날짜 생성", description = "예약 가능한 날짜를 생성합니다.")
+    ResponseEntity<ResponseDTO<Void>> setAvailableDates(
+            @Schema(description = "가게 ID", example = "1")
+            Long storeId,
+            @Schema(description = "예약 가능한 날짜 생성 요청")
+            SetAvailableDatesRequest request
+    );
+
+    @Operation(summary = "예약 가능한 날짜 수정", description = "예약 가능한 날짜를 수정합니다.")
+    ResponseEntity<ResponseDTO<Void>> updateAvailableDates(
+            @Schema(description = "가게 ID", example = "1")
+            Long storeId,
+            @Schema(description = "예약 가능한 날짜 수정 요청")
+            UpdateAvailableDatesRequest request
+    );
+    
+    @Operation(summary = "예약 가능한 날짜 삭제", description = "예약 가능한 날짜를 삭제합니다.")
+    ResponseEntity<ResponseDTO<Void>> removeAvailableDates(
+            @Schema(description = "가게 ID", example = "1")
+            Long storeId,
+            @Schema(description = "예약 가능한 날짜 삭제 요청")
+            RemoveAvailableDatesRequest request
     );
 }

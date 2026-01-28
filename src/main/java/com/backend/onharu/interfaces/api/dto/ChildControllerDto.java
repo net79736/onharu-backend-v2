@@ -1,9 +1,5 @@
 package com.backend.onharu.interfaces.api.dto;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import com.backend.onharu.domain.common.enums.ResrvationType;
 import com.backend.onharu.domain.common.enums.StatusType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,10 +11,6 @@ public class ChildControllerDto {
     ) {
     }
 
-    public record GetChildReservationsResponse(
-            List<ReservationResponse> reservations
-    ) {
-    }
 
     public record ChildProfileResponse(
             @Schema(description = "아이 ID", example = "1")
@@ -41,30 +33,6 @@ public class ChildControllerDto {
 
             @Schema(description = "지원 대상 승인 여부", example = "true")
             Boolean isVerified
-    ) {
-    }
-
-    public record ReservationResponse(
-            @Schema(description = "예약 ID", example = "1")
-            Long id,
-
-            @Schema(description = "아동 ID", example = "1")
-            Long childId,
-
-            @Schema(description = "예약 가능 일정 ID", example = "1")
-            Long availableScheduleId,
-
-            @Schema(description = "가게 ID", example = "1")
-            Long storeId,
-
-            @Schema(description = "가게 이름", example = "따뜻한 식당")
-            String storeName,
-
-            @Schema(description = "예약 상태", example = "CONFIRMED", allowableValues = "WAITING, CONFIRMED, CANCELED, COMPLETED")
-            ResrvationType reservationType,
-
-            @Schema(description = "예약일시", example = "2024-12-31T23:59:59")
-            LocalDateTime reservationAt
     ) {
     }
 
@@ -131,14 +99,16 @@ public class ChildControllerDto {
     ) {
     }
 
-    public record GetLikedStoreListResponse(
-            List<LikedStoreResponse> stores
-    ) {
-    }
-
-    public record LikedStoreResponse(
-            @Schema(description = "관심 가게 ID", example = "1")
+    // 예약 관련 DTO
+    public record ReservationResponse(
+            @Schema(description = "예약 ID", example = "1")
             Long id,
+
+            @Schema(description = "아이 ID", example = "1")
+            Long childId,
+
+            @Schema(description = "예약 가능 일정 ID", example = "1")
+            Long availableScheduleId,
 
             @Schema(description = "가게 ID", example = "1")
             Long storeId,
@@ -146,14 +116,50 @@ public class ChildControllerDto {
             @Schema(description = "가게 이름", example = "따뜻한 식당")
             String storeName,
 
-            @Schema(description = "주소", example = "서울시 강남구 테헤란로 123")
-            String address,
+            @Schema(description = "예약 일정 날짜", example = "2024-12-31")
+            java.time.LocalDate scheduleDate,
 
-            @Schema(description = "전화번호", example = "0212345678")
-            String phone,
+            @Schema(description = "예약 시작 시간", example = "14:00")
+            java.time.LocalTime startTime,
 
-            @Schema(description = "이미지 경로", example = "/images/store1.jpg")
-            String image
+            @Schema(description = "예약 종료 시간", example = "15:00")
+            java.time.LocalTime endTime,
+
+            @Schema(description = "인원 수", example = "1")
+            Integer people,
+
+            @Schema(description = "예약 상태", example = "WAITING", allowableValues = {"WAITING", "CANCELED", "COMPLETED"})
+            String status,
+
+            @Schema(description = "예약 시간", example = "2024-12-31T14:00:00")
+            java.time.LocalDateTime reservationAt,
+
+            @Schema(description = "취소 사유", example = "일정 변경으로 인한 취소")
+            String cancelReason
+    ) {
+    }
+
+    public record BookStoreRequest(
+            @Schema(description = "예약 가능 일정 ID", example = "1")
+            Long availableScheduleId,
+
+            @Schema(description = "인원 수", example = "1")
+            Integer people
+    ) {
+    }
+
+    public record BookStoreResponse(
+            ReservationResponse reservation
+    ) {
+    }
+
+    public record GetMyBookingListResponse(
+            java.util.List<ReservationResponse> reservations
+    ) {
+    }
+
+    public record GetMyBookingDetailResponse(
+            ReservationResponse reservation
     ) {
     }
 }

@@ -4,9 +4,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.BookStoreRequest;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.BookStoreResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCardResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCertificateResponse;
-import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetLikedStoreListResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingDetailResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingListResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.UpdateCardRequest;
@@ -81,6 +84,26 @@ public interface IChildrenController {
             Long certificateId
     );
 
-    @Operation(summary = "관심 가게 목록 조회", description = "관심 가게 목록을 조회합니다.")
-    ResponseEntity<ResponseDTO<GetLikedStoreListResponse>> getFavoriteStores();
+    @Operation(summary = "가게 예약 생성", description = "가게에 예약을 생성합니다.")
+    ResponseEntity<ResponseDTO<BookStoreResponse>> bookStore(
+            @Schema(description = "가게 ID", example = "1")
+            Long storeId,
+            @Schema(description = "가게 예약 생성 요청")
+            BookStoreRequest request
+    );
+
+    @Operation(summary = "예약 취소", description = "기존 예약을 취소합니다.")
+    ResponseEntity<ResponseDTO<Void>> cancelStore(
+            @Schema(description = "예약 ID", example = "1")
+            Long reservationId
+    );
+
+    @Operation(summary = "예약 신청 목록 조회", description = "내가 신청한 예약 목록을 조회합니다.")
+    ResponseEntity<ResponseDTO<GetMyBookingListResponse>> getMyBookings();
+
+    @Operation(summary = "예약 신청 상세 조회", description = "내가 신청한 특정 예약의 상세 정보를 조회합니다.")
+    ResponseEntity<ResponseDTO<GetMyBookingDetailResponse>> getMyBooking(
+            @Schema(description = "예약 ID", example = "1")
+            Long reservationId
+    );
 }

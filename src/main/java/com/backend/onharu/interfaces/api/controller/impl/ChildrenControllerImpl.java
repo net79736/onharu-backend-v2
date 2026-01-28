@@ -15,9 +15,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.controller.IChildrenController;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.BookStoreRequest;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.BookStoreResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCardResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCertificateResponse;
-import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetLikedStoreListResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingDetailResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingListResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.UpdateCardRequest;
@@ -227,18 +230,80 @@ public class ChildrenControllerImpl implements IChildrenController {
     }
 
     /**
-     * 관심 가게 목록 조회
+     * 가게 예약 생성
      * 
-     * GET /children/favorite-stores
-     * 관심 매장 목록을 페이지 형태로 조회합니다.
+     * POST /children/stores/{storeId}/reservations
+     * 새로운 예약을 생성합니다.
      *
-     * @return 관심 가게 목록
+     * @param storeId 가게 ID
+     * @param request 예약 생성 요청
+     * @return 생성된 예약 정보
      */
     @Override
-    @GetMapping("/favorite-stores")
-    public ResponseEntity<ResponseDTO<GetLikedStoreListResponse>> getFavoriteStores() {
-        log.info("관심 가게 목록 조회 요청");
+    @PostMapping("/stores/{storeId}/reservations")
+    public ResponseEntity<ResponseDTO<BookStoreResponse>> bookStore(
+            @PathVariable Long storeId,
+            @RequestBody BookStoreRequest request
+    ) {
+        log.info("예약 생성 요청: storeId={}, request={}", storeId, request);
         
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 예약 취소
+     * 
+     * POST /children/reservations/{reservationId}/cancel
+     * 기존 예약을 취소합니다.
+     *
+     * @param reservationId 예약 ID
+     * @return 취소 결과
+     */
+    @Override
+    @PostMapping("/reservations/{reservationId}/cancel")
+    public ResponseEntity<ResponseDTO<Void>> cancelStore(
+            @PathVariable Long reservationId
+    ) {
+        log.info("예약 취소 요청: reservationId={}", reservationId);
+        
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 예약 신청 목록 조회
+     * 
+     * GET /children/reservations
+     * 내가 신청한 예약 목록을 조회합니다.
+     *
+     * @return 내 예약 목록
+     */
+    @Override
+    @GetMapping("/reservations")
+    public ResponseEntity<ResponseDTO<GetMyBookingListResponse>> getMyBookings() {
+        log.info("예약 신청 목록 조회 요청");
+        
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 예약 신청 상세 조회
+     * 
+     * GET /children/reservations/{reservationId}
+     * 내가 신청한 특정 예약의 상세 정보를 조회합니다.
+     *
+     * @param reservationId 예약 ID
+     * @return 예약 상세 정보
+     */
+    @Override
+    @GetMapping("/reservations/{reservationId}")
+    public ResponseEntity<ResponseDTO<GetMyBookingDetailResponse>> getMyBooking(
+            @PathVariable Long reservationId
+    ) {
+        log.info("예약 신청 상세 조회 요청: reservationId={}", reservationId);
+
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));
     }
