@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class UserControllerDto {
 
-
     public record GetUserResponse(
             UserResponse user
     ) {
@@ -64,6 +63,9 @@ public class UserControllerDto {
 
             @Schema(description = "전화번호", example = "01012345678")
             String phone,
+
+            @Schema(description = "닉네임", example = "코끼리땃쥐")
+            String nickname,
 
             @Schema(description = "아동 증명서 파일 경로", example = "/certificates/certificate.pdf")
             String certificate

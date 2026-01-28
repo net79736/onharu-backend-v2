@@ -41,6 +41,7 @@ public interface IUserController {
                                             "  \"passwordConfirm\": \"password123!\",\n" +
                                             "  \"name\": \"홍길동\",\n" +
                                             "  \"phone\": \"01012345678\",\n" +
+                                            "  \"nickname\": \"코끼리땃쥐\",\n" +
                                             "  \"certificate\": \"/certificates/certificate.pdf\"\n" +
                                             "}"
                             )

@@ -103,6 +103,7 @@ public class UserControllerImpl implements IUserController {
                 request.passwordConfirm(),
                 request.name(),
                 request.phone(),
+                request.nickname(),
                 request.certificate()
         );
 
