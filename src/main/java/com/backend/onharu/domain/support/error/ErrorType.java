@@ -152,4 +152,35 @@ public enum ErrorType implements IErrorType {
             return logLevel;
         }
     }
+
+    /**
+     * 태그 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Tag implements IErrorType {
+        TAG_ID_MUST_NOT_BE_NULL(ErrorCode.NOT_FOUND, "태그 ID 는 필수입니다.", LogLevel.ERROR),
+        TAG_NOT_FOUND(ErrorCode.NOT_FOUND, "태그 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        TAG_ALREADY_EXISTS(ErrorCode.BAD_REQUEST, "이미 존재하는 태그입니다.", LogLevel.WARN),
+        TAG_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "태그 이름은 필수입니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
 }

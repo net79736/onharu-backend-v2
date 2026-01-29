@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.backend.onharu.domain.common.base.BaseEntity;
 import com.backend.onharu.domain.owner.model.Owner;
+import com.backend.onharu.domain.tag.model.Tag;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

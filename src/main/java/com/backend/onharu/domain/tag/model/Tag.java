@@ -1,4 +1,4 @@
-package com.backend.onharu.domain.store.model;
+package com.backend.onharu.domain.tag.model;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -40,7 +40,7 @@ public class Tag extends BaseEntity {
      * 
      * @param name 변경할 태그명
      */
-    public void update(String name) {
+    public void updateName(String name) {
         this.name = name;
     }
 }

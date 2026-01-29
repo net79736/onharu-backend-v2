@@ -3,6 +3,7 @@ package com.backend.onharu.domain.store.model;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.backend.onharu.domain.common.base.BaseEntity;
+import com.backend.onharu.domain.tag.model.Tag;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
