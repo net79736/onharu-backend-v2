@@ -152,4 +152,161 @@ public enum ErrorType implements IErrorType {
             return logLevel;
         }
     }
+
+    /**
+     * 가게 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Store implements IErrorType {
+        STORE_NOT_FOUND(ErrorCode.NOT_FOUND, "가게 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        STORE_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "가게 ID는 필수입니다.", LogLevel.ERROR),
+        STORE_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "가게 이름은 필수입니다.", LogLevel.ERROR),
+        STORE_OWNER_MISMATCH(ErrorCode.BAD_REQUEST, "사업자가 가게의 주인이 아닙니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+        
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+    
+
+    /**
+     * 가게 일정 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum StoreSchedule implements IErrorType {
+        STORE_SCHEDULE_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "가게 일정 ID는 필수입니다.", LogLevel.ERROR),
+        STORE_SCHEDULE_NOT_FOUND(ErrorCode.NOT_FOUND, "가게 일정 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        STORE_SCHEDULE_DUPLICATE(ErrorCode.BAD_REQUEST, "중복된 일정이 존재합니다. 같은 날짜와 시간에 일정을 등록할 수 없습니다.", LogLevel.WARN),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+    /**
+     * 태그 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Tag implements IErrorType {
+        TAG_ID_MUST_NOT_BE_NULL(ErrorCode.NOT_FOUND, "태그 ID 는 필수입니다.", LogLevel.ERROR),
+        TAG_NOT_FOUND(ErrorCode.NOT_FOUND, "태그 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        TAG_ALREADY_EXISTS(ErrorCode.BAD_REQUEST, "이미 존재하는 태그입니다.", LogLevel.WARN),
+        TAG_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "태그 이름은 필수입니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 예약 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Reservation implements IErrorType {
+        RESERVATION_NOT_FOUND(ErrorCode.NOT_FOUND, "예약 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        RESERVATION_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "예약 ID는 필수입니다.", LogLevel.ERROR),
+        RESERVATION_STORE_SCHEDULE_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "가게 일정 ID는 필수입니다.", LogLevel.ERROR),
+        RESERVATION_PEOPLE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "인원 수는 필수입니다.", LogLevel.ERROR),
+        RESERVATION_STATUS_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "예약 상태는 필수입니다.", LogLevel.ERROR),
+        RESERVATION_CHILD_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 ID는 필수입니다.", LogLevel.ERROR),
+        RESERVATION_CHILD_ID_MISMATCH(ErrorCode.BAD_REQUEST, "예약자와 현재 로그인한 아동 정보가 일치하지 않습니다.", LogLevel.ERROR),
+        RESERVATION_ALREADY_EXISTS(ErrorCode.BAD_REQUEST, "이미 예약된 가게 일정입니다.", LogLevel.WARN),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 카테고리 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Category implements IErrorType {
+        CATEGORY_NOT_FOUND(ErrorCode.NOT_FOUND, "카테고리 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        CATEGORY_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "카테고리 ID는 필수입니다.", LogLevel.ERROR),
+        CATEGORY_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "카테고리 이름은 필수입니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
 }

@@ -36,7 +36,7 @@ public class AdminControllerImpl implements IAdminController {
     @Override
     @PostMapping("/owners/{requestId}/approve")
     public ResponseEntity<ResponseDTO<Void>> approveOwnerSignup(
-            @PathVariable Long requestId
+            @PathVariable("requestId") Long requestId
     ) {
         log.info("사업자 회원가입 요청 승인: requestId={}", requestId);
         
@@ -56,7 +56,7 @@ public class AdminControllerImpl implements IAdminController {
     @Override
     @PostMapping("/owners/{requestId}/reject")
     public ResponseEntity<ResponseDTO<Void>> rejectOwnerSignup(
-            @PathVariable Long requestId
+            @PathVariable("requestId") Long requestId
     ) {
         log.info("사업자 회원가입 요청 거절: requestId={}", requestId);
         
@@ -76,7 +76,7 @@ public class AdminControllerImpl implements IAdminController {
     @Override
     @PostMapping("/children/{requestId}/approve")
     public ResponseEntity<ResponseDTO<Void>> approveChildSignup(
-            @PathVariable Long requestId
+            @PathVariable("requestId") Long requestId
     ) {
         log.info("결식 아동 회원가입 요청 승인: requestId={}", requestId);
         
@@ -96,7 +96,7 @@ public class AdminControllerImpl implements IAdminController {
     @Override
     @PostMapping("/children/{requestId}/reject")
     public ResponseEntity<ResponseDTO<Void>> rejectChildSignup(
-            @PathVariable Long requestId
+            @PathVariable("requestId") Long requestId
     ) {
         log.info("결식 아동 회원가입 요청 거절: requestId={}", requestId);
         

@@ -45,7 +45,7 @@ public class ReviewControllerImpl implements IReviewController {
     @Override
     @PostMapping("/stores/{storeId}")
     public ResponseEntity<ResponseDTO<WriteReviewResponse>> writeReview(
-            @PathVariable Long storeId,
+            @PathVariable("storeId") Long storeId,
             @RequestBody WriteReviewRequest request
     ) {
         log.info("감사 리뷰 작성 요청: storeId={}, request={}", storeId, request);
@@ -83,7 +83,7 @@ public class ReviewControllerImpl implements IReviewController {
     @Override
     @GetMapping("/stores/{storeId}")
     public ResponseEntity<ResponseDTO<GetReviewDetailResponse>> getStoreReviews(
-            @PathVariable Long storeId
+            @PathVariable("storeId") Long storeId
     ) {
         log.info("감사 리뷰 상세 조회 요청: storeId={}", storeId);
         
@@ -120,7 +120,7 @@ public class ReviewControllerImpl implements IReviewController {
     @Override
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<ResponseDTO<Void>> deleteMyReview(
-            @PathVariable Long reviewId
+            @PathVariable("reviewId") Long reviewId
     ) {
         log.info("리뷰 삭제 요청: reviewId={}", reviewId);
         
