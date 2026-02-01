@@ -1,6 +1,5 @@
 package com.backend.onharu.domain.owner.model;
 
-import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.level.model.Level;
@@ -27,7 +26,6 @@ class OwnerTest {
                 .password("password123!")
                 .name("테스트")
                 .phone("01011112222")
-                .providerType(ProviderType.LOCAL)
                 .userType(UserType.OWNER)
                 .statusType(StatusType.ACTIVE)
                 .build();
