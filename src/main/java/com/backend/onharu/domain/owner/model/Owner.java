@@ -1,20 +1,16 @@
 package com.backend.onharu.domain.owner.model;
 
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import com.backend.onharu.domain.common.base.BaseEntity;
+import com.backend.onharu.domain.level.model.Level;
+import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.model.User;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import static com.backend.onharu.domain.support.error.ErrorType.Owner.SAME_LEVEL_CAN_NOT_BE_ASSIGNED;
 
 /**
  * 사업자 엔티티
@@ -38,27 +34,37 @@ public class Owner extends BaseEntity {
     @JoinColumn(name = "USER_ID", nullable = false, unique = true)
     private User user;
 
-    @Column(name = "LEVEL_ID", nullable = false)
-    private Long levelId;
+    @JoinColumn(name = "LEVEL_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Level level;
 
     @Column(name = "BUSINESS_NUMBER", nullable = false, length = 10)
     private String businessNumber;
 
     @Builder
-    public Owner(User user, Long levelId, String businessNumber) {
+    public Owner(User user, Level level, String businessNumber) {
         this.user = user;
-        this.levelId = levelId;
+        this.level = level;
         this.businessNumber = businessNumber;
     }
 
     /**
      * 사업자 정보를 업데이트합니다.
-     * 
-     * @param levelId 변경할 등급 ID
+     *
      * @param businessNumber 변경할 사업자 번호
      */
-    public void update(Long levelId, String businessNumber) {
-        this.levelId = levelId;
+    public void update(String businessNumber) {
         this.businessNumber = businessNumber;
+    }
+
+    /**
+     * 사업자에 등급 정보를 변경합니다.
+     */
+    public void changeLevel(Level level) {
+        if (this.level.equals(level)) {
+            throw new CoreException(SAME_LEVEL_CAN_NOT_BE_ASSIGNED);
+        }
+
+        this.level = level;
     }
 }

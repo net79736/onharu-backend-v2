@@ -72,6 +72,11 @@ public enum ErrorType implements IErrorType {
         PHONE_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "전화번호는 필수입니다.", LogLevel.ERROR),
         USER_TYPE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 유형은 필수입니다.", LogLevel.ERROR),
         PROVIDER_TYPE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "제공자 유형은 필수입니다.", LogLevel.ERROR),
+        LOGIN_ID_OR_PASSWORD_MISMATCH(ErrorCode.BAD_REQUEST, "아이디 또는 비밀번호가 잘못되었습니다.", LogLevel.ERROR),
+        USER_STATUS_LOCKED(ErrorCode.FORBIDDEN, "계정이 잠김 상태입니다.", LogLevel.ERROR),
+        USER_STATUS_BLOCKED(ErrorCode.FORBIDDEN, "계정이 차단 상태입니다.", LogLevel.ERROR),
+        USER_STATUS_DELETED(ErrorCode.FORBIDDEN, "계정이 삭제 상태입니다.", LogLevel.ERROR),
+        USER_TYPE_NOT_CHANGE(ErrorCode.FORBIDDEN, "배정받지 않는 사용자만 전환이 가능합니다", LogLevel.ERROR),
         ;
 
         private final ErrorCode code;
@@ -102,6 +107,8 @@ public enum ErrorType implements IErrorType {
         OWNER_NOT_FOUND(ErrorCode.NOT_FOUND, "사업자 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         BUSINESS_NUMBER_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "사업자 번호는 필수입니다.", LogLevel.ERROR),
         LEVEL_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "등급 ID는 필수입니다.", LogLevel.ERROR),
+        STORE_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "매장명은 필수입니다.", LogLevel.ERROR),
+        SAME_LEVEL_CAN_NOT_BE_ASSIGNED(ErrorCode.BAD_REQUEST, "이미 동일한 등급입니다.", LogLevel.ERROR)
         ;
 
         private final ErrorCode code;
@@ -131,6 +138,66 @@ public enum ErrorType implements IErrorType {
     public enum Child implements IErrorType {
         CHILD_NOT_FOUND(ErrorCode.NOT_FOUND, "아동 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         CERTIFICATE_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "증명서 파일 경로는 필수입니다.", LogLevel.ERROR),
+        NICKNAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "닉네임은 필수입니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 소셜 사용자 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum UserOAuth implements IErrorType {
+        USER_O_AUTH_NOT_FOUND(ErrorCode.NOT_FOUND, "소셜 사용자 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        UNSUPPORTED_PROVIDER(ErrorCode.BAD_REQUEST, "지원하지 않는 소셜 제공자 입니다.", LogLevel.ERROR)
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 등급 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Level implements IErrorType {
+        LEVEL_NOT_FOUND(ErrorCode.NOT_FOUND, "등급 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "등급명은 필수입니다.", LogLevel.ERROR)
+
         ;
 
         private final ErrorCode code;

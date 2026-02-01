@@ -1,28 +1,25 @@
 package com.backend.onharu.interfaces.api.controller;
 
-import org.springframework.http.ResponseEntity;
-
+import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpChildRequest;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpChildResponse;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpOwnerRequest;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpOwnerResponse;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.UpdateChildProfileRequest;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.UpdateOwnerProfileRequest;
-
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @Tag(name = "User", description = "사용자 API")
 public interface IUserController {
 
     /**
      * 아동 회원가입
-     * 
+     * <p>
      * POST /users/signup/child
      * 아동 회원가입을 진행합니다. 사용자 정보와 증명서 정보를 함께 받습니다.
      */
@@ -36,11 +33,12 @@ public interface IUserController {
                             examples = @ExampleObject(
                                     name = "아동 회원가입 예시",
                                     value = "{\n" +
-                                            "  \"loginId\": \"child123\",\n" +
+                                            "  \"loginId\": \"child123@test.com\",\n" +
                                             "  \"password\": \"password123!\",\n" +
                                             "  \"passwordConfirm\": \"password123!\",\n" +
                                             "  \"name\": \"홍길동\",\n" +
                                             "  \"phone\": \"01012345678\",\n" +
+                                            "  \"nickname\": \"코끼리땃쥐\",\n" +
                                             "  \"certificate\": \"/certificates/certificate.pdf\"\n" +
                                             "}"
                             )
@@ -51,7 +49,7 @@ public interface IUserController {
 
     /**
      * 사업자 회원가입
-     * 
+     * <p>
      * POST /users/signup/owner
      * 사업자 회원가입을 진행합니다. 사용자 정보, 사업자 정보를 함께 받습니다.
      */
@@ -65,7 +63,7 @@ public interface IUserController {
                             examples = @ExampleObject(
                                     name = "사업자 회원가입 예시",
                                     value = "{\n" +
-                                            "  \"loginId\": \"owner123\",\n" +
+                                            "  \"loginId\": \"owner123@test.com\",\n" +
                                             "  \"password\": \"password123!\",\n" +
                                             "  \"passwordConfirm\": \"password123!\",\n" +
                                             "  \"name\": \"홍길동\",\n" +
@@ -82,7 +80,7 @@ public interface IUserController {
 
     /**
      * 사용자 프로필 조회
-     * 
+     * <p>
      * GET /users/{userId}/profile
      * 사용자 프로필을 조회합니다.
      */
@@ -94,7 +92,7 @@ public interface IUserController {
 
     /**
      * 사용자 프로필 수정
-     * 
+     * <p>
      * PUT /users/{userId}/profile
      * 사용자 프로필을 수정합니다.
      */
@@ -112,5 +110,80 @@ public interface IUserController {
     ResponseEntity<ResponseDTO<Void>> deleteUser(
             @Schema(description = "사용자 ID", example = "1")
             Long userId
+    );
+
+    /**
+     * 로컬 사용자 로그인
+     * <p>
+     * POST /users/login
+     * 사용자의 아이디와 비밀번호로 로그인을 수행합니다.
+     */
+    @Operation(summary = "로컬 사용자 로그인", description = "아이디와 비밀번호로 로그인을 수행합니다.")
+    ResponseEntity<ResponseDTO<Void>> login(
+            @Schema(description = "사용자 로그인 요청")
+            LoginUserRequest request,
+            HttpServletRequest httpRequest
+    );
+
+    /**
+     * 사용자 로그아웃
+     * <p>
+     * POST /users/logout
+     */
+    @Operation(summary = "로컬 사용자 로그아웃", description = "사용자의 로그아웃을 수행 합니다.")
+    ResponseEntity<ResponseDTO<Void>> logout(
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse
+    );
+
+    /**
+     * 아동 소셜 회원가입
+     */
+    @Operation(summary = "아동 소셜 회원가입 마무리", description = "아동 소셜 회원가입을 마무리합니다. 전화번호, 닉네임, 증명서 파일을 함께 받습니다.")
+    ResponseEntity<ResponseDTO<SignUpChildResponse>> finishSignUpChild(
+            @AuthenticationPrincipal User user,
+            @RequestBody(
+                    description = "아동 소셜 회원가입 마무리 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = finishSignUpChildRequest.class),
+                            examples = @ExampleObject(
+                                    name = "아동 소셜 회원가입 요청",
+                                    value = "{\n" +
+                                            "  \"phone\": \"01012345678\",\n" +
+                                            "  \"nickname\": \"코끼리땃쥐\",\n" +
+                                            "  \"certificate\": \"/certificates/certificate.pdf\"\n" +
+                                            "}"
+                            )
+                    )
+            )
+            finishSignUpChildRequest request
+    );
+
+    /**
+     * 사업자 소셜 회원가입
+     */
+
+    @Operation(summary = "사업자 소셜 회원가입 마무리", description = "사업자 소셜 회원가입을 마무리합니다. ")
+    ResponseEntity<ResponseDTO<SignUpChildResponse>> finishSignUpOwner(
+            @AuthenticationPrincipal User user,
+            @RequestBody(
+                    description = "사업자 소셜 회원가입 마무리 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = finishSignUpOwnerRequest.class),
+                            examples = @ExampleObject(
+                                    name = "사업자 회원가입 예시",
+                                    value = "{\n" +
+
+                                            "  \"phone\": \"01012345678\",\n" +
+                                            "  \"storeName\": \"따뜻한 식당\",\n" +
+                                            "  \"businessNumber\": \"1234567890\",\n" +
+                                            "  \"levelId\": \"1\"\n" +
+                                            "}"
+                            )
+                    )
+            )
+            finishSignUpOwnerRequest request
     );
 }

@@ -1,16 +1,23 @@
 package com.backend.onharu.interfaces.api.support;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorCode;
 import com.backend.onharu.interfaces.api.common.dto.ErrorResponse;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 전역 예외 처리를 담당하는 클래스입니다.
@@ -18,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
  * 모든 컨트롤러에서 발생하는 예외를 일관된 형식으로 처리하여
  * 클라이언트에게 반환합니다.
  * <p>
+ *
  * @RestControllerAdvice 어노테이션을 통해 모든 @RestController에서 발생하는
  * 예외를 처리합니다.
  */
@@ -65,6 +73,31 @@ class ApiControllerAdvice extends ResponseEntityExceptionHandler {
                 ),
                 status
         );
+    }
+
+    /**
+     * Validation 어노테이션 예외를 처리하는 메서드 입니다.
+     * 400 Bad Request 를 반환합니다.
+     *
+     * @return 400 Bad Request 상태 코드와 에러 응답을 포함한 ResponseEntity
+     */
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            @Nullable MethodArgumentNotValidException ex,
+            @Nullable HttpHeaders headers,
+            @Nullable HttpStatusCode status,
+            @Nullable WebRequest request) {
+        log.error("Validation exception occurred", ex);
+
+        String message = Optional.of(Objects.requireNonNull(ex).getBindingResult())
+                .map(bindingResult -> bindingResult.getFieldErrors()
+                        .stream()
+                        .map(e -> String.format("%s : %s", e.getField(), e.getDefaultMessage()))
+                        .collect(Collectors.joining(", ")))
+                .orElse("입력값 검증 중 에러가 발생했습니다.");
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(false, ErrorCode.BAD_REQUEST.name(), message));
     }
 
     /**
