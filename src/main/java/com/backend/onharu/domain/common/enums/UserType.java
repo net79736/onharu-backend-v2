@@ -9,9 +9,11 @@ package com.backend.onharu.domain.common.enums;
  * - CHILD: 결식 아동
  * - OWNER: 사업자
  * - ADMIN: 관리자
+ * - NONE: 사용자 유형을 배정받지 못한 사용자
  */
 public enum UserType {
     CHILD,
     OWNER,
-    ADMIN
+    ADMIN,
+    NONE
 }
