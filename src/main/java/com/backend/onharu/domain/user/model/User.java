@@ -5,15 +5,18 @@ import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.support.error.ErrorType;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.backend.onharu.domain.support.error.ErrorType.User.*;
 
 /**
  * 사용자 엔티티
@@ -36,7 +39,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class User extends BaseEntity {
 
-    @Column(name = "LOGIN_ID", nullable = false, unique = true, length = 50)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<UserOAuth> userOAuth = new ArrayList<>();
+
+    @Column(name = "LOGIN_ID", nullable = false, unique = true, length = 255)
     private String loginId;
 
     @Column(name = "PASSWORD", nullable = false, length = 255)
@@ -49,10 +55,6 @@ public class User extends BaseEntity {
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "PROVIDER", nullable = false, length = 20)
-    private ProviderType providerType;
-
-    @Enumerated(EnumType.STRING)
     @Column(name = "ROLE", nullable = false, length = 20)
     private UserType userType;
 
@@ -61,14 +63,34 @@ public class User extends BaseEntity {
     private StatusType statusType;
 
     @Builder
-    public User(String loginId, String password, String name, String phone, ProviderType providerType, UserType userType, StatusType statusType) {
+    public User(String loginId, String password, String name, String phone, UserType userType, StatusType statusType) {
         this.loginId = loginId;
         this.password = password;
         this.name = name;
         this.phone = phone;
-        this.providerType = providerType;
         this.userType = userType;
         this.statusType = statusType;
+    }
+
+    /**
+     * 소셜 사용자 회원 가입을 위한 임시 유저 생성 메서드 입니다.
+     *
+     * @return 아이디, 비밀번호, 이름, 전화번호 정보가 없는 사용자 엔티티
+     */
+    public static User createUserOAuth(ProviderType providerType, String providerId, String name) {
+        return User.builder()
+                .loginId(providerId + providerId)
+                .statusType(StatusType.PENDING)
+                .userType(UserType.NONE)
+                .build();
+    }
+
+    /**
+     * UserOauth 연결을 호출하는 메서드 입니다.
+     */
+    public void addUserOAuth(UserOAuth userOAuth) {
+        this.userOAuth.add(userOAuth); // User 객체의 필드에 UserOauth 객체를 연결
+        userOAuth.addUser(this); // 양방향 연결
     }
 
     /**
@@ -98,5 +120,51 @@ public class User extends BaseEntity {
      */
     public void changeStatus(StatusType status) {
         this.statusType = status;
+    }
+
+    /**
+     * 사용자 비밀번호를 검증합니다.
+     *
+     * @param password 로그인할때 입력한 비밀번호
+     * @param passwordEncoder 인코더
+     */
+    public void verifyPassword(String password, PasswordEncoder passwordEncoder) {
+        if (!passwordEncoder.matches(password, this.password)) {
+            throw new CoreException(LOGIN_ID_OR_PASSWORD_MISMATCH);
+        }
+    }
+
+    /**
+     * 사용자 계정 상태를 검증합니다.
+     *
+     */
+    public void verifyStatus() {
+        switch (this.statusType) {
+            case DELETED -> throw new CoreException(USER_STATUS_DELETED);
+            case LOCKED -> throw new CoreException(USER_STATUS_LOCKED);
+            case BLOCKED -> throw new CoreException(USER_STATUS_BLOCKED);
+        }
+    }
+
+    /**
+     * 임시로 등록한 사용자 타입을 아동 회원으로 전환합니다.
+     */
+    public void changeUserTypeToChild() {
+        if (!this.userType.equals(UserType.NONE)) {
+            throw new CoreException(ErrorType.User.USER_TYPE_NOT_CHANGE);
+        }
+
+        this.userType = UserType.CHILD;
+    }
+
+    /**
+     * 임시로 등록한 사용자 타입을 사업자 회원으로 전환합니다.
+     */
+    public void changeUserTypeToOwner() {
+        if (!this.userType.equals(UserType.NONE)) {
+            throw new CoreException(ErrorType.User.USER_TYPE_NOT_CHANGE);
+        }
+
+        this.userType = UserType.OWNER;
     }
 }
