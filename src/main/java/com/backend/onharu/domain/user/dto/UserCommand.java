@@ -110,4 +110,15 @@ public class UserCommand {
             }
         }
     }
+
+    /**
+     * 로그인 요청 Command
+     * <p>
+     * 로그인 요청 Command 입니다.
+     */
+    public record LoginUserCommand(
+            String loginId,
+            String password
+    ) {
+    }
 }
