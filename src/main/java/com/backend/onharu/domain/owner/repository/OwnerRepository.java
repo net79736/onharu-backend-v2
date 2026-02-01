@@ -1,6 +1,8 @@
 package com.backend.onharu.domain.owner.repository;
 
+import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByLoginIdParam;
 import com.backend.onharu.domain.owner.model.Owner;
+import com.backend.onharu.domain.owner.service.OwnerRepositoryParam.GetOwnerByIdParam;
 
 /**
  * 사업자 Repository 인터페이스
@@ -17,4 +19,20 @@ public interface OwnerRepository {
      * @return 저장된 사업자 엔티티
      */
     Owner save(Owner owner);
+
+    /**
+     * 사업자를 조회합니다.
+     * 
+     * @param query 사업자 ID를 포함한 Query
+     * @return 조회된 사업자 엔티티
+     */
+    Owner getOwnerById(GetOwnerByIdParam query);
+
+    /**
+     * 로그인 ID로 사업자를 조회합니다.
+     * 
+     * @param query 로그인 ID를 포함한 Query
+     * @return 조회된 사업자 엔티티
+     */
+    Owner getOwnerByLoginId(GetOwnerByLoginIdParam query);
 }
