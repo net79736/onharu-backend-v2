@@ -73,19 +73,6 @@ public class User extends BaseEntity {
     }
 
     /**
-     * 소셜 사용자 회원 가입을 위한 임시 유저 생성 메서드 입니다.
-     *
-     * @return 아이디, 비밀번호, 이름, 전화번호 정보가 없는 사용자 엔티티
-     */
-    public static User createUserOAuth(ProviderType providerType, String providerId, String name) {
-        return User.builder()
-                .loginId(providerId + providerId)
-                .statusType(StatusType.PENDING)
-                .userType(UserType.NONE)
-                .build();
-    }
-
-    /**
      * UserOauth 연결을 호출하는 메서드 입니다.
      */
     public void addUserOAuth(UserOAuth userOAuth) {
