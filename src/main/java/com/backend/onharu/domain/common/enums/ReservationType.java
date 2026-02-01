@@ -9,10 +9,12 @@ package com.backend.onharu.domain.common.enums;
  * - CONFIRMED: 확인 상태
  * - CANCELED: 취소 상태
  * - COMPLETED: 완료 상태
+ * - REJECTED: 거절 상태
  */
-public enum ResrvationType {
+public enum ReservationType {
     WAITING,
     CONFIRMED,
     CANCELED,
-    COMPLETED
+    COMPLETED,
+    REJECTED
 }

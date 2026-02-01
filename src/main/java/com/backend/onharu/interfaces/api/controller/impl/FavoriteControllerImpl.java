@@ -28,7 +28,7 @@ public class FavoriteControllerImpl implements IFavoriteController {
      */
     @Override
     @PostMapping("/stores/{storeId}")
-    public ResponseEntity<ResponseDTO<CreateFavoriteResponse>> createFavorite(@PathVariable Long storeId) {
+    public ResponseEntity<ResponseDTO<CreateFavoriteResponse>> createFavorite(@PathVariable("storeId") Long storeId) {
         log.info("찜하기 등록 요청: storeId={}", storeId);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -63,7 +63,7 @@ public class FavoriteControllerImpl implements IFavoriteController {
      */
     @Override
     @DeleteMapping("/{favoriteId}")
-    public ResponseEntity<ResponseDTO<Void>> deleteFavorite(@PathVariable Long favoriteId) {
+    public ResponseEntity<ResponseDTO<Void>> deleteFavorite(@PathVariable("favoriteId") Long favoriteId) {
         log.info("찜취소 요청: favoriteId={}", favoriteId);
 
         return ResponseEntity.status(HttpStatus.OK)

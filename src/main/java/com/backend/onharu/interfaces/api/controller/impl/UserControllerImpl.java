@@ -115,7 +115,7 @@ public class UserControllerImpl implements IUserController {
 
     /**
      * 사용자 프로필 조회
-     * <p>
+     * <p>.
      * GET /users/{userId}/profile
      * Spring Security Context에서 현재 사용자의 역할을 확인하여 역할별 프로필을 반환합니다.
      *
@@ -125,7 +125,7 @@ public class UserControllerImpl implements IUserController {
     @Override
     @GetMapping("/{userId}/profile")
     public ResponseEntity<ResponseDTO<?>> getProfile(
-            @PathVariable Long userId
+            @PathVariable("userId") Long userId
     ) {
         log.info("사용자 프로필 조회 요청: userId={}", userId);
 
@@ -147,9 +147,9 @@ public class UserControllerImpl implements IUserController {
     @Override
     @PutMapping("/{userId}/profile")
     public ResponseEntity<ResponseDTO<Void>> updateProfile(
-            @PathVariable Long userId,
-            @Valid @RequestBody UpdateChildProfileRequest childRequest,
-            @Valid @RequestBody UpdateOwnerProfileRequest ownerRequest
+            @PathVariable("userId") Long userId,
+            @RequestBody UpdateChildProfileRequest childRequest,
+            @RequestBody UpdateOwnerProfileRequest ownerRequest
     ) {
         log.info("사용자 프로필 수정 요청: userId={}, childRequest={}, ownerRequest={}", userId, childRequest, ownerRequest);
 
@@ -169,7 +169,7 @@ public class UserControllerImpl implements IUserController {
     @Override
     @DeleteMapping("/{userId}")
     public ResponseEntity<ResponseDTO<Void>> deleteUser(
-            @PathVariable Long userId
+            @PathVariable("userId") Long userId
     ) {
         log.info("사용자 정보 삭제 요청: userId={}", userId);
 

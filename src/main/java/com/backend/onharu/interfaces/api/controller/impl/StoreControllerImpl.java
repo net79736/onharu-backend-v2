@@ -1,23 +1,38 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.onharu.application.StoreFacade;
+import com.backend.onharu.domain.store.dto.CategoryQuery.FindAllByNameQuery;
+import com.backend.onharu.domain.store.dto.StoreCommand.CreateStoreCommand;
+import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
+import com.backend.onharu.domain.store.dto.StoreCommand.UpdateStoreCommand;
+import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
+import com.backend.onharu.domain.store.model.Category;
+import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.store.repository.CategoryRepository;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.controller.IStoreController;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.CategoryResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.GetStoreDetailResponse;
-import com.backend.onharu.interfaces.api.dto.StoreControllerDto.GetStoreListResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreResponse;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresRequest;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresResponse;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
 
 import lombok.RequiredArgsConstructor;
@@ -34,6 +49,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class StoreControllerImpl implements IStoreController {
 
+    private final CategoryRepository categoryRepository;
+    private final StoreFacade storeFacade;
+
     /**
      * 가게 상세 정보 조회
      * 
@@ -46,13 +64,16 @@ public class StoreControllerImpl implements IStoreController {
     @Override
     @GetMapping("/{storeId}")
     public ResponseEntity<ResponseDTO<GetStoreDetailResponse>> getStore(
-            @PathVariable Long storeId
+            @PathVariable("storeId") Long storeId
     ) {
         log.info("가게 상세 정보 조회 요청: storeId={}", storeId);
         
+        Store store = storeFacade.getStore(storeId);
+
+        GetStoreDetailResponse response = new GetStoreDetailResponse(store);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
     }
 
     /**
@@ -61,22 +82,25 @@ public class StoreControllerImpl implements IStoreController {
      * GET /stores
      * 검색 및 페이징이 가능한 가게 목록을 반환합니다.
      *
-     * @param latitude 위도
-     * @param longitude 경도
-     * @param radius 반경(km)
+     * @param request 가게 목록 조회 요청 (위도, 경도, 반경)
      * @return 가게 목록
      */
     @Override
     @GetMapping
-    public ResponseEntity<ResponseDTO<GetStoreListResponse>> searchStores(
-            @RequestParam(required = false) Double latitude,
-            @RequestParam(required = false) Double longitude,
-            @RequestParam(required = false) Double radius
+    public ResponseEntity<ResponseDTO<SearchStoresResponse>> searchStores(
+            @ModelAttribute SearchStoresRequest request
     ) {
-        log.info("가게 목록 조회 요청: latitude={}, longitude={}, radius={}", latitude, longitude, radius);
+        log.info("가게 목록 조회 요청: latitude={}, longitude={}, radius={}", 
+                request.latitude(), request.longitude(), request.radius());
+        
+        List<Store> stores = storeFacade.searchStores(
+                new SearchStoresQuery(request.latitude(), request.longitude(), request.radius()));
+        List<StoreResponse> storeResponses = stores.stream()
+                .map(StoreResponse::new)
+                .collect(Collectors.toList());
         
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(new SearchStoresResponse(storeResponses)));
     }
 
     /**
@@ -93,10 +117,28 @@ public class StoreControllerImpl implements IStoreController {
     public ResponseEntity<ResponseDTO<OpenStoreResponse>> openStore(
             @RequestBody OpenStoreRequest request
     ) {
+        Long ownerId = 855L; // TODO: 사업자 ID SecurityContext에서 가져오기
         log.info("가게 정보 작성 요청: {}", request);
-        
+
+        Store store = storeFacade.createStore(new CreateStoreCommand(
+            ownerId,
+            request.categoryId(),
+            request.name(),
+            request.address(),
+            request.phone(),
+            request.lat(),
+            request.lng(), 
+            request.image(),
+            request.intro(),
+            request.introduction(),
+            request.tagNames(),
+            request.businessHours()
+        ), ownerId);
+
+        OpenStoreResponse response = new OpenStoreResponse(store.getId());
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
     }
 
     /**
@@ -111,10 +153,13 @@ public class StoreControllerImpl implements IStoreController {
     @Override
     @DeleteMapping("/{storeId}")
     public ResponseEntity<ResponseDTO<Void>> closeStore(
-            @PathVariable Long storeId
-    ) {
+            @PathVariable("storeId") Long storeId
+    ) {        
         log.info("가게 정보 삭제 요청: storeId={}", storeId);
-        
+
+        Long ownerId = 855L; // TODO: 사업자 ID SecurityContext에서 가져오기
+        storeFacade.deleteStore(new DeleteStoreCommand(storeId), ownerId);
+
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));
     }
@@ -132,12 +177,43 @@ public class StoreControllerImpl implements IStoreController {
     @Override
     @PutMapping("/{storeId}")
     public ResponseEntity<ResponseDTO<Void>> updateMyStore(
-            @PathVariable Long storeId,
+            @PathVariable("storeId") Long storeId,
             @RequestBody UpdateStoreRequest request
     ) {
         log.info("가게 정보 수정 요청: storeId={}, request={}", storeId, request);
+
+        Long ownerId = 855L; // TODO: 사업자 ID SecurityContext에서 가져오기
+        storeFacade.updateStore(new UpdateStoreCommand(
+            storeId, 
+            request.categoryId(), 
+            request.image(),
+            request.phone(),
+            request.address(),
+            request.lat(),
+            request.lng(),
+            request.introduction(),
+            request.intro(),
+            request.isOpen(),
+            request.tagNames(),
+            request.businessHours()
+        ), ownerId);
         
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 가게 카테고리 정보 목록 반환
+     */
+    @Override
+    @GetMapping("/categories")
+    public ResponseEntity<ResponseDTO<List<CategoryResponse>>> getCategoryList() {
+        log.info("가게 카테고리 정보 목록 조회 요청");
+
+        List<Category> categories = categoryRepository.findAllByName(new FindAllByNameQuery(null));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(categories.stream()
+                        .map(CategoryResponse::new)
+                        .collect(Collectors.toList())));
     }
 }
