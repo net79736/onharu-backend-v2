@@ -2,10 +2,7 @@ package com.backend.onharu.interfaces.api.dto;
 
 import com.backend.onharu.domain.common.enums.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 public class UserControllerDto {
 
@@ -53,13 +50,14 @@ public class UserControllerDto {
      */
     public record SignUpChildRequest(
             @NotBlank(message = "아이디는 필수 입력 값 입니다.")
-            @Size(min = 8, max = 50, message = "아이디는 최소 8자 이상이어야 합니다.")
-            @Schema(description = "로그인 ID", example = "user123")
+            @Size(min = 8, max = 255, message = "아이디는 최소 8자 이상이어야 합니다.")
+            @Email(message = "올바른 이메일 형식이 아닙니다.")
+            @Schema(description = "로그인 ID", example = "user123@naver.com")
             String loginId,
 
             @NotBlank(message = "비밀번호는 필수 입력 값 입니다.")
-            @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[~!@#$%^&*()_+\\-=]).{8,}$",
-                    message = "비밀번호는 영문 대문자, 소문자, 숫자, 특수문자를 각각 최소 하나 이상 포함해야 하며 8자 이상이어야 합니다.")
+            @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*\\W).{8,}$",
+                    message = "비밀번호는 최소 영문 대소문자, 숫자, 특수문자를 각각 하나 이상 포함해야 하며, 8자 이상이어야 합니다.")
             @Schema(description = "비밀번호", example = "password123!")
             String password,
 
@@ -96,8 +94,8 @@ public class UserControllerDto {
             @Schema(description = "ID", example = "1")
             Long id,
 
-            @Schema(description = "아동 사용자 ID", example = "child123")
-            String userId
+            @Schema(description = "사용자 로그인 아이디", example = "child123@test.com")
+            String loginId
     ) {
     }
 
@@ -107,12 +105,13 @@ public class UserControllerDto {
      */
     public record SignUpOwnerRequest(
             @NotBlank(message = "아이디는 필수 입력 값 입니다.")
-            @Size(min = 8, max = 50, message = "아이디는 최소 8자 이상이어야 합니다.")
+            @Size(min = 8, max = 255, message = "아이디는 최소 8자 이상이어야 합니다.")
+            @Email(message = "올바른 이메일 형식이 아닙니다.")
             @Schema(description = "로그인 ID", example = "user123")
             String loginId,
 
             @NotBlank(message = "비밀번호는 필수 입력 값 입니다.")
-            @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[~!@#$%^&*()_+\\-=]).{8,}$",
+            @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*\\W).{8,}$",
                     message = "비밀번호는 영문 대문자, 소문자, 숫자, 특수문자를 각각 최소 하나 이상 포함해야 하며 8자 이상이어야 합니다.")
             @Schema(description = "비밀번호", example = "password123!")
             String password,
@@ -202,6 +201,72 @@ public class UserControllerDto {
             @Pattern(regexp = "^\\d{10}$", message = "사업자 번호는 숫자 10자리여야 합니다. (예: 1234567890)")
             @Schema(description = "사업자 번호", example = "1234567890")
             String businessNumber
+    ) {
+    }
+
+    /**
+     * 사용자 로그인 요청 DTO
+     * 아이디, 비밀번호를 함께 받습니다.
+     */
+    public record LoginUserRequest(
+            @NotBlank(message = "아이디는 필수 입력 값 입니다.")
+            @Size(min = 8, max = 50, message = "아이디는 최소 8자 이상이어야 합니다.")
+            @Schema(description = "로그인 ID", example = "user123")
+            String loginId,
+
+            @NotBlank(message = "비밀번호는 필수 입력 값 입니다.")
+            @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*\\W).{8,}$",
+                    message = "비밀번호는 최소 영문 대소문자, 소문자, 숫자, 특수문자를 각각 하나 이상 포함해야 하며 8자 이상이어야 합니다.")
+            @Schema(description = "비밀번호", example = "password123!")
+            String password
+    ) {
+    }
+
+    /**
+     * 소셜 사용자(아동) 회원가입 마무리 요청 DTO
+     * 전화번호, 닉네임, 증명서 파일을 받습니다.
+     */
+    public record finishSignUpChildRequest(
+            @NotBlank(message = "전화번호는 필수 입력 값 입니다.")
+            @Pattern(regexp = "^01(?:0|[1-9])(?:\\d{3}|\\d{4})\\d{4}$", message = "올바른 전화번호 형식이 아닙니다. (예: 01012345678)")
+            @Schema(description = "전화번호", example = "01012345678")
+            String phone,
+
+            @NotBlank(message = "닉네임은 필수 입력 값 입니다.")
+            @Size(max = 100, message = "닉네임은 최대 100자를 넘을 수 없습니다.")
+            @Pattern(regexp = "^[a-zA-Z0-9가-힣]*$", message = "닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.")
+            @Schema(description = "닉네임", example = "코끼리땃쥐")
+            String nickname,
+
+            @NotBlank(message = "증명서 파일 경로는 필수입니다.")
+            @Schema(description = "아동 증명서 파일 경로", example = "/certificates/certificate.pdf")
+            String certificate
+    ) {
+    }
+
+    /**
+     * 소셜 사용자(사업자) 회원가입 마무리 요청 DTO
+     * 전화번호, 매장명, 사업자 등록번호, 등급 정보를 받습니다.
+     */
+    public record finishSignUpOwnerRequest(
+            @NotBlank(message = "전화번호는 필수 입력 값 입니다.")
+            @Pattern(regexp = "^01(?:0|[1-9])(?:\\d{3}|\\d{4})\\d{4}$", message = "올바른 전화번호 형식이 아닙니다. (예: 01012345678)")
+            @Schema(description = "전화번호", example = "01012345678")
+            String phone,
+
+            @NotBlank(message = "매장명은 필수 입력 값 입니다.")
+            @Size(max = 30, message = "매장명은 30자 이내여야 합니다.")
+            @Schema(description = "매장명", example = "새마을 식당")
+            String storeName,
+
+            @NotBlank(message = "사업자 번호는 필수 입력 값 입니다.")
+            @Pattern(regexp = "^\\d{10}$", message = "사업자 번호는 숫자 10자리여야 합니다. (예: 1234567890)")
+            @Schema(description = "사업자 번호", example = "1234567890")
+            String businessNumber,
+
+            @NotNull(message = "등급 정보는 필수 입력 값 입니다.")
+            @Schema(description = "레벨 ID", example = "1")
+            String levelId
     ) {
     }
 }
