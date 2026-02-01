@@ -14,7 +14,7 @@ public class TagRepositroyParam {
     /**
      * 여러 ID에 해당하는 태그 목록 조회용 파라미터
      */
-    public record FindAllTagsByIdsParam(
+    public record FindByIdsParam(
         List<Long> tagIds
     ) {
     }
@@ -22,7 +22,7 @@ public class TagRepositroyParam {
     /**
      * 태그 이름으로 태그 목록 조회용 파라미터
      */
-    public record FindAllByNameParam(
+    public record FindByNameParam(
         String name
     ) {
     }

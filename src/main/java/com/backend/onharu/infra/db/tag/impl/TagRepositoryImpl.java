@@ -6,8 +6,8 @@ import org.springframework.stereotype.Repository;
 
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
-import com.backend.onharu.domain.tag.dto.TagRepositroyParam.FindAllByNameParam;
-import com.backend.onharu.domain.tag.dto.TagRepositroyParam.FindAllTagsByIdsParam;
+import com.backend.onharu.domain.tag.dto.TagRepositroyParam.FindByIdsParam;
+import com.backend.onharu.domain.tag.dto.TagRepositroyParam.FindByNameParam;
 import com.backend.onharu.domain.tag.dto.TagRepositroyParam.GetTagByIdParam;
 import com.backend.onharu.domain.tag.model.Tag;
 import com.backend.onharu.domain.tag.repository.TagRepository;
@@ -36,12 +36,12 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public List<Tag> findAllByIds(FindAllTagsByIdsParam param) {
+    public List<Tag> findAllByIds(FindByIdsParam param) {
         return tagJpaRepository.findAllById(param.tagIds());
     }
 
     @Override
-    public List<Tag> findAllByName(FindAllByNameParam param) {
+    public List<Tag> findAllByName(FindByNameParam param) {
         return tagJpaRepository.findAllByName(param.name());
     }
 
