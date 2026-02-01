@@ -1,11 +1,5 @@
 package com.backend.onharu.domain.user.service;
 
-import static com.backend.onharu.domain.support.error.ErrorType.User.USER_ID_ALREADY_EXISTS;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.support.error.CoreException;
@@ -15,12 +9,16 @@ import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByLoginIdParam;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.domain.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import static com.backend.onharu.domain.support.error.ErrorType.User.USER_ID_ALREADY_EXISTS;
 
 /**
  * 사용자 Command Service
- * 
+ * <p>
  * 사용자 도메인의 상태를 변경하는 비즈니스 로직을 처리하는 서비스입니다.
  * Command 패턴을 사용하여 도메인 모델의 변경 작업을 캡슐화합니다.
  */
@@ -30,28 +28,29 @@ import lombok.RequiredArgsConstructor;
 public class UserCommandService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 아동 회원가입을 처리합니다.
-     * 
+     *
      * @param command 아동 회원가입 Command
      * @return 생성된 사용자 엔티티
      */
     public User signUpChild(SignUpChildCommand command) {
-        // 로그인 ID 중복 확인
+
         if (userRepository.existsByLoginId(new GetUserByLoginIdParam(command.loginId()))) {
             throw new CoreException(USER_ID_ALREADY_EXISTS);
         }
 
-        // 사용자 생성
+        String encodedPassword = passwordEncoder.encode(command.password());
+
         CreateUserCommand createCommand = new CreateUserCommand(
                 command.loginId(),
-                command.password(),
+                encodedPassword,
                 command.name(),
                 command.phone(),
                 UserType.CHILD,
-                ProviderType.LOCAL,
-                StatusType.PENDING // 아동은 관리자 승인 후 활성화
+                StatusType.PENDING
         );
 
         return createUser(createCommand);
@@ -59,24 +58,24 @@ public class UserCommandService {
 
     /**
      * 사업자 회원가입을 처리합니다.
-     * 
+     *
      * @param command 사업자 회원가입 Command
      * @return 생성된 사용자 엔티티
      */
     public User signUpOwner(SignUpOwnerCommand command) {
-        // 로그인 ID 중복 확인
+
         if (userRepository.existsByLoginId(new GetUserByLoginIdParam(command.loginId()))) {
             throw new CoreException(USER_ID_ALREADY_EXISTS);
         }
 
-        // 사용자 생성
+        String encodedPassword = passwordEncoder.encode(command.password());
+
         CreateUserCommand createCommand = new CreateUserCommand(
                 command.loginId(),
-                command.password(),
+                encodedPassword,
                 command.name(), // 사업자는 매장명을 name에 저장
                 command.phone(),
                 UserType.OWNER,
-                ProviderType.LOCAL,
                 StatusType.PENDING // 사업자도 관리자 승인 후 활성화
         );
 
@@ -85,7 +84,7 @@ public class UserCommandService {
 
     /**
      * 사용자를 생성합니다.
-     * 
+     *
      * @param command 사용자 생성 Command
      * @return 생성된 사용자 엔티티
      */
@@ -95,7 +94,6 @@ public class UserCommandService {
                 .password(command.password())
                 .name(command.name())
                 .phone(command.phone())
-                .providerType(command.providerType())
                 .userType(command.userType())
                 .statusType(command.statusType())
                 .build();
