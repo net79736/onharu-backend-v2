@@ -1,6 +1,5 @@
 package com.backend.onharu.domain.user.dto;
 
-import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.support.error.CoreException;
@@ -75,35 +74,6 @@ public class UserCommand {
             String businessNumber,
             String levelId
     ) {
-        public SignUpOwnerCommand {
-            if (loginId == null || loginId.isBlank()) {
-                throw new CoreException(LOGIN_ID_MUST_NOT_BE_BLANK);
-            }
-            if (password == null || password.isBlank()) {
-                throw new CoreException(PASSWORD_MUST_NOT_BE_BLANK);
-            }
-            if (passwordConfirm == null || passwordConfirm.isBlank()) {
-                throw new CoreException(PASSWORD_CONFIRM_MUST_NOT_BE_BLANK);
-            }
-            if (!password.equals(passwordConfirm)) {
-                throw new CoreException(PASSWORD_CONFIRM_MISMATCH);
-            }
-            if (name == null || name.isBlank()) {
-                throw new CoreException(NAME_MUST_NOT_BE_BLANK);
-            }
-            if (phone == null || phone.isBlank()) {
-                throw new CoreException(PHONE_MUST_NOT_BE_BLANK);
-            }
-            if (storeName == null || storeName.isBlank()) {
-                throw new CoreException(STORE_NAME_MUST_NOT_BE_BLANK);
-            }
-            if (businessNumber == null || businessNumber.isBlank()) {
-                throw new CoreException(BUSINESS_NUMBER_MUST_NOT_BE_BLANK);
-            }
-            if (levelId == null || levelId.isBlank()) {
-                throw new CoreException(LEVEL_ID_MUST_NOT_BE_NULL);
-            }
-        }
     }
 
     /**
@@ -117,7 +87,6 @@ public class UserCommand {
             String name,
             String phone,
             UserType userType,
-            ProviderType providerType,
             StatusType statusType
     ) {
         public CreateUserCommand {
@@ -135,9 +104,6 @@ public class UserCommand {
             }
             if (userType == null) {
                 throw new CoreException(USER_TYPE_MUST_NOT_BE_NULL);
-            }
-            if (providerType == null) {
-                throw new CoreException(PROVIDER_TYPE_MUST_NOT_BE_NULL);
             }
             if (statusType == null) {
                 statusType = StatusType.PENDING;
