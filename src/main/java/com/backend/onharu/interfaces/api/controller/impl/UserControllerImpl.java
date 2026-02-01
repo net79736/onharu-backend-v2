@@ -131,7 +131,7 @@ public class UserControllerImpl implements IUserController {
     @Override
     @GetMapping("/{userId}/profile")
     public ResponseEntity<ResponseDTO<?>> getProfile(
-            @PathVariable Long userId
+            @PathVariable("userId") Long userId
     ) {
         log.info("사용자 프로필 조회 요청: userId={}", userId);
 
@@ -153,7 +153,7 @@ public class UserControllerImpl implements IUserController {
     @Override
     @PutMapping("/{userId}/profile")
     public ResponseEntity<ResponseDTO<Void>> updateProfile(
-            @PathVariable Long userId,
+            @PathVariable("userId") Long userId,
             @RequestBody UpdateChildProfileRequest childRequest,
             @RequestBody UpdateOwnerProfileRequest ownerRequest
     ) {
@@ -175,7 +175,7 @@ public class UserControllerImpl implements IUserController {
     @Override
     @DeleteMapping("/{userId}")
     public ResponseEntity<ResponseDTO<Void>> deleteUser(
-            @PathVariable Long userId
+            @PathVariable("userId") Long userId
     ) {
         log.info("사용자 정보 삭제 요청: userId={}", userId);
         

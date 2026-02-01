@@ -6,21 +6,28 @@ import org.springframework.web.multipart.MultipartFile;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerResponse;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetMyStoresResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetOwnerResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingDetailResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingListResponse;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RejectBookRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateOwnerRequest;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Owner", description = "사업주 API")
 public interface IOwnerController {
 
+    @Hidden
     @Operation(summary = "사업자 정보 등록", description = "사업자 정보를 등록합니다.")
     ResponseEntity<ResponseDTO<CreateOwnerResponse>> registerBusiness(
             @Schema(description = "사업자 정보 등록 요청")
@@ -29,6 +36,7 @@ public interface IOwnerController {
             MultipartFile businessRegistrationFile
     );
 
+    @Hidden
     @Operation(summary = "사업자 정보 수정", description = "사업자 정보를 수정합니다.")
     ResponseEntity<ResponseDTO<Void>> updateBusiness(
             @Schema(description = "사업자 ID", example = "1")
@@ -39,23 +47,33 @@ public interface IOwnerController {
             MultipartFile businessRegistrationFile
     );
 
+    @Hidden
     @Operation(summary = "사업자 정보 삭제", description = "사업자 정보를 삭제합니다.")
     ResponseEntity<ResponseDTO<Void>> closeBusiness(
             @Schema(description = "사업자 ID", example = "1")
             Long ownerId
     );
 
+    @Hidden
     @Operation(summary = "사업자 정보 조회", description = "사업자 정보를 조회합니다.")
     ResponseEntity<ResponseDTO<GetOwnerResponse>> getMyBusiness(
             @Schema(description = "사업자 ID", example = "1")
             Long ownerId
     );
 
+    @Operation(summary = "사업자 가게 목록 조회", description = "사업자의 가게 목록을 조회합니다.")
+    ResponseEntity<ResponseDTO<GetMyStoresResponse>> getMyStores();
+
     @Operation(summary = "예약 관리 목록 조회", description = "사업자의 예약 목록을 조회합니다.")
-    ResponseEntity<ResponseDTO<GetStoreBookingListResponse>> getStoreBookings();
+    ResponseEntity<ResponseDTO<GetStoreBookingListResponse>> getStoreBookings(
+            @Schema(description = "가게 ID", example = "1")
+            Long storeId
+    );
 
     @Operation(summary = "예약 관리 상세 조회", description = "사업자의 특정 예약의 상세 정보를 조회합니다.")
     ResponseEntity<ResponseDTO<GetStoreBookingDetailResponse>> getStoreBooking(
+            @Schema(description = "가게 ID", example = "1")
+            Long storeId,
             @Schema(description = "예약 ID", example = "1")
             Long reservationId
     );
@@ -69,14 +87,57 @@ public interface IOwnerController {
     @Operation(summary = "예약 거절", description = "사업자가 예약을 거절합니다.")
     ResponseEntity<ResponseDTO<Void>> rejectBook(
             @Schema(description = "예약 ID", example = "1")
-            Long reservationId
+            Long reservationId,
+            @RequestBody(
+                    description = "예약 거절 요청",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = RejectBookRequest.class),
+                            examples = @ExampleObject(
+                                    name = "예약 거절 예시",
+                                    value = "{\n" +
+                                            "  \"reservationId\": 1,\n" +
+                                            "  \"rejectReason\": \"일정 변경으로 인한 거절\"\n" +
+                                            "}"
+                            )
+                    )
+            )
+            RejectBookRequest request
     );
 
     @Operation(summary = "예약 가능한 날짜 생성", description = "예약 가능한 날짜를 생성합니다.")
     ResponseEntity<ResponseDTO<Void>> setAvailableDates(
             @Schema(description = "가게 ID", example = "1")
             Long storeId,
-            @Schema(description = "예약 가능한 날짜 생성 요청")
+            @RequestBody(
+                    description = "예약 가능한 날짜 생성 요청",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = SetAvailableDatesRequest.class),
+                            examples = @ExampleObject(
+                                    name = "예약 가능한 날짜 생성 예시",
+                                    value = "{\n" +
+                                            "  \"storeId\": 1,\n" +
+                                            "  \"storeSchedules\": [\n" +
+                                            "    {\n" +
+                                            "      \"scheduleDate\": \"2024-12-31\",\n" +
+                                            "      \"startTime\": \"14:00\",\n" +
+                                            "      \"endTime\": \"15:00\",\n" +
+                                            "      \"maxPeople\": 10\n" +
+                                            "    },\n" +
+                                            "    {\n" +
+                                            "      \"scheduleDate\": \"2025-01-01\",\n" +
+                                            "      \"startTime\": \"16:00\",\n" +
+                                            "      \"endTime\": \"17:00\",\n" +
+                                            "      \"maxPeople\": 5\n" +
+                                            "    }\n" +
+                                            "  ]\n" +
+                                            "}"
+                            )
+                    )
+            )
             SetAvailableDatesRequest request
     );
 
@@ -84,7 +145,36 @@ public interface IOwnerController {
     ResponseEntity<ResponseDTO<Void>> updateAvailableDates(
             @Schema(description = "가게 ID", example = "1")
             Long storeId,
-            @Schema(description = "예약 가능한 날짜 수정 요청")
+            @RequestBody(
+                    description = "예약 가능한 날짜 수정 요청",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UpdateAvailableDatesRequest.class),
+                            examples = @ExampleObject(
+                                    name = "예약 가능한 날짜 수정 예시",
+                                    value = "{\n" +
+                                            "  \"storeId\": 1,\n" +
+                                            "  \"storeSchedules\": [\n" +
+                                            "    {\n" +
+                                            "      \"id\": 1,\n" +
+                                            "      \"scheduleDate\": \"2024-12-31\",\n" +
+                                            "      \"startTime\": \"14:00\",\n" +
+                                            "      \"endTime\": \"15:00\",\n" +
+                                            "      \"maxPeople\": 10\n" +
+                                            "    },\n" +
+                                            "    {\n" +
+                                            "      \"id\": 2,\n" +
+                                            "      \"scheduleDate\": \"2025-01-01\",\n" +
+                                            "      \"startTime\": \"16:00\",\n" +
+                                            "      \"endTime\": \"17:00\",\n" +
+                                            "      \"maxPeople\": 5\n" +
+                                            "    }\n" +
+                                            "  ]\n" +
+                                            "}"
+                            )
+                    )
+            )
             UpdateAvailableDatesRequest request
     );
     
@@ -92,7 +182,21 @@ public interface IOwnerController {
     ResponseEntity<ResponseDTO<Void>> removeAvailableDates(
             @Schema(description = "가게 ID", example = "1")
             Long storeId,
-            @Schema(description = "예약 가능한 날짜 삭제 요청")
+            @RequestBody(
+                    description = "예약 가능한 날짜 삭제 요청",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = RemoveAvailableDatesRequest.class),
+                            examples = @ExampleObject(
+                                    name = "예약 가능한 날짜 삭제 예시",
+                                    value = "{\n" +
+                                            "  \"storeId\": 1,\n" +
+                                            "  \"storeScheduleIds\": [1, 2, 3]\n" +
+                                            "}"
+                            )
+                    )
+            )
             RemoveAvailableDatesRequest request
     );
 }

@@ -15,19 +15,25 @@ import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardRespons
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.UpdateCardRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.UpdateCertificateRequest;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Children", description = "결식 아동 API")
 public interface IChildrenController {
 
+    @Hidden
     @Operation(summary = "결식 아동 카드 등록", description = "결식 아동 카드를 등록합니다.")
     ResponseEntity<ResponseDTO<IssueCardResponse>> issueCard(
             @Schema(description = "카드 등록 요청")
             IssueCardRequest request
     );
 
+    @Hidden
     @Operation(summary = "결식 아동 카드 수정", description = "카드 정보를 수정합니다.")
     ResponseEntity<ResponseDTO<Void>> updateCard(
             @Schema(description = "카드 ID", example = "1")
@@ -36,24 +42,28 @@ public interface IChildrenController {
             UpdateCardRequest request
     );
 
+    @Hidden
     @Operation(summary = "결식 아동 카드 삭제", description = "카드를 삭제합니다.")
     ResponseEntity<ResponseDTO<Void>> deleteCard(
             @Schema(description = "카드 ID", example = "1")
             Long cardId
     );
 
+    @Hidden
     @Operation(summary = "결식 아동 카드 재발급 요청", description = "카드 재발급을 요청합니다.")
     ResponseEntity<ResponseDTO<Void>> reissueCard(
             @Schema(description = "카드 ID", example = "1")
             Long cardId
     );
 
+    @Hidden
     @Operation(summary = "결식 아동 카드 조회", description = "카드 정보를 조회합니다.")
     ResponseEntity<ResponseDTO<GetCardResponse>> getMyCard(
             @Schema(description = "카드 ID", example = "1")
             Long cardId
     );
 
+    @Hidden
     @Operation(summary = "결식 아동 증명서 등록", description = "증명서를 등록합니다.")
     ResponseEntity<ResponseDTO<Void>> uploadCertificate(
             @Schema(description = "증명서 등록 요청")
@@ -62,6 +72,7 @@ public interface IChildrenController {
             MultipartFile file
     );
 
+    @Hidden
     @Operation(summary = "결식 아동 증명서 수정", description = "증명서를 수정합니다.")
     ResponseEntity<ResponseDTO<Void>> updateMyCertificate(
             @Schema(description = "증명서 ID", example = "1")
@@ -72,12 +83,14 @@ public interface IChildrenController {
             MultipartFile file
     );
 
+    @Hidden
     @Operation(summary = "결식 아동 증명서 삭제", description = "증명서를 삭제합니다.")
     ResponseEntity<ResponseDTO<Void>> removeMyCertificate(
             @Schema(description = "증명서 ID", example = "1")
             Long certificateId
     );
 
+    @Hidden
     @Operation(summary = "결식 아동 증명서 조회", description = "증명서를 조회합니다.")
     ResponseEntity<ResponseDTO<GetCertificateResponse>> getMyCertificate(
             @Schema(description = "증명서 ID", example = "1")
@@ -88,7 +101,22 @@ public interface IChildrenController {
     ResponseEntity<ResponseDTO<BookStoreResponse>> bookStore(
             @Schema(description = "가게 ID", example = "1")
             Long storeId,
-            @Schema(description = "가게 예약 생성 요청")
+            @RequestBody(
+                    description = "가게 예약 생성 요청",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BookStoreRequest.class),
+                            examples = @ExampleObject(
+                                    name = "가게 예약 생성 예시",
+                                    value = "{\n" +
+                                            "  \"storeId\": 1,\n" +
+                                            "  \"storeScheduleId\": 1,\n" +
+                                            "  \"people\": 1\n" +
+                                            "}"
+                            )
+                    )
+            )
             BookStoreRequest request
     );
 

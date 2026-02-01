@@ -5,6 +5,8 @@ import java.time.LocalTime;
 import java.util.List;
 
 import com.backend.onharu.domain.common.enums.StatusType;
+import com.backend.onharu.domain.reservation.model.Reservation;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -78,9 +80,16 @@ public class OwnerControllerDto {
     ) {
     }
 
+    // 사업자 가게 목록 조회 DTO
+    public record GetMyStoresResponse(
+            @Schema(description = "가게 목록")
+            List<StoreResponse> stores
+    ) {
+    }
+
     // 예약 관련 DTO
     public record GetStoreBookingListResponse(
-            java.util.List<ReservationResponse> reservations
+            List<ReservationResponse> reservations
     ) {
     }
 
@@ -96,8 +105,8 @@ public class OwnerControllerDto {
             @Schema(description = "아이 ID", example = "1")
             Long childId,
 
-            @Schema(description = "예약 가능 일정 ID", example = "1")
-            Long availableScheduleId,
+            @Schema(description = "가게 일정 ID", example = "1")
+            Long storeScheduleId,
 
             @Schema(description = "가게 ID", example = "1")
             Long storeId,
@@ -126,6 +135,22 @@ public class OwnerControllerDto {
             @Schema(description = "취소 사유", example = "일정 변경으로 인한 취소")
             String cancelReason
     ) {
+        public ReservationResponse(Reservation reservation) {
+            this(
+                reservation.getId(),
+                reservation.getChild().getId(),
+                reservation.getStoreSchedule().getId(),
+                reservation.getStoreSchedule().getStore().getId(),
+                reservation.getStoreSchedule().getStore().getName(),
+                reservation.getStoreSchedule().getScheduleDate(),
+                reservation.getStoreSchedule().getStartTime(),
+                reservation.getStoreSchedule().getEndTime(),
+                reservation.getPeople(),
+                reservation.getStatus().name(),
+                reservation.getReservationAt(),
+                reservation.getCancelReason()
+            );
+        }
     }
 
     public record SetAvailableDatesRequest(
@@ -133,11 +158,11 @@ public class OwnerControllerDto {
             Long storeId,
 
             @Schema(description = "예약 가능한 일정 목록")
-            List<AvailableScheduleRequest> availableSchedules
+            List<StoreScheduleRequest> storeSchedules
     ) {
     }
 
-    public record AvailableScheduleRequest(
+    public record StoreScheduleRequest(
             @Schema(description = "일정 날짜", example = "2024-12-31")
             LocalDate scheduleDate,
 
@@ -157,17 +182,17 @@ public class OwnerControllerDto {
             Long storeId,
 
             @Schema(description = "삭제할 일정 ID 목록")
-            List<Long> availableScheduleIds
+            List<Long> storeScheduleIds
     ) {
     }
 
     public record GetAvailableDatesResponse(
             @Schema(description = "예약 가능한 일정 목록")
-            List<AvailableScheduleResponse> availableSchedules
+            List<StoreScheduleResponse> storeSchedules
     ) {
     }
 
-    public record AvailableScheduleResponse(
+    public record StoreScheduleResponse(
             @Schema(description = "일정 ID", example = "1")
             Long id,
 
@@ -186,12 +211,14 @@ public class OwnerControllerDto {
     }
 
     public record UpdateAvailableDatesRequest(
+            @Schema(description = "가게 ID", example = "1") 
+            Long storeId,
             @Schema(description = "수정할 일정 목록")
-            List<UpdateAvailableScheduleRequest> availableSchedules
+            List<UpdateStoreScheduleRequest> storeSchedules
     ) {
     }
 
-    public record UpdateAvailableScheduleRequest(
+    public record UpdateStoreScheduleRequest(
             @Schema(description = "일정 ID", example = "1")
             Long id,
 
@@ -206,6 +233,15 @@ public class OwnerControllerDto {
 
             @Schema(description = "최대 인원", example = "10")
             Integer maxPeople
+    ) {
+    }
+
+    public record RejectBookRequest(
+            @Schema(description = "예약 ID", example = "1")
+            Long reservationId,
+
+            @Schema(description = "거절 사유", example = "일정 변경으로 인한 거절")
+            String rejectReason
     ) {
     }
 }

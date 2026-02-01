@@ -1,6 +1,9 @@
 package com.backend.onharu.interfaces.api.dto;
 
+import java.util.List;
+
 import com.backend.onharu.domain.common.enums.StatusType;
+import com.backend.onharu.domain.reservation.model.Reservation;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -107,8 +110,8 @@ public class ChildControllerDto {
             @Schema(description = "아이 ID", example = "1")
             Long childId,
 
-            @Schema(description = "예약 가능 일정 ID", example = "1")
-            Long availableScheduleId,
+            @Schema(description = "가게 일정 ID", example = "1")
+            Long storeScheduleId,
 
             @Schema(description = "가게 ID", example = "1")
             Long storeId,
@@ -137,13 +140,33 @@ public class ChildControllerDto {
             @Schema(description = "취소 사유", example = "일정 변경으로 인한 취소")
             String cancelReason
     ) {
+        public ReservationResponse(Reservation reservation) {
+            this(
+                reservation.getId(),
+                reservation.getChild().getId(),
+                reservation.getStoreSchedule().getId(),
+                reservation.getStoreSchedule().getStore().getId(),
+                reservation.getStoreSchedule().getStore().getName(),
+                reservation.getStoreSchedule().getScheduleDate(),
+                reservation.getStoreSchedule().getStartTime(),
+                reservation.getStoreSchedule().getEndTime(),
+                reservation.getPeople(),
+                reservation.getStatus().name(),
+                reservation.getReservationAt(),
+                reservation.getCancelReason()
+            );
+        }
     }
 
+    @Schema(description = "가게 예약 생성 요청")
     public record BookStoreRequest(
-            @Schema(description = "예약 가능 일정 ID", example = "1")
-            Long availableScheduleId,
+            @Schema(description = "가게 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+            Long storeId,
 
-            @Schema(description = "인원 수", example = "1")
+            @Schema(description = "가게 일정 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+            Long storeScheduleId,
+
+            @Schema(description = "인원 수", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
             Integer people
     ) {
     }
@@ -154,7 +177,7 @@ public class ChildControllerDto {
     }
 
     public record GetMyBookingListResponse(
-            java.util.List<ReservationResponse> reservations
+            List<ReservationResponse> reservations
     ) {
     }
 
