@@ -5,7 +5,7 @@ import java.time.LocalTime;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.backend.onharu.domain.common.base.BaseEntity;
-import com.backend.onharu.domain.common.enums.DayType;
+import com.backend.onharu.domain.common.enums.WeekType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -37,6 +37,24 @@ public class BusinessHours extends BaseEntity {
     @JoinColumn(name = "STORE_ID", nullable = false)
     private Store store;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "BUSINESS_DAY", nullable = false, length = 3)
+    private WeekType businessDay;
+
+    @Column(name = "OPEN_TIME", nullable = false, columnDefinition = "TIME")
+    private LocalTime openTime;
+
+    @Column(name = "CLOSE_TIME", nullable = false, columnDefinition = "TIME")
+    private LocalTime closeTime;
+
+    @Builder
+    public BusinessHours(Store store, WeekType businessDay, LocalTime openTime, LocalTime closeTime) {
+        this.store = store;
+        this.businessDay = businessDay;
+        this.openTime = openTime;
+        this.closeTime = closeTime;
+    }
+
     /**
      * 가게를 설정합니다. (양방향 관계 설정용)
      * 
@@ -46,24 +64,6 @@ public class BusinessHours extends BaseEntity {
         this.store = store;
     }
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "BUSINESS_DAY", nullable = false, length = 3)
-    private DayType businessDay;
-
-    @Column(name = "OPEN_TIME", nullable = false, columnDefinition = "TIME")
-    private LocalTime openTime;
-
-    @Column(name = "CLOSE_TIME", nullable = false, columnDefinition = "TIME")
-    private LocalTime closeTime;
-
-    @Builder
-    public BusinessHours(Store store, DayType businessDay, LocalTime openTime, LocalTime closeTime) {
-        this.store = store;
-        this.businessDay = businessDay;
-        this.openTime = openTime;
-        this.closeTime = closeTime;
-    }
-
     /**
      * 영업시간을 업데이트합니다.
      * 
@@ -71,7 +71,7 @@ public class BusinessHours extends BaseEntity {
      * @param openTime 변경할 오픈 시간
      * @param closeTime 변경할 마감 시간
      */
-    public void update(DayType businessDay, LocalTime openTime, LocalTime closeTime) {
+    public void update(WeekType businessDay, LocalTime openTime, LocalTime closeTime) {
         if (businessDay != null) {
             this.businessDay = businessDay;
         }

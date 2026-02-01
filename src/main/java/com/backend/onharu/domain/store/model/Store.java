@@ -9,6 +9,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.backend.onharu.domain.common.base.BaseEntity;
 import com.backend.onharu.domain.owner.model.Owner;
+import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.domain.tag.model.Tag;
 
 import jakarta.persistence.CascadeType;
@@ -35,7 +37,7 @@ import lombok.NoArgsConstructor;
 public class Store extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_STORES_ID", nullable = false)
+    @JoinColumn(name = "OWNER_ID", nullable = false)
     private Owner owner;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -114,6 +116,27 @@ public class Store extends BaseEntity {
         ofNullable(introduction).ifPresent(v -> this.introduction = v);
         ofNullable(intro).ifPresent(v -> this.intro = v);
         ofNullable(isOpen).ifPresent(v -> this.isOpen = v);
+    }
+
+    /**
+     * 가게 카테고리를 수정합니다.
+     * 
+     * @param category 변경할 카테고리
+     */
+    public void updateCategory(Category category) {
+        this.category = category; // 카테고리 수정
+    }
+
+    /**
+     * 사업자가 가게의 주인인지 여부를 반환합니다.
+     * 
+     * @param owner 사업자
+     * @return 사업자가 가게의 주인인지 여부
+     */
+    public void BelongsTo(Owner owner) {
+        if (!this.owner.getId().equals(owner.getId())) {
+            throw new CoreException(ErrorType.Store.STORE_OWNER_MISMATCH);
+        }
     }
 
     /**
