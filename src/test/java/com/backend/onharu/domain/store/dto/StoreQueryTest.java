@@ -1,0 +1,111 @@
+package com.backend.onharu.domain.store.dto;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import com.backend.onharu.domain.store.dto.StoreQuery.FindByCategoryIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.FindByNameQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.FindByOwnerIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
+
+@DisplayName("StoreQuery 단위 테스트")
+class StoreQueryTest {
+
+    @Nested
+    @DisplayName("GetStoreByIdQuery 생성자 테스트")
+    class GetStoreByIdQueryTest {
+        
+        @Test
+        @DisplayName("생성자 생성 성공")
+        public void shouldCreateGetStoreByIdQuery() {
+            // given
+            Long storeId = 1L;
+
+            // when
+            GetStoreByIdQuery query = new GetStoreByIdQuery(storeId);
+
+            // then
+            assertThat(query.storeId()).isEqualTo(storeId);
+        }
+    }
+
+    @Nested
+    @DisplayName("SearchStoresQuery 생성자 테스트")
+    class SearchStoresQueryTest {
+        
+        @Test
+        @DisplayName("생성자 생성 성공")
+        public void shouldCreateSearchStoresQuery() {
+            // given
+            Double latitude = 37.5665;
+            Double longitude = 126.9780;
+            Double radius = 5.0;
+
+            // when
+            SearchStoresQuery query = new SearchStoresQuery(latitude, longitude, radius);
+
+            // then
+            assertThat(query.latitude()).isEqualTo(latitude);
+            assertThat(query.longitude()).isEqualTo(longitude);
+            assertThat(query.radius()).isEqualTo(radius);
+        }
+    }
+
+    @Nested
+    @DisplayName("FindAllByOwnerIdQuery 생성자 테스트")
+    class FindAllByOwnerIdQueryTest {
+        
+        @Test
+        @DisplayName("생성자 생성 성공")
+        public void shouldCreateFindAllByOwnerIdQuery() {
+            // given
+            Long ownerId = 1L;
+
+            // when
+            FindByOwnerIdQuery query = new FindByOwnerIdQuery(ownerId);
+
+            // then
+            assertThat(query.ownerId()).isEqualTo(ownerId);
+        }
+    }
+
+    @Nested
+    @DisplayName("FindAllByCategoryIdQuery 생성자 테스트")
+    class FindAllByCategoryIdQueryTest {
+        
+        @Test
+        @DisplayName("생성자 생성 성공")
+        public void shouldCreateFindAllByCategoryIdQuery() {
+            // given
+            Long categoryId = 1L;
+
+            // when
+            FindByCategoryIdQuery query = new FindByCategoryIdQuery(categoryId);
+
+            // then
+            assertThat(query.categoryId()).isEqualTo(categoryId);
+        }
+    }
+
+    @Nested
+    @DisplayName("FindByNameQuery 생성자 테스트")
+    class FindByNameQueryTest {
+        
+        @Test
+        @DisplayName("생성자 생성 성공")
+        public void shouldCreateFindByNameQuery() {
+            // given
+            String name = "테스트 가게";
+
+            // when
+            FindByNameQuery query = new FindByNameQuery(name);
+
+            // then
+            assertThat(query.name()).isEqualTo(name);
+        }
+    }
+}
