@@ -167,7 +167,8 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum UserOAuth implements IErrorType {
         USER_O_AUTH_NOT_FOUND(ErrorCode.NOT_FOUND, "소셜 사용자 정보를 찾을 수 없습니다.", LogLevel.ERROR),
-        UNSUPPORTED_PROVIDER(ErrorCode.BAD_REQUEST, "지원하지 않는 소셜 제공자 입니다.", LogLevel.ERROR)
+        USER_O_AUTH_LOGIN_FAILED(ErrorCode.UNAUTHORIZED, "소셜 로그인이 실패했습니다.", LogLevel.ERROR),
+        UNSUPPORTED_PROVIDER(ErrorCode.BAD_REQUEST, "지원하지 않는 소셜 제공자 입니다.", LogLevel.ERROR),
         ;
 
         private final ErrorCode code;

@@ -13,6 +13,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  * 소셜 로그인 엔티티
  * <p>
  * 시스템의 소셜 로그인에 연동된 사용자 정보를 나타내는 도메인 모델입니다.
+ * <p>
+ * 주요 필드:
+ * providerId: 소셜 로그인 제공자 식별값
+ * providerType: 사용자 유형
  */
 @Getter
 @Entity
