@@ -1,7 +1,6 @@
 package com.backend.onharu.domain.user.model;
 
 import com.backend.onharu.domain.common.base.BaseEntity;
-import com.backend.onharu.domain.common.enums.ProviderType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -16,11 +15,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  * <p>
  * 주요 필드:
  * providerId: 소셜 로그인 제공자 식별값
- * providerType: 사용자 유형
  */
 @Getter
 @Entity
-@Table(name = "user_oauth", uniqueConstraints = {@UniqueConstraint(columnNames = {"PROVIDER", "PROVIDER_ID"})})
+@Table(name = "user_oauth")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserOAuth extends BaseEntity {
