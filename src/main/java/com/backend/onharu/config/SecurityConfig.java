@@ -30,31 +30,31 @@ public class SecurityConfig {
 
     public static final String[] PUBLIC_PATH = {
             "/", "/oauth2/**",
-            "/users/login/**", "/users/signup/**",
+            "/api/users/login/**", "/api/users/signup/**",
             "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**",
             "/error", "/favicon.ico",
-            "/levels/**", 
-            "/childrens/**",
-            "/owners/**",
-            "/admins/**",
-            "/stores/**",
-            "/store-schedules/**"
+            "/api/levels/**", 
+            "/api/childrens/**",
+            "/api/owners/**",
+            "/api/admins/**",
+            "/api/stores/**",
+            "/api/store-schedules/**"
     };
 
     public static final String[] AUTHENTICATE_PATH = {
-            "/users/logout/**", "/users/me/**"
+            "/api/users/logout/**", "/users/me/**"
     };
 
     public static final String[] ROLE_CHILD_PATH = {
-            "/children/**"
+            "/api/childrens/**"
     };
 
     public static final String[] ROLE_OWNER_PATH = {
-            "/owners/**"
+            "/api/owners/**"
     };
 
     public static final String[] ROLE_ADMIN_PATH = {
-            "/admins/**"
+            "/api/admins/**"
     };
 
     private static final String PORT_FRONT_LOCAL = "http://localhost:5173";

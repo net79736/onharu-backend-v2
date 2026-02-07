@@ -54,7 +54,7 @@ public class OwnerControllerImpl implements IOwnerController {
     /**
      * 사업자 정보 등록
      * 
-     * POST /owners/business
+     * POST /api/owners/business
      * 사업자 정보를 등록합니다.
      *
      * @param request 사업자 정보 등록 요청
@@ -76,7 +76,7 @@ public class OwnerControllerImpl implements IOwnerController {
     /**
      * 사업자 정보 수정
      * 
-     * PUT /owners/{ownerId}/business
+     * PUT /api/owners/{ownerId}/business
      * 사업자 정보를 수정합니다. 
      *
      * @param ownerId 사업자 ID
@@ -101,7 +101,7 @@ public class OwnerControllerImpl implements IOwnerController {
     /**
      * 사업자 정보 삭제
      * 
-     * DELETE /owners/business/{ownerId}
+     * DELETE /api/owners/business/{ownerId}
      * 사업자 정보를 삭제합니다. 
      *
      * @param ownerId 사업자 ID
@@ -121,7 +121,7 @@ public class OwnerControllerImpl implements IOwnerController {
     /**
      * 사업자 정보 조회
      * 
-     * GET /owners/business/{ownerId}
+     * GET /api/owners/business/{ownerId}
      * 사업자 정보를 조회합니다. 
      *
      * @param ownerId 사업자 ID
@@ -141,7 +141,7 @@ public class OwnerControllerImpl implements IOwnerController {
     /**
      * 사업자 가게 목록 조회
      * 
-     * GET /owners/stores
+     * GET /api/owners/stores
      * 사업자의 가게 목록을 조회합니다.
      *
      * @param ownerId 사업자 ID
@@ -168,7 +168,7 @@ public class OwnerControllerImpl implements IOwnerController {
     /**
      * 예약 관리 목록 조회
      * 
-     * GET /owners/reservations
+     * GET /api/owners/stores/{storeId}/reservations
      * 사업자의 예약 목록을 조회합니다.
      *
      * @return 예약 관리 목록
@@ -195,7 +195,7 @@ public class OwnerControllerImpl implements IOwnerController {
     /**
      * 예약 관리 상세 조회
      * 
-     * GET /owners/reservations/{reservationId}
+     * GET /api/owners/stores/{storeId}/reservations/{reservationId}
      * 사업자의 특정 예약의 상세 정보를 조회합니다.
      *
      * @param reservationId 예약 ID
@@ -219,7 +219,7 @@ public class OwnerControllerImpl implements IOwnerController {
     /**
      * 예약 승인
      * 
-     * POST /owners/reservations/{reservationId}/approve
+     * POST /api/owners/reservations/{reservationId}/approve
      * 사업자가 예약을 승인합니다.
      *
      * @param reservationId 예약 ID
@@ -242,7 +242,7 @@ public class OwnerControllerImpl implements IOwnerController {
     /**
      * 예약 거절
      * 
-     * POST /owners/reservations/{reservationId}/reject
+     * POST /api/owners/reservations/{reservationId}/reject
      * 사업자가 예약을 거절합니다.
      *
      * @param reservationId 예약 ID
@@ -265,7 +265,7 @@ public class OwnerControllerImpl implements IOwnerController {
     /**
      * 예약 가능한 날짜 생성
      * 
-     * POST /owners/stores/{storeId}/available-dates
+     * POST /api/owners/stores/{storeId}/available-dates
      * 예약 가능한 날짜를 생성합니다.
      *
      * @param storeId 가게 ID
@@ -290,7 +290,7 @@ public class OwnerControllerImpl implements IOwnerController {
     /**
      * 예약 가능한 날짜 수정
      * 
-     * PUT /owners/stores/{storeId}/available-dates
+     * PUT /api/owners/stores/{storeId}/available-dates
      * 예약 가능한 날짜를 수정합니다.
      *
      * @param storeId 가게 ID
@@ -315,7 +315,7 @@ public class OwnerControllerImpl implements IOwnerController {
     /**
      * 예약 가능한 날짜 삭제
      * 
-     * DELETE /owners/stores/{storeId}/available-dates
+     * DELETE /api/owners/stores/{storeId}/available-dates
      * 예약 가능한 날짜를 삭제합니다.
      *
      * @param storeId 가게 ID

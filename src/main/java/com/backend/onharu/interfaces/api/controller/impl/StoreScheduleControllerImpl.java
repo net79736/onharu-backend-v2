@@ -37,7 +37,7 @@ public class StoreScheduleControllerImpl implements IStoreScheduleController {
     /**
      * 예약 가능한 날짜 조회
      * 
-     * GET /stores/{storeId}/available-dates
+     * GET /api/store-schedules/{storeId}/available-dates
      * 가게의 예약 가능한 날짜를 조회합니다.
      *
      * @param storeId 가게 ID

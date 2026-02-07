@@ -55,7 +55,7 @@ public class StoreControllerImpl implements IStoreController {
     /**
      * 가게 상세 정보 조회
      * 
-     * GET /stores/{storeId}
+     * GET /api/stores/{storeId}
      * 특정 가게의 상세 정보를 반환합니다.
      *
      * @param storeId 가게 ID
@@ -79,7 +79,7 @@ public class StoreControllerImpl implements IStoreController {
     /**
      * 가게 목록 조회
      * 
-     * GET /stores
+     * GET /api/stores
      * 검색 및 페이징이 가능한 가게 목록을 반환합니다.
      *
      * @param request 가게 목록 조회 요청 (위도, 경도, 반경)
@@ -106,7 +106,7 @@ public class StoreControllerImpl implements IStoreController {
     /**
      * 가게 정보 작성
      * 
-     * POST /stores
+     * POST /api/stores
      * 신규 가게 정보를 생성합니다.
      *
      * @param request 가게 정보 생성 요청
@@ -144,7 +144,7 @@ public class StoreControllerImpl implements IStoreController {
     /**
      * 가게 정보 삭제
      * 
-     * DELETE /stores/{storeId}
+     * DELETE /api/stores/{storeId}
      * 특정 가게 정보를 삭제합니다.
      *
      * @param storeId 가게 ID
@@ -167,7 +167,7 @@ public class StoreControllerImpl implements IStoreController {
     /**
      * 가게 정보 수정
      * 
-     * PUT /stores/{storeId}
+     * PUT /api/stores/{storeId}
      * 특정 가게 정보를 수정합니다.
      *
      * @param storeId 가게 ID
