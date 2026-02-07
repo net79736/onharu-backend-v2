@@ -1,7 +1,5 @@
 package com.backend.onharu.domain.user.dto;
 
-import com.backend.onharu.domain.common.enums.ProviderType;
-
 /**
  * 소셜 사용자 Repository 파라미터
  * <p>
@@ -21,13 +19,11 @@ public class UserOAuthRepositoryParam {
     }
 
     /**
-     * 소셜 타입별 소셜 사용자 조회 파라미터
+     * 소셜 사용자 식별값으로 소셜 사용자 조회
      *
-     * @param providerType 소셜 타입(예: KAKAO)
-     * @param providerId   소셜 사용자 식별값
+     * @param providerId 소셜 사용자 식별값
      */
-    public record GetUserOAuthByProviderTypeAndProviderIdParam(
-            ProviderType providerType,
+    public record GetUserOAuthByProviderIdParam(
             String providerId
     ) {
     }

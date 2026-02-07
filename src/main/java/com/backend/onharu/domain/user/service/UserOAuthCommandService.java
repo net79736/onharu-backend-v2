@@ -29,7 +29,6 @@ public class UserOAuthCommandService {
 
         UserOAuth userOAuth = UserOAuth.builder()
                 .providerId(command.providerId())
-                .providerType(command.providerType())
                 .build();
         userOAuth.addUser(command.user());
 
