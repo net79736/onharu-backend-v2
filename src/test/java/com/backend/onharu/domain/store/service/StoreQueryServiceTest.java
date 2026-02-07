@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import com.backend.onharu.domain.level.model.Level;
+import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -50,12 +52,16 @@ class StoreQueryServiceTest {
     @Autowired
     private CategoryJpaRepository categoryJpaRepository;
 
+    @Autowired
+    private LevelJpaRepository levelJpaRepository;
+
     @BeforeEach
     public void setUp() {
         storeJpaRepository.deleteAll();
         categoryJpaRepository.deleteAll();
         ownerJpaRepository.deleteAll();
         userJpaRepository.deleteAll();
+        levelJpaRepository.deleteAll();
     }
 
     /**
@@ -76,14 +82,27 @@ class StoreQueryServiceTest {
     }
 
     /**
-     * 테스트용 Owner 생성 헬퍼 메서드 (User와 함께 생성)
+     * 테스트용 Level 생성 헬퍼 메서드
      */
-    private Owner createTestOwner(String loginId, String name, String phone, Long levelId, String businessNumber) {
+    private Level createTestLevel(String levelName) {
+        return levelJpaRepository.save(
+                Level.builder()
+                        .name(levelName)
+                        .build()
+        );
+    }
+
+    /**
+     * 테스트용 Owner 생성 헬퍼 메서드 (User, Level 과 함께 생성)
+     */
+    private Owner createTestOwner(String loginId, String name, String phone, String levelName, String businessNumber) {
         User user = createTestUser(loginId, name, phone);
+        Level level = createTestLevel(levelName);
+
         return ownerJpaRepository.save(
             Owner.builder()
                 .user(user)
-                .levelId(levelId != null ? levelId : 1L)
+                .level(level)
                 .businessNumber(businessNumber)
                 .build()
         );
@@ -121,7 +140,7 @@ class StoreQueryServiceTest {
         @Rollback(value = false)
         public void shouldGetStore() {
             // given
-            Owner savedOwner = createTestOwner("test_owner_query", "테스트 사업자 조회", "01055556666", 1L, "5555666677");
+            Owner savedOwner = createTestOwner("test_owner_query", "테스트 사업자 조회", "01055556666", "새싹", "5555666677");
             Category category = createTestCategory("식당");
             
             // 기존 가게 생성
@@ -167,7 +186,7 @@ class StoreQueryServiceTest {
         @Rollback(value = false)
         public void shouldGetStoresByOwnerId() {
             // given
-            Owner savedOwner = createTestOwner("test_owner_list", "테스트 사업자 목록", "01077778888", 1L, "7777888899");
+            Owner savedOwner = createTestOwner("test_owner_list", "테스트 사업자 목록", "01077778888", "새싹", "7777888899");
             Category category = createTestCategory("식당");
             
             saveDummyStores(savedOwner, category);
@@ -199,8 +218,8 @@ class StoreQueryServiceTest {
         @Rollback(value = false)
         public void shouldGetStoresByCategoryId() {
             // given
-            Owner savedOwner1 = createTestOwner("test_owner_cat1", "테스트 사업자 카테고리1", "01011111111", 1L, "1111111111");
-            Owner savedOwner2 = createTestOwner("test_owner_cat2", "테스트 사업자 카테고리2", "01022222222", 1L, "2222222222");
+            Owner savedOwner1 = createTestOwner("test_owner_cat1", "테스트 사업자 카테고리1", "01011111111", "새싹", "1111111111");
+            Owner savedOwner2 = createTestOwner("test_owner_cat2", "테스트 사업자 카테고리2", "01022222222", "새싹", "2222222222");
             Category category1 = createTestCategory("식당");
             Category category2 = createTestCategory("카페");
             
@@ -267,7 +286,7 @@ class StoreQueryServiceTest {
         @Rollback(value = false)
         public void shouldGetStoresByName() {
             // given
-            Owner savedOwner = createTestOwner("test_owner_search", "테스트 사업자 검색", "01033333333", 1L, "3333333333");
+            Owner savedOwner = createTestOwner("test_owner_search", "테스트 사업자 검색", "01033333333", "새싹", "3333333333");
             Category category = createTestCategory("식당");
             
             // 기존 가게 생성

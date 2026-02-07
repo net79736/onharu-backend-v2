@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import com.backend.onharu.domain.level.model.Level;
+import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -59,6 +61,9 @@ class StoreScheduleCommandServiceTest {
     @Autowired
     private CategoryJpaRepository categoryJpaRepository;
 
+    @Autowired
+    private LevelJpaRepository levelJpaRepository;
+
     @BeforeEach
     public void setUp() {
         storeScheduleJpaRepository.deleteAll();
@@ -66,6 +71,7 @@ class StoreScheduleCommandServiceTest {
         categoryJpaRepository.deleteAll();
         ownerJpaRepository.deleteAll();
         userJpaRepository.deleteAll();
+        levelJpaRepository.deleteAll();
     }
 
     /**
@@ -86,14 +92,28 @@ class StoreScheduleCommandServiceTest {
     }
 
     /**
-     * 테스트용 Owner 생성 헬퍼 메서드 (User와 함께 생성)
+     * 테스트용 Level 생성 헬퍼 메서드
      */
-    private Owner createTestOwner(String loginId, String name, String phone, Long levelId, String businessNumber) {
+    private Level createTestLevel(String levelName) {
+        return levelJpaRepository.save(
+                Level.builder()
+                        .name(levelName)
+                        .build()
+        );
+    }
+
+
+    /**
+     * 테스트용 Owner 생성 헬퍼 메서드 (User, Level 과 함께 생성)
+     */
+    private Owner createTestOwner(String loginId, String name, String phone, String levelName, String businessNumber) {
         User user = createTestUser(loginId, name, phone);
+        Level level = createTestLevel(levelName);
+
         return ownerJpaRepository.save(
             Owner.builder()
                 .user(user)
-                .levelId(levelId != null ? levelId : 1L)
+                .level(level)
                 .businessNumber(businessNumber)
                 .build()
         );
@@ -130,7 +150,7 @@ class StoreScheduleCommandServiceTest {
         @Rollback(value = false)
         public void shouldCreateStoreSchedule() {
             // given
-            Owner savedOwner = createTestOwner("test_owner_schedule", "테스트 사업자 일정", "01012345678", 1L, "1234567890");
+            Owner savedOwner = createTestOwner("test_owner_schedule", "테스트 사업자 일정", "01012345678", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store savedStore = createTestStore("일정 테스트 가게", savedOwner, category);
             
@@ -188,7 +208,7 @@ class StoreScheduleCommandServiceTest {
         @Rollback(value = false)
         public void shouldUpdateStoreSchedule() {
             // given
-            Owner savedOwner = createTestOwner("test_owner_update", "테스트 사업자 수정", "01087654321", 1L, "0987654321");
+            Owner savedOwner = createTestOwner("test_owner_update", "테스트 사업자 수정", "01087654321", "새싹", "0987654321");
             Category category = createTestCategory("식당");
             Store savedStore = createTestStore("수정 테스트 가게", savedOwner, category);
             
@@ -244,7 +264,7 @@ class StoreScheduleCommandServiceTest {
         @Rollback(value = false)
         public void shouldDeleteStoreSchedule() {
             // given
-            Owner savedOwner = createTestOwner("test_owner_delete", "테스트 사업자 삭제", "01011112222", 1L, "1111222233");
+            Owner savedOwner = createTestOwner("test_owner_delete", "테스트 사업자 삭제", "01011112222", "새싹", "1111222233");
             Category category = createTestCategory("식당");
             Store savedStore = createTestStore("삭제 테스트 가게", savedOwner, category);
             

@@ -92,7 +92,7 @@ class StoreFacadeTest {
         return ownerJpaRepository.save(
             Owner.builder()
                 .user(user)
-                .levelId(levelId != null ? levelId : 1L)
+//                .levelId(levelId != null ? levelId : 1L)
                 .businessNumber(businessNumber)
                 .build()
         );
@@ -123,7 +123,7 @@ class StoreFacadeTest {
     @Nested
     @DisplayName("가게 단건 조회 테스트")
     class GetStoreTest {
-        
+
         @Test
         @DisplayName("가게 단건 조회 성공")
         @Rollback(value = false)
@@ -142,7 +142,7 @@ class StoreFacadeTest {
             assertThat(result.getName()).isEqualTo("테스트 가게");
             assertThat(result.getOwner().getId()).isEqualTo(owner.getId());
             assertThat(result.getCategory().getId()).isEqualTo(category.getId());
-            
+
             System.out.println("✅ 가게 단건 조회 성공");
             System.out.println("   - 가게 ID: " + result.getId());
             System.out.println("   - 가게 이름: " + result.getName());
@@ -152,7 +152,7 @@ class StoreFacadeTest {
     @Nested
     @DisplayName("가게 목록 조회 테스트")
     class GetStoresTest {
-        
+
         @Test
         @DisplayName("가게 목록 조회 성공")
         @Rollback(value = false)
@@ -171,7 +171,7 @@ class StoreFacadeTest {
             assertThat(stores.size()).isEqualTo(2);
             assertThat(stores).allMatch(s -> s.getOwner().getId().equals(owner.getId()));
             assertThat(stores).extracting(Store::getId).contains(store1.getId(), store2.getId());
-            
+
             System.out.println("✅ 가게 목록 조회 성공");
             System.out.println("   - 사업자 ID: " + owner.getId());
             System.out.println("   - 가게 개수: " + stores.size());
@@ -195,7 +195,7 @@ class StoreFacadeTest {
     @Nested
     @DisplayName("가게 등록 테스트")
     class CreateStoreTest {
-        
+
         @Test
         @DisplayName("가게 등록 성공")
         @Rollback(value = false)
@@ -204,7 +204,7 @@ class StoreFacadeTest {
             String uniqueLoginId = "test_owner_create_" + UUID.randomUUID().toString().substring(0, 8);
             Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", 1L, "1234567890");
             Category category = createTestCategory("식당");
-            
+
             CreateStoreCommand command = new CreateStoreCommand(
                 owner.getId(),
                 category.getId(),
@@ -232,7 +232,7 @@ class StoreFacadeTest {
             assertThat(store.getOwner().getId()).isEqualTo(owner.getId());
             assertThat(store.getCategory().getId()).isEqualTo(category.getId());
             assertThat(store.getIsOpen()).isFalse(); // 가게 생성 시 영업 상태는 false
-            
+
             System.out.println("✅ 가게 등록 성공");
             System.out.println("   - 가게 ID: " + store.getId());
             System.out.println("   - 가게 이름: " + store.getName());
@@ -248,7 +248,7 @@ class StoreFacadeTest {
             String uniqueLoginId = "test_owner_tags_" + UUID.randomUUID().toString().substring(0, 8);
             Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", 1L, "1234567890");
             Category category = createTestCategory("식당");
-            
+
             CreateStoreCommand command = new CreateStoreCommand(
                 owner.getId(),
                 category.getId(),
@@ -271,21 +271,21 @@ class StoreFacadeTest {
             assertThat(store).isNotNull();
             assertThat(store.getId()).isNotNull();
             assertThat(store.getName()).isEqualTo("태그 있는 가게");
-            
+
             // 태그 확인 (트랜잭션 내에서 조회)
             List<StoreTag> storeTags = store.getStoreTags();
             assertThat(storeTags).isNotNull();
             assertThat(storeTags.size()).isEqualTo(3);
             assertThat(storeTags).extracting(st -> st.getTag().getName())
                 .containsExactlyInAnyOrder("커피", "디저트", "브런치");
-            
+
             // 태그가 DB에 저장되었는지 확인 (StoreQueryService를 통해 다시 조회)
             Store savedStore = storeFacade.getStore(store.getId());
             assertThat(savedStore).isNotNull();
             assertThat(savedStore.getStoreTags().size()).isEqualTo(3);
             assertThat(savedStore.getStoreTags()).extracting(st -> st.getTag().getName())
                 .containsExactlyInAnyOrder("커피", "디저트", "브런치");
-            
+
             System.out.println("✅ 가게 등록 성공 (태그 포함)");
             System.out.println("   - 가게 ID: " + store.getId());
             System.out.println("   - 가게 이름: " + store.getName());
@@ -304,14 +304,14 @@ class StoreFacadeTest {
             String uniqueLoginId = "test_owner_reuse_" + UUID.randomUUID().toString().substring(0, 8);
             Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", 1L, "1234567890");
             Category category = createTestCategory("식당");
-            
+
             // 기존 태그 생성
             Tag existingTag = tagJpaRepository.save(
                 Tag.builder()
                     .name("커피")
                     .build()
             );
-            
+
             CreateStoreCommand command = new CreateStoreCommand(
                 owner.getId(),
                 category.getId(),
@@ -333,12 +333,12 @@ class StoreFacadeTest {
             // then
             assertThat(store).isNotNull();
             assertThat(store.getId()).isNotNull();
-            
+
             // 태그 확인 (트랜잭션 내에서 조회)
             List<StoreTag> storeTags = store.getStoreTags();
             assertThat(storeTags).isNotNull();
             assertThat(storeTags.size()).isEqualTo(2);
-            
+
             // 기존 태그가 재사용되었는지 확인 (같은 Tag 엔티티 사용)
             StoreTag coffeeTag = storeTags.stream()
                 .filter(st -> st.getTag().getName().equals("커피"))
@@ -346,7 +346,7 @@ class StoreFacadeTest {
                 .orElse(null);
             assertThat(coffeeTag).isNotNull();
             assertThat(coffeeTag.getTag().getId()).isEqualTo(existingTag.getId()); // 기존 태그 재사용
-            
+
             // 새로운 태그가 생성되었는지 확인
             StoreTag newTag = storeTags.stream()
                 .filter(st -> st.getTag().getName().equals("새로운태그"))
@@ -354,11 +354,11 @@ class StoreFacadeTest {
                 .orElse(null);
             assertThat(newTag).isNotNull();
             assertThat(newTag.getTag().getId()).isNotEqualTo(existingTag.getId()); // 새로운 태그
-            
+
             // DB에서 다시 조회하여 확인
             Store savedStore = storeFacade.getStore(store.getId());
             assertThat(savedStore.getStoreTags().size()).isEqualTo(2);
-            
+
             System.out.println("✅ 가게 등록 성공 (기존 태그 재사용)");
             System.out.println("   - 가게 ID: " + store.getId());
             System.out.println("   - 태그 개수: " + storeTags.size());
@@ -370,7 +370,7 @@ class StoreFacadeTest {
     @Nested
     @DisplayName("가게 정보 수정 테스트")
     class UpdateStoreTest {
-        
+
         @Test
         @DisplayName("가게 정보 수정 성공")
         @Transactional
@@ -381,7 +381,7 @@ class StoreFacadeTest {
             Category category1 = createTestCategory("식당");
             Category category2 = createTestCategory("카페");
             Store store = createTestStore("테스트 가게", owner, category1);
-            
+
             UpdateStoreCommand command = new UpdateStoreCommand(
                 store.getId(),
                 category2.getId(),
@@ -410,7 +410,7 @@ class StoreFacadeTest {
             assertThat(updatedStore.getIntroduction()).isEqualTo("업데이트된 가게 소개입니다.");
             assertThat(updatedStore.getIntro()).isEqualTo("업데이트된 한줄 소개");
             assertThat(updatedStore.getIsOpen()).isTrue();
-            
+
             System.out.println("✅ 가게 정보 수정 성공");
             System.out.println("   - 가게 ID: " + updatedStore.getId());
             System.out.println("   - 카테고리: " + updatedStore.getCategory().getName());
@@ -427,7 +427,7 @@ class StoreFacadeTest {
             Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", 1L, "2234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner1, category);
-            
+
             UpdateStoreCommand command = new UpdateStoreCommand(
                 store.getId(),
                 category.getId(),
@@ -448,7 +448,7 @@ class StoreFacadeTest {
                 CoreException.class,
                 () -> storeFacade.updateStore(command, owner2.getId())
             );
-            
+
             assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
         }
     }
@@ -456,7 +456,7 @@ class StoreFacadeTest {
     @Nested
     @DisplayName("가게 카테고리 수정 테스트")
     class UpdateCategoryTest {
-        
+
         @Test
         @DisplayName("가게 카테고리 수정 성공")
         @Transactional
@@ -476,7 +476,7 @@ class StoreFacadeTest {
             assertThat(updatedStore).isNotNull();
             assertThat(updatedStore.getCategory().getId()).isEqualTo(category2.getId());
             assertThat(updatedStore.getCategory().getName()).isEqualTo("카페");
-            
+
             System.out.println("✅ 가게 카테고리 수정 성공");
             System.out.println("   - 가게 ID: " + updatedStore.getId());
             System.out.println("   - 변경 전 카테고리: " + category1.getName());
@@ -500,7 +500,7 @@ class StoreFacadeTest {
                 CoreException.class,
                 () -> storeFacade.updateCategory(store.getId(), category2.getId(), owner2.getId())
             );
-            
+
             assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
         }
     }
@@ -508,7 +508,7 @@ class StoreFacadeTest {
     @Nested
     @DisplayName("가게 삭제 테스트")
     class DeleteStoreTest {
-        
+
         @Test
         @DisplayName("가게 삭제 성공")
         @Rollback(value = false)
@@ -524,7 +524,7 @@ class StoreFacadeTest {
             // then
             boolean exists = storeJpaRepository.existsById(store.getId());
             assertThat(exists).isFalse();
-            
+
             System.out.println("✅ 가게 삭제 성공");
             System.out.println("   - 삭제된 가게 ID: " + store.getId());
         }
@@ -543,7 +543,7 @@ class StoreFacadeTest {
                 CoreException.class,
                 () -> storeFacade.deleteStore(new DeleteStoreCommand(store.getId()), owner2.getId())
             );
-            
+
             assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
         }
     }
@@ -551,7 +551,7 @@ class StoreFacadeTest {
     @Nested
     @DisplayName("가게 영업 상태 변경 테스트")
     class ChangeOpenStatusTest {
-        
+
         @Test
         @DisplayName("가게 영업 상태 변경 성공 - 영업 중으로 변경")
         @Rollback(value = false)
@@ -571,7 +571,7 @@ class StoreFacadeTest {
             Store updatedStore = storeJpaRepository.findById(store.getId()).orElse(null);
             assertThat(updatedStore).isNotNull();
             assertThat(updatedStore.getIsOpen()).isTrue();
-            
+
             System.out.println("✅ 가게 영업 상태 변경 성공 (영업 중)");
             System.out.println("   - 가게 ID: " + updatedStore.getId());
             System.out.println("   - 영업 상태: " + updatedStore.getIsOpen());
@@ -596,7 +596,7 @@ class StoreFacadeTest {
             Store updatedStore = storeJpaRepository.findById(store.getId()).orElse(null);
             assertThat(updatedStore).isNotNull();
             assertThat(updatedStore.getIsOpen()).isFalse();
-            
+
             System.out.println("✅ 가게 영업 상태 변경 성공 (영업 종료)");
             System.out.println("   - 가게 ID: " + updatedStore.getId());
             System.out.println("   - 영업 상태: " + updatedStore.getIsOpen());
@@ -616,7 +616,7 @@ class StoreFacadeTest {
                 CoreException.class,
                 () -> storeFacade.changeOpenStatus(store.getId(), true, owner2.getId())
             );
-            
+
             assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
         }
     }

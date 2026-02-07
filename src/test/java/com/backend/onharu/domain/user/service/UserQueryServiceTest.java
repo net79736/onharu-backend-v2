@@ -1,60 +1,5 @@
 package com.backend.onharu.domain.user.service;
 
-import com.backend.onharu.domain.support.error.CoreException;
-import com.backend.onharu.domain.support.error.ErrorType;
-import com.backend.onharu.domain.user.dto.UserQuery.*;
-import com.backend.onharu.domain.user.repository.UserRepository;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
-/**
- * 사용자의 유스케이스인 UserQueryService 의 테스트 코드 입니다.
- */
-@ExtendWith(MockitoExtension.class)
-class UserQueryServiceTest {
-
-    @Mock
-    UserRepository userRepository;
-
-    @InjectMocks
-    UserQueryService userQueryService;
-
-    @Test
-    @DisplayName("사용자 ID 로 조회시 DB 에서 사용자가 없으면 예외가 발생된다.")
-    void getUser_fail_whenUserNotFound () {
-        when(userRepository.getUser(any()))
-                .thenThrow(new CoreException(ErrorType.User.USER_NOT_FOUND));
-
-        assertThatThrownBy(() ->
-                userQueryService.getUser(new GetUserByIdQuery(1L))
-        ).isInstanceOf(CoreException.class);
-
-        verify(userRepository, times(1)).getUser(any());
-    }
-
-    @Test
-    @DisplayName("로그인 아이디로 사용자 조회시 사용자가 없으면 예외가 발생된다.")
-    void getUserByLoginId_fail_whenUserNotFound() {
-        when(userRepository.getUserByLoginId(any()))
-                .thenThrow(new CoreException(ErrorType.User.USER_NOT_FOUND));
-
-        assertThatThrownBy(() ->
-                userQueryService.getUserByLoginId(new GetUserByLoginIdQuery("test@test.com"))
-        ).isInstanceOf(CoreException.class);
-
-        verify(userRepository, times(1)).getUserByLoginId(any());
-    }
-}
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Assertions;
@@ -94,7 +39,7 @@ class UserQueryServiceTest {
     @Nested
     @DisplayName("사용자 ID로 조회 테스트")
     class GetUserTest {
-        
+
         @Test
         @DisplayName("조회 실패 - 사용자 ID가 존재하지 않는 경우")
         public void shouldThrowExceptionWhenUserIsNotFound() {
@@ -103,7 +48,7 @@ class UserQueryServiceTest {
 
             // when
             CoreException coreException = Assertions.assertThrows(
-                CoreException.class, 
+                CoreException.class,
                 () -> userQueryService.getUser(new GetUserByIdQuery(userId))
             );
 
@@ -139,7 +84,7 @@ class UserQueryServiceTest {
             assertThat(user.getId()).isEqualTo(savedUser.getId());
             assertThat(user.getLoginId()).isEqualTo("test_user_query");
             assertThat(user.getName()).isEqualTo("테스트 사용자 조회");
-            
+
             System.out.println("✅ 사용자 조회 성공 - User ID: " + user.getId());
             System.out.println("   - 로그인 ID: " + user.getLoginId());
             System.out.println("   - 이름: " + user.getName());
@@ -152,7 +97,7 @@ class UserQueryServiceTest {
     @Nested
     @DisplayName("로그인 ID로 조회 테스트")
     class GetUserByLoginIdTest {
-        
+
         @Test
         @DisplayName("조회 성공 - 로그인 ID로 사용자 조회")
         @Rollback(value = false)
@@ -179,7 +124,7 @@ class UserQueryServiceTest {
             assertThat(user).isNotNull();
             assertThat(user.getLoginId()).isEqualTo("test_login_id");
             assertThat(user.getName()).isEqualTo("테스트 사용자 로그인");
-            
+
             System.out.println("✅ 로그인 ID로 사용자 조회 성공");
             System.out.println("   - 로그인 ID: " + user.getLoginId());
             System.out.println("   - 사용자 ID: " + user.getId());
@@ -195,7 +140,7 @@ class UserQueryServiceTest {
 
             // when
             CoreException coreException = Assertions.assertThrows(
-                CoreException.class, 
+                CoreException.class,
                 () -> userQueryService.getUserByLoginId(new GetUserByLoginIdQuery(loginId))
             );
 

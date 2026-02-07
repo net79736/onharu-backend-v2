@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import com.backend.onharu.domain.level.model.Level;
+import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -67,6 +69,9 @@ class ChildFacadeTest {
     @Autowired
     private ReservationJpaRepository reservationJpaRepository;
 
+    @Autowired
+    private LevelJpaRepository levelJpaRepository;
+
     @BeforeEach
     public void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
@@ -114,10 +119,11 @@ class ChildFacadeTest {
     }
 
     /**
-     * 테스트용 Child 생성 헬퍼 메서드 (User와 함께 생성)
+     * 테스트용 Child 생성 헬퍼 메서드 (User, Level 과 함께 생성)
      */
     private Child createTestChild(String loginId, String name, String phone, String certificate, Boolean isVerified) {
         User user = createTestUserForChild(loginId, name, phone);
+
         return childJpaRepository.save(
             Child.builder()
                 .user(user)
@@ -135,14 +141,27 @@ class ChildFacadeTest {
     }
 
     /**
+     * 테스트용 Level 생성 헬퍼 메서드
+     */
+    private Level createTestLevel(String levelName) {
+        return levelJpaRepository.save(
+                Level.builder()
+                        .name(levelName)
+                        .build()
+        );
+    }
+
+    /**
      * 테스트용 Owner 생성 헬퍼 메서드 (User와 함께 생성)
      */
-    private Owner createTestOwner(String loginId, String name, String phone, Long levelId, String businessNumber) {
+    private Owner createTestOwner(String loginId, String name, String phone, String levelName, String businessNumber) {
         User user = createTestUserForOwner(loginId, name, phone);
+        Level level = createTestLevel(levelName);
+
         return ownerJpaRepository.save(
             Owner.builder()
                 .user(user)
-                .levelId(levelId != null ? levelId : 1L)
+                .level(level)
                 .businessNumber(businessNumber)
                 .build()
         );
@@ -195,7 +214,7 @@ class ChildFacadeTest {
         public void shouldCreateReservation() {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
@@ -230,7 +249,7 @@ class ChildFacadeTest {
             // given
             Child child1 = createTestChild("test_child1", "테스트 아동1", "01012345678");
             Child child2 = createTestChild("test_child2", "테스트 아동2", "01087654321");
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
@@ -270,7 +289,7 @@ class ChildFacadeTest {
         public void shouldCancelReservation() {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
@@ -310,7 +329,7 @@ class ChildFacadeTest {
             // given
             Child child1 = createTestChild("test_child1", "테스트 아동1", "01012345678"); // 아동1 생성
             Child child2 = createTestChild("test_child2", "테스트 아동2", "01087654321"); // 아동2 생성
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11); // 가게 일정 생성 (10시 ~ 11시)
@@ -350,7 +369,7 @@ class ChildFacadeTest {
             // given
             Child child1 = createTestChild("test_child1", "테스트 아동1", "01012345678");
             Child child2 = createTestChild("test_child2", "테스트 아동2", "01087654321");
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             
@@ -424,7 +443,7 @@ class ChildFacadeTest {
         public void shouldGetMyBooking() {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
@@ -459,7 +478,7 @@ class ChildFacadeTest {
             // given
             Child child1 = createTestChild("test_child1", "테스트 아동1", "01012345678"); // 아동1 생성
             Child child2 = createTestChild("test_child2", "테스트 아동2", "01087654321"); // 아동2 생성
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11); // 가게 일정 생성 (10시 ~ 11시)
