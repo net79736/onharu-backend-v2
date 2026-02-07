@@ -62,14 +62,18 @@ public class User extends BaseEntity {
     @Column(name = "STATUS", nullable = false, length = 20)
     private StatusType statusType;
 
+    @Column(name = "PROVIDER", nullable = false)
+    private ProviderType providerType;
+
     @Builder
-    public User(String loginId, String password, String name, String phone, UserType userType, StatusType statusType) {
+    public User(String loginId, String password, String name, String phone, UserType userType, StatusType statusType, ProviderType providerType) {
         this.loginId = loginId;
         this.password = password;
         this.name = name;
         this.phone = phone;
         this.userType = userType;
         this.statusType = statusType;
+        this.providerType = providerType;
     }
 
     /**
