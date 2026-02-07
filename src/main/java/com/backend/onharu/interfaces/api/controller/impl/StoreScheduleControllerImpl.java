@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RestController
-@RequestMapping("/store-schedules")
+@RequestMapping("/api/store-schedules")
 @RequiredArgsConstructor
 public class StoreScheduleControllerImpl implements IStoreScheduleController {
 
