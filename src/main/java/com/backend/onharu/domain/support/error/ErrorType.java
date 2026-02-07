@@ -377,4 +377,32 @@ public enum ErrorType implements IErrorType {
             return logLevel;
         }
     }
+
+    /**
+     * 찜하기 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Favorite implements IErrorType {
+        FAVORITE_NOT_FOUND(ErrorCode.NOT_FOUND, "찜하기 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
 }
