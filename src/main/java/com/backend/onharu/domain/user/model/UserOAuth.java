@@ -32,14 +32,9 @@ public class UserOAuth extends BaseEntity {
     @Column(name = "PROVIDER_ID", nullable = false, length = 255)
     private String providerId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "PROVIDER", nullable = false, length = 20)
-    private ProviderType providerType;
-
     @Builder
-    public UserOAuth(String providerId, ProviderType providerType) {
+    public UserOAuth(String providerId) {
         this.providerId = providerId;
-        this.providerType = providerType;
     }
 
     /**
