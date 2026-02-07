@@ -32,6 +32,7 @@ public class SecurityConfig {
             "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**",
             "/error", "/favicon.ico",
             "/api/users/login/**", "/api/users/signup/**",
+            "/api/users/logout/**", "/users/me/**"
             "/api/levels/**",
             "/api/childrens/**",
             "/api/owners/**",
@@ -46,6 +47,10 @@ public class SecurityConfig {
 
     public static final String[] ROLE_CHILD_PATH = {
             "/api/children/**"
+    };
+
+    public static final String[] ROLE_CHILD_PATH = {
+            "/api/childrens/**"
     };
 
     public static final String[] ROLE_OWNER_PATH = {

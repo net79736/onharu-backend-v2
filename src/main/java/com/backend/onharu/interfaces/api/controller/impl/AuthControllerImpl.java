@@ -72,7 +72,7 @@ public class AuthControllerImpl implements IAuthController {
     /**
      * 이메일 인증 코드 발송
      * 
-     * POST /auth/email/send-code
+     * POST /api/auth/email/send-code
      * 이메일로 인증 코드를 발송합니다.
      *
      * @param request 이메일 인증 발송 요청
@@ -92,7 +92,7 @@ public class AuthControllerImpl implements IAuthController {
     /**
      * 이메일 인증 코드 검증
      * 
-     * POST /auth/email/verify-code
+     * POST /api/auth/email/verify-code
      * 발송된 이메일 인증 코드를 검증합니다.
      *
      * @param request 이메일 인증 검증 요청
@@ -112,7 +112,7 @@ public class AuthControllerImpl implements IAuthController {
     /**
      * SMS 인증 코드 발송
      * 
-     * POST /auth/sms/send-code
+     * POST /api/auth/sms/send-code
      * 전화번호로 SMS 인증 코드를 발송합니다.
      *
      * @param request SMS 인증 발송 요청
@@ -132,7 +132,7 @@ public class AuthControllerImpl implements IAuthController {
     /**
      * SMS 인증 코드 검증
      * 
-     * POST /auth/sms/verify-code
+     * POST /api/auth/sms/verify-code
      * 발송된 SMS 인증 코드를 검증합니다.
      *
      * @param request SMS 인증 검증 요청
@@ -152,7 +152,7 @@ public class AuthControllerImpl implements IAuthController {
     /**
      * 이메일 인증 번호 만료 처리
      * 
-     * POST /auth/email/expire
+     * POST /api/auth/email/expire
      * 이메일 인증 번호를 만료 처리합니다.
      *
      * @param email 이메일
@@ -172,7 +172,7 @@ public class AuthControllerImpl implements IAuthController {
     /**
      * SMS 인증 번호 만료 처리
      * 
-     * POST /auth/sms/expire
+     * POST /api/auth/sms/expire
      * SMS 인증 번호를 만료 처리합니다.
      *
      * @param phoneNumber 전화번호

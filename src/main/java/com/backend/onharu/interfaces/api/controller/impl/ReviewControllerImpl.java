@@ -35,7 +35,7 @@ public class ReviewControllerImpl implements IReviewController {
     /**
      * 감사 리뷰 작성
      * 
-     * POST /reviews/stores/{storeId}
+     * POST /api/reviews/stores/{storeId}
      * 특정 가게에 대한 감사 리뷰를 작성합니다.
      *
      * @param storeId 가게 ID
@@ -57,7 +57,7 @@ public class ReviewControllerImpl implements IReviewController {
     /**
      * 감사 리뷰 목록 조회
      * 
-     * GET /reviews
+     * GET /api/reviews
      * 전체 감사 리뷰 목록을 조회합니다.
      *
      * @return 리뷰 목록
@@ -74,7 +74,7 @@ public class ReviewControllerImpl implements IReviewController {
     /**
      * 감사 리뷰 상세 조회
      * 
-     * GET /reviews/stores/{storeId}
+     * GET /api/reviews/stores/{storeId}
      * 특정 가게의 감사 리뷰를 조회합니다.
      *
      * @param storeId 가게 ID
@@ -94,7 +94,7 @@ public class ReviewControllerImpl implements IReviewController {
     /**
      * 내가 작성한 리뷰 목록 조회
      * 
-     * GET /reviews/my
+     * GET /api/reviews/my
      * 내가 작성한 리뷰 목록을 조회합니다.
      *
      * @return 내가 작성한 리뷰 목록
@@ -111,7 +111,7 @@ public class ReviewControllerImpl implements IReviewController {
     /**
      * 리뷰 삭제
      * 
-     * DELETE /reviews/{reviewId}
+     * DELETE /api/reviews/{reviewId}
      * 특정 리뷰를 삭제합니다.
      *
      * @param reviewId 리뷰 ID

@@ -27,7 +27,7 @@ public class AdminControllerImpl implements IAdminController {
     /**
      * 사업자 회원가입 요청 승인
      * 
-     * POST /admin/owners/{requestId}/approve
+     * POST /api/admins/owners/{requestId}/approve
      * 사업자 회원가입 요청을 승인합니다.
      *
      * @param requestId 요청 ID
@@ -47,7 +47,7 @@ public class AdminControllerImpl implements IAdminController {
     /**
      * 사업자 회원가입 요청 거절
      * 
-     * POST /admin/owners/{requestId}/reject
+     * POST /api/admins/owners/{requestId}/reject
      * 사업자 회원가입 요청을 거절합니다.
      *
      * @param requestId 요청 ID
@@ -67,7 +67,7 @@ public class AdminControllerImpl implements IAdminController {
     /**
      * 결식 아동 회원가입 요청 승인
      * 
-     * POST /admin/children/{requestId}/approve
+     * POST /api/admins/children/{requestId}/approve
      * 결식 아동 회원가입 요청을 승인합니다.
      *
      * @param requestId 요청 ID
@@ -87,7 +87,7 @@ public class AdminControllerImpl implements IAdminController {
     /**
      * 결식 아동 회원가입 요청 거절
      * 
-     * POST /admin/children/{requestId}/reject
+     * POST /api/admins/children/{requestId}/reject
      * 결식 아동 회원가입 요청을 거절합니다.
      *
      * @param requestId 요청 ID

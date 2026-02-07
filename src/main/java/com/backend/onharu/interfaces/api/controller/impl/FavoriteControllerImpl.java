@@ -20,7 +20,7 @@ public class FavoriteControllerImpl implements IFavoriteController {
     /**
      * 찜등록
      *
-     * POST /favorites/stores/{storeId}
+     * POST /api/favorites/stores/{storeId}
      * 특정 가게에 대한 찜을 등록합니다.
      *
      * @param storeId 찜하기 ID
@@ -38,7 +38,7 @@ public class FavoriteControllerImpl implements IFavoriteController {
     /**
      * 내 찜목록 조회
      *
-     * GET /favorites
+     * GET /api/favorites
      * 내가 작성한 찜목록을 조회합니다.
      *
      * @return 내가 작성한 찜목록
@@ -55,7 +55,7 @@ public class FavoriteControllerImpl implements IFavoriteController {
     /**
      * 내가 등록한 찜하기 취소
      *
-     * DELETE /favorites/{favoriteId}
+     * DELETE /api/favorites/{favoriteId}
      * 특정 찜하기를 삭제(취소)합니다.
      *
      * @param favoriteId 찜하기 ID
