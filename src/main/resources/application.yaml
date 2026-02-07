@@ -2,7 +2,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
     include: swagger, oauth
   application:
     name: onharu

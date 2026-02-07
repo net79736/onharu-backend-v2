@@ -4,49 +4,48 @@ spring:
       on-profile: prod
   application:
     name: onharu
-  
-  # 데이터소스 설정 (프로덕션 환경)
+
+  # 데이터소스 설정
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 10
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
-  
+
   # JPA 설정
   jpa:
-    show-sql: false
+    show-sql: ${JPA_SHOW_SQL:true}
     hibernate:
-      ddl-auto: validate                # 프로덕션에서는 validate 사용
+      ddl-auto: ${JPA_DDL_AUTO}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
-        format_sql: false
-        highlight_sql: false
-        jdbc:
-          batch_size: 30
-        order_inserts: true
-        order_updates: true
+        format_sql: ${JPA_FORMAT_SQL}
+        highlight_sql: ${JPA_HIGHLIGHT_SQL}
+
+# MinIO 설정 (로컬 개발용)
+minio:
+  url: ${MINIO_URL:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  region: ${MINIO_REGION:us-east-1}
+  bucket: ${MINIO_BUCKET:onharu-minio}
 
 # 서버 설정
 server:
-  port: ${SERVER_PORT}
+  port: ${SERVER_PORT:15080}
 
 # 로깅 설정
 logging:
   level:
     root: INFO
-    com.backend.onharu: INFO
-    org.springframework.web: WARN
-    org.hibernate.SQL: false
+    com.backend.onharu: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: ${LOGGING_LEVEL_HIBERNATE_SQL:DEBUG}
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   file:
-    name: ${LOGGING_FILE_NAME}
+    name: ${LOGGING_FILE_NAME:/app/logs/onharu.log}
     max-size: 10MB
     max-history: 30
