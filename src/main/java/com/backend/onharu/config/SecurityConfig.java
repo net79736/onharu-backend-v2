@@ -1,11 +1,7 @@
 package com.backend.onharu.config;
 
-import com.backend.onharu.domain.common.enums.UserType;
-import com.backend.onharu.infra.security.oauth.SocialUserService;
-import com.backend.onharu.infra.security.oauth.handler.OAuth2FailureHandler;
-import com.backend.onharu.infra.security.oauth.handler.OAuth2SuccessHandler;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,7 +14,13 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.infra.security.oauth.SocialUserService;
+import com.backend.onharu.infra.security.oauth.handler.OAuth2FailureHandler;
+import com.backend.onharu.infra.security.oauth.handler.OAuth2SuccessHandler;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
@@ -31,7 +33,12 @@ public class SecurityConfig {
             "/users/login/**", "/users/signup/**",
             "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**",
             "/error", "/favicon.ico",
-            "/levels/**"
+            "/levels/**", 
+            "/childrens/**",
+            "/owners/**",
+            "/admins/**",
+            "/stores/**",
+            "/store-schedules/**"
     };
 
     public static final String[] AUTHENTICATE_PATH = {

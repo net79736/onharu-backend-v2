@@ -13,7 +13,7 @@ import static com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.GetMyF
 
 @Slf4j
 @RestController
-@RequestMapping("/favorites")
+@RequestMapping("/api/favorites")
 @RequiredArgsConstructor
 public class FavoriteControllerImpl implements IFavoriteController {
 

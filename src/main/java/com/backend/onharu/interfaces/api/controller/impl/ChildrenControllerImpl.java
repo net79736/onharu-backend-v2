@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RestController
-@RequestMapping("/children")
+@RequestMapping("/api/childrens")
 @RequiredArgsConstructor
 public class ChildrenControllerImpl implements IChildrenController {
 

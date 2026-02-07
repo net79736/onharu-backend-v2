@@ -45,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RestController
-@RequestMapping("/owners")
+@RequestMapping("/api/owners")
 @RequiredArgsConstructor
 public class OwnerControllerImpl implements IOwnerController {
 
