@@ -1,9 +1,7 @@
 package com.backend.onharu.infra.db.user.impl;
 
-import com.backend.onharu.domain.support.error.CoreException;
-import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.domain.user.dto.UserOAuthRepositoryParam.GetUserOAuthByIdParam;
-import com.backend.onharu.domain.user.dto.UserOAuthRepositoryParam.GetUserOAuthByProviderTypeAndProviderIdParam;
+import com.backend.onharu.domain.user.dto.UserOAuthRepositoryParam.GetUserOAuthByProviderIdParam;
 import com.backend.onharu.domain.user.model.UserOAuth;
 import com.backend.onharu.domain.user.repository.UserOAuthRepository;
 import com.backend.onharu.infra.db.user.UserOAuthJpaRepository;
@@ -27,13 +25,12 @@ public class UserOAuthRepositoryImpl implements UserOAuthRepository {
     }
 
     @Override
-    public UserOAuth getUserOAuth(GetUserOAuthByIdParam param) {
-        return userOAuthJpaRepository.findById(param.id())
-                .orElseThrow(() -> new CoreException(ErrorType.UserOAuth.USER_O_AUTH_NOT_FOUND));
+    public Optional<UserOAuth> getUserOAuth(GetUserOAuthByIdParam param) {
+        return userOAuthJpaRepository.findById(param.id());
     }
 
     @Override
-    public Optional<UserOAuth> getUserOAuthByProviderTypeAndProviderId(GetUserOAuthByProviderTypeAndProviderIdParam param) {
-        return userOAuthJpaRepository.getUserOAuthByProviderTypeAndProviderId(param.providerType(), param.providerId());
+    public Optional<UserOAuth> getUserOAuthByProviderId(GetUserOAuthByProviderIdParam param) {
+        return userOAuthJpaRepository.getUserOAuthByProviderId(param.providerId());
     }
 }

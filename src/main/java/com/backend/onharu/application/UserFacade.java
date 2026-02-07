@@ -134,7 +134,6 @@ public class UserFacade {
 
         User user = userOAuthQueryService.getUserByUserOAuthQuery(
                         new GetUserByUserOAuthQuery(
-                                command.providerType(),
                                 command.providerId()
                         )
                 )
@@ -147,7 +146,8 @@ public class UserFacade {
                                     command.name(),
                                     command.phoneNumber(),
                                     UserType.NONE,
-                                    StatusType.PENDING
+                                    StatusType.PENDING,
+                                    command.providerType()
                             ));
 
                     userOAuthCommandService.createUserOAuth(

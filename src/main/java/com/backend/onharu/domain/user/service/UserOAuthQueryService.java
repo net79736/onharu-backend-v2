@@ -1,7 +1,7 @@
 package com.backend.onharu.domain.user.service;
 
 import com.backend.onharu.domain.user.dto.UserOAuthQuery.GetUserByUserOAuthQuery;
-import com.backend.onharu.domain.user.dto.UserOAuthRepositoryParam.GetUserOAuthByProviderTypeAndProviderIdParam;
+import com.backend.onharu.domain.user.dto.UserOAuthRepositoryParam.GetUserOAuthByProviderIdParam;
 import com.backend.onharu.domain.user.model.UserOAuth;
 import com.backend.onharu.domain.user.repository.UserOAuthRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +26,8 @@ public class UserOAuthQueryService {
      * 소셜 사용자 조회
      */
     public Optional<UserOAuth> getUserByUserOAuthQuery(GetUserByUserOAuthQuery query) {
-        return userOAuthRepository.getUserOAuthByProviderTypeAndProviderId(
-                new GetUserOAuthByProviderTypeAndProviderIdParam(
-                        query.providerType(),
+        return userOAuthRepository.getUserOAuthByProviderId(
+                new GetUserOAuthByProviderIdParam(
                         query.providerId()
                 )
         );

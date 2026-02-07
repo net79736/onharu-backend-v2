@@ -1,7 +1,7 @@
 package com.backend.onharu.domain.user.repository;
 
 import com.backend.onharu.domain.user.dto.UserOAuthRepositoryParam.GetUserOAuthByIdParam;
-import com.backend.onharu.domain.user.dto.UserOAuthRepositoryParam.GetUserOAuthByProviderTypeAndProviderIdParam;
+import com.backend.onharu.domain.user.dto.UserOAuthRepositoryParam.GetUserOAuthByProviderIdParam;
 import com.backend.onharu.domain.user.model.UserOAuth;
 
 import java.util.Optional;
@@ -22,10 +22,10 @@ public interface UserOAuthRepository {
     /**
      * 소셜 사용자 ID로 소셜 사용자를 조회합니다.
      */
-    UserOAuth getUserOAuth(GetUserOAuthByIdParam param);
+    Optional<UserOAuth> getUserOAuth(GetUserOAuthByIdParam param);
 
     /**
-     * 소셜 사용자의 소셜 로그인 타입과 식별값으로 소셜 사용자를 조회합니다.
+     * 소셜 제공자의 식별값으로 소셜 사용자를 조회합니다.
      */
-    Optional<UserOAuth> getUserOAuthByProviderTypeAndProviderId(GetUserOAuthByProviderTypeAndProviderIdParam param);
+    Optional<UserOAuth> getUserOAuthByProviderId(GetUserOAuthByProviderIdParam param);
 }

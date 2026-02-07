@@ -1,7 +1,11 @@
 package com.backend.onharu.config;
 
-import java.util.List;
-
+import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.infra.security.oauth.SocialUserService;
+import com.backend.onharu.infra.security.oauth.handler.OAuth2FailureHandler;
+import com.backend.onharu.infra.security.oauth.handler.OAuth2SuccessHandler;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,13 +18,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.backend.onharu.domain.common.enums.UserType;
-import com.backend.onharu.infra.security.oauth.SocialUserService;
-import com.backend.onharu.infra.security.oauth.handler.OAuth2FailureHandler;
-import com.backend.onharu.infra.security.oauth.handler.OAuth2SuccessHandler;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
 @Slf4j
 @Configuration
@@ -29,11 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 public class SecurityConfig {
 
     public static final String[] PUBLIC_PATH = {
-            "/", "/oauth2/**",
-            "/api/users/login/**", "/api/users/signup/**",
+            "/",
+            "/oauth2/**", "/login/oauth2/**",
             "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**",
             "/error", "/favicon.ico",
-            "/api/levels/**", 
+            "/api/users/login/**", "/api/users/signup/**",
+            "/api/users/logout/**", "/users/me/**"
+            "/api/levels/**",
             "/api/childrens/**",
             "/api/owners/**",
             "/api/admins/**",
@@ -42,7 +42,11 @@ public class SecurityConfig {
     };
 
     public static final String[] AUTHENTICATE_PATH = {
-            "/api/users/logout/**", "/users/me/**"
+            "/api/users/logout/**", "/api/users/me/**"
+    };
+
+    public static final String[] ROLE_CHILD_PATH = {
+            "/api/children/**"
     };
 
     public static final String[] ROLE_CHILD_PATH = {
@@ -58,6 +62,7 @@ public class SecurityConfig {
     };
 
     private static final String PORT_FRONT_LOCAL = "http://localhost:5173";
+    private static final String PORT_BACK_LOCAL = "http://localhost:8080";
 
     private final SocialUserService socialUserService;
 
@@ -70,7 +75,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(PORT_FRONT_LOCAL));
+        configuration.setAllowedOrigins(List.of(PORT_FRONT_LOCAL, PORT_BACK_LOCAL));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

@@ -1,5 +1,6 @@
 package com.backend.onharu.domain.user.dto;
 
+import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.support.error.CoreException;
@@ -87,7 +88,8 @@ public class UserCommand {
             String name,
             String phone,
             UserType userType,
-            StatusType statusType
+            StatusType statusType,
+            ProviderType providerType
     ) {
         public CreateUserCommand {
             if (loginId == null || loginId.isBlank()) {
