@@ -73,7 +73,7 @@ public class ChildrenControllerImpl implements IChildrenController {
     /**
      * 결식 아동 카드 수정
      * 
-     * PUT /children/cards/{cardId}
+     * PUT /api/childrens/cards/{cardId}
      * 특정 카드 정보를 수정합니다.
      *
      * @param cardId 카드 ID
@@ -95,7 +95,7 @@ public class ChildrenControllerImpl implements IChildrenController {
     /**
      * 결식 아동 카드 삭제
      * 
-     * DELETE /children/cards/{cardId}
+     * DELETE /api/childrens/cards/{cardId}
      * 특정 카드를 삭제합니다.
      *
      * @param cardId 카드 ID
@@ -115,7 +115,7 @@ public class ChildrenControllerImpl implements IChildrenController {
     /**
      * 결식 아동 카드 재발급 요청
      * 
-     * POST /children/cards/{cardId}/reissue
+     * POST /api/childrens/cards/{cardId}/reissue
      * 카드 재발급을 요청합니다.
      *
      * @param cardId 카드 ID
@@ -135,7 +135,7 @@ public class ChildrenControllerImpl implements IChildrenController {
     /**
      * 결식 아동 카드 조회
      * 
-     * GET /children/cards/{cardId}
+     * GET /api/childrens/cards/{cardId}
      * 특정 카드 정보를 조회합니다.
      *
      * @param cardId 카드 ID
@@ -155,7 +155,7 @@ public class ChildrenControllerImpl implements IChildrenController {
     /**
      * 결식 아동 증명서 등록
      * 
-     * POST /children/certificate
+     * POST /api/childrens/certificate
      * 증명서를 등록합니다. (첨부파일 포함)
      *
      * @param request 증명서 등록 요청
@@ -177,7 +177,7 @@ public class ChildrenControllerImpl implements IChildrenController {
     /**
      * 결식 아동 증명서 수정
      * 
-     * PUT /children/certificate/{certificateId}
+     * PUT /api/childrens/certificate/{certificateId}
      * 증명서를 수정합니다. (첨부파일 포함)
      *
      * @param certificateId 증명서 ID
@@ -202,7 +202,7 @@ public class ChildrenControllerImpl implements IChildrenController {
     /**
      * 결식 아동 증명서 삭제
      * 
-     * DELETE /children/certificate/{certificateId}
+     * DELETE /api/childrens/certificate/{certificateId}
      * 증명서를 삭제합니다. (첨부파일 포함)
      *
      * @param certificateId 증명서 ID
@@ -222,7 +222,7 @@ public class ChildrenControllerImpl implements IChildrenController {
     /**
      * 결식 아동 증명서 조회
      * 
-     * GET /children/certificate/{certificateId}
+     * GET /api/childrens/certificate/{certificateId}
      * 증명서를 조회합니다. (첨부파일 포함)
      *
      * @param certificateId 증명서 ID
@@ -242,7 +242,7 @@ public class ChildrenControllerImpl implements IChildrenController {
     /**
      * 가게 예약 생성
      * 
-     * POST /children/stores/{storeId}/reservations
+     * POST /api/childrens/stores/{storeId}/reservations
      * 새로운 예약을 생성합니다.
      *
      * @param storeId 가게 ID
@@ -267,7 +267,7 @@ public class ChildrenControllerImpl implements IChildrenController {
     /**
      * 예약 취소
      * 
-     * POST /children/reservations/{reservationId}/cancel
+     * POST /api/childrens/reservations/{reservationId}/cancel
      * 기존 예약을 취소합니다.
      *
      * @param reservationId 예약 ID
@@ -317,7 +317,7 @@ public class ChildrenControllerImpl implements IChildrenController {
     /**
      * 예약 신청 상세 조회
      * 
-     * GET /children/reservations/{reservationId}
+     * GET /api/childrens/reservations/{reservationId}
      * 내가 신청한 특정 예약의 상세 정보를 조회합니다.
      *
      * @param reservationId 예약 ID

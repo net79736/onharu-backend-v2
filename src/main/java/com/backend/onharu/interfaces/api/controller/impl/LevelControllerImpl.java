@@ -33,7 +33,7 @@ public class LevelControllerImpl implements ILevelController {
     /**
      * 등급 생성
      *
-     * POST /levels
+     * POST /api/levels
      * 신규 등급 생성을 진행합니다. 등급명 정보를 받습니다.
      *
      * @param request 등급 생성 요청

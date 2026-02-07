@@ -1,20 +1,5 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
-import com.backend.onharu.application.UserFacade;
-import com.backend.onharu.domain.user.dto.UserCommand.LoginUserCommand;
-import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
-import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
-import com.backend.onharu.domain.user.dto.UserOAuthCommand.*;
-import com.backend.onharu.domain.user.model.User;
-import com.backend.onharu.infra.security.LocalUser;
-import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
-import com.backend.onharu.interfaces.api.controller.IUserController;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.*;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,7 +9,40 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.backend.onharu.application.UserFacade;
+import com.backend.onharu.domain.user.dto.UserCommand.LoginUserCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
+import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpChildUserOAuthCommand;
+import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpOwnerUserOAuthCommand;
+import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.infra.security.LocalUser;
+import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
+import com.backend.onharu.interfaces.api.controller.IUserController;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.LoginUserRequest;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpChildRequest;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpChildResponse;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpOwnerRequest;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpOwnerResponse;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.UpdateChildProfileRequest;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.UpdateOwnerProfileRequest;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.finishSignUpChildRequest;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.finishSignUpOwnerRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 사용자 관련 API를 제공하는 컨트롤러 구현체입니다.
@@ -42,7 +60,7 @@ public class UserControllerImpl implements IUserController {
     /**
      * 사업자 회원가입
      * <p>
-     * POST /users/signup/owner
+     * POST /api/users/signup/owner
      * 사업자 회원가입을 진행합니다. 사용자 정보와 사업자 정보를 함께 받습니다.
      *
      * @param request 사업자 회원가입 요청
@@ -79,7 +97,7 @@ public class UserControllerImpl implements IUserController {
     /**
      * 아동 회원가입
      * <p>
-     * POST /users/signup/child
+     * POST /api/users/signup/child
      * 아동 회원가입을 진행합니다. 사용자 정보와 증명서 파일 URL을 함께 받습니다.
      *
      * @param request 아동 회원가입 요청 (증명서 파일 URL 포함)
@@ -116,7 +134,7 @@ public class UserControllerImpl implements IUserController {
     /**
      * 사용자 프로필 조회
      * <p>.
-     * GET /users/{userId}/profile
+     * GET /api/users/{userId}/profile
      * Spring Security Context에서 현재 사용자의 역할을 확인하여 역할별 프로필을 반환합니다.
      *
      * @param userId 사용자 ID
@@ -136,7 +154,7 @@ public class UserControllerImpl implements IUserController {
     /**
      * 사용자 프로필 수정
      * <p>
-     * PUT /users/{userId}/profile
+     * PUT /api/users/{userId}/profile
      * 사용자 프로필을 수정합니다.
      *
      * @param userId       사용자 ID
@@ -160,7 +178,7 @@ public class UserControllerImpl implements IUserController {
     /**
      * 사용자 회원 탈퇴
      * <p>
-     * DELETE /users/{userId}
+     * DELETE /api/users/{userId}
      * 사용자 정보를 삭제합니다.
      *
      * @param userId 사용자 ID
@@ -180,7 +198,7 @@ public class UserControllerImpl implements IUserController {
     /**
      * 로컬 사용자 로그인
      * <p>
-     * POST /users/login
+     * POST /api/users/login
      * 사용자 아이디와 비밀번호로 로그인을 수행합니다.
      *
      * @param request 사용자 아이디, 비밀번호
@@ -217,7 +235,7 @@ public class UserControllerImpl implements IUserController {
     /**
      * 로컬 사용자 로그아웃
      * <p>
-     * POST /users/logout
+     * POST /api/users/logout
      * 로그인된 사용자의 로그아웃을 수행합니다.
      *
      * @return 200 OK
