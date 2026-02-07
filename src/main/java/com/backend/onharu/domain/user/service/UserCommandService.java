@@ -1,5 +1,6 @@
 package com.backend.onharu.domain.user.service;
 
+import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.support.error.CoreException;
@@ -50,7 +51,8 @@ public class UserCommandService {
                 command.name(),
                 command.phone(),
                 UserType.CHILD,
-                StatusType.PENDING
+                StatusType.PENDING,
+                ProviderType.LOCAL
         );
 
         return createUser(createCommand);
@@ -76,7 +78,8 @@ public class UserCommandService {
                 command.name(), // 사업자는 매장명을 name에 저장
                 command.phone(),
                 UserType.OWNER,
-                StatusType.PENDING // 사업자도 관리자 승인 후 활성화
+                StatusType.PENDING, // 사업자도 관리자 승인 후 활성화
+                ProviderType.LOCAL
         );
 
         return createUser(createCommand);
@@ -96,6 +99,7 @@ public class UserCommandService {
                 .phone(command.phone())
                 .userType(command.userType())
                 .statusType(command.statusType())
+                .providerType(command.providerType())
                 .build();
 
         return userRepository.save(user);
