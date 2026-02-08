@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,11 +69,15 @@ public class StoreFacade {
 
     /**
      * 가게 목록 조회 (위치 기반 검색)
-     * @param searchStoresQuery
-     * @return
+     * @param searchStoresQuery 검색 쿼리
+     * @param pageable 페이징 정보
+     * @return 가게 목록
      */
-    public List<Store> searchStores(SearchStoresQuery searchStoresQuery) {
-        return storeQueryService.findByLocation(searchStoresQuery);
+    public Page<Store> searchStores(
+            SearchStoresQuery searchStoresQuery, 
+            Pageable pageable) {
+
+        return storeQueryService.findByLocation(searchStoresQuery, pageable);
     }
 
     /**

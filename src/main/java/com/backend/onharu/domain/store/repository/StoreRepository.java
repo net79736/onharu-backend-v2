@@ -2,6 +2,9 @@ package com.backend.onharu.domain.store.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByCategoryIdParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByNameParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByOwnerIdParam;
@@ -32,6 +35,11 @@ public interface StoreRepository {
      * 가게 목록 조회
      */
     List<Store> findAll();
+    
+    /**
+     * 페이징된 가게 목록 조회
+     */
+    Page<Store> findAllWithCategory(Pageable pageable);
     
     /**
      * 사업자 ID로 가게 목록 조회

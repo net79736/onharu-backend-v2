@@ -21,12 +21,47 @@ public class StoreControllerDto {
             Double longitude,
 
             @Schema(description = "반경(km)", example = "5.0")
-            Double radius
+            Double radius,
+
+            @Schema(description = "페이지 번호 (1부터 시작)", example = "1")
+            Integer pageNum,
+
+            @Schema(description = "페이지당 항목 수", example = "10")
+            Integer perPage,
+
+            @Schema(description = "정렬 기준", example = "id")
+            String sortField,
+
+            @Schema(description = "정렬 방향", example = "desc")
+            String sortDirection
     ) {
+        /**
+         * 기본값 설정: pageNum이 null이거나 0 이하면 1, perPage가 null이거나 0 이하면 10
+         */
+        public Integer pageNum() {
+            return pageNum != null && pageNum > 0 ? pageNum : 1;
+        }
+
+        public Integer perPage() {
+            return perPage != null && perPage > 0 ? perPage : 10;
+        }
     }
 
     public record SearchStoresResponse(
-            List<StoreResponse> stores
+            @Schema(description = "가게 목록")
+            List<StoreResponse> stores,
+            
+            @Schema(description = "전체 가게 개수")
+            Long totalCount,
+            
+            @Schema(description = "현재 페이지 번호")
+            Integer currentPage,
+            
+            @Schema(description = "전체 페이지 수")
+            Integer totalPages,
+            
+            @Schema(description = "페이지당 항목 수")
+            Integer perPage
     ) {
     }
 
@@ -85,6 +120,9 @@ public class StoreControllerDto {
             @Schema(description = "카테고리 ID", example = "1")
             Long categoryId,
 
+            @Schema(description = "카테고리 이름", example = "카페")
+            String categoryName,
+
             @Schema(description = "영업중 여부", example = "true")
             Boolean isOpen,
 
@@ -103,6 +141,7 @@ public class StoreControllerDto {
                 store.getIntro(),
                 store.getIntroduction(),
                 store.getCategory().getId(),
+                store.getCategory().getName(),
                 store.getIsOpen(),
                 0.0
             );

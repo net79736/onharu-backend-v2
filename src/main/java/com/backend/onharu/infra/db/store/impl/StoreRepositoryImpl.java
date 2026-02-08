@@ -4,6 +4,8 @@ import static com.backend.onharu.domain.support.error.ErrorType.Store.STORE_NOT_
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByCategoryIdParam;
@@ -40,6 +42,11 @@ public class StoreRepositoryImpl implements StoreRepository {
     @Override
     public List<Store> findAll() {
         return storeJpaRepository.findAll();
+    }
+
+    @Override
+    public Page<Store> findAllWithCategory(Pageable pageable) {
+        return storeJpaRepository.findAllWithCategory(pageable);
     }
 
     @Override

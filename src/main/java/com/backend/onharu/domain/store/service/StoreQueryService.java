@@ -2,6 +2,8 @@ package com.backend.onharu.domain.store.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByCategoryIdQuery;
@@ -73,18 +75,19 @@ public class StoreQueryService {
      * 하나라도 없으면 전체 가게 목록을 반환합니다.
      * 
      * @param searchStoresQuery 위치 기반 검색 쿼리
+     * @param pageable 페이징 정보
      * @return 가게 목록
      */
-    public List<Store> findByLocation(SearchStoresQuery searchStoresQuery) {
+    public Page<Store> findByLocation(SearchStoresQuery searchStoresQuery, Pageable pageable) {
         // 위치 정보가 모두 제공되지 않으면 전체 조회
         if (searchStoresQuery.latitude() == null 
                 || searchStoresQuery.longitude() == null 
                 || searchStoresQuery.radius() == null) {
-            return storeRepository.findAll();
+            return storeRepository.findAllWithCategory(pageable);
         }
         
         // TODO: 위치 기반 검색 구현 (Haversine 공식 사용하여 반경 내 가게 필터링)
         // 현재는 위치 정보가 있어도 전체 조회 (추후 구현 예정)
-        return storeRepository.findAll();
+        return storeRepository.findAllWithCategory(pageable);
     }
 }
