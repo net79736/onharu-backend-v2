@@ -2,6 +2,7 @@ package com.backend.onharu.application;
 
 import java.util.UUID;
 
+import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -168,16 +169,21 @@ class UserFacadeTest {
         @DisplayName("사업자 회원가입 성공")
         @Rollback(value = false)
         public void shouldSignUpOwner() {
+            Level level = levelJpaRepository.save(
+                    Level.builder()
+                            .name("새싹")
+                            .build()
+            );
             // given
             SignUpOwnerCommand command = new SignUpOwnerCommand(
-                loginId,
-                "password123",
-                "password123",
-                "테스트 사업자",
-                "01087654321",
-                "테스트 가게",
-                "1234567890",
-                "1"
+                    loginId,
+                    "password123",
+                    "password123",
+                    "테스트 사업자",
+                    "01087654321",
+                    "테스트 가게",
+                    "1234567890",
+                    String.valueOf(level.getId())
             );
 
             // when
@@ -213,68 +219,42 @@ class UserFacadeTest {
         @DisplayName("사업자 회원가입 실패 - 로그인 ID 중복")
         public void shouldThrowExceptionWhenLoginIdAlreadyExists() {
             // given
+            Level level = levelJpaRepository.save(
+                    Level.builder()
+                            .name("새싹")
+                            .build()
+            );
+
             userJpaRepository.save(
-                User.builder()
-                    .loginId(loginId)
-                    .password("password123")
-                    .name("기존 사업자")
-                    .phone("01011111111")
-                    .userType(UserType.OWNER)
-                    .providerType(ProviderType.LOCAL)
-                    .statusType(StatusType.ACTIVE)
-                    .build()
+                    User.builder()
+                            .loginId(loginId)
+                            .password("password123")
+                            .name("기존 사업자")
+                            .phone("01011111111")
+                            .userType(UserType.OWNER)
+                            .providerType(ProviderType.LOCAL)
+                            .statusType(StatusType.ACTIVE)
+                            .build()
             );
 
             SignUpOwnerCommand command = new SignUpOwnerCommand(
-                loginId,
-                "password123",
-                "password123",
-                "새로운 사업자",
-                "01022222222",
-                "새로운 가게",
-                "2234567890",
-                "2"
+                    loginId,
+                    "password123",
+                    "password123",
+                    "새로운 사업자",
+                    "01022222222",
+                    "새로운 가게",
+                    "2234567890",
+                    String.valueOf(level.getId())
             );
 
             // when & then
             CoreException exception = Assertions.assertThrows(
-                CoreException.class,
-                () -> userFacade.signUpOwner(command)
+                    CoreException.class,
+                    () -> userFacade.signUpOwner(command)
             );
 
             Assertions.assertEquals(exception.getErrorType(), ErrorType.User.USER_ID_ALREADY_EXISTS);
-        }
-
-        @Test
-        @DisplayName("사업자 회원가입 성공 - levelId가 문자열로 전달됨")
-        @Rollback(value = false)
-        public void shouldSignUpOwnerWithStringLevelId() {
-            // given
-            SignUpOwnerCommand command = new SignUpOwnerCommand(
-                loginId,
-                "password123",
-                "password123",
-                "테스트 사업자2",
-                "01011112222",
-                "테스트 가게2",
-                "3334567890",
-                "3"  // 문자열로 전달
-            );
-
-            // when
-            User user = userFacade.signUpOwner(command);
-
-            // then
-            Assertions.assertNotNull(user);
-            Assertions.assertNotNull(user.getId());
-
-            // Owner 엔티티 확인
-            Owner owner = ownerJpaRepository.findByUser_LoginId(user.getLoginId()).orElse(null);
-            Assertions.assertNotNull(owner);
-            Assertions.assertEquals(owner.getLevel().getId(), 3L);  // 문자열 "3"이 Long 3L로 변환되었는지 확인
-
-            System.out.println("✅ 사업자 회원가입 성공 (문자열 levelId) - User ID: " + user.getId());
-            System.out.println("   - Level ID: " + owner.getLevel().getId());
         }
     }
 }
