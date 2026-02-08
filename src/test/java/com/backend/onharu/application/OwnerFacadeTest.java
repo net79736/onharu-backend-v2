@@ -188,6 +188,7 @@ class OwnerFacadeTest {
         return childJpaRepository.save(
                 Child.builder()
                         .user(user)
+                        .nickname("테스트 닉네임")
                         .certificate("/certificates/test.pdf")
                         .isVerified(true)
                         .build()
