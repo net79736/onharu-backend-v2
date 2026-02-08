@@ -35,13 +35,13 @@ public class SecurityConfig {
             "/error", "/favicon.ico",
             "/api/users/login/**", "/api/users/signup/**",
             "/api/users/logout/**", "/users/me/**",
-            "/api/levels/**",
-            "/api/childrens/**",
-            "/api/owners/**",
-            "/api/admins/**",
-            "/api/stores/**",
-            "/api/store-schedules/**",
-            "/api/upload/**"
+            "/api/levels/**", // 레벨 관련 API
+            "/api/childrens/**", // 결식 아동 관련 API
+            "/api/owners/**", // 사업자 관련 API
+            "/api/admins/**", // 관리자 관련 API
+            "/api/stores/**", // 가게 관련 API
+            "/api/store-schedules/**", // 가게 스케줄 관련 API
+            "/api/upload/**" // S3 파일 업로드 관련 API
     };
 
     public static final String[] AUTHENTICATE_PATH = {
