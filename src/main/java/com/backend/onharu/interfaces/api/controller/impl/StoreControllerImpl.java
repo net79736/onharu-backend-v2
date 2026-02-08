@@ -1,8 +1,12 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
+import static com.backend.onharu.interfaces.api.common.util.PageableUtil.getCurrentPage;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,6 +29,7 @@ import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.repository.CategoryRepository;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
+import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.controller.IStoreController;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.CategoryResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.GetStoreDetailResponse;
@@ -90,17 +95,43 @@ public class StoreControllerImpl implements IStoreController {
     public ResponseEntity<ResponseDTO<SearchStoresResponse>> searchStores(
             @ModelAttribute SearchStoresRequest request
     ) {
-        log.info("가게 목록 조회 요청: latitude={}, longitude={}, radius={}", 
-                request.latitude(), request.longitude(), request.radius());
+        log.info("가게 목록 조회 요청: latitude={}, longitude={}, radius={}, pageNum={}, perPage={}, sortField={}, sortDirection={}", 
+                request.latitude(), request.longitude(), request.radius(), 
+                request.pageNum(), request.perPage(), request.sortField(), request.sortDirection());
         
-        List<Store> stores = storeFacade.searchStores(
-                new SearchStoresQuery(request.latitude(), request.longitude(), request.radius()));
-        List<StoreResponse> storeResponses = stores.stream()
+        // Pageable 생성 (유틸리티 클래스 사용 - 1-based 페이지 번호 지원)
+        Pageable pageable = PageableUtil.ofOneBased(
+                request.pageNum(), 
+                request.perPage(), 
+                request.sortField(), 
+                request.sortDirection()
+        );
+        
+        // 검색 쿼리 생성
+        SearchStoresQuery searchQuery = new SearchStoresQuery(
+                request.latitude(), 
+                request.longitude(), 
+                request.radius()
+        );
+        
+        // 페이징된 결과 조회
+        Page<Store> storePage = storeFacade.searchStores(searchQuery, pageable);
+        
+        // DTO 변환
+        List<StoreResponse> storeResponses = storePage.getContent().stream()
                 .map(StoreResponse::new)
                 .collect(Collectors.toList());
         
+        SearchStoresResponse response = new SearchStoresResponse(
+                storeResponses,
+                storePage.getTotalElements(),
+                getCurrentPage(storePage), // 0-based → 1-based 변환
+                storePage.getTotalPages(),
+                storePage.getSize()
+        );
+        
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(new SearchStoresResponse(storeResponses)));
+                .body(ResponseDTO.success(response));
     }
 
     /**
