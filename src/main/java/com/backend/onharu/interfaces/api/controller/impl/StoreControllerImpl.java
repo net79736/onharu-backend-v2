@@ -46,6 +46,7 @@ import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresRequ
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
+import com.backend.onharu.utils.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -184,8 +185,8 @@ public class StoreControllerImpl implements IStoreController {
     public ResponseEntity<ResponseDTO<OpenStoreResponse>> openStore(
             @RequestBody OpenStoreRequest request
     ) {
-        Long ownerId = 855L; // TODO: 사업자 ID SecurityContext에서 가져오기
-        log.info("가게 정보 작성 요청: {}", request);
+        Long ownerId = SecurityUtils.getCurrentUserId();
+        log.info("가게 정보 작성 요청: ownerId={}, request={}", ownerId, request);
 
         Store store = storeFacade.createStore(new CreateStoreCommand(
             ownerId,
@@ -222,9 +223,9 @@ public class StoreControllerImpl implements IStoreController {
     public ResponseEntity<ResponseDTO<Void>> closeStore(
             @PathVariable("storeId") Long storeId
     ) {        
-        log.info("가게 정보 삭제 요청: storeId={}", storeId);
+        Long ownerId = SecurityUtils.getCurrentUserId();
+        log.info("가게 정보 삭제 요청: ownerId={}, storeId={}", ownerId, storeId);
 
-        Long ownerId = 855L; // TODO: 사업자 ID SecurityContext에서 가져오기
         storeFacade.deleteStore(new DeleteStoreCommand(storeId), ownerId);
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -247,9 +248,9 @@ public class StoreControllerImpl implements IStoreController {
             @PathVariable("storeId") Long storeId,
             @RequestBody UpdateStoreRequest request
     ) {
-        log.info("가게 정보 수정 요청: storeId={}, request={}", storeId, request);
+        Long ownerId = SecurityUtils.getCurrentUserId();
+        log.info("가게 정보 수정 요청: ownerId={}, storeId={}, request={}", ownerId, storeId, request);
 
-        Long ownerId = 855L; // TODO: 사업자 ID SecurityContext에서 가져오기
         storeFacade.updateStore(new UpdateStoreCommand(
             storeId, 
             request.categoryId(), 

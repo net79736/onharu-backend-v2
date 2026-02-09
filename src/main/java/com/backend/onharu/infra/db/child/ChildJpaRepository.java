@@ -17,4 +17,12 @@ public interface ChildJpaRepository extends JpaRepository<Child, Long> {
      * @return Child (없으면 Optional.empty())
      */
     Optional<Child> findByUser_LoginId(String loginId);
+
+    /**
+     * User의 ID로 Child 조회
+     * 
+     * @param userId 사용자 ID
+     * @return Child (없으면 Optional.empty())
+     */
+    Optional<Child> findByUser_Id(Long userId);
 }

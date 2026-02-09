@@ -1,5 +1,17 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.backend.onharu.application.ChildFacade;
 import com.backend.onharu.domain.favorite.dto.FavoriteCommand.CreateFavoriteCommand;
 import com.backend.onharu.domain.favorite.dto.FavoriteCommand.DeleteFavoriteCommand;
@@ -7,18 +19,13 @@ import com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoritesByChild
 import com.backend.onharu.domain.favorite.model.Favorite;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.controller.IFavoriteController;
-import com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.FavoriteResponse;
 import com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.CreateFavoriteResponse;
+import com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.FavoriteResponse;
+import com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.GetMyFavoriteListResponse;
+import com.backend.onharu.utils.SecurityUtils;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.GetMyFavoriteListResponse;
 
 @Slf4j
 @RestController
@@ -40,10 +47,10 @@ public class FavoriteControllerImpl implements IFavoriteController {
     @Override
     @PostMapping("/stores/{storeId}")
     public ResponseEntity<ResponseDTO<CreateFavoriteResponse>> createFavorite(@PathVariable("storeId") Long storeId) {
-        log.info("찜하기 등록 요청: storeId={}", storeId);
+        Long childId = SecurityUtils.getCurrentUserId();
 
-        // TODO: 하드코딩 - 시큐리티 세션에서 현재 로그인한 사용자(아동) ID 가져오기
-        Long childId = 1L;
+        log.info("찜하기 등록 요청: childId={}, storeId={}", childId, storeId);
+
 
         // 찜등록
         Favorite favorite = childFacade.createFavorite(
@@ -68,10 +75,9 @@ public class FavoriteControllerImpl implements IFavoriteController {
     @Override
     @GetMapping
     public ResponseEntity<ResponseDTO<GetMyFavoriteListResponse>> getMyFavorite() {
-        log.info("찜목록 조회 요청");
+        Long childId = SecurityUtils.getCurrentUserId();
 
-        // TODO: 하드코딩 - 시큐리티 세션에서 현재 로그인한 사용자(아동) ID 가져오기
-        Long childId = 1L;
+        log.info("찜목록 조회 요청: childId={}", childId);
 
         // 내 찜목록 조회
         List<Favorite> favorites = childFacade.getMyFavorites(
@@ -99,10 +105,9 @@ public class FavoriteControllerImpl implements IFavoriteController {
     @Override
     @DeleteMapping("/{favoriteId}")
     public ResponseEntity<ResponseDTO<Void>> deleteFavorite(@PathVariable("favoriteId") Long favoriteId) {
-        log.info("찜취소 요청: favoriteId={}", favoriteId);
-
-        // TODO: 하드코딩 - 시큐리티 세션에서 현재 로그인한 사용자(아동) ID 가져오기
-        Long childId = 1L;
+        Long childId = SecurityUtils.getCurrentUserId();
+        
+        log.info("찜취소 요청: childId={}, favoriteId={}", childId, favoriteId);
 
         // 찜하기 취소
         childFacade.deleteFavorite(
