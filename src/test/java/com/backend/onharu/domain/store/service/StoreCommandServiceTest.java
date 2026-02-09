@@ -1,5 +1,17 @@
 package com.backend.onharu.domain.store.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
@@ -20,17 +32,6 @@ import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @DisplayName("StoreCommandService 단위 테스트")
@@ -151,10 +152,10 @@ class StoreCommandServiceTest {
                     "0212345678",
                     "37.5665",
                     "126.9780",
-                    "https://onharu.com/images/store1.jpg",
                     "따뜻한 마음으로 환영합니다!",
                     "따뜻한 한 끼 식사",
                     tagNames,
+                    List.of(),
                     List.of()
             );
 
@@ -208,7 +209,6 @@ class StoreCommandServiceTest {
                             .name("기존 가게")
                             .address("서울시 강남구")
                             .phone("0212345678")
-                            .image("/images/old.jpg")
                             .introduction("기존 소개")
                             .intro("기존 한줄 소개")
                             .isOpen(false)
@@ -219,7 +219,6 @@ class StoreCommandServiceTest {
             UpdateStoreCommand command = new UpdateStoreCommand(
                     savedStore.getId(),
                     category2.getId(),
-                    "/images/new.jpg",
                     "0298765432",
                     "서울시 서초구",
                     "37.4838",
@@ -227,6 +226,7 @@ class StoreCommandServiceTest {
                     "새로운 소개",
                     "새로운 한줄 소개",
                     false,
+                    List.of(),
                     List.of(),
                     List.of()
             );
@@ -239,13 +239,11 @@ class StoreCommandServiceTest {
                     new GetStoreByIdQuery(savedStore.getId())
             ); // 가게 정보 수정 후 조회
 
-            assertThat(updatedStore.getImage()).isEqualTo("/images/new.jpg");
             assertThat(updatedStore.getPhone()).isEqualTo("0298765432");
             assertThat(updatedStore.getAddress()).isEqualTo("서울시 서초구");
             assertThat(updatedStore.getIsOpen()).isFalse();
 
             System.out.println("✅ 가게 정보 수정 성공 - Store ID: " + updatedStore.getId());
-            System.out.println("   - 수정된 이미지: " + updatedStore.getImage());
             System.out.println("   - 수정된 전화번호: " + updatedStore.getPhone());
             System.out.println("   - 수정된 주소: " + updatedStore.getAddress());
             System.out.println("   - 수정된 영업 여부: " + updatedStore.getIsOpen());
@@ -272,7 +270,6 @@ class StoreCommandServiceTest {
                             .name("영업 상태 테스트 가게")
                             .address("서울시 강남구")
                             .phone("0212345678")
-                            .image("/images/test.jpg")
                             .isOpen(false)
                             .build()
             );

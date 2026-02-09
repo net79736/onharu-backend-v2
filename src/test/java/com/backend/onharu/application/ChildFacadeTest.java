@@ -10,12 +10,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import com.backend.onharu.domain.favorite.dto.FavoriteCommand;
-import com.backend.onharu.domain.favorite.dto.FavoriteQuery;
-import com.backend.onharu.domain.favorite.model.Favorite;
-import com.backend.onharu.domain.level.model.Level;
-import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
-import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,6 +24,10 @@ import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.domain.favorite.dto.FavoriteCommand;
+import com.backend.onharu.domain.favorite.dto.FavoriteQuery;
+import com.backend.onharu.domain.favorite.model.Favorite;
+import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CreateReservationCommand;
@@ -40,6 +38,8 @@ import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.infra.db.child.ChildJpaRepository;
+import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
+import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
@@ -195,7 +195,8 @@ class ChildFacadeTest {
             .category(category)
             .address("서울시 강남구")
             .phone("0212345678")
-            .image("/images/test.jpg")
+            .introduction("따뜻한 마음으로 환영합니다!")
+            .intro("따뜻한 한 끼 식사")
             .isOpen(true)
             .build());
     }

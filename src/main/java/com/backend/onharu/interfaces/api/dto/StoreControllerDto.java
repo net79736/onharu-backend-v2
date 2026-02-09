@@ -80,15 +80,15 @@ public class StoreControllerDto {
                 store.getPhone(),
                 store.getLat(),
                 store.getLng(),
-                resolveImages(images),
-                store.getIntro(),
                 store.getIntroduction(),
+                store.getIntro(),
                 store.getCategory().getId(),
                 store.getIsOpen(),
                 0.0,
                 null,
                 null,
-                null
+                null,
+                resolveImages(images)
             ));
         }
     }
@@ -112,11 +112,11 @@ public class StoreControllerDto {
             @Schema(description = "경도", example = "126.9780")
             String lng,
 
-            @Schema(description = "한줄 소개", example = "따뜻한 한 끼 식사")
-            String intro,
-
             @Schema(description = "가게 소개", example = "따뜻한 마음으로 환영합니다!")
             String introduction,
+
+            @Schema(description = "한줄 소개", example = "따뜻한 한 끼 식사")
+            String intro,
 
             @Schema(description = "카테고리 ID", example = "1")
             Long categoryId,
@@ -138,8 +138,8 @@ public class StoreControllerDto {
                 store.getPhone(),
                 store.getLat(),
                 store.getLng(),
-                store.getIntro(),
                 store.getIntroduction(),
+                store.getIntro(),
                 store.getCategory().getId(),
                 store.getCategory().getName(),
                 store.getIsOpen(),
@@ -167,14 +167,11 @@ public class StoreControllerDto {
             @Schema(description = "경도", example = "126.9780")
             String lng,
 
-            @Schema(description = "첨부 이미지 URL 목록 (다중 이미지, 표시 순서대로). 기존 단일 image 대체.")
-            List<String> images,
+            @Schema(description = "가게 소개", example = "따뜻한 마음으로 환영합니다!")
+            String introduction,
 
             @Schema(description = "한줄 소개", example = "따뜻한 한 끼 식사")
             String intro,
-
-            @Schema(description = "가게 소개", example = "따뜻한 마음으로 환영합니다!")
-            String introduction,
 
             @Schema(description = "카테고리 ID", example = "1")
             Long categoryId,
@@ -192,7 +189,10 @@ public class StoreControllerDto {
             List<StoreScheduleResponse> storeSchedules,
 
             @Schema(description = "태그 목록")
-            List<String> tags
+            List<String> tags,
+
+            @Schema(description = "첨부 이미지 URL 목록 (다중 이미지, 표시 순서대로). 기존 단일 image 대체.")
+            List<String> images
     ) {
     }
 
@@ -244,11 +244,11 @@ public class StoreControllerDto {
         @Schema(description = "경도", example = "126.9780", requiredMode = Schema.RequiredMode.REQUIRED)
         String lng,
 
-        @Schema(description = "한줄 소개", example = "따뜻한 한 끼 식사", requiredMode = Schema.RequiredMode.REQUIRED)
-        String intro,
-
         @Schema(description = "가게 소개", example = "따뜻한 마음으로 환영합니다!", requiredMode = Schema.RequiredMode.REQUIRED)
         String introduction,
+
+        @Schema(description = "한줄 소개", example = "따뜻한 한 끼 식사", requiredMode = Schema.RequiredMode.REQUIRED)
+        String intro,
 
         @Schema(description = "태그 목록", example = "[\"커피\", \"디저트\", \"브런치\"]")
         List<String> tagNames,

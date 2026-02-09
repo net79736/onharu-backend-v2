@@ -1,5 +1,20 @@
 package com.backend.onharu.domain.reservation.service;
 
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.ReservationType;
@@ -7,7 +22,11 @@ import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.owner.model.Owner;
-import com.backend.onharu.domain.reservation.dto.ReservationQuery.*;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindAllByStatusQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdAndStatusQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetByStoreScheduleIdQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
@@ -15,24 +34,16 @@ import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.infra.db.child.ChildJpaRepository;
+import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
+import com.backend.onharu.infra.db.file.FileJpaRepository;
 import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
+import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
-import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-
-import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @DisplayName("ReservationQueryService 단위 테스트")
@@ -63,17 +74,30 @@ class ReservationQueryServiceTest {
     private CategoryJpaRepository categoryJpaRepository;
     @Autowired
     private LevelJpaRepository levelJpaRepository;
+    
+    @Autowired
+    private FileJpaRepository fileJpaRepository;
+    
+    @Autowired
+    private FavoriteJpaRepository favoriteJpaRepository;
+    
+    @Autowired
+    private TagJpaRepository tagJpaRepository;
 
     @BeforeEach
     public void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
-        reservationJpaRepository.deleteAll();
-        storeScheduleJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll();
+        reservationJpaRepository.deleteAll(); // reservations는 store_schedules를 참조
+        storeScheduleJpaRepository.deleteAll(); // store_schedules는 stores를 참조
+        fileJpaRepository.deleteAll(); // files는 stores를 참조하므로 stores 삭제 전에 삭제
+        favoriteJpaRepository.deleteAll(); // favorites는 stores를 참조하므로 stores 삭제 전에 삭제
+        storeJpaRepository.deleteAll(); // stores 삭제
+        tagJpaRepository.deleteAll(); // tags는 store_tags가 삭제된 후에 삭제 가능
         categoryJpaRepository.deleteAll();
         childJpaRepository.deleteAll();
         ownerJpaRepository.deleteAll();
         userJpaRepository.deleteAll();
+        levelJpaRepository.deleteAll(); // levels는 owners를 참조하므로 owners 삭제 후에 삭제
     }
 
     /**
@@ -101,6 +125,7 @@ class ReservationQueryServiceTest {
         return childJpaRepository.save(
                 Child.builder()
                         .user(user)
+                        .nickname(name + "닉네임") // nickname은 필수 필드이므로 추가
                         .certificate(certificate)
                         .isVerified(isVerified != null ? isVerified : true)
                         .build()
@@ -161,7 +186,6 @@ class ReservationQueryServiceTest {
                 .category(category)
                 .address("서울시 강남구")
                 .phone("0212345678")
-                .image("/images/test.jpg")
                 .isOpen(true)
                 .build());
     }
@@ -190,7 +214,6 @@ class ReservationQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공")
-        @Rollback(value = false)
         public void shouldGetReservation() {
             // given
             Child savedChild = createTestChild("test_child_query", "테스트 아동 조회", "01055556666", "/certificates/query_test.pdf", true);
@@ -235,7 +258,6 @@ class ReservationQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공 - 아동의 예약 목록 조회")
-        @Rollback(value = false)
         public void shouldGetReservationsByChildId() {
             // given
             Child savedChild = createTestChild(
@@ -274,7 +296,6 @@ class ReservationQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공 - 가게 일정 ID로 예약 조회")
-        @Rollback(value = false)
         public void shouldGetReservationByStoreScheduleId() {
             // given
             Child savedChild = createTestChild("test_child_schedule", "테스트 아동 일정", "01099990000", "/certificates/schedule_test.pdf", true);
@@ -312,7 +333,6 @@ class ReservationQueryServiceTest {
 
         @Test
         @DisplayName("조회 실패 - 가게 일정 ID로 예약 조회")
-        @Rollback(value = false)
         public void shouldGetNullWhenReservationIsNotFound() {
             // given
             Long storeScheduleId = 99L;
@@ -331,7 +351,6 @@ class ReservationQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공 - 상태로 예약 목록 조회")
-        @Rollback(value = false)
         public void shouldGetReservationsByStatus() {
             // given
             Child savedChild1 = createTestChild("test_child_status1", "테스트 아동 상태1", "01011111111", "/certificates/status_test1.pdf", true);
@@ -399,7 +418,6 @@ class ReservationQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공 - 아동 ID와 상태로 예약 목록 조회")
-        @Rollback(value = false)
         public void shouldGetReservationsByChildIdAndStatus() {
             // given
             Child savedChild = createTestChild("test_child_filter", "테스트 아동 필터", "01033333333", "/certificates/filter_test.pdf", true);

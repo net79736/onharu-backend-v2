@@ -38,7 +38,7 @@ class StoreCommandTest {
 
             // when
             CreateStoreCommand command = new CreateStoreCommand(
-                ownerId, categoryId, name, address, phone, lat, lng, image, introduction, intro, tagNames, List.of()
+                ownerId, categoryId, name, address, phone, lat, lng, introduction, intro, tagNames, List.of(), List.of()
             );
 
             // then
@@ -71,7 +71,8 @@ class StoreCommandTest {
 
             // when
             UpdateStoreCommand command = new UpdateStoreCommand(
-                id, categoryId, image, phone, address, lat, lng, introduction, intro, isOpen, List.of(), List.of()
+                id, categoryId, phone, address, lat, lng, introduction, intro, isOpen, 
+                List.of(), List.of(), List.of()
             );
 
             // then
