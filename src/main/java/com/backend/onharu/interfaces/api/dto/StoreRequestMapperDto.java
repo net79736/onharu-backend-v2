@@ -31,8 +31,8 @@ public final class StoreRequestMapperDto {
                 request.phone(),
                 request.lat(),
                 request.lng(),
-                request.intro(),
                 request.introduction(),
+                request.intro(),
                 request.tagNames(),
                 request.businessHours(),
                 toImageMetadataList(request.images())
