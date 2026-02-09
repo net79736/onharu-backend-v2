@@ -47,8 +47,8 @@ public final class StoreRequestMapperDto {
         return new UpdateStoreCommand(
                 storeId,
                 request.categoryId(),
-                request.phone(),
                 request.address(),
+                request.phone(),
                 request.lat(),
                 request.lng(),
                 request.introduction(),

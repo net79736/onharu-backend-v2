@@ -310,11 +310,11 @@ public class StoreControllerDto {
             @Schema(description = "카테고리 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
             Long categoryId,
 
-            @Schema(description = "전화번호", example = "0212345678", requiredMode = Schema.RequiredMode.REQUIRED)
-            String phone,
-
             @Schema(description = "주소", example = "서울시 강남구 테헤란로 123", requiredMode = Schema.RequiredMode.REQUIRED)
             String address,
+
+            @Schema(description = "전화번호", example = "0212345678", requiredMode = Schema.RequiredMode.REQUIRED)
+            String phone,
 
             @Schema(description = "위도", example = "37.5665", requiredMode = Schema.RequiredMode.REQUIRED)
             String lat,

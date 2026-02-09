@@ -65,15 +65,21 @@ public interface IStoreController {
                                             "  \"phone\": \"0212345678\",\n" +
                                             "  \"lat\": \"37.5665\",\n" +
                                             "  \"lng\": \"126.9780\",\n" +
-                                            "  \"image\": \"https://onharu.com/images/store1.jpg\",\n" +
-                                            "  \"intro\": \"따뜻한 한 끼 식사\",\n" +
                                             "  \"introduction\": \"따뜻한 마음으로 환영합니다!\",\n" +
+                                            "  \"intro\": \"따뜻한 한 끼 식사\",\n" +
                                             "  \"tagNames\": [\"한식\", \"점심식사\", \"따뜻한\"],\n" +
                                             "  \"businessHours\": [\n" +
                                             "    {\n" +
                                             "      \"businessDay\": \"2024-12-31\",\n" +
                                             "      \"openTime\": \"09:00\",\n" +
                                             "      \"closeTime\": \"22:00\"\n" +
+                                            "    }\n" +
+                                            "  ],\n" +
+                                            "  \"images\": [\n" +
+                                            "    {\n" +
+                                            "      \"fileKey\": \"image/uuid-photo.jpg\",\n" +
+                                            "      \"filePath\": \"https://minio.example.com/bucket/image/uuid-photo.jpg\",\n" +
+                                            "      \"displayOrder\": 0\n" +
                                             "    }\n" +
                                             "  ]\n" +
                                             "}"
@@ -103,9 +109,8 @@ public interface IStoreController {
                                     name = "가게 정보 수정 예시",
                                     value = "{\n" +
                                             "  \"categoryId\": 1,\n" +
-                                            "  \"image\": \"https://onharu.com/images/store1.jpg\",\n" +
-                                            "  \"phone\": \"0212345678\",\n" +
                                             "  \"address\": \"서울시 강남구 테헤란로 123\",\n" +
+                                            "  \"phone\": \"0212345678\",\n" +
                                             "  \"lat\": \"37.5665\",\n" +
                                             "  \"lng\": \"126.9780\",\n" +
                                             "  \"introduction\": \"따뜻한 한 끼 식사\",\n" +
@@ -122,6 +127,13 @@ public interface IStoreController {
                                             "      \"businessDay\": \"2025-01-01\",\n" +
                                             "      \"openTime\": \"10:00\",\n" +
                                             "      \"closeTime\": \"21:00\"\n" +
+                                            "    }\n" +
+                                            "  ],\n" +
+                                            "  \"images\": [\n" +
+                                            "    {\n" +
+                                            "      \"fileKey\": \"image/uuid-photo.jpg\",\n" +
+                                            "      \"filePath\": \"https://minio.example.com/bucket/image/uuid-photo.jpg\",\n" +
+                                            "      \"displayOrder\": 0\n" +
                                             "    }\n" +
                                             "  ]\n" +
                                             "}"
