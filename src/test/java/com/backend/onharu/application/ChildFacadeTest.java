@@ -1,5 +1,7 @@
 package com.backend.onharu.application;
 
+import static com.backend.onharu.domain.support.error.ErrorType.Child.CHILD_NOT_FOUND;
+import static com.backend.onharu.domain.support.error.ErrorType.Favorite.FAVORITE_NOT_FOUND;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_ALREADY_EXISTS;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_CHILD_ID_MISMATCH;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -8,6 +10,12 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import com.backend.onharu.domain.favorite.dto.FavoriteCommand;
+import com.backend.onharu.domain.favorite.dto.FavoriteQuery;
+import com.backend.onharu.domain.favorite.model.Favorite;
+import com.backend.onharu.domain.level.model.Level;
+import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
+import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -67,9 +75,16 @@ class ChildFacadeTest {
     @Autowired
     private ReservationJpaRepository reservationJpaRepository;
 
+    @Autowired
+    private LevelJpaRepository levelJpaRepository;
+
+    @Autowired
+    private FavoriteJpaRepository favoriteJpaRepository;
+
     @BeforeEach
     public void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
+        favoriteJpaRepository.deleteAll();
         reservationJpaRepository.deleteAll();
         storeScheduleJpaRepository.deleteAll();
         storeJpaRepository.deleteAll();
@@ -114,13 +129,15 @@ class ChildFacadeTest {
     }
 
     /**
-     * 테스트용 Child 생성 헬퍼 메서드 (User와 함께 생성)
+     * 테스트용 Child 생성 헬퍼 메서드 (User, Level 과 함께 생성)
      */
-    private Child createTestChild(String loginId, String name, String phone, String certificate, Boolean isVerified) {
+    private Child createTestChild(String loginId, String name, String phone, String nickname, String certificate, Boolean isVerified) {
         User user = createTestUserForChild(loginId, name, phone);
+
         return childJpaRepository.save(
             Child.builder()
                 .user(user)
+                .nickname(nickname)
                 .certificate(certificate)
                 .isVerified(isVerified != null ? isVerified : true)
                 .build()
@@ -131,18 +148,31 @@ class ChildFacadeTest {
      * 테스트용 Child 생성 헬퍼 메서드 (기본값 사용)
      */
     private Child createTestChild(String loginId, String name, String phone) {
-        return createTestChild(loginId, name, phone, "/certificates/test.pdf", true);
+        return createTestChild(loginId, name, phone, "테스트닉네임", "/certificates/test.pdf", true);
+    }
+
+    /**
+     * 테스트용 Level 생성 헬퍼 메서드
+     */
+    private Level createTestLevel(String levelName) {
+        return levelJpaRepository.save(
+                Level.builder()
+                        .name(levelName)
+                        .build()
+        );
     }
 
     /**
      * 테스트용 Owner 생성 헬퍼 메서드 (User와 함께 생성)
      */
-    private Owner createTestOwner(String loginId, String name, String phone, Long levelId, String businessNumber) {
+    private Owner createTestOwner(String loginId, String name, String phone, String levelName, String businessNumber) {
         User user = createTestUserForOwner(loginId, name, phone);
+        Level level = createTestLevel(levelName);
+
         return ownerJpaRepository.save(
             Owner.builder()
                 .user(user)
-                .levelId(levelId != null ? levelId : 1L)
+                .level(level)
                 .businessNumber(businessNumber)
                 .build()
         );
@@ -195,7 +225,7 @@ class ChildFacadeTest {
         public void shouldCreateReservation() {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
@@ -230,7 +260,7 @@ class ChildFacadeTest {
             // given
             Child child1 = createTestChild("test_child1", "테스트 아동1", "01012345678");
             Child child2 = createTestChild("test_child2", "테스트 아동2", "01087654321");
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
@@ -270,7 +300,7 @@ class ChildFacadeTest {
         public void shouldCancelReservation() {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
@@ -310,7 +340,7 @@ class ChildFacadeTest {
             // given
             Child child1 = createTestChild("test_child1", "테스트 아동1", "01012345678"); // 아동1 생성
             Child child2 = createTestChild("test_child2", "테스트 아동2", "01087654321"); // 아동2 생성
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11); // 가게 일정 생성 (10시 ~ 11시)
@@ -350,7 +380,7 @@ class ChildFacadeTest {
             // given
             Child child1 = createTestChild("test_child1", "테스트 아동1", "01012345678");
             Child child2 = createTestChild("test_child2", "테스트 아동2", "01087654321");
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             
@@ -424,7 +454,7 @@ class ChildFacadeTest {
         public void shouldGetMyBooking() {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
@@ -459,7 +489,7 @@ class ChildFacadeTest {
             // given
             Child child1 = createTestChild("test_child1", "테스트 아동1", "01012345678"); // 아동1 생성
             Child child2 = createTestChild("test_child2", "테스트 아동2", "01087654321"); // 아동2 생성
-            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", 1L, "1234567890");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11); // 가게 일정 생성 (10시 ~ 11시)
@@ -480,6 +510,146 @@ class ChildFacadeTest {
             );
             
             assertThat(exception.getErrorType()).isEqualTo(RESERVATION_CHILD_ID_MISMATCH);
+        }
+    }
+
+    @Nested
+    @DisplayName("찜 등록 테스트")
+    class CreateFavoriteTest {
+
+        @Test
+        @DisplayName("찜 등록 성공")
+        void shouldCreateFavorite() {
+            // GIVEN
+            Child child = createTestChild("child@test.com", "아동테스트", "01000000001");
+            Owner owner = createTestOwner("owner@test.com", "사업자테스트", "01022220002", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category);
+
+            FavoriteCommand.CreateFavoriteCommand command = new FavoriteCommand.CreateFavoriteCommand(child.getId(), store.getId());
+
+            // WHEN
+            Favorite favorite = childFacade.createFavorite(command);
+
+            // THEN
+            assertThat(favorite).isNotNull();
+            assertThat(favorite.getChild().getId()).isEqualTo(child.getId());
+            assertThat(favorite.getStore().getId()).isEqualTo(store.getId());
+
+            assertThat(favoriteJpaRepository.findAll()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("찜 등록 실패 - 존재하지 않는 아동일 경우")
+        void shouldThrowExceptionWhenChildNotFound() {
+            Long childId = 123456789L;
+            Owner owner = createTestOwner("owner@test.com", "사업자테스트", "01022220001", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category);
+
+            FavoriteCommand.CreateFavoriteCommand command = new FavoriteCommand.CreateFavoriteCommand(childId, store.getId());
+
+            CoreException exception = Assertions.assertThrows(CoreException.class, () -> childFacade.createFavorite(command));
+
+            assertThat(exception.getErrorType()).isEqualTo(CHILD_NOT_FOUND);
+        }
+    }
+
+    @Nested
+    @DisplayName("찜 목록 조회 테스트")
+    class GetMyFavoritesTest {
+
+        @Test
+        @DisplayName("찜 목록 조회 성공")
+        void shouldGetMyFavorites() {
+            // GIVEN
+            Child child = createTestChild("child@test.com", "아동테스트", "01000000001");
+            Owner owner1 = createTestOwner("owner1@test.com", "사업자테스트1", "01022220001", "새싹", "1234567890");
+            Owner owner2 = createTestOwner("owner2@test.com", "사업자테스트2", "01022220002", "새싹", "1234567891");
+            Category category = createTestCategory("식당");
+            Store store1 = createTestStore("테스트 가게1", owner1, category);
+            Store store2 = createTestStore("테스트 가게2", owner2, category);
+
+            favoriteJpaRepository.save(
+                    Favorite.builder()
+                            .child(child)
+                            .store(store1)
+                            .build()
+            );
+            favoriteJpaRepository.save(
+                    Favorite.builder()
+                            .child(child)
+                            .store(store2)
+                            .build()
+            );
+            FavoriteQuery.FindFavoritesByChildIdQuery query = new FavoriteQuery.FindFavoritesByChildIdQuery(child.getId());
+
+            // WHEN
+            List<Favorite> favorites = childFacade.getMyFavorites(query);
+
+            // THEN
+            assertThat(favorites).hasSize(2);
+            assertThat(favorites).allMatch(f -> f.getChild().getId().equals(child.getId()));
+        }
+
+        @Test
+        @DisplayName("찜 목록 조회 실패 - 찜하기가 없을 경우 빈 목록 반환")
+        void shouldThrowExceptionWhenEmptyList() {
+            // GIVEN
+            Child child = createTestChild("child@test.com", "아동테스트", "01000000001");
+
+            FavoriteQuery.FindFavoritesByChildIdQuery query = new FavoriteQuery.FindFavoritesByChildIdQuery(child.getId());
+
+            // WHEN
+            List<Favorite> favorites = childFacade.getMyFavorites(query);
+
+            // THEN
+            assertThat(favorites).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("찜 취소 테스트")
+    class DeleteFavoriteTest {
+
+        @Test
+        @DisplayName("찜 취소 성공")
+        void shouldDeleteFavorite() {
+            // GIVEN
+            Child child = createTestChild("child@test.com", "아동테스트", "01000000001");
+            Owner owner = createTestOwner("owner@test.com", "사업자테스트", "01022220002", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category);
+
+            Favorite favorite = favoriteJpaRepository.save(
+                    Favorite.builder()
+                            .child(child)
+                            .store(store)
+                            .build()
+            );
+
+            FavoriteCommand.DeleteFavoriteCommand command = new FavoriteCommand.DeleteFavoriteCommand(child.getId(), favorite.getId());
+
+            // WHEN
+            childFacade.deleteFavorite(command);
+
+            // THEN
+            assertThat(favoriteJpaRepository.findById(favorite.getId())).isEmpty();
+        }
+
+        @Test
+        @DisplayName("찜 취소 실패 - 존재하지 않는 찜하기를 삭제할 경우")
+        void shouldThrowExceptionWhenFavoriteNotFound() {
+            // GIVEN
+            Long childId = 123456789L;
+            Child child = createTestChild("child@test.com", "아동테스트", "01000000001");
+
+            FavoriteCommand.DeleteFavoriteCommand command = new FavoriteCommand.DeleteFavoriteCommand(child.getId(), childId);
+
+            // WHEN
+            CoreException exception = Assertions.assertThrows(CoreException.class, () -> childFacade.deleteFavorite(command));
+
+            assertThat(exception.getErrorType()).isEqualTo(FAVORITE_NOT_FOUND);
         }
     }
 }

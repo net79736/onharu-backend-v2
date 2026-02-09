@@ -2,6 +2,8 @@ package com.backend.onharu.domain.storetag.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.backend.onharu.domain.level.model.Level;
+import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -66,6 +68,9 @@ class StoreTagCommandServiceTest {
     @Autowired
     private ReservationJpaRepository reservationJpaRepository;
 
+    @Autowired
+    private LevelJpaRepository levelJpaRepository;
+
     @BeforeEach
     public void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
@@ -76,6 +81,7 @@ class StoreTagCommandServiceTest {
         categoryJpaRepository.deleteAll();
         ownerJpaRepository.deleteAll();
         userJpaRepository.deleteAll();
+        levelJpaRepository.deleteAll();
     }
 
     /**
@@ -96,14 +102,28 @@ class StoreTagCommandServiceTest {
     }
 
     /**
-     * 테스트용 Owner 생성 헬퍼 메서드
+     * 테스트용 Level 생성 헬퍼 메서드
      */
-    private Owner createTestOwner(String loginId, String name, String phone) {
+    private Level createTestLevel(String levelName) {
+        return levelJpaRepository.save(
+                Level.builder()
+                        .name(levelName)
+                        .build()
+        );
+    }
+
+
+    /**
+     * 테스트용 Owner 생성 헬퍼 메서드(User, Level 과 함께 생성)
+     */
+    private Owner createTestOwner(String loginId, String name, String phone, String levelName) {
         User user = createTestUser(loginId, name, phone);
+        Level level = createTestLevel(levelName);
+
         return ownerJpaRepository.save(
             Owner.builder()
                 .user(user)
-                .levelId(1L)
+                .level(level)
                 .businessNumber("1234567890")
                 .build()
         );
@@ -138,7 +158,7 @@ class StoreTagCommandServiceTest {
         public void shouldAddStoreTag() {
             // given
             String uniqueLoginId = "test_owner_tag_" + System.currentTimeMillis();
-            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 태그", "01012345678");
+            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 태그", "01012345678", "새싹");
             Category category = createTestCategory("식당");
             
             Store savedStore = storeJpaRepository.save(
@@ -186,7 +206,7 @@ class StoreTagCommandServiceTest {
         public void shouldRemoveStoreTag() {
             // given
             String uniqueLoginId = "test_owner_remove_" + System.currentTimeMillis();
-            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 제거", "01087654321");
+            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 제거", "01087654321", "새싹");
             Category category = createTestCategory("식당");
             
             Store savedStore = storeJpaRepository.save(
@@ -242,7 +262,7 @@ class StoreTagCommandServiceTest {
         public void shouldDeleteStoreTagsWhenStoreIsDeleted() {
             // given
             String uniqueLoginId = "test_owner_orphan_" + System.currentTimeMillis();
-            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 고아", "01011112222");
+            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 고아", "01011112222", "새싹");
             Category category = createTestCategory("식당");
             
             Store savedStore = storeJpaRepository.save(
@@ -309,7 +329,7 @@ class StoreTagCommandServiceTest {
         public void shouldDeleteStoreTagsWhenListIsCleared() {
             // given
             String uniqueLoginId = "test_owner_clear_" + System.currentTimeMillis();
-            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 클리어", "01033334444");
+            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 클리어", "01033334444", "새싹");
             Category category = createTestCategory("식당");
             
             Store savedStore = storeJpaRepository.save(

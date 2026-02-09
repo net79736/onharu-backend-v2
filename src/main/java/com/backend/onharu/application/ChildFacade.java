@@ -2,6 +2,16 @@ package com.backend.onharu.application;
 
 import java.util.List;
 
+import com.backend.onharu.domain.favorite.dto.FavoriteCommand.CreateFavoriteCommand;
+import com.backend.onharu.domain.favorite.dto.FavoriteCommand.DeleteFavoriteCommand;
+import com.backend.onharu.domain.favorite.dto.FavoriteQuery.GetFavoriteByIdQuery;
+import com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoritesByChildIdQuery;
+import com.backend.onharu.domain.favorite.model.Favorite;
+import com.backend.onharu.domain.favorite.service.FavoriteCommandService;
+import com.backend.onharu.domain.favorite.service.FavoriteQueryService;
+import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
+import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.store.service.StoreQueryService;
 import org.springframework.stereotype.Component;
 
 import com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
@@ -34,6 +44,9 @@ public class ChildFacade {
     private final ReservationCommandService reservationCommandService;
     private final ReservationQueryService reservationQueryService;
     private final StoreScheduleQueryService storeScheduleQueryService;
+    private final StoreQueryService storeQueryService;
+    private final FavoriteCommandService favoriteCommandService;
+    private final FavoriteQueryService favoriteQueryService;
 
     /**
      * 예약 하기
@@ -101,5 +114,54 @@ public class ChildFacade {
         reservation.BelongsTo(child.getId());
 
         return reservation;
+    }
+
+    /**
+     * (아동)내가 특정한 가게에 찜 등록
+     * @param command 아동 ID, 가게 ID 가 포함된 CreateFavoriteCommand
+     * @return 찜하기 엔티티 정보
+     */
+    public Favorite createFavorite(CreateFavoriteCommand command) {
+        // 현재 로그인한 아동 정보 조회
+        Child child = childQueryService.getChildById(
+                new GetChildByIdQuery(command.childId())
+        );
+
+        // 가게 정보 조회
+        Store store = storeQueryService.getStore(
+                new GetStoreByIdQuery(command.storeId())
+        );
+
+        // 찜하기 생성
+        return favoriteCommandService.createFavorite(command, child, store);
+    }
+
+    /**
+     * (아동)내가 등록한 찜하기 목록 조회
+     * @param query
+     * @return
+     */
+    public List<Favorite> getMyFavorites(FindFavoritesByChildIdQuery query) {
+        // 내가 등록한 찜 목록 조회
+        return favoriteQueryService.findFavoritesByChildId(query);
+    }
+
+    /**
+     * (아동)내가 찜하기 취소(삭제)
+     * @param command
+     */
+    public void deleteFavorite(DeleteFavoriteCommand command) {
+        // 현재 로그인한 아동 정보 조회
+        childQueryService.getChildById(
+                new GetChildByIdQuery(command.childId())
+        );
+
+        // 삭제할 찜 조회
+        favoriteQueryService.getFavorite(
+                new GetFavoriteByIdQuery(command.favoriteId())
+        );
+
+        // 찜하기 취소(삭제)
+        favoriteCommandService.deleteFavorite(command);
     }
 }

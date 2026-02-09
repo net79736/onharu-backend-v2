@@ -33,7 +33,7 @@ public interface ILevelController {
                             examples = @ExampleObject(
                                     name = "등급 생성 예시",
                                     value = "{\n" +
-                                            "  \"name\": \"새싹\",\n" +
+                                            "  \"name\": \"새싹\"\n" +
                                             "}"
                             )
                     )
