@@ -128,7 +128,10 @@ public class StoreControllerDto {
             Boolean isOpen,
 
             @Schema(description = "거리(km)", example = "1.5")
-            Double distance
+            Double distance,
+
+            @Schema(description = "첨부 이미지 URL 목록 (표시 순서대로)")
+            List<String> images
     ) {
         public StoreResponse(Store store) {
             this(
@@ -143,7 +146,29 @@ public class StoreControllerDto {
                 store.getCategory().getId(),
                 store.getCategory().getName(),
                 store.getIsOpen(),
-                0.0
+                0.0,
+                List.of() // 기본 생성자는 빈 리스트, 이미지 목록은 별도로 설정
+            );
+        }
+
+        /**
+         * 이미지 목록과 함께 StoreResponse 생성
+         */
+        public StoreResponse(Store store, List<String> images) {
+            this(
+                store.getId(),
+                store.getName(),
+                store.getAddress(),
+                store.getPhone(),
+                store.getLat(),
+                store.getLng(),
+                store.getIntroduction(),
+                store.getIntro(),
+                store.getCategory().getId(),
+                store.getCategory().getName(),
+                store.getIsOpen(),
+                0.0,
+                resolveImages(images)
             );
         }
     }

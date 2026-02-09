@@ -37,4 +37,18 @@ public interface FileJpaRepository extends JpaRepository<File, Long> {
     @Modifying
     @Query("DELETE FROM File f WHERE f.refType = :refType AND f.refId = :refId")
     void deleteByRefTypeAndRefId(@Param("refType") AttachmentType refType, @Param("refId") Long refId);
+
+    /**
+     * 여러 게시물에 첨부된 파일 목록을 배치로 조회합니다.
+     * N+1 문제를 방지하기 위해 사용됩니다.
+     * 
+     * @param refType 게시물 유형 (STORE, REVIEW)
+     * @param refIds 게시물 ID 목록
+     * @return 파일 목록 (표시 순서대로 정렬)
+     */
+    @Query("SELECT f FROM File f WHERE f.refType = :refType AND f.refId IN :refIds ORDER BY f.refId, f.displayOrder ASC")
+    List<File> findByRefTypeAndRefIdInOrderByDisplayOrderAsc(
+            @Param("refType") AttachmentType refType,
+            @Param("refIds") List<Long> refIds
+    );
 }

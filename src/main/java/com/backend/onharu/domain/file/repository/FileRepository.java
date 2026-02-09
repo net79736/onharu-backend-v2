@@ -42,4 +42,14 @@ public interface FileRepository {
      * (수정 시 이미지 목록 교체 시 사용)
      */
     void deleteByRefTypeAndRefId(AttachmentType refType, Long refId);
+
+    /**
+     * 여러 게시물에 첨부된 파일 목록을 배치로 조회합니다.
+     * N+1 문제를 방지하기 위해 사용됩니다.
+     * 
+     * @param refType 게시물 유형 (STORE, REVIEW)
+     * @param refIds 게시물 ID 목록
+     * @return 파일 목록 (표시 순서대로 정렬)
+     */
+    List<File> findByRefTypeAndRefIdInOrderByDisplayOrderAsc(AttachmentType refType, List<Long> refIds);
 }

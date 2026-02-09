@@ -31,4 +31,13 @@ public class FileQuery {
             Long id
     ) {
     }
+
+    /**
+     * 여러 게시물에 첨부된 파일 목록을 배치로 조회
+     */
+    public record ListByRefsQuery(
+            AttachmentType refType,
+            java.util.List<Long> refIds
+    ) {
+    }
 }

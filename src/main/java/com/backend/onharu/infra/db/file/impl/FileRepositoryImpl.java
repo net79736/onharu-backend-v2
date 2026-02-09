@@ -55,4 +55,9 @@ public class FileRepositoryImpl implements FileRepository {
     public void deleteByRefTypeAndRefId(AttachmentType refType, Long refId) {
         fileJpaRepository.deleteByRefTypeAndRefId(refType, refId);
     }
+
+    @Override
+    public List<File> findByRefTypeAndRefIdInOrderByDisplayOrderAsc(AttachmentType refType, List<Long> refIds) {
+        return fileJpaRepository.findByRefTypeAndRefIdInOrderByDisplayOrderAsc(refType, refIds);
+    }
 }

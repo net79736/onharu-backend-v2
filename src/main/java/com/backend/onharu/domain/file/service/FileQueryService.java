@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.backend.onharu.domain.file.dto.FileQuery.GetByFileKeyQuery;
 import com.backend.onharu.domain.file.dto.FileQuery.GetByIdQuery;
 import com.backend.onharu.domain.file.dto.FileQuery.ListByRefQuery;
+import com.backend.onharu.domain.file.dto.FileQuery.ListByRefsQuery;
 import com.backend.onharu.domain.file.model.File;
 import com.backend.onharu.domain.file.repository.FileRepository;
 
@@ -43,5 +44,18 @@ public class FileQueryService {
      */
     public File getByFileKey(GetByFileKeyQuery query) {
         return fileRepository.getByFileKey(query.fileKey());
+    }
+
+    /**
+     * 여러 게시물에 첨부된 파일 목록을 배치로 조회합니다.
+     * 
+     * @param query 조회 조건 (refType: STORE, REVIEW, refIds: 게시물 ID 목록)
+     * @return 파일 목록 (표시 순서대로 정렬)
+     */
+    public List<File> listByRefs(ListByRefsQuery query) {
+        if (query.refIds() == null || query.refIds().isEmpty()) {
+            return List.of();
+        }
+        return fileRepository.findByRefTypeAndRefIdInOrderByDisplayOrderAsc(query.refType(), query.refIds());
     }
 }
