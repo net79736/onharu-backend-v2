@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.backend.onharu.domain.common.enums.AttachmentType;
 import com.backend.onharu.domain.common.enums.WeekType;
 import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import com.backend.onharu.domain.owner.model.Owner;
@@ -46,6 +47,7 @@ public class StoreFacade {
     private final CategoryRepository categoryRepository;
     private final TagQueryService tagQueryService;
     private final TagCommandService tagCommandService;
+    private final FileFacade fileFacade;
     
     /**
      * 가게 단건 조회
@@ -109,7 +111,12 @@ public class StoreFacade {
         }
 
         // 가게 저장
-        return storeCommandService.save(store);
+        store = storeCommandService.save(store);
+
+        // 이미 업로드된 이미지 메타데이터 일괄 등록 (이미지 먼저 → 상점 저장 시 한 번에 연결)
+        fileFacade.registerFiles(AttachmentType.STORE, store.getId(), command.images());
+
+        return store;
     }
 
     /**
@@ -156,6 +163,11 @@ public class StoreFacade {
         // 영업시간 업데이트
         if (command.businessHours() != null && !command.businessHours().isEmpty()) {
             updateBusinessHours(store, command.businessHours());
+        }
+
+        // 이미지 목록 교체 (images가 넘어오면 기존 첨부 삭제 후 새 목록으로 등록)
+        if (command.images() != null) {
+            fileFacade.replaceFiles(AttachmentType.STORE, store.getId(), command.images());
         }
     }
     

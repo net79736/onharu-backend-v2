@@ -68,7 +68,11 @@ public class StoreControllerDto {
     public record GetStoreDetailResponse(
             StoreDetailResponse store
     ) {
-        public GetStoreDetailResponse(Store store) {
+
+        /**
+         * 첨부 이미지 목록으로 상세 응답 생성
+         */
+        public GetStoreDetailResponse(Store store, List<String> images) {
             this(new StoreDetailResponse(
                 store.getId(),
                 store.getName(),
@@ -76,7 +80,7 @@ public class StoreControllerDto {
                 store.getPhone(),
                 store.getLat(),
                 store.getLng(),
-                store.getImage(),
+                resolveImages(images),
                 store.getIntro(),
                 store.getIntroduction(),
                 store.getCategory().getId(),
@@ -108,9 +112,6 @@ public class StoreControllerDto {
             @Schema(description = "경도", example = "126.9780")
             String lng,
 
-            @Schema(description = "이미지 경로", example = "https://onharu.com/images/store1.jpg")
-            String image,
-
             @Schema(description = "한줄 소개", example = "따뜻한 한 끼 식사")
             String intro,
 
@@ -137,7 +138,6 @@ public class StoreControllerDto {
                 store.getPhone(),
                 store.getLat(),
                 store.getLng(),
-                store.getImage(),
                 store.getIntro(),
                 store.getIntroduction(),
                 store.getCategory().getId(),
@@ -167,8 +167,8 @@ public class StoreControllerDto {
             @Schema(description = "경도", example = "126.9780")
             String lng,
 
-            @Schema(description = "이미지 경로", example = "https://onharu.com/images/store1.jpg")
-            String image,
+            @Schema(description = "첨부 이미지 URL 목록 (다중 이미지, 표시 순서대로). 기존 단일 image 대체.")
+            List<String> images,
 
             @Schema(description = "한줄 소개", example = "따뜻한 한 끼 식사")
             String intro,
@@ -208,6 +208,22 @@ public class StoreControllerDto {
     ) {
     }
 
+    /**
+     * 이미 업로드된 이미지 메타데이터 (Presigned URL로 MinIO 업로드 완료 후 클라이언트가 보관한 정보)
+     */
+    @Schema(description = "이미 업로드된 이미지 메타데이터")
+    public record ImageMetadataRequest(
+            @Schema(description = "S3 객체 키 (Presigned URL 업로드 시 사용한 경로)", example = "image/uuid-photo.jpg", requiredMode = Schema.RequiredMode.REQUIRED)
+            String fileKey,
+
+            @Schema(description = "다운로드 URL 또는 파일 경로", example = "https://minio.example.com/bucket/image/uuid-photo.jpg", requiredMode = Schema.RequiredMode.REQUIRED)
+            String filePath,
+
+            @Schema(description = "표시 순서 (0이 대표 이미지)", example = "0")
+            Integer displayOrder
+    ) {
+    }
+
     @Schema(description = "가게 정보 생성 요청")
     public record OpenStoreRequest(
         @Schema(description = "카테고리 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -228,9 +244,6 @@ public class StoreControllerDto {
         @Schema(description = "경도", example = "126.9780", requiredMode = Schema.RequiredMode.REQUIRED)
         String lng,
 
-        @Schema(description = "이미지 경로", example = "https://onharu.com/images/store1.jpg")
-        String image,
-
         @Schema(description = "한줄 소개", example = "따뜻한 한 끼 식사", requiredMode = Schema.RequiredMode.REQUIRED)
         String intro,
 
@@ -241,7 +254,10 @@ public class StoreControllerDto {
         List<String> tagNames,
 
         @Schema(description = "영업시간 목록")
-        List<BusinessHourRequest> businessHours
+        List<BusinessHourRequest> businessHours,
+
+        @Schema(description = "이미 업로드된 이미지 목록 (Presigned URL 업로드 완료 후 fileKey, filePath만 보관하여 전달)")
+        List<ImageMetadataRequest> images
     ) {
     }
 
@@ -269,9 +285,6 @@ public class StoreControllerDto {
             @Schema(description = "카테고리 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
             Long categoryId,
 
-            @Schema(description = "이미지 경로", example = "https://onharu.com/images/store1.jpg")
-            String image,
-
             @Schema(description = "전화번호", example = "0212345678", requiredMode = Schema.RequiredMode.REQUIRED)
             String phone,
 
@@ -297,7 +310,10 @@ public class StoreControllerDto {
             List<String> tagNames,
 
             @Schema(description = "영업시간 목록")
-            List<BusinessHourRequest> businessHours
+            List<BusinessHourRequest> businessHours,
+
+            @Schema(description = "이미 업로드된 이미지 목록 (넘기면 기존 첨부 삭제 후 이 목록으로 교체)")
+            List<ImageMetadataRequest> images
     ) {
     }
 
@@ -314,5 +330,12 @@ public class StoreControllerDto {
                 category.getName()
             );
         }
+    }
+
+    /**
+     * 첨부 이미지 목록을 해석하여 반환 (이미지는 File 테이블에서만 관리)
+     */
+    private static List<String> resolveImages(List<String> images) {
+        return (images != null && !images.isEmpty()) ? images : List.of();
     }
 }
