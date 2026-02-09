@@ -4,9 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import com.backend.onharu.domain.level.model.Level;
-import com.backend.onharu.domain.user.model.User;
-import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
 import com.backend.onharu.domain.store.model.Category;
@@ -27,6 +25,8 @@ import com.backend.onharu.domain.store.model.StoreTag;
 import com.backend.onharu.domain.store.repository.StoreRepository;
 import com.backend.onharu.domain.store.service.StoreQueryService;
 import com.backend.onharu.domain.tag.model.Tag;
+import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
@@ -165,7 +165,6 @@ class StoreTagQueryServiceTest {
                     .name("태그 조회 테스트 가게")
                     .address("서울시 강남구")
                     .phone("0212345678")
-                    .image("/images/query_test.jpg")
                     .isOpen(true)
                     .build()
             );
@@ -220,7 +219,6 @@ class StoreTagQueryServiceTest {
                     .name("태그 없는 가게")
                     .address("서울시 강남구")
                     .phone("0212345678")
-                    .image("/images/empty_test.jpg")
                     .isOpen(true)
                     .build()
             );
@@ -263,7 +261,6 @@ class StoreTagQueryServiceTest {
                     .name("가게 1")
                     .address("서울시 강남구")
                     .phone("0212345678")
-                    .image("https://onharu.com/images/store1.jpg")
                     .isOpen(true)
                     .build()
             );
@@ -275,7 +272,6 @@ class StoreTagQueryServiceTest {
                     .name("가게 2")
                     .address("서울시 서초구")
                     .phone("0298765432")
-                    .image("/images/store2.jpg")
                     .isOpen(true)
                     .build()
             );

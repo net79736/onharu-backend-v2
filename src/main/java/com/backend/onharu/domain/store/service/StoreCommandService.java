@@ -35,7 +35,6 @@ public class StoreCommandService {
                 .phone(command.phone())
                 .lat(command.lat())
                 .lng(command.lng())
-                .image(command.image())
                 .introduction(command.introduction())
                 .intro(command.intro())
                 .isOpen(false) // 가게 생성 시 영업 상태는 미영업 상태로 설정
@@ -52,7 +51,6 @@ public class StoreCommandService {
         
         store.update(
                 category,
-                command.image(),
                 command.phone(),
                 command.address(),
                 command.lat(),

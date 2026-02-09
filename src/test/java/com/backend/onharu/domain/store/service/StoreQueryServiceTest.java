@@ -5,8 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import com.backend.onharu.domain.level.model.Level;
-import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +17,7 @@ import org.springframework.test.annotation.Rollback;
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByCategoryIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByNameQuery;
@@ -28,6 +27,7 @@ import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
@@ -151,7 +151,6 @@ class StoreQueryServiceTest {
                     .name("조회 테스트 가게")
                     .address("서울시 강남구 테헤란로 123")
                     .phone("0212345678")
-                    .image("/images/query_test.jpg")
                     .introduction("조회 테스트용 가게입니다")
                     .intro("조회 테스트")
                     .isOpen(false)
@@ -231,7 +230,6 @@ class StoreQueryServiceTest {
                     .name("식당 가게 1")
                     .address("서울시 강남구")
                     .phone("0212345678")
-                    .image("https://onharu.com/images/store1.jpg")
                     .isOpen(true)
                     .build()
             );
@@ -243,7 +241,6 @@ class StoreQueryServiceTest {
                     .name("식당 가게 2")
                     .address("서울시 서초구")
                     .phone("0298765432")
-                    .image("/images/store2.jpg")
                     .isOpen(true)
                     .build()
             );
@@ -256,7 +253,6 @@ class StoreQueryServiceTest {
                     .name("카페 가게")
                     .address("서울시 강남구")
                     .phone("0211111111")
-                    .image("/images/cafe.jpg")
                     .isOpen(true)
                     .build()
             );
@@ -297,7 +293,6 @@ class StoreQueryServiceTest {
                     .name("따뜻한 식당")
                     .address("서울시 강남구")
                     .phone("0212345678")
-                    .image("/images/warm.jpg")
                     .isOpen(true)
                     .build()
             );
@@ -309,7 +304,6 @@ class StoreQueryServiceTest {
                     .name("따뜻한 카페")
                     .address("서울시 서초구")
                     .phone("0298765432")
-                    .image("/images/warm_cafe.jpg")
                     .isOpen(true)
                     .build()
             );
@@ -321,7 +315,6 @@ class StoreQueryServiceTest {
                     .name("시원한 식당")
                     .address("서울시 송파구")
                     .phone("0211111111")
-                    .image("/images/cool.jpg")
                     .isOpen(true)
                     .build()
             );
@@ -352,7 +345,6 @@ class StoreQueryServiceTest {
                 .name("가게 1")
                 .address("서울시 강남구")
                 .phone("0212345678")
-                .image("https://onharu.com/images/store1.jpg")
                 .isOpen(true)
                 .build(),
             Store.builder()
@@ -361,7 +353,6 @@ class StoreQueryServiceTest {
                 .name("가게 2")
                 .address("서울시 서초구")
                 .phone("0298765432")
-                .image("/images/store2.jpg")
                 .isOpen(true)
                 .build(),
             Store.builder()
@@ -370,7 +361,6 @@ class StoreQueryServiceTest {
                 .name("가게 3")
                 .address("서울시 송파구")
                 .phone("0211111111")
-                .image("/images/store3.jpg")
                 .isOpen(false)
                 .build()
         ));

@@ -2,8 +2,6 @@ package com.backend.onharu.domain.storetag.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.backend.onharu.domain.level.model.Level;
-import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
 import com.backend.onharu.domain.store.model.Category;
@@ -26,6 +25,7 @@ import com.backend.onharu.domain.tag.dto.TagRepositroyParam.GetTagByIdParam;
 import com.backend.onharu.domain.tag.model.Tag;
 import com.backend.onharu.domain.tag.repository.TagRepository;
 import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
@@ -168,7 +168,6 @@ class StoreTagCommandServiceTest {
                     .name("태그 테스트 가게")
                     .address("서울시 강남구")
                     .phone("0212345678")
-                    .image("/images/tag_test.jpg")
                     .isOpen(true)
                     .build()
             );
@@ -216,7 +215,6 @@ class StoreTagCommandServiceTest {
                     .name("태그 제거 테스트 가게")
                     .address("서울시 강남구")
                     .phone("0212345678")
-                    .image("/images/remove_test.jpg")
                     .isOpen(true)
                     .build()
             );
@@ -272,7 +270,6 @@ class StoreTagCommandServiceTest {
                     .name("고아 제거 테스트 가게")
                     .address("서울시 강남구")
                     .phone("0212345678")
-                    .image("/images/orphan_test.jpg")
                     .isOpen(true)
                     .build()
             );
@@ -339,7 +336,6 @@ class StoreTagCommandServiceTest {
                     .name("리스트 클리어 테스트 가게")
                     .address("서울시 강남구")
                     .phone("0212345678")
-                    .image("/images/clear_test.jpg")
                     .isOpen(true)
                     .build()
             );
