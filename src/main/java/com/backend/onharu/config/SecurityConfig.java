@@ -41,7 +41,8 @@ public class SecurityConfig {
             "/api/admins/**", // 관리자 관련 API
             "/api/stores/**", // 가게 관련 API
             "/api/store-schedules/**", // 가게 스케줄 관련 API
-            "/api/upload/**" // S3 파일 업로드 관련 API
+            "/api/upload/**", // S3 파일 업로드 관련 API
+            "/api/auth/**", // 인증 관련 API
     };
 
     public static final String[] AUTHENTICATE_PATH = {
