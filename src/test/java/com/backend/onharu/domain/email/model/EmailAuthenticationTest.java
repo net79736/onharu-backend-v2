@@ -1,23 +1,20 @@
 package com.backend.onharu.domain.email.model;
 
 import com.backend.onharu.domain.support.error.CoreException;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 
 import static com.backend.onharu.domain.support.error.ErrorType.EmailAuthentication.EMAIL_ALREADY_VERIFIED;
 import static com.backend.onharu.domain.support.error.ErrorType.EmailAuthentication.EMAIL_TOKEN_EXPIRED;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * 이메일 인증 도메인의 단위 테스트 코드 입니다.
  */
-@ActiveProfiles("test")
 class EmailAuthenticationTest {
 
     @Nested
