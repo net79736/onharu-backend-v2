@@ -3,7 +3,7 @@ spring:
     allow-bean-definition-overriding: true
   profiles:
     active: dev
-    include: swagger, oauth, smtp
+    include: swagger
   application:
     name: onharu
 
