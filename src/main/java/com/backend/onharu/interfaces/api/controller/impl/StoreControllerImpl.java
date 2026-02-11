@@ -1,8 +1,10 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
 import static com.backend.onharu.interfaces.api.common.util.PageableUtil.getCurrentPage;
+import static com.backend.onharu.interfaces.api.dto.StoreRequestMapperDto.toImageMetadataList;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -20,6 +22,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.onharu.application.StoreFacade;
+import com.backend.onharu.domain.common.enums.AttachmentType;
+import com.backend.onharu.domain.file.dto.FileQuery.ListByRefQuery;
+import com.backend.onharu.domain.file.dto.FileQuery.ListByRefsQuery;
+import com.backend.onharu.domain.file.model.File;
+import com.backend.onharu.domain.file.service.FileQueryService;
 import com.backend.onharu.domain.store.dto.CategoryQuery.FindAllByNameQuery;
 import com.backend.onharu.domain.store.dto.StoreCommand.CreateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
@@ -39,6 +46,7 @@ import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresRequ
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
+import com.backend.onharu.utils.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +64,7 @@ public class StoreControllerImpl implements IStoreController {
 
     private final CategoryRepository categoryRepository;
     private final StoreFacade storeFacade;
+    private final FileQueryService fileQueryService;
 
     /**
      * 가게 상세 정보 조회
@@ -75,7 +84,15 @@ public class StoreControllerImpl implements IStoreController {
         
         Store store = storeFacade.getStore(storeId);
 
-        GetStoreDetailResponse response = new GetStoreDetailResponse(store);
+        // 가게에 첨부된 이미지 목록 조회
+        List<File> files = fileQueryService.listByRef(
+                new ListByRefQuery(AttachmentType.STORE, store.getId())
+        );
+        List<String> imagePaths = files.stream()
+                .map(File::getFilePath)
+                .toList();
+
+        GetStoreDetailResponse response = new GetStoreDetailResponse(store, imagePaths);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(response));
@@ -117,9 +134,29 @@ public class StoreControllerImpl implements IStoreController {
         // 페이징된 결과 조회
         Page<Store> storePage = storeFacade.searchStores(searchQuery, pageable);
         
-        // DTO 변환
+        // 가게 ID 목록 추출
+        List<Long> storeIds = storePage.getContent().stream()
+                .map(Store::getId)
+                .collect(Collectors.toList());
+        
+        // 배치로 이미지 파일 목록 조회 (N+1 문제 방지)
+        List<File> allFiles = storeIds.isEmpty() 
+                ? List.of() 
+                : fileQueryService.listByRefs(new ListByRefsQuery(AttachmentType.STORE, storeIds));
+        
+        // 가게 ID별로 이미지 목록 그룹화
+        Map<Long, List<String>> imagesByStoreId = allFiles.stream()
+                .collect(Collectors.groupingBy(
+                        File::getRefId,
+                        Collectors.mapping(File::getFilePath, Collectors.toList())
+                ));
+        
+        // DTO 변환 (이미지 목록 포함)
         List<StoreResponse> storeResponses = storePage.getContent().stream()
-                .map(StoreResponse::new)
+                .map(store -> {
+                    List<String> images = imagesByStoreId.getOrDefault(store.getId(), List.of());
+                    return new StoreResponse(store, images);
+                })
                 .collect(Collectors.toList());
         
         SearchStoresResponse response = new SearchStoresResponse(
@@ -148,8 +185,8 @@ public class StoreControllerImpl implements IStoreController {
     public ResponseEntity<ResponseDTO<OpenStoreResponse>> openStore(
             @RequestBody OpenStoreRequest request
     ) {
-        Long ownerId = 855L; // TODO: 사업자 ID SecurityContext에서 가져오기
-        log.info("가게 정보 작성 요청: {}", request);
+        Long ownerId = SecurityUtils.getCurrentUserId();
+        log.info("가게 정보 작성 요청: ownerId={}, request={}", ownerId, request);
 
         Store store = storeFacade.createStore(new CreateStoreCommand(
             ownerId,
@@ -159,11 +196,11 @@ public class StoreControllerImpl implements IStoreController {
             request.phone(),
             request.lat(),
             request.lng(), 
-            request.image(),
             request.intro(),
             request.introduction(),
             request.tagNames(),
-            request.businessHours()
+            request.businessHours(),
+            toImageMetadataList(request.images())
         ), ownerId);
 
         OpenStoreResponse response = new OpenStoreResponse(store.getId());
@@ -186,9 +223,9 @@ public class StoreControllerImpl implements IStoreController {
     public ResponseEntity<ResponseDTO<Void>> closeStore(
             @PathVariable("storeId") Long storeId
     ) {        
-        log.info("가게 정보 삭제 요청: storeId={}", storeId);
+        Long ownerId = SecurityUtils.getCurrentUserId();
+        log.info("가게 정보 삭제 요청: ownerId={}, storeId={}", ownerId, storeId);
 
-        Long ownerId = 855L; // TODO: 사업자 ID SecurityContext에서 가져오기
         storeFacade.deleteStore(new DeleteStoreCommand(storeId), ownerId);
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -211,22 +248,22 @@ public class StoreControllerImpl implements IStoreController {
             @PathVariable("storeId") Long storeId,
             @RequestBody UpdateStoreRequest request
     ) {
-        log.info("가게 정보 수정 요청: storeId={}, request={}", storeId, request);
+        Long ownerId = SecurityUtils.getCurrentUserId();
+        log.info("가게 정보 수정 요청: ownerId={}, storeId={}, request={}", ownerId, storeId, request);
 
-        Long ownerId = 855L; // TODO: 사업자 ID SecurityContext에서 가져오기
         storeFacade.updateStore(new UpdateStoreCommand(
             storeId, 
             request.categoryId(), 
-            request.image(),
             request.phone(),
             request.address(),
             request.lat(),
             request.lng(),
-            request.introduction(),
             request.intro(),
+            request.introduction(),
             request.isOpen(),
             request.tagNames(),
-            request.businessHours()
+            request.businessHours(),
+            toImageMetadataList(request.images())
         ), ownerId);
         
         return ResponseEntity.status(HttpStatus.OK)

@@ -1,5 +1,17 @@
 package com.backend.onharu.domain.reservation.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.ReservationType;
@@ -18,25 +30,16 @@ import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.infra.db.child.ChildJpaRepository;
+import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
+import com.backend.onharu.infra.db.file.FileJpaRepository;
 import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
+import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @DisplayName("ReservationCommandService 단위 테스트")
@@ -70,17 +73,30 @@ class ReservationCommandServiceTest {
     private CategoryJpaRepository categoryJpaRepository;
     @Autowired
     private LevelJpaRepository levelJpaRepository;
+    
+    @Autowired
+    private FileJpaRepository fileJpaRepository;
+    
+    @Autowired
+    private FavoriteJpaRepository favoriteJpaRepository;
+    
+    @Autowired
+    private TagJpaRepository tagJpaRepository;
 
     @BeforeEach
     public void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
-        reservationJpaRepository.deleteAll();
-        storeScheduleJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll();
+        reservationJpaRepository.deleteAll(); // reservations는 store_schedules를 참조
+        storeScheduleJpaRepository.deleteAll(); // store_schedules는 stores를 참조
+        fileJpaRepository.deleteAll(); // files는 stores를 참조하므로 stores 삭제 전에 삭제
+        favoriteJpaRepository.deleteAll(); // favorites는 stores를 참조하므로 stores 삭제 전에 삭제
+        storeJpaRepository.deleteAll(); // stores 삭제
+        tagJpaRepository.deleteAll(); // tags는 store_tags가 삭제된 후에 삭제 가능
         categoryJpaRepository.deleteAll();
         childJpaRepository.deleteAll();
         ownerJpaRepository.deleteAll();
         userJpaRepository.deleteAll();
+        levelJpaRepository.deleteAll(); // levels는 owners를 참조하므로 owners 삭제 후에 삭제
     }
 
     /**
@@ -120,7 +136,7 @@ class ReservationCommandServiceTest {
         return childJpaRepository.save(
                 Child.builder()
                         .user(user)
-                        .nickname(nickname)
+                        .nickname(name + "닉네임") // nickname은 필수 필드이므로 추가
                         .certificate(certificate)
                         .isVerified(isVerified != null ? isVerified : true)
                         .build()
@@ -177,7 +193,6 @@ class ReservationCommandServiceTest {
                 .category(category)
                 .address("서울시 강남구")
                 .phone("0212345678")
-                .image("/images/test.jpg")
                 .isOpen(true)
                 .build());
     }
@@ -187,8 +202,7 @@ class ReservationCommandServiceTest {
     class CreateReservationTest {
 
         @Test
-        @DisplayName("예약 생성 성공")
-        @Rollback(value = false)
+        @DisplayName("예약 생성 성공")        
         public void shouldCreateReservation() {
             // given
             Child savedChild = createTestChild("test_child", "테스트 아동", "01012345678");
@@ -233,8 +247,7 @@ class ReservationCommandServiceTest {
     class CancelReservationTest {
 
         @Test
-        @DisplayName("예약 취소 성공")
-        @Rollback(value = false)
+        @DisplayName("예약 취소 성공")        
         public void shouldCancelReservation() {
             // given
             Child savedChild = createTestChild("test_child2", "테스트 아동2", "01087654321", "닉네임테스트","/certificates/test2.pdf", true);
@@ -278,8 +291,7 @@ class ReservationCommandServiceTest {
     class CompleteReservationTest {
 
         @Test
-        @DisplayName("예약 완료 처리 성공")
-        @Rollback(value = false)
+        @DisplayName("예약 완료 처리 성공")        
         public void shouldCompleteReservation() {
             // given
             Child savedChild = createTestChild("test_child3", "테스트 아동3", "01011112222","닉네임테스트", "/certificates/test3.pdf", true);
@@ -319,8 +331,7 @@ class ReservationCommandServiceTest {
     class ChangeReservationStatusTest {
 
         @Test
-        @DisplayName("예약 상태 변경 성공")
-        @Rollback(value = false)
+        @DisplayName("예약 상태 변경 성공")        
         public void shouldChangeReservationStatus() {
             // given
             Child savedChild = createTestChild("test_child4", "테스트 아동4", "01033334444", "닉네임테스트","/certificates/test4.pdf", true);

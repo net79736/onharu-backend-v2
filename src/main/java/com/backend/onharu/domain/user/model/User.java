@@ -1,22 +1,33 @@
 package com.backend.onharu.domain.user.model;
 
-import com.backend.onharu.domain.common.base.BaseEntity;
-import com.backend.onharu.domain.common.enums.ProviderType;
-import com.backend.onharu.domain.common.enums.StatusType;
-import com.backend.onharu.domain.common.enums.UserType;
-
-import com.backend.onharu.domain.support.error.CoreException;
-import com.backend.onharu.domain.support.error.ErrorType;
-import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import static com.backend.onharu.domain.support.error.ErrorType.User.LOGIN_ID_OR_PASSWORD_MISMATCH;
+import static com.backend.onharu.domain.support.error.ErrorType.User.USER_STATUS_BLOCKED;
+import static com.backend.onharu.domain.support.error.ErrorType.User.USER_STATUS_DELETED;
+import static com.backend.onharu.domain.support.error.ErrorType.User.USER_STATUS_LOCKED;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.backend.onharu.domain.support.error.ErrorType.User.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.backend.onharu.domain.common.base.BaseEntity;
+import com.backend.onharu.domain.common.enums.ProviderType;
+import com.backend.onharu.domain.common.enums.StatusType;
+import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.support.error.ErrorType;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * 사용자 엔티티
@@ -28,9 +39,9 @@ import static com.backend.onharu.domain.support.error.ErrorType.User.*;
  *  password: 암호화된 비밀번호
  *  name: 사용자 이름
  *  phone: 전화번호
- *  providerType: 제공자 유형 (LOCAL, KAKAO)
  *  userType: 사용자 유형 (CHILD, OWNER, ADMIN)
  *  status: 계정 상태 (PENDING, ACTIVE, LOCKED, DELETED, BLOCKED)
+ *  providerType: 제공자 유형 (LOCAL, KAKAO)
  */
 @Entity
 @Table(name = "users")
@@ -62,7 +73,8 @@ public class User extends BaseEntity {
     @Column(name = "STATUS", nullable = false, length = 20)
     private StatusType statusType;
 
-    @Column(name = "PROVIDER", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "PROVIDER", nullable = false, length = 20)
     private ProviderType providerType;
 
     @Builder

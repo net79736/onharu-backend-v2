@@ -33,6 +33,7 @@ import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardRespons
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.ReservationResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.UpdateCardRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.UpdateCertificateRequest;
+import com.backend.onharu.utils.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -255,8 +256,9 @@ public class ChildrenControllerImpl implements IChildrenController {
             @PathVariable("storeId") Long storeId,
             @RequestBody BookStoreRequest request
     ) {
-        log.info("예약 생성 요청: storeId={}, request={}", storeId, request);
-        Long childId = 319L; // TODO: 아동 ID SecurityContext에서 가져오기
+        Long childId = SecurityUtils.getCurrentUserId();
+
+        log.info("예약 생성 요청: childId={}, storeId={}, request={}", childId, storeId, request);
 
         childFacade.reserve(new CreateReservationCommand(childId, request.storeScheduleId(), request.people()));
         
@@ -278,9 +280,10 @@ public class ChildrenControllerImpl implements IChildrenController {
     public ResponseEntity<ResponseDTO<Void>> cancelStore(
             @PathVariable("reservationId") Long reservationId
     ) {
-        log.info("예약 취소 요청: reservationId={}", reservationId);
+        Long childId = SecurityUtils.getCurrentUserId();
 
-        Long childId = 319L; // TODO: 아동 ID SecurityContext에서 가져오기
+        log.info("예약 취소 요청: childId={}, reservationId={}", childId, reservationId);
+
 
         childFacade.cancelReservation(new CancelReservationCommand(reservationId, "예약 취소"), childId);
         
@@ -299,9 +302,9 @@ public class ChildrenControllerImpl implements IChildrenController {
     @Override
     @GetMapping("/reservations")
     public ResponseEntity<ResponseDTO<GetMyBookingListResponse>> getMyBookings() {
-        log.info("예약 신청 목록 조회 요청");
+        Long childId = SecurityUtils.getCurrentUserId();
 
-        Long childId = 319L; // TODO: 아동 ID SecurityContext에서 가져오기
+        log.info("예약 신청 목록 조회 요청: childId={}", childId);
 
         List<Reservation> reservations = childFacade.getMyBookings(childId); // 내 예약 목록 조회
         List<ReservationResponse> reservationResponses = reservations.stream()
@@ -328,8 +331,9 @@ public class ChildrenControllerImpl implements IChildrenController {
     public ResponseEntity<ResponseDTO<GetMyBookingDetailResponse>> getMyBooking(
             @PathVariable("reservationId") Long reservationId
     ) {
-        log.info("예약 신청 상세 조회 요청: reservationId={}", reservationId);
-        Long childId = 319L; // TODO: 아동 ID SecurityContext에서 가져오기
+        Long childId = SecurityUtils.getCurrentUserId();
+        
+        log.info("예약 신청 상세 조회 요청: childId={}, reservationId={}", childId, reservationId);
 
         Reservation reservation = childFacade.getMyBooking(reservationId, childId);
         ReservationResponse reservationResponse = new ReservationResponse(reservation);

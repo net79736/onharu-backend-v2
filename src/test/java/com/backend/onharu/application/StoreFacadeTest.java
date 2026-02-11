@@ -1,5 +1,21 @@
 package com.backend.onharu.application;
 
+import static com.backend.onharu.domain.support.error.ErrorType.Store.STORE_OWNER_MISMATCH;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
@@ -20,17 +36,6 @@ import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
-import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.UUID;
-
-import static com.backend.onharu.domain.support.error.ErrorType.Store.STORE_OWNER_MISMATCH;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @DisplayName("StoreFacade 단위 테스트")
@@ -129,7 +134,8 @@ class StoreFacadeTest {
                 .category(category)
                 .address("서울시 강남구")
                 .phone("0212345678")
-                .image("/images/test.jpg")
+                .intro("테스트 한줄 소개")
+                .introduction("테스트 가게 소개")
                 .isOpen(true)
                 .build());
     }
@@ -227,11 +233,11 @@ class StoreFacadeTest {
                     "0212345678",
                     "37.5665",
                     "126.9780",
-                    "/images/new_store.jpg",
-                    "맛있는 음식을 제공하는 가게입니다.",
                     "따뜻한 식당",
+                    "맛있는 음식을 제공하는 가게입니다.",
                     List.of(), // 태그 없음
-                    List.of() // 영업시간 없음
+                    List.of(), // 영업시간 없음
+                    List.of() // 이미지 없음
             );
 
             // when
@@ -271,11 +277,11 @@ class StoreFacadeTest {
                     "0212345678",
                     "37.5665",
                     "126.9780",
-                    "/images/tagged_store.jpg",
                     "태그가 있는 가게입니다.",
                     "태그 가게",
                     List.of("커피", "디저트", "브런치"), // 태그 이름 목록
-                    List.of() // 영업시간 없음
+                    List.of(), // 영업시간 없음
+                    List.of() // 이미지 없음
             );
 
             // when
@@ -334,11 +340,11 @@ class StoreFacadeTest {
                     "0212345678",
                     "37.5665",
                     "126.9780",
-                    "/images/reuse_tags.jpg",
                     "기존 태그를 재사용하는 가게입니다.",
                     "태그 재사용",
                     List.of("커피", "새로운태그"), // 기존 태그 "커피"와 새로운 태그 "새로운태그"
-                    List.of() // 영업시간 없음
+                    List.of(), // 영업시간 없음
+                    List.of() // 이미지 없음
             );
 
             // when
@@ -399,7 +405,6 @@ class StoreFacadeTest {
             UpdateStoreCommand command = new UpdateStoreCommand(
                     store.getId(),
                     category2.getId(),
-                    "/images/updated.jpg",
                     "0298765432",
                     "서울시 서초구",
                     "37.4837",
@@ -408,7 +413,8 @@ class StoreFacadeTest {
                     "업데이트된 한줄 소개",
                     true,
                     List.of(), // 태그 없음
-                    List.of() // 영업시간 없음
+                    List.of(), // 영업시간 없음
+                    List.of() // 이미지 없음
             );
 
             // when
@@ -418,7 +424,6 @@ class StoreFacadeTest {
             Store updatedStore = storeJpaRepository.findById(store.getId()).orElse(null);
             assertThat(updatedStore).isNotNull();
             assertThat(updatedStore.getCategory().getId()).isEqualTo(category2.getId());
-            assertThat(updatedStore.getImage()).isEqualTo("/images/updated.jpg");
             assertThat(updatedStore.getPhone()).isEqualTo("0298765432");
             assertThat(updatedStore.getAddress()).isEqualTo("서울시 서초구");
             assertThat(updatedStore.getIntroduction()).isEqualTo("업데이트된 가게 소개입니다.");
@@ -445,7 +450,6 @@ class StoreFacadeTest {
             UpdateStoreCommand command = new UpdateStoreCommand(
                     store.getId(),
                     category.getId(),
-                    "/images/updated.jpg",
                     "0298765432",
                     "서울시 서초구",
                     "37.4837",
@@ -454,7 +458,8 @@ class StoreFacadeTest {
                     "업데이트된 한줄 소개",
                     true,
                     List.of(), // 태그 없음
-                    List.of() // 영업시간 없음
+                    List.of(), // 영업시간 없음
+                    List.of() // 이미지 없음
             );
 
             // when & then

@@ -203,7 +203,7 @@ class UserFacadeTest {
             Owner owner = ownerJpaRepository.findByUser_LoginId(user.getLoginId()).orElse(null);
             Assertions.assertNotNull(owner);
             Assertions.assertEquals(owner.getUser().getId(), user.getId());
-            Assertions.assertEquals(owner.getLevel().getId(), level.getId());
+            Assertions.assertEquals(owner.getLevel().getId(), level.getId()); // 생성한 Level의 ID와 일치해야 함
             Assertions.assertEquals(owner.getBusinessNumber(), "1234567890");
 
             System.out.println("✅ 사업자 회원가입 성공 - User ID: " + user.getId());

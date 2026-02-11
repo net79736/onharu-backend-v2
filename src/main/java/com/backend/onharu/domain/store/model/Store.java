@@ -59,9 +59,6 @@ public class Store extends BaseEntity {
     @Column(name = "LNG", length = 20)
     private String lng;
 
-    @Column(name = "IMAGE", nullable = false, length = 255)
-    private String image;
-
     @Column(name = "INTRODUCTION", columnDefinition = "TEXT")
     private String introduction;
 
@@ -79,7 +76,7 @@ public class Store extends BaseEntity {
 
     @Builder
     public Store(Owner owner, Category category, String name, String address, String phone,
-                 String lat, String lng, String image, String introduction, String intro, Boolean isOpen) {
+                 String lat, String lng, String introduction, String intro, Boolean isOpen) {
         this.owner = owner;
         this.category = category;
         this.name = name;
@@ -87,7 +84,6 @@ public class Store extends BaseEntity {
         this.phone = phone;
         this.lat = lat;
         this.lng = lng;
-        this.image = image;
         this.introduction = introduction;
         this.intro = intro;
         this.isOpen = isOpen != null ? isOpen : true;
@@ -95,9 +91,9 @@ public class Store extends BaseEntity {
 
     /**
      * 가게 정보를 업데이트합니다.
-     * 
+     * (이미지는 File 테이블에서 관리)
+     *
      * @param category 변경할 카테고리
-     * @param image 변경할 이미지 경로
      * @param phone 변경할 전화번호
      * @param address 변경할 주소
      * @param lat 변경할 위도
@@ -106,9 +102,8 @@ public class Store extends BaseEntity {
      * @param intro 변경할 한줄 소개
      * @param isOpen 변경할 영업 여부
      */
-    public void update(Category category, String image, String phone, String address, String lat, String lng, String introduction, String intro, Boolean isOpen) {
+    public void update(Category category, String phone, String address, String lat, String lng, String introduction, String intro, Boolean isOpen) {
         ofNullable(category).ifPresent(v -> this.category = v);
-        ofNullable(image).ifPresent(v -> this.image = v);
         ofNullable(phone).ifPresent(v -> this.phone = v);
         ofNullable(address).ifPresent(v -> this.address = v);
         ofNullable(lat).ifPresent(v -> this.lat = v);

@@ -6,8 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import com.backend.onharu.domain.level.model.Level;
-import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,6 +17,7 @@ import org.springframework.test.annotation.Rollback;
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
@@ -27,6 +26,7 @@ import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByS
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.GetStoreScheduleByIdQuery;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
@@ -129,7 +129,6 @@ class StoreScheduleQueryServiceTest {
             .category(category)
             .address("서울시 강남구")
             .phone("0212345678")
-            .image("/images/schedule_test.jpg")
             .isOpen(true)
             .build());
     }
