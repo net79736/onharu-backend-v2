@@ -130,7 +130,7 @@ class ReservationCommandServiceTest {
     /**
      * 테스트용 Child 생성 헬퍼 메서드 (User와 함께 생성)
      */
-    private Child createTestChild(String loginId, String name, String phone, String certificate, Boolean isVerified) {
+    private Child createTestChild(String loginId, String name, String phone, String nickname, String certificate, Boolean isVerified) {
         User user = createTestUser(loginId, name, phone);
 
         return childJpaRepository.save(
@@ -147,7 +147,7 @@ class ReservationCommandServiceTest {
      * 테스트용 Child 생성 헬퍼 메서드 (기본값 사용)
      */
     private Child createTestChild(String loginId, String name, String phone) {
-        return createTestChild(loginId, name, phone, "/certificates/test.pdf", true);
+        return createTestChild(loginId, name, phone, "닉네임테스트", "/certificates/test.pdf", true);
     }
 
     /**
@@ -250,7 +250,7 @@ class ReservationCommandServiceTest {
         @DisplayName("예약 취소 성공")        
         public void shouldCancelReservation() {
             // given
-            Child savedChild = createTestChild("test_child2", "테스트 아동2", "01087654321", "/certificates/test2.pdf", true);
+            Child savedChild = createTestChild("test_child2", "테스트 아동2", "01087654321", "닉네임테스트","/certificates/test2.pdf", true);
 
             Owner savedOwner = createTestOwner("test_owner2", "테스트 사업자2", "01022223333", "새싹", "2234567890");
             Category category = createTestCategory("식당");
@@ -294,7 +294,7 @@ class ReservationCommandServiceTest {
         @DisplayName("예약 완료 처리 성공")        
         public void shouldCompleteReservation() {
             // given
-            Child savedChild = createTestChild("test_child3", "테스트 아동3", "01011112222", "/certificates/test3.pdf", true);
+            Child savedChild = createTestChild("test_child3", "테스트 아동3", "01011112222","닉네임테스트", "/certificates/test3.pdf", true);
 
             Owner savedOwner = createTestOwner("test_owner3", "테스트 사업자3", "01033334444", "새싹", "3334567890");
             Category category = createTestCategory("식당");
@@ -334,7 +334,7 @@ class ReservationCommandServiceTest {
         @DisplayName("예약 상태 변경 성공")        
         public void shouldChangeReservationStatus() {
             // given
-            Child savedChild = createTestChild("test_child4", "테스트 아동4", "01033334444", "/certificates/test4.pdf", true);
+            Child savedChild = createTestChild("test_child4", "테스트 아동4", "01033334444", "닉네임테스트","/certificates/test4.pdf", true);
 
             Owner savedOwner = createTestOwner("test_owner4", "테스트 사업자4", "01044445555", "새싹", "4444567890");
             Category category = createTestCategory("식당");

@@ -1,0 +1,15 @@
+spring:
+  mail:
+    host: ${SMTP_HOST} # SMTP 서버 주소: smtp.gmail.com
+    port: ${SMTP_PORT} # SMTP 포트번호: 465(SSL), 587(TLS)
+    username: ${SMTP_USERNAME} # 사용자 이메일: 이메일명
+    password: ${SMTP_PASSWORD} # 사용자 앱 비밀번호: 0000 0000 0000 0000
+    properties:
+      mail:
+        smtp:
+          auth: true # 사용자 인증 여부
+          timeout: 5000 # 이메일 전송 타임아웃 시간
+          ssl:
+            enable: ${SMTP_IS_SSL} # SSL 를 통해 안전한 통신 사용 여부
+          starttls:
+            enable: ${SMTP_IS_TLS} # TLS 를 통해 안전한 통신 사용 여부

@@ -2,6 +2,8 @@ spring:
   config:
     activate:
       on-profile: dev
+  profiles:
+    include: smtp, oauth
   application:
     name: onharu
 
