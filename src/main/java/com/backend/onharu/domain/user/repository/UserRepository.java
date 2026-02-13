@@ -2,6 +2,7 @@ package com.backend.onharu.domain.user.repository;
 
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByIdParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByLoginIdParam;
+import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByNameAndPhoneParam;
 import com.backend.onharu.domain.user.model.User;
 
 /**
@@ -43,4 +44,11 @@ public interface UserRepository {
      * @return 존재하면 true, 없으면 false
      */
     boolean existsByLoginId(GetUserByLoginIdParam param);
+
+    /**
+     * 이름과 전화번호로 사용자를 조회합니다.
+     *
+     * @return 조회된 사용자 엔티티 (Optional)
+     */
+    User getUserByNameAndPhone(GetUserByNameAndPhoneParam param);
 }
