@@ -3,6 +3,8 @@ package com.backend.onharu.interfaces.api.controller.impl;
 import com.backend.onharu.application.AuthFacade;
 import com.backend.onharu.domain.email.dto.EmailAuthenticationCommand.CreateEmailAuthenticationCommand;
 import com.backend.onharu.domain.email.dto.EmailAuthenticationCommand.CompleteEmailAuthenticationCommand;
+import com.backend.onharu.domain.user.dto.UserQuery.GetUserByNameAndPhoneQuery;
+import com.backend.onharu.domain.user.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,6 +41,7 @@ public class AuthControllerImpl implements IAuthController {
     /**
      * 아이디 찾기
      * <p>
+     * POST /api/auth/find-id
      * 전화번호로 아이디를 찾습니다.
      *
      * @param request 아이디 찾기 요청
@@ -51,15 +54,20 @@ public class AuthControllerImpl implements IAuthController {
     ) {
         log.info("아이디 찾기 요청: {}", request);
 
+        User user = authFacade.findId(new GetUserByNameAndPhoneQuery(request.name(), request.phone())); // 사용자 찾기
+
+        String loginId = user.getLoginId(); // 찾은 사용자의 로그인 아이디
+        FindIdResponse response = new FindIdResponse(loginId);
+
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
     }
 
     /**
      * 비밀번호 재설정
      * <p>
-     * 이메일 또는 전화번호로 비밀번호 재설정을 요청합니다.
-     *
+     * 이메일로 비밀번호 재설정을 요청합니다.
+     * POST /api/auth/reset-password
      * @param request 비밀번호 재설정 요청
      * @return 비밀번호 재설정 결과
      */

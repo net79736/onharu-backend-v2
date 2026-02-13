@@ -13,9 +13,28 @@ import org.springframework.http.ResponseEntity;
 @Tag(name = "Auth", description = "인증 API")
 public interface IAuthController {
 
-    @Operation(summary = "아이디 찾기", description = "이메일 또는 전화번호로 아이디를 찾습니다.")
+    /**
+     * 아이디 찾기를 수행합니다.
+     * <p>
+     * POST /api/auth/find-id
+     * 사용자의 아이디를 찾아서 반환합니다. 사용자의 이름, 전화번호를 받습니다.
+     */
+    @Operation(summary = "아이디 찾기", description = "이름 또는 전화번호로 아이디를 찾습니다.")
     ResponseEntity<ResponseDTO<FindIdResponse>> findId(
-            @Schema(description = "아이디 찾기 요청")
+            @RequestBody(
+                    description = "아이디 찾기 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = FindIdRequest.class),
+                            examples = @ExampleObject(
+                                    name = "아이디 찾기 요청 예시",
+                                    value = "{\n" +
+                                            "  \"name\": \"홍길동\",\n" +
+                                            "  \"phone\": \"01012345678\"\n" +
+                                            "}"
+                            )
+                    )
+            )
             FindIdRequest request
     );
 

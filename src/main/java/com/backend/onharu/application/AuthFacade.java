@@ -7,6 +7,9 @@ import com.backend.onharu.domain.email.model.EmailAuthentication;
 import com.backend.onharu.domain.email.service.EmailAuthenticationCommandService;
 import com.backend.onharu.domain.email.service.EmailAuthenticationQueryService;
 import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.user.dto.UserQuery.GetUserByNameAndPhoneQuery;
+import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.domain.user.service.UserQueryService;
 import com.backend.onharu.infra.email.EmailSendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,6 +25,8 @@ public class AuthFacade {
 
     private final EmailAuthenticationCommandService emailAuthenticationCommandService;
     private final EmailAuthenticationQueryService emailAuthenticationQueryService;
+    private final UserQueryService userQueryService;
+
     private final EmailSendService emailSendService;
 
     /**
@@ -53,5 +58,17 @@ public class AuthFacade {
         if (!verified) { // 이메일 인증이 안된 경우
             throw new CoreException(EMAIL_NOT_VERIFIED);
         }
+    }
+
+    /**
+     * 아이디 찾기
+     */
+    public User findId(GetUserByNameAndPhoneQuery query) {
+
+        User user = userQueryService.getUserByNameAndPhone(query); // 이름, 전화번호를 입력받아서 사용자를 조회합니다
+
+        user.verifyStatus(); // 사용자 계정 상태 검증
+
+        return user;
     }
 }
