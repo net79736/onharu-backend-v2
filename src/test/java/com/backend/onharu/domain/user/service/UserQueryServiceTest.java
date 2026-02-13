@@ -1,16 +1,5 @@
 package com.backend.onharu.domain.user.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
@@ -20,7 +9,17 @@ import com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByLoginIdQuery;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
+import static com.backend.onharu.domain.user.dto.UserQuery.GetUserByNameAndPhoneQuery;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+@Transactional
 @SpringBootTest
 @DisplayName("UserQueryService 단위 테스트")
 class UserQueryServiceTest {
@@ -48,8 +47,8 @@ class UserQueryServiceTest {
 
             // when
             CoreException coreException = Assertions.assertThrows(
-                CoreException.class,
-                () -> userQueryService.getUser(new GetUserByIdQuery(userId))
+                    CoreException.class,
+                    () -> userQueryService.getUser(new GetUserByIdQuery(userId))
             );
 
             // then
@@ -63,20 +62,20 @@ class UserQueryServiceTest {
         public void shouldGetUser() {
             // given
             User savedUser = userJpaRepository.save(
-                User.builder()
-                    .loginId("test_user_query")
-                    .password("password123")
-                    .name("테스트 사용자 조회")
-                    .phone("01012345678")
-                    .userType(UserType.CHILD)
-                    .providerType(ProviderType.LOCAL)
-                    .statusType(StatusType.ACTIVE)
-                    .build()
+                    User.builder()
+                            .loginId("test_user_query")
+                            .password("password123")
+                            .name("테스트 사용자 조회")
+                            .phone("01012345678")
+                            .userType(UserType.CHILD)
+                            .providerType(ProviderType.LOCAL)
+                            .statusType(StatusType.ACTIVE)
+                            .build()
             ); // 테스트용 사용자 생성
 
             // when
             User user = userQueryService.getUser(
-                new GetUserByIdQuery(savedUser.getId())
+                    new GetUserByIdQuery(savedUser.getId())
             ); // 사용자 ID로 사용자 조회
 
             // then
@@ -104,20 +103,20 @@ class UserQueryServiceTest {
         public void shouldGetUserByLoginId() {
             // given
             userJpaRepository.save(
-                User.builder()
-                    .loginId("test_login_id")
-                    .password("password123")
-                    .name("테스트 사용자 로그인")
-                    .phone("01087654321")
-                    .userType(UserType.OWNER)
-                    .providerType(ProviderType.LOCAL)
-                    .statusType(StatusType.ACTIVE)
-                    .build()
+                    User.builder()
+                            .loginId("test_login_id")
+                            .password("password123")
+                            .name("테스트 사용자 로그인")
+                            .phone("01087654321")
+                            .userType(UserType.OWNER)
+                            .providerType(ProviderType.LOCAL)
+                            .statusType(StatusType.ACTIVE)
+                            .build()
             ); // 테스트용 사용자 생성
 
             // when
             User user = userQueryService.getUserByLoginId(
-                new GetUserByLoginIdQuery("test_login_id")
+                    new GetUserByLoginIdQuery("test_login_id")
             ); // 로그인 ID로 사용자 조회
 
             // then
@@ -140,13 +139,61 @@ class UserQueryServiceTest {
 
             // when
             CoreException coreException = Assertions.assertThrows(
-                CoreException.class,
-                () -> userQueryService.getUserByLoginId(new GetUserByLoginIdQuery(loginId))
+                    CoreException.class,
+                    () -> userQueryService.getUserByLoginId(new GetUserByLoginIdQuery(loginId))
             );
 
             // then
             assertThat(coreException.getErrorType()).isEqualTo(ErrorType.User.USER_NOT_FOUND);
             assertThat(coreException.getMessage()).isEqualTo(ErrorType.User.USER_NOT_FOUND.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("이름과 전화번호로 사용자 조회")
+    class GetUserByNameAndPhone {
+
+        @Test
+        @DisplayName("이름과 전화번호로 사용자 조회 성공")
+        void shouldGetUserByNameAndPhone() {
+            // GIVEN
+            String name = "이름전화번호테스트";
+            String phone = "01055551111";
+            GetUserByNameAndPhoneQuery query = new GetUserByNameAndPhoneQuery(name, phone);
+
+            User savedUser = userJpaRepository.save(
+                    User.builder()
+                            .loginId("test5555@test.com")
+                            .password("password123")
+                            .name(name)
+                            .phone(phone)
+                            .userType(UserType.CHILD)
+                            .providerType(ProviderType.LOCAL)
+                            .statusType(StatusType.ACTIVE)
+                            .build()
+            );
+            userJpaRepository.save(savedUser); // 사용자 저장
+
+            // WHEN
+            User result = userQueryService.getUserByNameAndPhone(query);
+
+            // THEN
+            assertThat(result).isNotNull();
+            assertThat(result.getName()).isEqualTo("이름전화번호테스트");
+            assertThat(result.getPhone()).isEqualTo("01055551111");
+        }
+
+        @Test
+        @DisplayName("이름과 전화번호로 조회했을때 해당 사용자가 없는 경우")
+        void shouldThrowExceptionWhenUserNotFound() {
+            // GIVEN
+            String name = "이름전화번호테스트4";
+            String phone = "01055554444";
+            GetUserByNameAndPhoneQuery query = new GetUserByNameAndPhoneQuery(name, phone);
+
+            // WHEN
+            assertThatThrownBy(() -> userQueryService.getUserByNameAndPhone(query))
+                    .isInstanceOf(CoreException.class);
         }
     }
 }
