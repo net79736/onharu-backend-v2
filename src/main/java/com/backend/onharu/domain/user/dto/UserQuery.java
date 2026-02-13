@@ -38,4 +38,13 @@ public class UserQuery {
             }
         }
     }
+
+    /**
+     * 이름과 전화번호로 조회하는 Query
+     */
+    public record GetUserByNameAndPhoneQuery(
+            String name,
+            String phone
+    ) {
+    }
 }
