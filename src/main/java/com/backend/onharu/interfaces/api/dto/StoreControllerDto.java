@@ -3,9 +3,12 @@ package com.backend.onharu.interfaces.api.dto;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.store.model.StoreTag;
+import com.backend.onharu.domain.tag.model.Tag;
 import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.StoreScheduleResponse;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,10 +32,10 @@ public class StoreControllerDto {
             @Schema(description = "페이지당 항목 수", example = "10")
             Integer perPage,
 
-            @Schema(description = "정렬 기준", example = "id")
+            @Schema(description = "정렬 기준", example = "id", allowableValues = {"id", "name", "favoriteCount", "distance"})
             String sortField,
 
-            @Schema(description = "정렬 방향", example = "desc")
+            @Schema(description = "정렬 방향", example = "desc", allowableValues = {"asc", "desc"})
             String sortDirection
     ) {
         /**
@@ -84,6 +87,7 @@ public class StoreControllerDto {
                 store.getIntro(),
                 store.getCategory().getId(),
                 store.getIsOpen(),
+                store.getIsSharing(),
                 0.0,
                 null,
                 null,
@@ -127,6 +131,12 @@ public class StoreControllerDto {
             @Schema(description = "영업중 여부", example = "true")
             Boolean isOpen,
 
+            @Schema(description = "공유중 여부", example = "true")
+            Boolean isSharing,
+
+            @Schema(description = "태그 목록", example = "[\"커피\", \"디저트\", \"브런치\"]")
+            List<String> tagNames,
+
             @Schema(description = "거리(km)", example = "1.5")
             Double distance,
 
@@ -152,6 +162,11 @@ public class StoreControllerDto {
                 store.getCategory().getId(),
                 store.getCategory().getName(),
                 store.getIsOpen(),
+                store.getIsSharing(),
+                store.getStoreTags().stream()
+                    .map(StoreTag::getTag)
+                    .map(Tag::getName)
+                    .collect(Collectors.toList()),
                 distance,
                 resolveImages(images),
                 favoriteCount
@@ -189,6 +204,9 @@ public class StoreControllerDto {
 
             @Schema(description = "영업중 여부", example = "true")
             Boolean isOpen,
+
+            @Schema(description = "공유중 여부", example = "true")
+            Boolean isSharing,
 
             @Schema(description = "거리(km)", example = "1.5")
             Double distance,
@@ -316,6 +334,9 @@ public class StoreControllerDto {
 
             @Schema(description = "영업 여부", example = "true")
             Boolean isOpen,
+
+            @Schema(description = "공유중 여부", example = "true")
+            Boolean isSharing,
 
             @Schema(description = "태그 목록", example = "[\"커피\", \"디저트\", \"브런치\"]")
             List<String> tagNames,

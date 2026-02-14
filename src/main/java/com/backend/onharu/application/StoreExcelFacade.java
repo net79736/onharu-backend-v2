@@ -76,8 +76,6 @@ public class StoreExcelFacade {
         // 파일 확장자 검증
         verifyMimeType(file.getOriginalFilename());
 
-        log.info("4");
-        
         // 파일 확장자에 따라 엑셀(xls/xlsx) 또는 CSV 모두 지원
         String originalFilename = file.getOriginalFilename();
         if (originalFilename != null) {

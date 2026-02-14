@@ -68,10 +68,11 @@ class StoreCommandTest {
             String introduction = "업데이트된 소개";
             String intro = "업데이트된 한줄 소개";
             Boolean isOpen = false;
+            Boolean isSharing = false;
 
             // when
             UpdateStoreCommand command = new UpdateStoreCommand(
-                id, categoryId, phone, address, lat, lng, introduction, intro, isOpen, 
+                id, categoryId, phone, address, lat, lng, introduction, intro, isOpen, isSharing,
                 List.of(), List.of(), List.of()
             );
 
@@ -79,6 +80,7 @@ class StoreCommandTest {
             assertThat(command.id()).isEqualTo(id);
             assertThat(command.categoryId()).isEqualTo(categoryId);
             assertThat(command.isOpen()).isEqualTo(isOpen);
+            assertThat(command.isSharing()).isEqualTo(isSharing);
         }
     }
 

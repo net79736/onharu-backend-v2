@@ -188,12 +188,15 @@ class StoreControllerImplTest {
             createTestFile(store1.getId(), "https://example.com/store1-image2.jpg", 1);
             createTestFile(store2.getId(), "https://example.com/store2-image1.jpg", 0);
 
-            // when & then
+            // when & then (categoryId는 생성한 카테고리 ID 사용 - 전체 테스트 시 시퀀스가 1이 아닐 수 있음)
+            Long categoryId = category.getId();
             MvcResult result = mockMvc.perform(get("/api/stores")
-                            .param("latitude", "37.5665")
-                            .param("longitude", "126.9780")
-                            .param("radius", "5.0")
-                            .param("pageNum", "1")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "id")
+                            .param("sortDirection", "asc")
+                            .param("pageNum", "0")
                             .param("perPage", "10")
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -209,9 +212,11 @@ class StoreControllerImplTest {
 
             // 첫 번째 가게의 이미지 목록 검증
             mockMvc.perform(get("/api/stores")
-                            .param("latitude", "37.5665")
-                            .param("longitude", "126.9780")
-                            .param("radius", "5.0")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "id")
+                            .param("sortDirection", "asc")
                             .param("pageNum", "1")
                             .param("perPage", "10")
                             .contentType(MediaType.APPLICATION_JSON))
@@ -245,11 +250,14 @@ class StoreControllerImplTest {
             createTestFile(store.getId(), "https://example.com/image2.jpg", 1);
             createTestFile(store.getId(), "https://example.com/image1.jpg", 0);
 
-            // when & then
+            // when & then (categoryId는 생성한 카테고리 ID 사용)
+            Long categoryId = category.getId();
             mockMvc.perform(get("/api/stores")
-                            .param("latitude", "37.5665")
-                            .param("longitude", "126.9780")
-                            .param("radius", "5.0")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "id")
+                            .param("sortDirection", "asc")
                             .param("pageNum", "1")
                             .param("perPage", "10")
                             .contentType(MediaType.APPLICATION_JSON))
@@ -279,11 +287,14 @@ class StoreControllerImplTest {
             Store store2 = createTestStore("이미지 없는 가게2", owner, category, "37.5666", "126.9781");
             // 이미지 파일은 생성하지 않음
 
-            // when & then
+            // when & then (categoryId는 생성한 카테고리 ID 사용)
+            Long categoryId = category.getId();
             mockMvc.perform(get("/api/stores")
-                            .param("latitude", "37.5665")
-                            .param("longitude", "126.9780")
-                            .param("radius", "5.0")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "id")
+                            .param("sortDirection", "asc")
                             .param("pageNum", "1")
                             .param("perPage", "10")
                             .contentType(MediaType.APPLICATION_JSON))
@@ -316,11 +327,14 @@ class StoreControllerImplTest {
             // 한 가게에만 이미지 추가
             createTestFile(storeWithImage.getId(), "https://example.com/store-image.jpg", 0);
 
-            // when & then
+            // when & then (categoryId는 생성한 카테고리 ID 사용)
+            Long categoryId = category.getId();
             mockMvc.perform(get("/api/stores")
-                            .param("latitude", "37.5665")
-                            .param("longitude", "126.9780")
-                            .param("radius", "5.0")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "id")
+                            .param("sortDirection", "asc")
                             .param("pageNum", "1")
                             .param("perPage", "10")
                             .contentType(MediaType.APPLICATION_JSON))
@@ -364,11 +378,14 @@ class StoreControllerImplTest {
             // 가게3: 1개 이미지
             createTestFile(store3.getId(), "https://example.com/store3-img1.jpg", 0);
 
-            // when & then
+            // when & then (categoryId는 생성한 카테고리 ID 사용)
+            Long categoryId = category.getId();
             MvcResult result = mockMvc.perform(get("/api/stores")
-                            .param("latitude", "37.5665")
-                            .param("longitude", "126.9780")
-                            .param("radius", "5.0")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "id")
+                            .param("sortDirection", "asc")
                             .param("pageNum", "1")
                             .param("perPage", "10")
                             .contentType(MediaType.APPLICATION_JSON))
@@ -380,8 +397,11 @@ class StoreControllerImplTest {
 
             // 각 가게의 이미지가 올바르게 그룹화되어 반환되는지 검증
             mockMvc.perform(get("/api/stores")
-                            .param("latitude", "37.5665")
-                            .param("longitude", "126.9780")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "id")
+                            .param("sortDirection", "asc")
                             .param("radius", "5.0")
                             .param("pageNum", "1")
                             .param("perPage", "10")
@@ -427,11 +447,14 @@ class StoreControllerImplTest {
                 createTestFile(store.getId(), "https://example.com/store" + i + "-img2.jpg", 1);
             }
 
-            // when & then
+            // when & then (categoryId는 생성한 카테고리 ID 사용)
+            Long categoryId = category.getId();
             MvcResult result = mockMvc.perform(get("/api/stores")
-                            .param("latitude", "37.5665")
-                            .param("longitude", "126.9780")
-                            .param("radius", "5.0")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "id")
+                            .param("sortDirection", "asc")
                             .param("pageNum", "1")
                             .param("perPage", "20")
                             .contentType(MediaType.APPLICATION_JSON))
@@ -442,9 +465,11 @@ class StoreControllerImplTest {
             // 각 가게의 이미지 개수 검증
             for (int i = 0; i < 10; i++) {
                 mockMvc.perform(get("/api/stores")
-                                .param("latitude", "37.5665")
-                                .param("longitude", "126.9780")
-                                .param("radius", "5.0")
+                                .param("lat", "37.5665")
+                                .param("lng", "126.9780")
+                                .param("categoryId", String.valueOf(categoryId))
+                                .param("sortField", "id")
+                                .param("sortDirection", "asc")
                                 .param("pageNum", "1")
                                 .param("perPage", "20")
                                 .contentType(MediaType.APPLICATION_JSON))
@@ -499,11 +524,14 @@ class StoreControllerImplTest {
                         String.valueOf(126.9780 + i * 0.001));
             }
 
-            // when & then
+            // when & then (categoryId는 생성한 카테고리 ID 사용)
+            Long categoryId = category.getId();
             mockMvc.perform(get("/api/stores")
-                            .param("latitude", "37.5665")
-                            .param("longitude", "126.9780")
-                            .param("radius", "5.0")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "id")
+                            .param("sortDirection", "asc")
                             .param("pageNum", "1")
                             .param("perPage", "3")
                             .contentType(MediaType.APPLICATION_JSON))

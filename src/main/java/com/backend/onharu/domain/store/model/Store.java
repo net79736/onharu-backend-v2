@@ -66,7 +66,10 @@ public class Store extends BaseEntity {
     private String intro;
 
     @Column(name = "IS_OPEN", nullable = false)
-    private Boolean isOpen = true;
+    private Boolean isOpen = false;
+
+    @Column(name = "IS_SHARING", nullable = false)
+    private Boolean isSharing = false;
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BusinessHours> businessHours = new ArrayList<>();
@@ -76,7 +79,7 @@ public class Store extends BaseEntity {
 
     @Builder
     public Store(Owner owner, Category category, String name, String address, String phone,
-                 String lat, String lng, String introduction, String intro, Boolean isOpen) {
+                 String lat, String lng, String introduction, String intro, Boolean isOpen, Boolean isSharing) {
         this.owner = owner;
         this.category = category;
         this.name = name;
@@ -86,7 +89,8 @@ public class Store extends BaseEntity {
         this.lng = lng;
         this.introduction = introduction;
         this.intro = intro;
-        this.isOpen = isOpen != null ? isOpen : true;
+        this.isOpen = isOpen != null ? isOpen : false;
+        this.isSharing = isSharing != null ? isSharing : false;
     }
 
     /**
@@ -101,8 +105,9 @@ public class Store extends BaseEntity {
      * @param introduction 변경할 가게 소개
      * @param intro 변경할 한줄 소개
      * @param isOpen 변경할 영업 여부
+     * @param isSharing 변경할 공유중 여부
      */
-    public void update(Category category, String phone, String address, String lat, String lng, String introduction, String intro, Boolean isOpen) {
+    public void update(Category category, String phone, String address, String lat, String lng, String introduction, String intro, Boolean isOpen, Boolean isSharing) {
         ofNullable(category).ifPresent(v -> this.category = v);
         ofNullable(phone).ifPresent(v -> this.phone = v);
         ofNullable(address).ifPresent(v -> this.address = v);
@@ -111,6 +116,7 @@ public class Store extends BaseEntity {
         ofNullable(introduction).ifPresent(v -> this.introduction = v);
         ofNullable(intro).ifPresent(v -> this.intro = v);
         ofNullable(isOpen).ifPresent(v -> this.isOpen = v);
+        ofNullable(isSharing).ifPresent(v -> this.isSharing = v);
     }
 
     /**

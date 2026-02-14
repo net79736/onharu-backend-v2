@@ -106,6 +106,7 @@ public interface IStoreController {
                                             "  \"introduction\": \"따뜻한 한 끼 식사\",\n" +
                                             "  \"intro\": \"따뜻한 마음으로 환영합니다!\",\n" +
                                             "  \"isOpen\": true,\n" +
+                                            "  \"isSharing\": true,\n" +
                                             "  \"tagNames\": [\"한식\", \"점심식사\", \"따뜻한\"],\n" +
                                             "  \"businessHours\": [\n" +
                                             "    {\n" +

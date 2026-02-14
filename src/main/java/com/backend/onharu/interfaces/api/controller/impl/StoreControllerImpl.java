@@ -52,6 +52,7 @@ import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresResp
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UploadStoresByExcelResponse;
+import com.backend.onharu.utils.NumberUtils;
 import com.backend.onharu.utils.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -166,7 +167,8 @@ public class StoreControllerImpl implements IStoreController {
                 .map(storePageObject -> {
                     // 이미지 목록 추출
                     List<String> images = imagesByStoreId.getOrDefault(storePageObject.store().getId(), List.of());
-                    return new StoreResponse(storePageObject.store(), storePageObject.distance(), images, storePageObject.favoriteCount());
+                    double distanceKm = NumberUtils.truncateToIntegerAsDouble(storePageObject.distance());
+                    return new StoreResponse(storePageObject.store(), distanceKm, images, storePageObject.favoriteCount());
                 })
                 .collect(Collectors.toList());
         
@@ -272,6 +274,7 @@ public class StoreControllerImpl implements IStoreController {
             request.intro(),
             request.introduction(),
             request.isOpen(),
+            request.isSharing(),
             request.tagNames(),
             request.businessHours(),
             toImageMetadataList(request.images())

@@ -54,6 +54,7 @@ public final class StoreRequestMapperDto {
                 request.introduction(),
                 request.intro(),
                 request.isOpen(),
+                request.isSharing(),
                 request.tagNames(),
                 request.businessHours(),
                 toImageMetadataList(request.images())

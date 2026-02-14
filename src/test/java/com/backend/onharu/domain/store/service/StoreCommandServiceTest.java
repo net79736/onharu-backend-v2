@@ -228,6 +228,7 @@ class StoreCommandServiceTest {
                     "새로운 소개",
                     "새로운 한줄 소개",
                     false,
+                    true,
                     List.of(),
                     List.of(),
                     List.of()
@@ -244,6 +245,7 @@ class StoreCommandServiceTest {
             assertThat(updatedStore.getPhone()).isEqualTo("0298765432");
             assertThat(updatedStore.getAddress()).isEqualTo("서울시 서초구");
             assertThat(updatedStore.getIsOpen()).isFalse();
+            assertThat(updatedStore.getIsSharing()).isTrue();
 
             System.out.println("✅ 가게 정보 수정 성공 - Store ID: " + updatedStore.getId());
             System.out.println("   - 수정된 전화번호: " + updatedStore.getPhone());
