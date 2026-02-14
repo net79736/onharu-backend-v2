@@ -2,10 +2,10 @@ package com.backend.onharu.infra.db.owner.impl;
 
 import org.springframework.stereotype.Repository;
 
+import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByIdParam;
 import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByLoginIdParam;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.repository.OwnerRepository;
-import com.backend.onharu.domain.owner.service.OwnerRepositoryParam.GetOwnerByIdParam;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;

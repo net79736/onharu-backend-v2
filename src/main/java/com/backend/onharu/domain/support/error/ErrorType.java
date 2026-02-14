@@ -29,11 +29,12 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum FileOperation implements IErrorType {
         FILE_NOT_FOUND(ErrorCode.NOT_FOUND, "파일을 찾을 수 없습니다.", LogLevel.ERROR),
-        FILE_DOWNLOAD_ERROR(ErrorCode.INTERNAL_SERVER_ERROR, "파일 다운로드 중 오류가 발생했습니다.", LogLevel.ERROR),
-        FILE_UPLOAD_ERROR(ErrorCode.INTERNAL_SERVER_ERROR, "파일 업로드 중 오류가 발생했습니다.", LogLevel.ERROR),
-        FILE_UPLOAD_INVALID_MIME_TYPE_ERROR(ErrorCode.INTERNAL_SERVER_ERROR, "유효하지 않은 MIME 타입 또는 확장자입니다.", LogLevel.ERROR),
-        FILE_DELETE_ERROR(ErrorCode.INTERNAL_SERVER_ERROR, "파일 삭제 중 오류가 발생했습니다.", LogLevel.ERROR),
-        MINIO_CLIENT_ERROR(ErrorCode.INTERNAL_SERVER_ERROR, "MinIO 클라이언트 오류가 발생했습니다.", LogLevel.ERROR),
+        FILE_DOWNLOAD_ERROR(ErrorCode.BAD_REQUEST, "파일 다운로드 중 오류가 발생했습니다.", LogLevel.ERROR),
+        FILE_UPLOAD_ERROR(ErrorCode.BAD_REQUEST, "파일 업로드 중 오류가 발생했습니다.", LogLevel.ERROR),
+        FILE_UPLOAD_INVALID_MIME_TYPE_ERROR(ErrorCode.BAD_REQUEST, "유효하지 않은 MIME 타입 또는 확장자입니다.", LogLevel.ERROR),
+        FILE_DELETE_ERROR(ErrorCode.BAD_REQUEST, "파일 삭제 중 오류가 발생했습니다.", LogLevel.ERROR),
+        MINIO_CLIENT_ERROR(ErrorCode.BAD_REQUEST, "MinIO 클라이언트 오류가 발생했습니다.", LogLevel.ERROR),
+        CSV_PROCESSING_ERROR(ErrorCode.BAD_REQUEST, "CSV 파일을 처리하는 중 오류가 발생했습니다.", LogLevel.ERROR),
         ;
 
         private final ErrorCode code;
@@ -105,6 +106,8 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum Owner implements IErrorType {
         OWNER_NOT_FOUND(ErrorCode.NOT_FOUND, "사업자 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        OWNER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사업자 ID는 필수입니다.", LogLevel.ERROR),
+        LOGIN_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사업자 로그인 ID는 필수입니다.", LogLevel.ERROR),
         BUSINESS_NUMBER_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "사업자 번호는 필수입니다.", LogLevel.ERROR),
         LEVEL_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "등급 ID는 필수입니다.", LogLevel.ERROR),
         STORE_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "매장명은 필수입니다.", LogLevel.ERROR),
@@ -137,6 +140,8 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum Child implements IErrorType {
         CHILD_NOT_FOUND(ErrorCode.NOT_FOUND, "아동 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        CHILD_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 ID는 필수입니다.", LogLevel.ERROR),
+        LOGIN_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 로그인 ID는 필수입니다.", LogLevel.ERROR),
         CERTIFICATE_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "증명서 파일 경로는 필수입니다.", LogLevel.ERROR),
         NICKNAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "닉네임은 필수입니다.", LogLevel.ERROR),
         ;
@@ -259,6 +264,9 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum StoreSchedule implements IErrorType {
         STORE_SCHEDULE_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "가게 일정 ID는 필수입니다.", LogLevel.ERROR),
+        STORE_SCHEDULE_SCHEDULE_DATE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "영업일자는 필수입니다.", LogLevel.ERROR),
+        STORE_SCHEDULE_START_TIME_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "영업 시작 시간은 필수입니다.", LogLevel.ERROR),
+        STORE_SCHEDULE_END_TIME_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "영업 종료 시간은 필수입니다.", LogLevel.ERROR),
         STORE_SCHEDULE_NOT_FOUND(ErrorCode.NOT_FOUND, "가게 일정 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         STORE_SCHEDULE_DUPLICATE(ErrorCode.BAD_REQUEST, "중복된 일정이 존재합니다. 같은 날짜와 시간에 일정을 등록할 수 없습니다.", LogLevel.WARN),
         ;
@@ -288,6 +296,7 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum Tag implements IErrorType {
         TAG_ID_MUST_NOT_BE_NULL(ErrorCode.NOT_FOUND, "태그 ID 는 필수입니다.", LogLevel.ERROR),
+        TAG_IDS_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "태그 ID 리스트는 필수입니다.", LogLevel.ERROR),
         TAG_NOT_FOUND(ErrorCode.NOT_FOUND, "태그 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         TAG_ALREADY_EXISTS(ErrorCode.BAD_REQUEST, "이미 존재하는 태그입니다.", LogLevel.WARN),
         TAG_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "태그 이름은 필수입니다.", LogLevel.ERROR),
