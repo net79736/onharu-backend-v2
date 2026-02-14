@@ -6,8 +6,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByLoginIdQuery;
+import com.backend.onharu.domain.user.dto.UserQuery.GetUserByNameAndPhoneQuery;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByIdParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByLoginIdParam;
+import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByNameAndPhoneParam;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.domain.user.repository.UserRepository;
 
@@ -45,5 +47,16 @@ public class UserQueryService {
      */
     public User getUserByLoginId(GetUserByLoginIdQuery query) {
         return userRepository.getUserByLoginId(new GetUserByLoginIdParam(query.loginId()));
+    }
+
+    /**
+     * 이름과 전화번호로 사용자를 조회합니다.
+     *
+     * @param query 이름, 전화번호를 포함한 Query
+     * @return 조회된 사용자 엔티티
+     * @throws CoreException 사용자를 찾을 수 없는 경우
+     */
+    public User getUserByNameAndPhone(GetUserByNameAndPhoneQuery query) {
+        return userRepository.getUserByNameAndPhone(new GetUserByNameAndPhoneParam(query.name(), query.phone()));
     }
 }

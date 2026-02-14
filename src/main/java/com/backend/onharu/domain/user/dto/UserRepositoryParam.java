@@ -23,4 +23,13 @@ public class UserRepositoryParam {
             String loginId
     ) {
     }
+
+    /**
+     * 이름, 전화번호로 조회하는 파라미터
+     */
+    public record GetUserByNameAndPhoneParam(
+            String name,
+            String phone
+    ) {
+    }
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,6 +23,7 @@ import com.backend.onharu.infra.security.oauth.handler.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@Profile("!test")
 @Slf4j
 @Configuration
 @EnableWebSecurity
@@ -42,6 +44,7 @@ public class SecurityConfig {
             "/api/stores/**", // 가게 관련 API
             "/api/store-schedules/**", // 가게 스케줄 관련 API
             "/api/upload/**", // S3 파일 업로드 관련 API
+            "/api/auth/**", // 인증 관련 API
             "/api/files/**" // 파일(첨부) 메타데이터 API
     };
 
