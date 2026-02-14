@@ -12,6 +12,21 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class OwnerControllerDto {
 
+    public record GetMyStoresRequest(
+            @Schema(description = "페이지 번호 (1부터 시작)", example = "1")
+            Integer pageNum,
+
+            @Schema(description = "페이지당 항목 수", example = "10")
+            Integer perPage,
+
+            @Schema(description = "정렬 필드", example = "createdAt")
+            String sortField,
+
+            @Schema(description = "정렬 방향", example = "DESC")
+            String sortDirection
+    ) {
+    }
+
     public record CreateOwnerRequest(
             @Schema(description = "가게 사장 사용자 ID", example = "child123")
             String userId,
@@ -83,7 +98,19 @@ public class OwnerControllerDto {
     // 사업자 가게 목록 조회 DTO
     public record GetMyStoresResponse(
             @Schema(description = "가게 목록")
-            List<StoreResponse> stores
+            List<StoreResponse> stores,
+
+            @Schema(description = "전체 가게 개수")
+            Long totalCount,
+
+            @Schema(description = "현재 페이지 번호")
+            Integer currentPage,
+
+            @Schema(description = "전체 페이지 수")
+            Integer totalPages,
+
+            @Schema(description = "페이지당 항목 수")
+            Integer perPage
     ) {
     }
 

@@ -32,15 +32,21 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	// Apache POI (Excel 처리)
+	implementation 'org.apache.poi:poi-ooxml:5.2.5'
 	
 	// Swagger
 	implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.1.0'
 	
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
+	// P6Spy
+	runtimeOnly 'p6spy:p6spy:3.9.1'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// 테스트용 인메모리 DB(H2)
+	testRuntimeOnly 'com.h2database:h2'
 
     // commons-io 파일 처리 라이브러리
     implementation 'commons-io:commons-io:2.14.0'

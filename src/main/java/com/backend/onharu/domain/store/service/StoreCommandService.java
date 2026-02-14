@@ -47,7 +47,7 @@ public class StoreCommandService {
      * 가게 정보 수정
      */
     public void updateStore(UpdateStoreCommand command, Category category) {
-        Store store = storeRepository.getStore(new GetStoreByIdParam(command.id()));
+        Store store = storeRepository.getStoreById(new GetStoreByIdParam(command.id()));
         
         store.update(
                 category,
@@ -72,7 +72,7 @@ public class StoreCommandService {
      * 가게 삭제
      */
     public void deleteStore(DeleteStoreCommand command) {
-        Store store = storeRepository.getStore(new GetStoreByIdParam(command.id()));
+        Store store = storeRepository.getStoreById(new GetStoreByIdParam(command.id()));
         
         storeRepository.delete(store);
     }
@@ -81,7 +81,7 @@ public class StoreCommandService {
      * 가게 영업 상태 변경
      */
     public void changeOpenStatus(ChangeOpenStatusCommand command) {
-        Store store = storeRepository.getStore(new GetStoreByIdParam(command.id()));
+        Store store = storeRepository.getStoreById(new GetStoreByIdParam(command.id()));
         
         store.changeOpenStatus(command.isOpen());
     }

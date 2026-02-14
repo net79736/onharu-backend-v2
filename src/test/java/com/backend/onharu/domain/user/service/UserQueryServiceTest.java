@@ -1,5 +1,17 @@
 package com.backend.onharu.domain.user.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ActiveProfiles;
+
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
@@ -21,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Transactional
 @SpringBootTest
+@ActiveProfiles("test")
 @DisplayName("UserQueryService 단위 테스트")
 class UserQueryServiceTest {
 

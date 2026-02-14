@@ -34,6 +34,11 @@ minio:
   region: ${MINIO_REGION:us-east-1}
   bucket: ${MINIO_BUCKET:onharu-minio}
 
+# 가게 검색 기본 반경 설정
+store:
+  search:
+    default-radius-km: 20  # 기본 반경 0.1km
+
 # 서버 설정
 server:
   port: 8080

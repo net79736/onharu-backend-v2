@@ -1,21 +1,24 @@
 package com.backend.onharu.domain.owner.model;
 
+import static com.backend.onharu.domain.support.error.ErrorType.Owner.SAME_LEVEL_CAN_NOT_BE_ASSIGNED;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
+
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.model.User;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-import static com.backend.onharu.domain.support.error.ErrorType.Owner.SAME_LEVEL_CAN_NOT_BE_ASSIGNED;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * 도메인 Owner 의 테스트 코드 입니다.
  */
+@ActiveProfiles("test")
 class OwnerTest {
 
     @Test

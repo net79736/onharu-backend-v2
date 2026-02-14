@@ -13,16 +13,16 @@ public class StoreQuery {
      * 가게 목록 조회 (위치 기반 검색)
      */
     public record SearchStoresQuery(
-            Double latitude,
-            Double longitude,
-            Double radius
+            Double lat,
+            Double lng,
+            Long categoryId
     ) {
     }
 
     /**
      * 사업자 ID로 가게 목록 조회
      */
-    public record FindByOwnerIdQuery(
+    public record FindWithCategoryAndFavoriteCountByOwnerIdQuery(
             Long ownerId
     ) {
     }

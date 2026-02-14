@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
@@ -37,6 +38,7 @@ import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @DisplayName("StoreScheduleCommandService 단위 테스트")
 class StoreScheduleCommandServiceTest {
 

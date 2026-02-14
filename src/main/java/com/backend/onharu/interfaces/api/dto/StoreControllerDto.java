@@ -15,13 +15,13 @@ public class StoreControllerDto {
     @Schema(description = "가게 목록 조회 요청")
     public record SearchStoresRequest(
             @Schema(description = "위도", example = "37.5665")
-            Double latitude,
+            Double lat,
 
             @Schema(description = "경도", example = "126.9780")
-            Double longitude,
+            Double lng,
 
-            @Schema(description = "반경(km)", example = "5.0")
-            Double radius,
+            @Schema(description = "카테고리 ID", example = "1")
+            Long categoryId,
 
             @Schema(description = "페이지 번호 (1부터 시작)", example = "1")
             Integer pageNum,
@@ -131,30 +131,15 @@ public class StoreControllerDto {
             Double distance,
 
             @Schema(description = "첨부 이미지 URL 목록 (표시 순서대로)")
-            List<String> images
-    ) {
-        public StoreResponse(Store store) {
-            this(
-                store.getId(),
-                store.getName(),
-                store.getAddress(),
-                store.getPhone(),
-                store.getLat(),
-                store.getLng(),
-                store.getIntroduction(),
-                store.getIntro(),
-                store.getCategory().getId(),
-                store.getCategory().getName(),
-                store.getIsOpen(),
-                0.0,
-                List.of() // 기본 생성자는 빈 리스트, 이미지 목록은 별도로 설정
-            );
-        }
+            List<String> images,
 
+            @Schema(description = "찜 개수", example = "3")
+            Long favoriteCount
+    ) {
         /**
-         * 이미지 목록과 함께 StoreResponse 생성
+         * 이미지 목록과 함께 StoreResponse 생성 (찜 개수 없음)
          */
-        public StoreResponse(Store store, List<String> images) {
+        public StoreResponse(Store store, Double distance, List<String> images, Long favoriteCount) {
             this(
                 store.getId(),
                 store.getName(),
@@ -167,8 +152,9 @@ public class StoreControllerDto {
                 store.getCategory().getId(),
                 store.getCategory().getName(),
                 store.getIsOpen(),
-                0.0,
-                resolveImages(images)
+                distance,
+                resolveImages(images),
+                favoriteCount
             );
         }
     }
@@ -355,6 +341,17 @@ public class StoreControllerDto {
                 category.getName()
             );
         }
+    }
+
+    @Schema(description = "엑셀을 통한 가게 일괄 업로드 결과 응답")
+    public record UploadStoresByExcelResponse(
+            @Schema(description = "엑셀에서 읽은 전체 행 수(데이터 행 기준)")
+            int totalCount,
+            @Schema(description = "성공적으로 생성된 가게 수")
+            int successCount,
+            @Schema(description = "실패한 행 수")
+            int failureCount
+    ) {
     }
 
     /**

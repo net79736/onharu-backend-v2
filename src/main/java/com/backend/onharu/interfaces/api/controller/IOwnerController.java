@@ -1,11 +1,13 @@
 package com.backend.onharu.interfaces.api.controller;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerResponse;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetMyStoresRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetMyStoresResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetOwnerResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingDetailResponse;
@@ -18,6 +20,7 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateOwnerReque
 
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -61,8 +64,20 @@ public interface IOwnerController {
             Long ownerId
     );
 
-    @Operation(summary = "사업자 가게 목록 조회", description = "사업자의 가게 목록을 조회합니다.")
-    ResponseEntity<ResponseDTO<GetMyStoresResponse>> getMyStores();
+    @Operation(
+        summary = "사업자 가게 목록 조회", 
+        description = "사업자의 가게 목록을 조회합니다.",
+        parameters = {
+            @Parameter(name = "pageNum", description = "페이지 번호 (1부터 시작)", example = "1", schema = @Schema(type = "integer"), required = true),
+            @Parameter(name = "perPage", description = "페이지당 항목 수", example = "10", schema = @Schema(type = "integer"), required = true),
+            @Parameter(name = "sortField", description = "정렬 기준", example = "id", schema = @Schema(type = "string")),
+            @Parameter(name = "sortDirection", description = "정렬 방향", example = "desc", schema = @Schema(type = "string", allowableValues = {"asc", "desc"}))
+        }
+    )
+    ResponseEntity<ResponseDTO<GetMyStoresResponse>> getMyStores(
+            @Schema(description = "사업자 가게 목록 조회 요청")
+            @ParameterObject GetMyStoresRequest request
+    );
 
     @Operation(summary = "예약 관리 목록 조회", description = "사업자의 예약 목록을 조회합니다.")
     ResponseEntity<ResponseDTO<GetStoreBookingListResponse>> getStoreBookings(

@@ -8,10 +8,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import com.backend.onharu.domain.store.dto.StoreQuery.FindWithCategoryAndFavoriteCountByOwnerIdQuery;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindAllWithCategoryAndFavoriteCountParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByCategoryIdParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByNameParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByOwnerIdParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindWithCategoryAndFavoriteCountByLocationParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreByIdParam;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCountByLocationProjection;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.repository.StoreRepository;
 import com.backend.onharu.domain.support.error.CoreException;
@@ -34,7 +39,7 @@ public class StoreRepositoryImpl implements StoreRepository {
     }
 
     @Override
-    public Store getStore(GetStoreByIdParam param) {
+    public Store getStoreById(GetStoreByIdParam param) {
         return storeJpaRepository.findById(param.storeId())
                 .orElseThrow(() -> new CoreException(STORE_NOT_FOUND));
     }
@@ -45,8 +50,26 @@ public class StoreRepositoryImpl implements StoreRepository {
     }
 
     @Override
-    public Page<Store> findAllWithCategory(Pageable pageable) {
-        return storeJpaRepository.findAllWithCategory(pageable);
+    public Page<StoreWithFavoriteCount> findWithCategoryAndFavoriteCountByOwnerId(FindWithCategoryAndFavoriteCountByOwnerIdQuery param, Pageable pageable) {
+        return storeJpaRepository.findWithCategoryAndFavoriteCountByOwnerId(param.ownerId(), pageable);
+    }
+
+    @Override
+    public Page<StoreWithFavoriteCount> findAllWithCategoryAndFavoriteCount(FindAllWithCategoryAndFavoriteCountParam param, Pageable pageable) {
+        return storeJpaRepository.findAllWithCategoryAndFavoriteCount(param.categoryId(), pageable);
+    }
+
+    @Override
+    public Page<StoreWithFavoriteCountByLocationProjection> findWithCategoryAndFavoriteCountByLocationProjection(FindWithCategoryAndFavoriteCountByLocationParam param, Pageable pageable) {
+        return storeJpaRepository.findWithCategoryAndFavoriteCountByLocation(param.lat(), param.lng(), param.categoryId(), param.radius(), pageable);
+    }
+
+    @Override
+    public List<Store> findByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return storeJpaRepository.findAllById(ids);
     }
 
     @Override

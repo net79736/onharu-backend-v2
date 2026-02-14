@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -19,9 +20,10 @@ import com.backend.onharu.domain.store.dto.StoreCommand.ChangeOpenStatusCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.CreateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.UpdateStoreCommand;
-import com.backend.onharu.domain.store.dto.StoreQuery.FindByOwnerIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.FindWithCategoryAndFavoriteCountByOwnerIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.BusinessHours;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
@@ -40,6 +42,9 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class StoreFacade {
+
+    @Value("${store.search.default-radius-km:20}")
+    private double defaultSearchRadiusKm; // 기본 반경 20km
 
     private final StoreQueryService storeQueryService;
     private final StoreCommandService storeCommandService;
@@ -65,21 +70,31 @@ public class StoreFacade {
      * @param ownerId 사업자 ID
      * @return 조회된 가게 목록
      */
-    public List<Store> getStores(Long ownerId) {
-        return storeQueryService.findByOwnerId(new FindByOwnerIdQuery(ownerId));
+    public Page<StoreWithFavoriteCount> getStores(Long ownerId, Pageable pageable) {
+        return storeQueryService.findWithCategoryAndFavoriteCountByOwnerId(new FindWithCategoryAndFavoriteCountByOwnerIdQuery(ownerId), pageable);
     }
 
     /**
      * 가게 목록 조회 (위치 기반 검색)
+     *
      * @param searchStoresQuery 검색 쿼리
      * @param pageable 페이징 정보
      * @return 가게 목록
      */
-    public Page<Store> searchStores(
-            SearchStoresQuery searchStoresQuery, 
+    public Page<StoreWithFavoriteCount> searchStores(
+            SearchStoresQuery searchStoresQuery,
             Pageable pageable) {
-
-        return storeQueryService.findByLocation(searchStoresQuery, pageable);
+        // 위·경도가 없는 경우 조회
+        if (searchStoresQuery.lat() == null || searchStoresQuery.lng() == null) {
+            return storeQueryService.findAllWithCategoryAndFavoriteCount(searchStoresQuery, pageable);
+        }
+        SearchStoresQuery queryWithRadius = new SearchStoresQuery(
+                searchStoresQuery.lat(),
+                searchStoresQuery.lng(),
+                searchStoresQuery.categoryId()
+        );
+        // 위치 기반 검색 조회
+        return storeQueryService.findWithCategoryAndFavoriteCountByLocation(queryWithRadius, defaultSearchRadiusKm, pageable);
     }
 
     /**

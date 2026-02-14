@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.reservation.model.Reservation;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
@@ -212,20 +215,21 @@ class OwnerFacadeTest {
             Category category = createTestCategory("식당");
             Store store1 = createTestStore("테스트 가게1", owner, category); // 가게1 생성
             Store store2 = createTestStore("테스트 가게2", owner, category); // 가게2 생성
+            Pageable pageable = Pageable.ofSize(10);
 
             // when
-            List<Store> stores = ownerFacade.getMyStores(owner.getId()); // 사업자의 가게 목록 조회
+            Page<StoreWithFavoriteCount> stores = ownerFacade.getMyStores(owner.getId(), pageable); // 사업자의 가게 목록 조회
 
             // then
             assertThat(stores).isNotNull();
-            assertThat(stores.size()).isEqualTo(2); // 가게 2개 조회되어야 함
-            assertThat(stores).allMatch(s -> s.getOwner().getId().equals(owner.getId())); // 사업자 ID와 일치하는지 확인
+            assertThat(stores.getTotalElements()).isEqualTo(2); // 가게 2개 조회되어야 함
+            assertThat(stores).allMatch(s -> s.store().getOwner().getId().equals(owner.getId())); // 사업자 ID와 일치하는지 확인
             // 조회된 가게 목록에 생성한 가게들이 포함되어 있는지 확인
-            assertThat(stores).extracting(Store::getId).contains(store1.getId(), store2.getId());
+            assertThat(stores.getContent()).extracting(StoreWithFavoriteCount::store).extracting(Store::getId).contains(store1.getId(), store2.getId());
 
             System.out.println("✅ 사업자의 가게 목록 조회 성공");
             System.out.println("   - 사업자 ID: " + owner.getId());
-            System.out.println("   - 가게 개수: " + stores.size());
+            System.out.println("   - 가게 개수: " + stores.getTotalElements());
         }
 
         @Test
@@ -233,9 +237,10 @@ class OwnerFacadeTest {
         public void shouldReturnEmptyListWhenNoStores() {
             // given
             Owner owner = createTestOwner("test_owner_empty_stores", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Pageable pageable = Pageable.ofSize(10);
 
             // when
-            List<Store> stores = ownerFacade.getMyStores(owner.getId());
+            Page<StoreWithFavoriteCount> stores = ownerFacade.getMyStores(owner.getId(), pageable);
 
             // then
             assertThat(stores).isNotNull();

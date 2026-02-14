@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,8 +20,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.backend.onharu.application.StoreExcelFacade;
 import com.backend.onharu.application.StoreFacade;
 import com.backend.onharu.domain.common.enums.AttachmentType;
 import com.backend.onharu.domain.file.dto.FileQuery.ListByRefQuery;
@@ -32,6 +36,7 @@ import com.backend.onharu.domain.store.dto.StoreCommand.CreateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.UpdateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.repository.CategoryRepository;
@@ -46,6 +51,7 @@ import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresRequ
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UploadStoresByExcelResponse;
 import com.backend.onharu.utils.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -64,6 +70,7 @@ public class StoreControllerImpl implements IStoreController {
 
     private final CategoryRepository categoryRepository;
     private final StoreFacade storeFacade;
+    private final StoreExcelFacade storeExcelFacade;
     private final FileQueryService fileQueryService;
 
     /**
@@ -112,9 +119,11 @@ public class StoreControllerImpl implements IStoreController {
     public ResponseEntity<ResponseDTO<SearchStoresResponse>> searchStores(
             @ModelAttribute SearchStoresRequest request
     ) {
-        log.info("가게 목록 조회 요청: latitude={}, longitude={}, radius={}, pageNum={}, perPage={}, sortField={}, sortDirection={}", 
-                request.latitude(), request.longitude(), request.radius(), 
-                request.pageNum(), request.perPage(), request.sortField(), request.sortDirection());
+        log.info("가게 목록 조회 요청: lat={}, lng={}, categoryId={}, pageNum={}, perPage={}, sortField={}, sortDirection={}", 
+            request.lat(), request.lng(), request.categoryId(),
+            request.pageNum(), request.perPage(),
+            request.sortField(), request.sortDirection()
+        );
         
         // Pageable 생성 (유틸리티 클래스 사용 - 1-based 페이지 번호 지원)
         Pageable pageable = PageableUtil.ofOneBased(
@@ -125,17 +134,18 @@ public class StoreControllerImpl implements IStoreController {
         );
         
         // 검색 쿼리 생성
-        SearchStoresQuery searchQuery = new SearchStoresQuery(
-                request.latitude(), 
-                request.longitude(), 
-                request.radius()
+        SearchStoresQuery searchStoreQuery = new SearchStoresQuery(
+                request.lat(), 
+                request.lng(),
+                request.categoryId()
         );
         
         // 페이징된 결과 조회
-        Page<Store> storePage = storeFacade.searchStores(searchQuery, pageable);
+        Page<StoreWithFavoriteCount> storePage = storeFacade.searchStores(searchStoreQuery, pageable);
         
         // 가게 ID 목록 추출
         List<Long> storeIds = storePage.getContent().stream()
+                .map(StoreWithFavoriteCount::store)
                 .map(Store::getId)
                 .collect(Collectors.toList());
         
@@ -153,9 +163,10 @@ public class StoreControllerImpl implements IStoreController {
         
         // DTO 변환 (이미지 목록 포함)
         List<StoreResponse> storeResponses = storePage.getContent().stream()
-                .map(store -> {
-                    List<String> images = imagesByStoreId.getOrDefault(store.getId(), List.of());
-                    return new StoreResponse(store, images);
+                .map(storePageObject -> {
+                    // 이미지 목록 추출
+                    List<String> images = imagesByStoreId.getOrDefault(storePageObject.store().getId(), List.of());
+                    return new StoreResponse(storePageObject.store(), storePageObject.distance(), images, storePageObject.favoriteCount());
                 })
                 .collect(Collectors.toList());
         
@@ -283,5 +294,48 @@ public class StoreControllerImpl implements IStoreController {
                 .body(ResponseDTO.success(categories.stream()
                         .map(CategoryResponse::new)
                         .collect(Collectors.toList())));
+    }
+
+    /**
+        * 엑셀 파일을 통해 가게 정보를 일괄 등록합니다.
+        *
+        * POST /api/stores/upload-excel
+        * Content-Type: multipart/form-data
+        * - file: 엑셀 파일 (첫 번째 행은 헤더, 두 번째 행부터 데이터)
+        *
+        * 엑셀 컬럼 포맷(0-based index):
+        * 0: 카테고리 ID (Long)
+        * 1: 가게 이름 (String)
+        * 2: 주소 (String)
+        * 3: 전화번호 (String)
+        * 4: 위도 (String)
+        * 5: 경도 (String)
+        * 6: 가게 소개 (String)
+        * 7: 한줄 소개 (String)
+        * 8: 태그 목록 (쉼표로 구분된 문자열, 예: "커피, 디저트, 브런치")
+        *
+        * 업로드한 가게의 사업자(owner)는 현재 로그인한 사용자로 설정됩니다.
+        */
+    @PostMapping(
+        value = "/upload-excel",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<ResponseDTO<UploadStoresByExcelResponse>> uploadStoresByExcel(
+        @RequestPart("file") MultipartFile file
+    ) {
+    Long ownerId = SecurityUtils.getCurrentUserId() != null ? SecurityUtils.getCurrentUserId() : 33L;
+
+    log.info("가게 엑셀 업로드 요청: ownerId={}, fileName={}", ownerId, file != null ? file.getOriginalFilename() : null);
+
+    int[] result = storeExcelFacade.importStoresFromExcel(file, ownerId);
+
+    UploadStoresByExcelResponse response = new UploadStoresByExcelResponse(
+            result[0],
+            result[1],
+            result[2]
+    );
+
+    return ResponseEntity.status(HttpStatus.OK)
+            .body(ResponseDTO.success(response));
     }
 }

@@ -1,25 +1,33 @@
 package com.backend.onharu.domain.store.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByCategoryIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByNameQuery;
-import com.backend.onharu.domain.store.dto.StoreQuery.FindByOwnerIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.FindWithCategoryAndFavoriteCountByOwnerIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindAllWithCategoryAndFavoriteCountParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByCategoryIdParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByNameParam;
-import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByOwnerIdParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindWithCategoryAndFavoriteCountByLocationParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreByIdParam;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCountByLocationProjection;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.repository.StoreRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StoreQueryService {
@@ -32,18 +40,17 @@ public class StoreQueryService {
      * @return 조회된 Store 엔티티 (없으면 예외 발생)
      */
     public Store getStore(GetStoreByIdQuery query) {
-        return storeRepository.getStore(new GetStoreByIdParam(query.storeId()));
+        return storeRepository.getStoreById(new GetStoreByIdParam(query.storeId()));
     }
 
     /**
-     * 사업자 ID로 가게 목록 조회
-     * 
-     * @param query 사업자 ID
-     * @return 사업자 ID에 해당하는 가게 리스트
+     * 페이징된 가게 목록 조회 (찜 개수 포함, 찜 많은 순 정렬)
+     *
+     * @param pageable 페이징 정보
+     * @return 가게 + 찜 개수 목록
      */
-    public List<Store> findByOwnerId(FindByOwnerIdQuery query) {
-        return storeRepository.findByOwnerId(
-                new FindByOwnerIdParam(query.ownerId()));
+    public Page<StoreWithFavoriteCount> findWithCategoryAndFavoriteCountByOwnerId(FindWithCategoryAndFavoriteCountByOwnerIdQuery query, Pageable pageable) {
+        return storeRepository.findWithCategoryAndFavoriteCountByOwnerId(new FindWithCategoryAndFavoriteCountByOwnerIdQuery(query.ownerId()), pageable);
     }
 
     /**
@@ -69,25 +76,58 @@ public class StoreQueryService {
     }
 
     /**
+     * 페이징된 가게 목록 조회 (찜 개수 포함, 찜 많은 순 정렬)
+     *
+     * @param pageable 페이징 정보
+     * @return 가게 + 찜 개수 목록
+     */
+    public Page<StoreWithFavoriteCount> findAllWithCategoryAndFavoriteCount(SearchStoresQuery param, Pageable pageable) {
+        return storeRepository.findAllWithCategoryAndFavoriteCount(new FindAllWithCategoryAndFavoriteCountParam(param.categoryId()), pageable);
+    }
+
+    /**
      * 가게 목록 조회 (위치 기반 검색)
      * 
      * 위치 정보(latitude, longitude, radius)가 모두 제공되면 위치 기반 검색을 수행하고,
      * 하나라도 없으면 전체 가게 목록을 반환합니다.
+     * Repository에서 프로젝션과 Store를 각각 조회한 뒤, 서비스에서 조립하여 반환
+     * 
+     * Repository 에서는 데이터를 조회하는 역할만 수행하고,
+     * Facade 에서는 Case 에 따른 비즈니스 로직을 수행하고,
+     * 조립은 서비스에서 수행하는 것이 더 좋다는 판단함.
      * 
      * @param searchStoresQuery 위치 기반 검색 쿼리
+     * @param defaultSearchRadiusKm 기본 반경
      * @param pageable 페이징 정보
-     * @return 가게 목록
+     * @return 가게 목록 (Store + 거리 + 찜 개수)
      */
-    public Page<Store> findByLocation(SearchStoresQuery searchStoresQuery, Pageable pageable) {
-        // 위치 정보가 모두 제공되지 않으면 전체 조회
-        if (searchStoresQuery.latitude() == null 
-                || searchStoresQuery.longitude() == null 
-                || searchStoresQuery.radius() == null) {
-            return storeRepository.findAllWithCategory(pageable);
-        }
+    public Page<StoreWithFavoriteCount> findWithCategoryAndFavoriteCountByLocation(SearchStoresQuery param, double defaultSearchRadiusKm, Pageable pageable) {
+        // 파라미터 객체 생성
+        FindWithCategoryAndFavoriteCountByLocationParam repoParam = new FindWithCategoryAndFavoriteCountByLocationParam(
+                param.lat(), param.lng(), param.categoryId(), defaultSearchRadiusKm);
+        // 위치 기반 검색 조회
+        Page<StoreWithFavoriteCountByLocationProjection> page = storeRepository.findWithCategoryAndFavoriteCountByLocationProjection(repoParam, pageable);
+        // 결과 조회
+        List<StoreWithFavoriteCountByLocationProjection> content = page.getContent();
         
-        // TODO: 위치 기반 검색 구현 (Haversine 공식 사용하여 반경 내 가게 필터링)
-        // 현재는 위치 정보가 있어도 전체 조회 (추후 구현 예정)
-        return storeRepository.findAllWithCategory(pageable);
+        // 결과가 없으면 빈 페이지 반환
+        if (content.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, page.getTotalElements());
+        }
+
+        // 가게 ID 목록 조회
+        List<Long> ids = content.stream().map(StoreWithFavoriteCountByLocationProjection::getId).toList();
+        // 가게 목록 조회
+        Map<Long, Store> storeMap = storeRepository.findByIds(ids).stream().collect(Collectors.toMap(Store::getId, s -> s));
+
+        // 가게 목록 데이터 생성
+        List<StoreWithFavoriteCount> mapped = content.stream()
+                .map(p -> new StoreWithFavoriteCount(
+                        storeMap.get(p.getId()), // 가게 엔티티 조회
+                        p.getDistance(), // 거리 조회
+                        p.getFavoriteCount() != null ? p.getFavoriteCount() : 0L) // 찜 개수 조회
+                    ) // 가게 목록 조립
+                .toList();
+        return new PageImpl<>(mapped, pageable, page.getTotalElements());
     }
 }

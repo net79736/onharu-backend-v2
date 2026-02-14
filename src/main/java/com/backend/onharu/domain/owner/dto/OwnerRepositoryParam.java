@@ -1,5 +1,10 @@
 package com.backend.onharu.domain.owner.dto;
 
+import static com.backend.onharu.domain.support.error.ErrorType.Owner.LOGIN_ID_MUST_NOT_BE_NULL;
+import static com.backend.onharu.domain.support.error.ErrorType.Owner.OWNER_ID_MUST_NOT_BE_NULL;
+
+import com.backend.onharu.domain.support.error.CoreException;
+
 /**
  * 사업자 Repository 파라미터
  * 
@@ -8,11 +13,16 @@ package com.backend.onharu.domain.owner.dto;
 public class OwnerRepositoryParam {
 
     /**
-     * 사용자 ID로 조회하는 파라미터
+     * 사업자 ID로 조회하는 파라미터
      */
-    public record GetOwnerByUserIdParam(
-            Long userId
+    public record GetOwnerByIdParam(
+        Long id
     ) {
+        public GetOwnerByIdParam {
+            if (id == null) {
+                throw new CoreException(OWNER_ID_MUST_NOT_BE_NULL);
+            }
+        }
     }
 
     /**
@@ -21,5 +31,10 @@ public class OwnerRepositoryParam {
     public record GetOwnerByLoginIdParam(
             String loginId
     ) {
+        public GetOwnerByLoginIdParam {
+            if (loginId == null || loginId.isBlank()) {
+                throw new CoreException(LOGIN_ID_MUST_NOT_BE_NULL);
+            }
+        }
     }
 }
