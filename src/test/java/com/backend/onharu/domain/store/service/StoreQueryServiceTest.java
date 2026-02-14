@@ -12,7 +12,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
@@ -21,8 +24,9 @@ import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByCategoryIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByNameQuery;
-import com.backend.onharu.domain.store.dto.StoreQuery.FindByOwnerIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.FindWithCategoryAndFavoriteCountByOwnerIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.support.error.CoreException;
@@ -34,6 +38,7 @@ import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @DisplayName("StoreQueryService 단위 테스트")
 class StoreQueryServiceTest {
 
@@ -190,20 +195,22 @@ class StoreQueryServiceTest {
             
             saveDummyStores(savedOwner, category);
 
+            Pageable pageable = Pageable.ofSize(10);
+
             // when
-            List<Store> stores = storeQueryService.findByOwnerId(
-                new FindByOwnerIdQuery(savedOwner.getId())
+            Page<StoreWithFavoriteCount> stores = storeQueryService.findWithCategoryAndFavoriteCountByOwnerId(
+                new FindWithCategoryAndFavoriteCountByOwnerIdQuery(savedOwner.getId()), pageable
             );
 
             // then
-            assertThat(stores).hasSize(3);
-            assertThat(stores).allMatch(s -> s.getOwner().getId().equals(savedOwner.getId()));
+            assertThat(stores.getTotalElements()).isEqualTo(3);
+            assertThat(stores.getContent()).allMatch(s -> s.store().getOwner().getId().equals(savedOwner.getId()));
             
             System.out.println("✅ 사업자 ID로 가게 목록 조회 성공");
             System.out.println("   - 사업자 ID: " + savedOwner.getId());
-            System.out.println("   - 가게 개수: " + stores.size());
+            System.out.println("   - 가게 개수: " + stores.getTotalElements());
             stores.forEach(s -> {
-                System.out.println("     * 가게 ID: " + s.getId() + ", 가게명: " + s.getName() + ", 영업 여부: " + s.getIsOpen());
+                System.out.println("     * 가게 ID: " + s.store().getId() + ", 가게명: " + s.store().getName() + ", 영업 여부: " + s.store().getIsOpen());
             });
         }
     }

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.tag.dto.TagQuery.FindByIdsQuery;
@@ -20,12 +21,13 @@ import com.backend.onharu.domain.tag.dto.TagQuery.FindByNameQuery;
 import com.backend.onharu.domain.tag.dto.TagQuery.GetTagByIdQuery;
 import com.backend.onharu.domain.tag.model.Tag;
 import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
-import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
+import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.tag.TagJpaRepository;
 
 @SpringBootTest
 @DisplayName("TagQueryService 단위 테스트")
+@ActiveProfiles("test")
 class TagQueryServiceTest {
 
     @Autowired

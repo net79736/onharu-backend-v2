@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByCategoryIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByNameQuery;
-import com.backend.onharu.domain.store.dto.StoreQuery.FindByOwnerIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.FindWithCategoryAndFavoriteCountByOwnerIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
 
@@ -43,15 +43,13 @@ class StoreQueryTest {
             // given
             Double latitude = 37.5665;
             Double longitude = 126.9780;
-            Double radius = 5.0;
 
             // when
-            SearchStoresQuery query = new SearchStoresQuery(latitude, longitude, radius);
+            SearchStoresQuery query = new SearchStoresQuery(latitude, longitude, null);
 
             // then
-            assertThat(query.latitude()).isEqualTo(latitude);
-            assertThat(query.longitude()).isEqualTo(longitude);
-            assertThat(query.radius()).isEqualTo(radius);
+            assertThat(query.lat()).isEqualTo(latitude);
+            assertThat(query.lng()).isEqualTo(longitude);
         }
     }
 
@@ -66,7 +64,7 @@ class StoreQueryTest {
             Long ownerId = 1L;
 
             // when
-            FindByOwnerIdQuery query = new FindByOwnerIdQuery(ownerId);
+            FindWithCategoryAndFavoriteCountByOwnerIdQuery query = new FindWithCategoryAndFavoriteCountByOwnerIdQuery(ownerId);
 
             // then
             assertThat(query.ownerId()).isEqualTo(ownerId);

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +20,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.onharu.application.StoreExcelFacade;
 import com.backend.onharu.application.StoreFacade;
@@ -48,6 +51,7 @@ import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresRequ
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UploadStoresByExcelResponse;
 import com.backend.onharu.utils.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -290,5 +294,48 @@ public class StoreControllerImpl implements IStoreController {
                 .body(ResponseDTO.success(categories.stream()
                         .map(CategoryResponse::new)
                         .collect(Collectors.toList())));
+    }
+
+    /**
+        * 엑셀 파일을 통해 가게 정보를 일괄 등록합니다.
+        *
+        * POST /api/stores/upload-excel
+        * Content-Type: multipart/form-data
+        * - file: 엑셀 파일 (첫 번째 행은 헤더, 두 번째 행부터 데이터)
+        *
+        * 엑셀 컬럼 포맷(0-based index):
+        * 0: 카테고리 ID (Long)
+        * 1: 가게 이름 (String)
+        * 2: 주소 (String)
+        * 3: 전화번호 (String)
+        * 4: 위도 (String)
+        * 5: 경도 (String)
+        * 6: 가게 소개 (String)
+        * 7: 한줄 소개 (String)
+        * 8: 태그 목록 (쉼표로 구분된 문자열, 예: "커피, 디저트, 브런치")
+        *
+        * 업로드한 가게의 사업자(owner)는 현재 로그인한 사용자로 설정됩니다.
+        */
+    @PostMapping(
+        value = "/upload-excel",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<ResponseDTO<UploadStoresByExcelResponse>> uploadStoresByExcel(
+        @RequestPart("file") MultipartFile file
+    ) {
+    Long ownerId = SecurityUtils.getCurrentUserId() != null ? SecurityUtils.getCurrentUserId() : 33L;
+
+    log.info("가게 엑셀 업로드 요청: ownerId={}, fileName={}", ownerId, file != null ? file.getOriginalFilename() : null);
+
+    int[] result = storeExcelFacade.importStoresFromExcel(file, ownerId);
+
+    UploadStoresByExcelResponse response = new UploadStoresByExcelResponse(
+            result[0],
+            result[1],
+            result[2]
+    );
+
+    return ResponseEntity.status(HttpStatus.OK)
+            .body(ResponseDTO.success(response));
     }
 }

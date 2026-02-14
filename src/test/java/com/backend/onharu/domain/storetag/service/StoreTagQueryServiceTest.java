@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.common.enums.ProviderType;
@@ -36,6 +37,7 @@ import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @DisplayName("StoreTagQueryService 단위 테스트 (Store를 통한 StoreTag 조회)")
 class StoreTagQueryServiceTest {
 

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.child.model.Child;
@@ -36,6 +37,7 @@ import com.backend.onharu.infra.db.user.UserJpaRepository;
 
 @Transactional
 @SpringBootTest
+@ActiveProfiles("test")
 class FavoriteQueryServiceTest {
 
     @Autowired
