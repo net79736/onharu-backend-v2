@@ -5,10 +5,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByLoginIdQuery;
+import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByIdParam;
 import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByLoginIdParam;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.repository.OwnerRepository;
-import com.backend.onharu.domain.owner.service.OwnerRepositoryParam.GetOwnerByIdParam;
 
 import lombok.RequiredArgsConstructor;
 

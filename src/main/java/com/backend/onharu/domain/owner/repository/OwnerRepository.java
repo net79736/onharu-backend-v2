@@ -1,8 +1,8 @@
 package com.backend.onharu.domain.owner.repository;
 
+import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByIdParam;
 import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByLoginIdParam;
 import com.backend.onharu.domain.owner.model.Owner;
-import com.backend.onharu.domain.owner.service.OwnerRepositoryParam.GetOwnerByIdParam;
 
 /**
  * 사업자 Repository 인터페이스

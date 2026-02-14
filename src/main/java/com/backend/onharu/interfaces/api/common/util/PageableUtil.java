@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.JpaSort;
 
 /**
  * Pageable 객체 생성 유틸리티
@@ -78,6 +79,16 @@ public class PageableUtil {
                 ? Sort.Direction.DESC 
                 : Sort.Direction.ASC;
         
+        if (validField.contains("distance")) {
+            validField = "(" + validField + ")";
+            return PageRequest.of(validPage, validSize, JpaSort.unsafe(direction, validField));
+        }
+
+        if (validField.contains("favoriteCount")) {
+            validField = "(" + validField + ")";
+            return PageRequest.of(validPage, validSize, JpaSort.unsafe(direction, validField));
+        }
+
         return PageRequest.of(validPage, validSize, Sort.by(direction, validField));
     }
 

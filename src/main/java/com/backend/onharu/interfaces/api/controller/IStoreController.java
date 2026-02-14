@@ -15,7 +15,6 @@ import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresResp
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -33,16 +32,7 @@ public interface IStoreController {
 
     @Operation(
         summary = "가게 목록 조회", 
-        description = "검색 및 페이징이 가능한 가게 목록을 반환합니다.",
-        parameters = {
-            @Parameter(name = "latitude", description = "위도", example = "37.5665", schema = @Schema(type = "number")),
-            @Parameter(name = "longitude", description = "경도", example = "126.9780", schema = @Schema(type = "number")),
-            @Parameter(name = "radius", description = "반경(km)", example = "5.0", schema = @Schema(type = "number")),
-            @Parameter(name = "pageNum", description = "페이지 번호 (1부터 시작)", example = "1", schema = @Schema(type = "integer"), required = true),
-            @Parameter(name = "perPage", description = "페이지당 항목 수", example = "10", schema = @Schema(type = "integer"), required = true),
-            @Parameter(name = "sortField", description = "정렬 기준", example = "id", schema = @Schema(type = "string")),
-            @Parameter(name = "sortDirection", description = "정렬 방향", example = "desc", schema = @Schema(type = "string", allowableValues = {"asc", "desc"}))
-        }
+        description = "검색 및 페이징이 가능한 가게 목록을 반환합니다."
     )
     ResponseEntity<ResponseDTO<SearchStoresResponse>> searchStores(
         @ParameterObject SearchStoresRequest request

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,8 +21,9 @@ import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservation
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.reservation.service.ReservationCommandService;
 import com.backend.onharu.domain.reservation.service.ReservationQueryService;
-import com.backend.onharu.domain.store.dto.StoreQuery.FindByOwnerIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.FindWithCategoryAndFavoriteCountByOwnerIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.service.StoreQueryService;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleCommand.DeleteStoreScheduleCommand;
@@ -59,15 +62,15 @@ public class OwnerFacade {
      * @param ownerId 사업자 ID
      * @return 사업자의 가게 목록
      */
-    public List<Store> getMyStores(Long ownerId) {
+    public Page<StoreWithFavoriteCount> getMyStores(Long ownerId, Pageable pageable) {
         // 사업자 정보 조회 (존재 여부 확인)
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
 
         // 사업자의 가게 목록 조회
-        List<Store> stores = storeQueryService.findByOwnerId(new FindByOwnerIdQuery(ownerId));
+        Page<StoreWithFavoriteCount> stores = storeQueryService.findWithCategoryAndFavoriteCountByOwnerId(new FindWithCategoryAndFavoriteCountByOwnerIdQuery(ownerId), pageable);
 
         // 각 가게가 해당 사업자의 소유인지 검증
-        stores.forEach(store -> store.BelongsTo(owner));
+        stores.forEach(store -> store.store().BelongsTo(owner));
 
         return stores;
     }

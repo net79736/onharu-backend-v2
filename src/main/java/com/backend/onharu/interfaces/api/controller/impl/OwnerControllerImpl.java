@@ -1,12 +1,18 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
+import static com.backend.onharu.interfaces.api.common.util.PageableUtil.getCurrentPage;
+
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,12 +23,19 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.onharu.application.OwnerFacade;
+import com.backend.onharu.domain.common.enums.AttachmentType;
+import com.backend.onharu.domain.file.dto.FileQuery.ListByRefsQuery;
+import com.backend.onharu.domain.file.model.File;
+import com.backend.onharu.domain.file.service.FileQueryService;
 import com.backend.onharu.domain.reservation.model.Reservation;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
+import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.controller.IOwnerController;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerResponse;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetMyStoresRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetMyStoresResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetOwnerResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingDetailResponse;
@@ -51,6 +64,8 @@ import lombok.extern.slf4j.Slf4j;
 public class OwnerControllerImpl implements IOwnerController {
 
     private final OwnerFacade ownerFacade;
+
+    private final FileQueryService fileQueryService;
 
     /**
      * 사업자 정보 등록
@@ -150,17 +165,56 @@ public class OwnerControllerImpl implements IOwnerController {
      */
     @Override
     @GetMapping("/stores")
-    public ResponseEntity<ResponseDTO<GetMyStoresResponse>> getMyStores() {
+    public ResponseEntity<ResponseDTO<GetMyStoresResponse>> getMyStores(
+            @ModelAttribute GetMyStoresRequest request
+    ) {
         Long ownerId = SecurityUtils.getCurrentUserId();
 
-        log.info("사업자 가게 목록 조회 요청: ownerId={}", ownerId);
+        log.info("사업자 가게 목록 조회 요청: ownerId={}, request={}", ownerId, request);
 
-        List<Store> stores = ownerFacade.getMyStores(ownerId);
-        List<StoreResponse> storeResponses = stores.stream()
-                .map(StoreResponse::new)
+        Pageable pageable = PageableUtil.ofOneBased(
+                request.pageNum(), 
+                request.perPage(), 
+                request.sortField(), 
+                request.sortDirection()
+        );
+
+        // 사업자의 가게 목록 조회
+        Page<StoreWithFavoriteCount> storePage = ownerFacade.getMyStores(ownerId, pageable);
+
+        // 가게 ID 목록 추출
+        List<Long> storeIds = storePage.getContent().stream()
+        .map(StoreWithFavoriteCount::store)
+        .map(Store::getId)
+        .collect(Collectors.toList());
+
+        // 배치로 이미지 파일 목록 조회 (N+1 문제 방지)
+        List<File> allFiles = storeIds.isEmpty() 
+                ? List.of() 
+                : fileQueryService.listByRefs(new ListByRefsQuery(AttachmentType.STORE, storeIds));
+
+        // 가게 ID별로 이미지 목록 그룹화
+        Map<Long, List<String>> imagesByStoreId = allFiles.stream()
+                .collect(Collectors.groupingBy(
+                        File::getRefId,
+                        Collectors.mapping(File::getFilePath, Collectors.toList())
+                ));
+
+        List<StoreResponse> storeResponses = storePage.stream()
+                .map(storePageObject -> {
+                    // 이미지 목록 추출
+                    List<String> images = imagesByStoreId.getOrDefault(storePageObject.store().getId(), List.of());
+                    return new StoreResponse(storePageObject.store(), storePageObject.distance(), images, storePageObject.favoriteCount());
+                })
                 .collect(Collectors.toList());
 
-        GetMyStoresResponse response = new GetMyStoresResponse(storeResponses);
+        GetMyStoresResponse response = new GetMyStoresResponse(
+            storeResponses,
+            storePage.getTotalElements(),
+            getCurrentPage(storePage),
+            storePage.getTotalPages(),
+            storePage.getSize()
+        );
         
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(response));

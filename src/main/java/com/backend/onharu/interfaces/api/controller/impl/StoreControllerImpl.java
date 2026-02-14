@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.onharu.application.StoreExcelFacade;
 import com.backend.onharu.application.StoreFacade;
 import com.backend.onharu.domain.common.enums.AttachmentType;
 import com.backend.onharu.domain.file.dto.FileQuery.ListByRefQuery;
@@ -32,6 +33,7 @@ import com.backend.onharu.domain.store.dto.StoreCommand.CreateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.UpdateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.repository.CategoryRepository;
@@ -64,6 +66,7 @@ public class StoreControllerImpl implements IStoreController {
 
     private final CategoryRepository categoryRepository;
     private final StoreFacade storeFacade;
+    private final StoreExcelFacade storeExcelFacade;
     private final FileQueryService fileQueryService;
 
     /**
@@ -112,9 +115,11 @@ public class StoreControllerImpl implements IStoreController {
     public ResponseEntity<ResponseDTO<SearchStoresResponse>> searchStores(
             @ModelAttribute SearchStoresRequest request
     ) {
-        log.info("가게 목록 조회 요청: latitude={}, longitude={}, radius={}, pageNum={}, perPage={}, sortField={}, sortDirection={}", 
-                request.latitude(), request.longitude(), request.radius(), 
-                request.pageNum(), request.perPage(), request.sortField(), request.sortDirection());
+        log.info("가게 목록 조회 요청: lat={}, lng={}, categoryId={}, pageNum={}, perPage={}, sortField={}, sortDirection={}", 
+            request.lat(), request.lng(), request.categoryId(),
+            request.pageNum(), request.perPage(),
+            request.sortField(), request.sortDirection()
+        );
         
         // Pageable 생성 (유틸리티 클래스 사용 - 1-based 페이지 번호 지원)
         Pageable pageable = PageableUtil.ofOneBased(
@@ -125,17 +130,18 @@ public class StoreControllerImpl implements IStoreController {
         );
         
         // 검색 쿼리 생성
-        SearchStoresQuery searchQuery = new SearchStoresQuery(
-                request.latitude(), 
-                request.longitude(), 
-                request.radius()
+        SearchStoresQuery searchStoreQuery = new SearchStoresQuery(
+                request.lat(), 
+                request.lng(),
+                request.categoryId()
         );
         
         // 페이징된 결과 조회
-        Page<Store> storePage = storeFacade.searchStores(searchQuery, pageable);
+        Page<StoreWithFavoriteCount> storePage = storeFacade.searchStores(searchStoreQuery, pageable);
         
         // 가게 ID 목록 추출
         List<Long> storeIds = storePage.getContent().stream()
+                .map(StoreWithFavoriteCount::store)
                 .map(Store::getId)
                 .collect(Collectors.toList());
         
@@ -153,9 +159,10 @@ public class StoreControllerImpl implements IStoreController {
         
         // DTO 변환 (이미지 목록 포함)
         List<StoreResponse> storeResponses = storePage.getContent().stream()
-                .map(store -> {
-                    List<String> images = imagesByStoreId.getOrDefault(store.getId(), List.of());
-                    return new StoreResponse(store, images);
+                .map(storePageObject -> {
+                    // 이미지 목록 추출
+                    List<String> images = imagesByStoreId.getOrDefault(storePageObject.store().getId(), List.of());
+                    return new StoreResponse(storePageObject.store(), storePageObject.distance(), images, storePageObject.favoriteCount());
                 })
                 .collect(Collectors.toList());
         
