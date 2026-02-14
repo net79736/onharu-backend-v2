@@ -12,6 +12,8 @@ import com.backend.onharu.infra.db.user.UserJpaRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.backend.onharu.domain.user.dto.UserRepositoryParam.*;
+
 /**
  * 사용자 Repository 구현체
  */
@@ -41,5 +43,11 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public boolean existsByLoginId(GetUserByLoginIdParam param) {
         return userJpaRepository.existsByLoginId(param.loginId());
+    }
+
+    @Override
+    public User getUserByNameAndPhone(GetUserByNameAndPhoneParam param) {
+        return userJpaRepository.findByNameAndPhone(param.name(), param.phone())
+                .orElseThrow(() -> new CoreException(ErrorType.User.USER_NOT_FOUND));
     }
 }

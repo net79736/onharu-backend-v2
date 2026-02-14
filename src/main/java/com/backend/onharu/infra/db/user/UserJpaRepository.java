@@ -26,4 +26,13 @@ public interface UserJpaRepository extends JpaRepository<User, Long> {
      * @return 존재하면 true, 없으면 false
      */
     boolean existsByLoginId(String loginId);
+
+    /**
+     * 이름과 전화번호로 사용자를 조회합니다.
+     *
+     * @param name 사용자 이름
+     * @param phone 사용자 전화번호
+     * @return 조호된 사용자 엔티티
+     */
+    Optional<User> findByNameAndPhone(String name, String phone);
 }
