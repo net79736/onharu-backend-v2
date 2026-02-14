@@ -419,6 +419,7 @@ class StoreFacadeTest {
                     "업데이트된 가게 소개입니다.",
                     "업데이트된 한줄 소개",
                     true,
+                    true,
                     List.of(), // 태그 없음
                     List.of(), // 영업시간 없음
                     List.of() // 이미지 없음
@@ -436,6 +437,7 @@ class StoreFacadeTest {
             assertThat(updatedStore.getIntroduction()).isEqualTo("업데이트된 가게 소개입니다.");
             assertThat(updatedStore.getIntro()).isEqualTo("업데이트된 한줄 소개");
             assertThat(updatedStore.getIsOpen()).isTrue();
+            assertThat(updatedStore.getIsSharing()).isTrue();
 
             System.out.println("✅ 가게 정보 수정 성공");
             System.out.println("   - 가게 ID: " + updatedStore.getId());
@@ -463,6 +465,7 @@ class StoreFacadeTest {
                     "127.0324",
                     "업데이트된 가게 소개입니다.",
                     "업데이트된 한줄 소개",
+                    true,
                     true,
                     List.of(), // 태그 없음
                     List.of(), // 영업시간 없음

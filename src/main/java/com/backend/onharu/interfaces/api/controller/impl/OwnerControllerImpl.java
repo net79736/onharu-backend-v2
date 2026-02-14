@@ -47,6 +47,7 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDate
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateOwnerRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
+import com.backend.onharu.utils.NumberUtils;
 import com.backend.onharu.utils.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -204,7 +205,8 @@ public class OwnerControllerImpl implements IOwnerController {
                 .map(storePageObject -> {
                     // 이미지 목록 추출
                     List<String> images = imagesByStoreId.getOrDefault(storePageObject.store().getId(), List.of());
-                    return new StoreResponse(storePageObject.store(), storePageObject.distance(), images, storePageObject.favoriteCount());
+                    double distanceKm = NumberUtils.truncateToIntegerAsDouble(storePageObject.distance()); // 소수점 버림
+                    return new StoreResponse(storePageObject.store(), distanceKm, images, storePageObject.favoriteCount());
                 })
                 .collect(Collectors.toList());
 

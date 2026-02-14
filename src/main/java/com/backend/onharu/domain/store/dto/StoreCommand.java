@@ -41,6 +41,7 @@ public class StoreCommand {
             String introduction,
             String intro,
             Boolean isOpen,
+            Boolean isSharing,
             List<String> tagNames,
             List<BusinessHourRequest> businessHours,
             List<ImageMetadata> images
