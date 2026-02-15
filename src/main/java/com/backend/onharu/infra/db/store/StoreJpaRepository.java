@@ -42,7 +42,8 @@ public interface StoreJpaRepository extends JpaRepository<Store, Long> {
                     "LEFT JOIN Favorite f ON f.store = s " +
                     "LEFT JOIN StoreTag st ON st.store = s " +
                     "LEFT JOIN Tag t ON t.id = st.tag.id " +
-                    "WHERE :categoryId IS NULL OR c.id = :categoryId " +
+                    "WHERE 1 = 1 " +
+                    "AND (:categoryId IS NULL OR c.id = :categoryId) " +
                     "AND (:keyword IS NULL OR t.name LIKE CONCAT('%', :keyword, '%') OR s.name LIKE CONCAT('%', :keyword, '%')) " +
                     "GROUP BY s ",
             countQuery = "SELECT COUNT(DISTINCT s.id) " +
