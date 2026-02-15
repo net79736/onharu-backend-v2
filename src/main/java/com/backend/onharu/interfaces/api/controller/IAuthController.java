@@ -38,9 +38,23 @@ public interface IAuthController {
             FindIdRequest request
     );
 
-    @Operation(summary = "비밀번호 재설정", description = "이메일 또는 전화번호로 비밀번호 재설정을 요청합니다.")
+    @Operation(summary = "비밀번호 재설정", description = "이름, 아이디, 전화번호로 비밀번호 재설정을 요청합니다.")
     ResponseEntity<ResponseDTO<Void>> resetPassword(
-            @Schema(description = "비밀번호 재설정 요청")
+            @RequestBody(
+                    description = "비밀번호 재설정 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResetPasswordRequest.class),
+                            examples = @ExampleObject(
+                                    name = "비밀번호 재설정 요청 예시",
+                                    value = "{\n" +
+                                            "  \"name\": \"홍길동\",\n" +
+                                            "  \"loginId\": \"user1234@naver.com\",\n" +
+                                            "  \"phone\": \"01012345678\"\n" +
+                                            "}"
+                            )
+                    )
+            )
             ResetPasswordRequest request
     );
 

@@ -3,6 +3,7 @@ package com.backend.onharu.interfaces.api.controller.impl;
 import com.backend.onharu.application.AuthFacade;
 import com.backend.onharu.domain.email.dto.EmailAuthenticationCommand.CreateEmailAuthenticationCommand;
 import com.backend.onharu.domain.email.dto.EmailAuthenticationCommand.CompleteEmailAuthenticationCommand;
+import com.backend.onharu.domain.user.dto.UserCommand;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByNameAndPhoneQuery;
 import com.backend.onharu.domain.user.model.User;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
+
+import static com.backend.onharu.domain.user.dto.UserCommand.*;
 
 /**
  * 인증 관련 API를 제공하는 컨트롤러 구현체입니다.
@@ -77,6 +80,14 @@ public class AuthControllerImpl implements IAuthController {
             @RequestBody ResetPasswordRequest request
     ) {
         log.info("비밀번호 재설정 요청: {}", request);
+
+        authFacade.resetPassword(
+                new ResetPasswordUserCommand(
+                        request.loginId(),
+                        request.name(),
+                        request.phone()
+                )
+        ); // 비밀번호 초기화 및 임시 비밀번호 메시지 전송
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));
