@@ -51,12 +51,12 @@ public class StoreRepositoryImpl implements StoreRepository {
 
     @Override
     public Page<StoreWithFavoriteCount> findAllWithCategoryAndFavoriteCount(FindAllWithCategoryAndFavoriteCountParam param, Pageable pageable) {
-        return storeJpaRepository.findAllWithCategoryAndFavoriteCount(param.categoryId(), pageable);
+        return storeJpaRepository.findAllWithCategoryAndFavoriteCount(param.categoryId(), param.keyword(), pageable);
     }
 
     @Override
     public Page<StoreWithFavoriteCountByLocationProjection> findWithCategoryAndFavoriteCountByLocationProjection(FindWithCategoryAndFavoriteCountByLocationParam param, Pageable pageable) {
-        return storeJpaRepository.findWithCategoryAndFavoriteCountByLocation(param.lat(), param.lng(), param.categoryId(), param.radius(), pageable);
+        return storeJpaRepository.findWithCategoryAndFavoriteCountByLocation(param.lat(), param.lng(), param.radius(), param.categoryId(), param.keyword(), pageable);
     }
 
     @Override

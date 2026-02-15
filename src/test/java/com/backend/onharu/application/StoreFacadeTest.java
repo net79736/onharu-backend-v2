@@ -27,6 +27,7 @@ import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.store.dto.StoreCommand.CreateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.UpdateStoreCommand;
+import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
@@ -145,6 +146,37 @@ class StoreFacadeTest {
                 .build());
     }
 
+    /**
+     * 테스트용 Store 생성 헬퍼 메서드 (위도/경도 포함, searchStores 테스트용)
+     */
+    private Store createTestStore(String name, Owner owner, Category category, String lat, String lng) {
+        return storeJpaRepository.save(Store.builder()
+                .name(name)
+                .owner(owner)
+                .category(category)
+                .address("서울시 강남구")
+                .phone("0212345678")
+                .lat(lat)
+                .lng(lng)
+                .intro("테스트 한줄 소개")
+                .introduction("테스트 가게 소개")
+                .isOpen(true)
+                .build());
+    }
+
+    /**
+     * Store에 태그(해시태그) 추가 헬퍼 메서드
+     */
+    private void addTagsToStore(Store store, List<String> tagNames) {
+        for (String tagName : tagNames) {
+            Tag tag = tagJpaRepository.findAllByName(tagName).stream()
+                    .findFirst()
+                    .orElseGet(() -> tagJpaRepository.save(Tag.builder().name(tagName).build()));
+            store.addTag(tag);
+        }
+        storeJpaRepository.save(store);
+    }
+
     @Nested
     @DisplayName("가게 단건 조회 테스트")
     class GetStoreTest {
@@ -216,6 +248,154 @@ class StoreFacadeTest {
             // then
             assertThat(stores).isNotNull();
             assertThat(stores).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("가게 검색(searchStores) 테스트")
+    class SearchStoresTest {
+
+        @Test
+        @DisplayName("위도/경도 있을 때 - 위치 기반 검색으로 반경 내 가게만 조회")
+        @Transactional
+        public void shouldSearchStoresWithLocation() {
+            // given: 서울(37.5665, 126.9780) 근처에 가게 2개, 부산(35.1796, 129.0756)에 가게 1개
+            Owner owner = createTestOwner("test_owner_search_loc", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store1 = createTestStore("강남 커피숍", owner, category, "37.5665", "126.9780");
+            Store store2 = createTestStore("역삼 카페", owner, category, "37.5666", "126.9781");
+            Store storeInBusan = createTestStore("부산 해운대가게", owner, category, "35.1796", "129.0756");
+
+            SearchStoresQuery query = new SearchStoresQuery(37.5665, 126.9780, null, null);
+            Pageable pageable = Pageable.ofSize(10);
+
+            // when: 서울 좌표 기준 검색 (기본 반경 20km)
+            Page<StoreWithFavoriteCount> result = storeFacade.searchStores(query, pageable);
+
+            // then: 서울 근처 가게 2개만 조회
+            assertThat(result).isNotNull();
+            assertThat(result.getTotalElements()).isEqualTo(2);
+            assertThat(result.getContent())
+                    .extracting(s -> s.store().getName())
+                    .containsExactlyInAnyOrder("강남 커피숍", "역삼 카페");
+            assertThat(result.getContent())
+                    .extracting(s -> s.store().getName())
+                    .doesNotContain("부산 해운대가게");
+        }
+
+        @Test
+        @DisplayName("위도/경도 없을 때 - 전체 가게 목록 조회")
+        @Transactional
+        public void shouldSearchStoresWithoutLocation() {
+            // given
+            Owner owner = createTestOwner("test_owner_search_no_loc", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store1 = createTestStore("테스트 가게1", owner, category, "37.5665", "126.9780");
+            Store store2 = createTestStore("테스트 가게2", owner, category, "35.1796", "129.0756");
+
+            SearchStoresQuery query = new SearchStoresQuery(null, null, null, null);
+            Pageable pageable = Pageable.ofSize(10);
+
+            // when
+            Page<StoreWithFavoriteCount> result = storeFacade.searchStores(query, pageable);
+
+            // then: 위치 없이 검색 시 모든 가게 조회
+            assertThat(result).isNotNull();
+            assertThat(result.getTotalElements()).isEqualTo(2);
+            assertThat(result.getContent())
+                    .extracting(s -> s.store().getId())
+                    .containsExactlyInAnyOrder(store1.getId(), store2.getId());
+        }
+
+        @Test
+        @DisplayName("키워드 있을 때 - 가게 이름으로 검색")
+        @Transactional
+        public void shouldSearchStoresByStoreName() {
+            // given: 이름에 "스페셜커피"가 포함된 가게만 생성하여 키워드 검색 동작 검증
+            Owner owner = createTestOwner("test_owner_search_keyword", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+            Store coffeeStore = createTestStore("스페셜커피전문점", owner, category, "37.5665", "126.9780");
+
+            SearchStoresQuery query = new SearchStoresQuery(null, null, null, "스페셜커피");
+            Pageable pageable = Pageable.ofSize(10);
+
+            // when
+            Page<StoreWithFavoriteCount> result = storeFacade.searchStores(query, pageable);
+
+            // then: 가게 이름에 "스페셜커피"가 포함된 가게만 조회
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).store().getId()).isEqualTo(coffeeStore.getId());
+            assertThat(result.getContent().get(0).store().getName()).isEqualTo("스페셜커피전문점");
+        }
+
+        @Test
+        @DisplayName("키워드 있을 때 - 해시태그(태그)로 검색")
+        @Transactional
+        public void shouldSearchStoresByHashtag() {
+            // given: 태그 "브런치스페셜"이 있는 가게만 생성하여 해시태그 검색 동작 검증
+            Owner owner = createTestOwner("test_owner_search_hashtag", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+            Store storeWithTag = createTestStore("오늘의맛집", owner, category, "37.5665", "126.9780");
+            addTagsToStore(storeWithTag, List.of("브런치스페셜", "조식"));
+
+            SearchStoresQuery query = new SearchStoresQuery(null, null, null, "브런치스페셜");
+            Pageable pageable = Pageable.ofSize(10);
+
+            // when
+            Page<StoreWithFavoriteCount> result = storeFacade.searchStores(query, pageable);
+
+            // then: 태그에 "브런치스페셜"이 있는 가게만 조회
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).store().getId()).isEqualTo(storeWithTag.getId());
+            assertThat(result.getContent().get(0).store().getName()).isEqualTo("오늘의맛집");
+        }
+
+        @Test
+        @DisplayName("키워드 없을 때 - 전체 가게 목록 조회")
+        @Transactional
+        public void shouldSearchStoresWithoutKeyword() {
+            // given
+            Owner owner = createTestOwner("test_owner_search_no_keyword", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store1 = createTestStore("가게A", owner, category, "37.5665", "126.9780");
+            Store store2 = createTestStore("가게B", owner, category, "37.5666", "126.9781");
+
+            SearchStoresQuery query = new SearchStoresQuery(null, null, null, null);
+            Pageable pageable = Pageable.ofSize(10);
+
+            // when
+            Page<StoreWithFavoriteCount> result = storeFacade.searchStores(query, pageable);
+
+            // then: 키워드 없이 검색 시 모든 가게 조회
+            assertThat(result).isNotNull();
+            assertThat(result.getTotalElements()).isEqualTo(2);
+            assertThat(result.getContent())
+                    .extracting(s -> s.store().getId())
+                    .containsExactlyInAnyOrder(store1.getId(), store2.getId());
+        }
+
+        @Test
+        @DisplayName("위도/경도 + 키워드 동시 조건 - 위치 내에서 키워드 필터링")
+        @Transactional
+        public void shouldSearchStoresWithLocationAndKeyword() {
+            // given: 같은 반경 내에 "커피" 가게 1개, "식당" 가게 1개
+            Owner owner = createTestOwner("test_owner_search_both", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+            Store coffeeStore = createTestStore("강남 커피숍", owner, category, "37.5665", "126.9780");
+            Store restaurantStore = createTestStore("강남 식당", owner, category, "37.5666", "126.9781");
+
+            SearchStoresQuery query = new SearchStoresQuery(37.5665, 126.9780, null, "커피");
+            Pageable pageable = Pageable.ofSize(10);
+
+            // when
+            Page<StoreWithFavoriteCount> result = storeFacade.searchStores(query, pageable);
+
+            // then: 위치 조건 + 가게 이름 "커피" 포함된 가게만 조회
+            assertThat(result).isNotNull();
+            assertThat(result.getTotalElements()).isEqualTo(1);
+            assertThat(result.getContent().get(0).store().getName()).isEqualTo("강남 커피숍");
         }
     }
 
