@@ -123,4 +123,23 @@ public class UserCommand {
             String password
     ) {
     }
+
+    /**
+     * 비밀번호 찾기(초기화) Command
+     */
+    public record ResetPasswordUserCommand(
+            String loginId,
+            String name,
+            String phone
+    ) {
+    }
+
+    /**
+     * 임시 비밀번호 업데이트 Command
+     */
+    public record UpdatePasswordCommand(
+            Long id,
+            String password
+    ) {
+    }
 }
