@@ -18,7 +18,8 @@ public class StoreRepositroyParam {
     }
 
     public record FindAllWithCategoryAndFavoriteCountParam(
-            Long categoryId
+            Long categoryId,
+            String keyword
     ) {
     }
 
@@ -28,8 +29,9 @@ public class StoreRepositroyParam {
     public record FindWithCategoryAndFavoriteCountByLocationParam(
             Double lat,
             Double lng,
+            Double radius,
             Long categoryId,
-            Double radius
+            String keyword
     ) {
     }
     /**

@@ -43,9 +43,10 @@ class StoreQueryTest {
             // given
             Double latitude = 37.5665;
             Double longitude = 126.9780;
+            String keyword = "빵집";
 
             // when
-            SearchStoresQuery query = new SearchStoresQuery(latitude, longitude, null);
+            SearchStoresQuery query = new SearchStoresQuery(latitude, longitude, null, keyword);
 
             // then
             assertThat(query.lat()).isEqualTo(latitude);

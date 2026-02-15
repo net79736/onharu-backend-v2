@@ -26,6 +26,9 @@ public class StoreControllerDto {
             @Schema(description = "카테고리 ID", example = "1")
             Long categoryId,
 
+            @Schema(description = "검색 키워드", example = "빵집")
+            String keyword,
+
             @Schema(description = "페이지 번호 (1부터 시작)", example = "1")
             Integer pageNum,
 

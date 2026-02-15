@@ -15,7 +15,8 @@ public class StoreQuery {
     public record SearchStoresQuery(
             Double lat,
             Double lng,
-            Long categoryId
+            Long categoryId,
+            String keyword
     ) {
         // 위/경도 유무 확인
         public boolean hasLocation() {

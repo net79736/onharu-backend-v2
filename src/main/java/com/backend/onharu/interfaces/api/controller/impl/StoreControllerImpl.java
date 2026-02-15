@@ -121,8 +121,8 @@ public class StoreControllerImpl implements IStoreController {
     public ResponseEntity<ResponseDTO<SearchStoresResponse>> searchStores(
             @ModelAttribute SearchStoresRequest request
     ) {
-        log.info("가게 목록 조회 요청: lat={}, lng={}, categoryId={}, pageNum={}, perPage={}, sortField={}, sortDirection={}",
-            request.lat(), request.lng(), request.categoryId(),
+        log.info("가게 목록 조회 요청: lat={}, lng={}, categoryId={}, keyword={}, pageNum={}, perPage={}, sortField={}, sortDirection={}",
+            request.lat(), request.lng(), request.categoryId(), request.keyword(),
             request.pageNum(), request.perPage(),
             request.sortField(), request.sortDirection()
         );
@@ -142,7 +142,8 @@ public class StoreControllerImpl implements IStoreController {
         SearchStoresQuery searchStoreQuery = new SearchStoresQuery(
                 request.lat(), 
                 request.lng(),
-                request.categoryId()
+                request.categoryId(),
+                request.keyword()
         );
         
         // 페이징된 결과 조회

@@ -82,7 +82,7 @@ public class StoreQueryService {
      * @return 가게 + 찜 개수 목록
      */
     public Page<StoreWithFavoriteCount> findAllWithCategoryAndFavoriteCount(SearchStoresQuery param, Pageable pageable) {
-        return storeRepository.findAllWithCategoryAndFavoriteCount(new FindAllWithCategoryAndFavoriteCountParam(param.categoryId()), pageable);
+        return storeRepository.findAllWithCategoryAndFavoriteCount(new FindAllWithCategoryAndFavoriteCountParam(param.categoryId(), param.keyword()), pageable);
     }
 
     /**
@@ -104,7 +104,7 @@ public class StoreQueryService {
     public Page<StoreWithFavoriteCount> findWithCategoryAndFavoriteCountByLocation(SearchStoresQuery param, double defaultSearchRadiusKm, Pageable pageable) {
         // 파라미터 객체 생성
         FindWithCategoryAndFavoriteCountByLocationParam repoParam = new FindWithCategoryAndFavoriteCountByLocationParam(
-                param.lat(), param.lng(), param.categoryId(), defaultSearchRadiusKm);
+                param.lat(), param.lng(), defaultSearchRadiusKm, param.categoryId(), param.keyword());
         // 위치 기반 검색 조회
         Page<StoreWithFavoriteCountByLocationProjection> page = storeRepository.findWithCategoryAndFavoriteCountByLocationProjection(repoParam, pageable);
         // 결과 조회
@@ -116,7 +116,10 @@ public class StoreQueryService {
         }
 
         // 가게 ID 목록 조회
-        List<Long> ids = content.stream().map(StoreWithFavoriteCountByLocationProjection::getId).toList();
+        List<Long> ids = content.stream()
+                .map(StoreWithFavoriteCountByLocationProjection::getId)
+                .toList();
+                
         // 가게 목록 조회
         Map<Long, Store> storeMap = storeRepository.findByIds(ids).stream().collect(Collectors.toMap(Store::getId, s -> s));
 
