@@ -15,7 +15,10 @@ public final class NumberUtils {
      * @param value 원본 값 (예: 3.7)
      * @return 정수부만 남긴 double (예: 3.0)
      */
-    public static double truncateToIntegerAsDouble(double value) {
-        return (double) (long) value;
+    public static double truncateToIntegerAsDouble(Double value) {
+        if (value == null || Double.isNaN(value)) {
+            return 0.0;
+        }
+        return (double) value.longValue();
     }
 }

@@ -45,11 +45,6 @@ public class StoreRepositoryImpl implements StoreRepository {
     }
 
     @Override
-    public List<Store> findAll() {
-        return storeJpaRepository.findAll();
-    }
-
-    @Override
     public Page<StoreWithFavoriteCount> findWithCategoryAndFavoriteCountByOwnerId(FindWithCategoryAndFavoriteCountByOwnerIdQuery param, Pageable pageable) {
         return storeJpaRepository.findWithCategoryAndFavoriteCountByOwnerId(param.ownerId(), pageable);
     }

@@ -22,85 +22,51 @@ import org.springframework.data.jpa.domain.JpaSort;
  */
 public class PageableUtil {
 
-    private static final int DEFAULT_PAGE = 0;
+    private static final int DEFAULT_PAGE = 1;
     private static final int DEFAULT_SIZE = 10;
     private static final String DEFAULT_SORT_FIELD = "id";
 
-    /**
-     * Pageable 생성 (정렬 없음)
-     * 
-     * @param page 페이지 번호
-     * @param size 페이지 크기
-     * @return Pageable 객체
-     */
-    public static Pageable of(int page, int size) {
-        int validPage = Math.max(DEFAULT_PAGE, page);
-        int validSize = size > 0 ? size : DEFAULT_SIZE;
-        return PageRequest.of(validPage, validSize);
-    }
-
-    /**
-     * 1-based 페이지 번호로 Pageable 생성
-     * 
-     * 프론트엔드에서 1부터 시작하는 페이지 번호를 사용할 때
-     * 
-     * @param pageNum 페이지 번호 (1부터 시작)
-     * @param perPage 페이지당 항목 수
-     * @param sortField 정렬 필드명
-     * @param sortDirection 정렬 방향
-     * @return Pageable 객체
-     */
-    public static Pageable ofOneBased(Integer pageNum, Integer perPage, 
-                                       String sortField, String sortDirection) {
-        int validPageNum = (pageNum != null && pageNum > 0) ? pageNum : 1;
+    public static Pageable ofOneBased(
+        Integer pageNum, 
+        Integer perPage,
+        String sortField, 
+        String sortDirection) {
+    
+        int validPageNum = (pageNum != null && pageNum > 0) ? pageNum : DEFAULT_PAGE;
         int validPerPage = (perPage != null && perPage > 0) ? perPage : DEFAULT_SIZE;
-        
-        // 1-based → 0-based 변환
         int zeroBasedPage = validPageNum - 1;
-        
+
         return of(zeroBasedPage, validPerPage, sortField, sortDirection);
     }
 
-    /**
-     * Pageable 생성 (필드와 방향 직접 지정)
-     * 
-     * @param page 페이지 번호
-     * @param size 페이지 크기
-     * @param sortField 정렬 필드명
-     * @param sortDirection 정렬 방향 ("asc" | "desc")
-     * @return Pageable 객체
-     */
-    public static Pageable of(int page, int size, String sortField, String sortDirection) {
-        int validPage = Math.max(DEFAULT_PAGE, page);
-        int validSize = size > 0 ? size : DEFAULT_SIZE;
-        String validField = (sortField == null || sortField.isEmpty()) ? DEFAULT_SORT_FIELD : sortField; // 정렬 필드명이 없으면 id로 기본 정렬
+    public static Pageable of(
+            int page, 
+            int size, 
+            String sortField, 
+            String sortDirection) {
         
-        Sort.Direction direction = "desc".equalsIgnoreCase(sortDirection) // 정렬 방향이 없으면 asc로 기본 정렬
-                ? Sort.Direction.DESC 
+        int validPage = Math.max(0, page);
+        int validSize = size > 0 ? size : 10;
+        String validField = (sortField == null || sortField.isEmpty()) ? DEFAULT_SORT_FIELD : sortField;
+
+        Sort.Direction direction = "desc".equalsIgnoreCase(sortDirection)
+                ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
-        
-        if (validField.contains("distance")) {
-            validField = "(" + validField + ")";
-            return PageRequest.of(validPage, validSize, JpaSort.unsafe(direction, validField));
-        }
 
-        if (validField.contains("favoriteCount")) {
-            validField = "(" + validField + ")";
-            return PageRequest.of(validPage, validSize, JpaSort.unsafe(direction, validField));
-        }
-
-        return PageRequest.of(validPage, validSize, Sort.by(direction, validField));
+        Sort sort = createSort(validField, direction);
+        return PageRequest.of(validPage, validSize, sort);
     }
 
-    /**
-     * Page 객체에서 1-based 현재 페이지 번호를 반환
-     * 
-     * Spring Data의 Page.getNumber()는 0-based 인덱스를 반환하므로,
-     * 프론트엔드에서 사용하기 편하도록 1-based로 변환합니다.
-     * 
-     * @param page Page 객체
-     * @return 1-based 현재 페이지 번호 (1부터 시작)
-     */
+    private static Sort createSort(String field, Sort.Direction direction) {
+        // Native Query의 계산식이나 alias는 unsafe 사용
+        // 괄호로 감싸진 표현식이나 함수 호출
+        if (field.contains("(") && field.contains(")")) {
+            return JpaSort.unsafe(direction, field);
+        }
+        
+        return Sort.by(direction, field);
+    }
+
     public static int getCurrentPage(Page<?> page) {
         return page.getNumber() + 1;
     }

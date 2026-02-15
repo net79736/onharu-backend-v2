@@ -37,11 +37,6 @@ public interface StoreRepository {
     Store getStoreById(GetStoreByIdParam param);
 
     /**
-     * 가게 목록 조회
-     */
-    List<Store> findAll();
-
-    /**
      * ID 목록으로 가게 목록 조회
      */
     List<Store> findByIds(List<Long> ids);
