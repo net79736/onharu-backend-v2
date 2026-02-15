@@ -17,6 +17,10 @@ public class StoreQuery {
             Double lng,
             Long categoryId
     ) {
+        // 위/경도 유무 확인
+        public boolean hasLocation() {
+            return lat != null && lng != null;
+        }
     }
 
     /**

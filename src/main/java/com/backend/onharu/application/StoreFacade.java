@@ -77,24 +77,19 @@ public class StoreFacade {
     /**
      * 가게 목록 조회 (위치 기반 검색)
      *
-     * @param searchStoresQuery 검색 쿼리
+     * @param query 검색 쿼리
      * @param pageable 페이징 정보
      * @return 가게 목록
      */
     public Page<StoreWithFavoriteCount> searchStores(
-            SearchStoresQuery searchStoresQuery,
+            SearchStoresQuery query,
             Pageable pageable) {
         // 위·경도가 없는 경우 조회
-        if (searchStoresQuery.lat() == null || searchStoresQuery.lng() == null) {
-            return storeQueryService.findAllWithCategoryAndFavoriteCount(searchStoresQuery, pageable);
+        if (!query.hasLocation()) {
+            return storeQueryService.findAllWithCategoryAndFavoriteCount(query, pageable);
         }
-        SearchStoresQuery queryWithRadius = new SearchStoresQuery(
-                searchStoresQuery.lat(),
-                searchStoresQuery.lng(),
-                searchStoresQuery.categoryId()
-        );
         // 위치 기반 검색 조회
-        return storeQueryService.findWithCategoryAndFavoriteCountByLocation(queryWithRadius, defaultSearchRadiusKm, pageable);
+        return storeQueryService.findWithCategoryAndFavoriteCountByLocation(query, defaultSearchRadiusKm, pageable);
     }
 
     /**

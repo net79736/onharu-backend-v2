@@ -40,6 +40,7 @@ import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.repository.CategoryRepository;
+import com.backend.onharu.domain.store.support.StoreSearchSortResolver;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.controller.IStoreController;
@@ -120,18 +121,21 @@ public class StoreControllerImpl implements IStoreController {
     public ResponseEntity<ResponseDTO<SearchStoresResponse>> searchStores(
             @ModelAttribute SearchStoresRequest request
     ) {
-        log.info("가게 목록 조회 요청: lat={}, lng={}, categoryId={}, pageNum={}, perPage={}, sortField={}, sortDirection={}", 
+        log.info("가게 목록 조회 요청: lat={}, lng={}, categoryId={}, pageNum={}, perPage={}, sortField={}, sortDirection={}",
             request.lat(), request.lng(), request.categoryId(),
             request.pageNum(), request.perPage(),
             request.sortField(), request.sortDirection()
         );
+
+        // 위/경도 유무에 따라 쿼리 타입이 달라짐 → Pageable 생성 방식 분기
+        boolean hasLocation = request.lat() != null && request.lng() != null;
+        String sortField = StoreSearchSortResolver.resolve(request.sortField(), hasLocation);
         
-        // Pageable 생성 (유틸리티 클래스 사용 - 1-based 페이지 번호 지원)
         Pageable pageable = PageableUtil.ofOneBased(
-                request.pageNum(), 
-                request.perPage(), 
-                request.sortField(), 
-                request.sortDirection()
+            request.pageNum(),
+            request.perPage(),
+            sortField,
+            request.sortDirection()
         );
         
         // 검색 쿼리 생성

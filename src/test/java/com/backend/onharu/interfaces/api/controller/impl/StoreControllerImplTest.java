@@ -186,7 +186,7 @@ class StoreControllerImplTest {
             // 각 가게에 이미지 파일 추가
             createTestFile(store1.getId(), "https://example.com/store1-image1.jpg", 0);
             createTestFile(store1.getId(), "https://example.com/store1-image2.jpg", 1);
-            createTestFile(store2.getId(), "https://example.com/store2-image1.jpg", 0);
+            createTestFile(store2.getId(), "https://example.com/store2-image1.jpg", 2);
 
             // when & then (categoryId는 생성한 카테고리 ID 사용 - 전체 테스트 시 시퀀스가 1이 아닐 수 있음)
             Long categoryId = category.getId();
@@ -194,10 +194,10 @@ class StoreControllerImplTest {
                             .param("lat", "37.5665")
                             .param("lng", "126.9780")
                             .param("categoryId", String.valueOf(categoryId))
-                            .param("sortField", "id")
-                            .param("sortDirection", "asc")
                             .param("pageNum", "0")
                             .param("perPage", "10")
+                            .param("sortField", "id")
+                            .param("sortDirection", "asc")
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
@@ -543,6 +543,290 @@ class StoreControllerImplTest {
                     .andExpect(jsonPath("$.data.totalPages").exists());
 
             System.out.println("✅ 페이징 정보가 올바르게 반환됨");
+        }
+    }
+
+    @Nested
+    @DisplayName("가게 목록 조회 - 위도/경도 유무")
+    class SearchStoresLocationTest {
+
+        @Test
+        @DisplayName("위도/경도 있을 때 - 위치 기반 검색 및 distance 정렬 정상 동작")
+        @Transactional
+        void shouldSearchStoresWithLocation() throws Exception {
+            // given: 위도/경도가 있는 가게들
+            Owner owner = createTestOwner("test_owner_location", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+
+            Store store1 = createTestStore("가까운 가게", owner, category, "37.5665", "126.9780");
+            Store store2 = createTestStore("먼 가게", owner, category, "37.5700", "126.9850");
+
+            Long categoryId = category.getId();
+
+            // when & then: lat, lng 포함 요청 시 위치 기반 검색 (Native Query) 수행
+            mockMvc.perform(get("/api/stores")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "distance")
+                            .param("sortDirection", "asc")
+                            .param("pageNum", "1")
+                            .param("perPage", "10")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.stores").isArray())
+                    .andExpect(jsonPath("$.data.stores.length()").value(2))
+                    .andExpect(jsonPath("$.data.stores[0].id").value(store1.getId()))
+                    .andExpect(jsonPath("$.data.stores[0].distance").exists())
+                    .andExpect(jsonPath("$.data.stores[1].id").value(store2.getId()))
+                    .andExpect(jsonPath("$.data.stores[1].distance").exists());
+
+            System.out.println("✅ 위도/경도 있을 때 - distance 정렬로 가까운 순 정상 반환");
+        }
+
+        @Test
+        @DisplayName("위도/경도 없을 때 - 전체 목록 조회 (JPQL) 정상 동작")
+        @Transactional
+        void shouldSearchStoresWithoutLocation() throws Exception {
+            // given: 가게들 (위치 상관없이 전체 조회 대상)
+            Owner owner = createTestOwner("test_owner_no_location", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+
+            Store store1 = createTestStore("가게A", owner, category, "37.5665", "126.9780");
+            Store store2 = createTestStore("가게B", owner, category, "37.5700", "126.9850");
+
+            Long categoryId = category.getId();
+
+            // when & then: lat, lng 없이 요청 시 findAllWithCategoryAndFavoriteCount (JPQL) 수행
+            mockMvc.perform(get("/api/stores")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "id")
+                            .param("sortDirection", "asc")
+                            .param("pageNum", "1")
+                            .param("perPage", "10")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.stores").isArray())
+                    .andExpect(jsonPath("$.data.stores.length()").value(2))
+                    .andExpect(jsonPath("$.data.stores[0].id").value(store1.getId()))
+                    .andExpect(jsonPath("$.data.stores[1].id").value(store2.getId()));
+
+            System.out.println("✅ 위도/경도 없을 때 - 전체 목록 조회 정상 반환");
+        }
+
+        @Test
+        @DisplayName("위도/경도 없을 때 - distance 정렬 요청 시 id로 폴백")
+        @Transactional
+        void shouldFallbackToIdSortWhenNoLocationAndDistanceRequested() throws Exception {
+            // given: StoreSearchSortResolver - hasLocation=false, sortField=distance → "id" 로 폴백
+            Owner owner = createTestOwner("test_owner_fallback", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+
+            Store store1 = createTestStore("가게1", owner, category, "37.5665", "126.9780");
+            Store store2 = createTestStore("가게2", owner, category, "37.5700", "126.9850");
+
+            Long categoryId = category.getId();
+
+            // when & then: lat, lng 없이 distance 정렬 요청 → 내부적으로 id 정렬로 처리, 200 OK
+            mockMvc.perform(get("/api/stores")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "distance")
+                            .param("sortDirection", "asc")
+                            .param("pageNum", "1")
+                            .param("perPage", "10")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.stores.length()").value(2));
+
+            System.out.println("✅ 위도/경도 없을 때 distance 정렬 → id로 폴백, 정상 응답");
+        }
+    }
+
+    @Nested
+    @DisplayName("가게 목록 조회 - 정렬 방식 (sortField)")
+    class SearchStoresSortFieldTest {
+
+        @Test
+        @DisplayName("sortField=id - asc/desc 정렬 정상 동작")
+        @Transactional
+        void shouldSortById() throws Exception {
+            Owner owner = createTestOwner("test_owner_sort_id", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+
+            Store store1 = createTestStore("가게1", owner, category, "37.5665", "126.9780");
+            Store store2 = createTestStore("가게2", owner, category, "37.5666", "126.9781");
+            Store store3 = createTestStore("가게3", owner, category, "37.5667", "126.9782");
+
+            Long categoryId = category.getId();
+
+            // asc: 작은 id 먼저
+            mockMvc.perform(get("/api/stores")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "id")
+                            .param("sortDirection", "asc")
+                            .param("pageNum", "1")
+                            .param("perPage", "10")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.stores[0].id").value(store1.getId()))
+                    .andExpect(jsonPath("$.data.stores[1].id").value(store2.getId()))
+                    .andExpect(jsonPath("$.data.stores[2].id").value(store3.getId()));
+
+            // desc: 큰 id 먼저
+            mockMvc.perform(get("/api/stores")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "id")
+                            .param("sortDirection", "desc")
+                            .param("pageNum", "1")
+                            .param("perPage", "10")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.stores[0].id").value(store3.getId()))
+                    .andExpect(jsonPath("$.data.stores[1].id").value(store2.getId()))
+                    .andExpect(jsonPath("$.data.stores[2].id").value(store1.getId()));
+
+            System.out.println("✅ sortField=id asc/desc 정상 동작");
+        }
+
+        @Test
+        @DisplayName("sortField=name - asc/desc 정렬 정상 동작")
+        @Transactional
+        void shouldSortByName() throws Exception {
+            Owner owner = createTestOwner("test_owner_sort_name", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+
+            createTestStore("다리가게", owner, category, "37.5665", "126.9780");
+            createTestStore("가나다가게", owner, category, "37.5666", "126.9781");
+            createTestStore("사랑가게", owner, category, "37.5667", "126.9782");
+
+            Long categoryId = category.getId();
+
+            // asc: 가나다 → 다리 → 사랑
+            mockMvc.perform(get("/api/stores")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "name")
+                            .param("sortDirection", "asc")
+                            .param("pageNum", "1")
+                            .param("perPage", "10")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.stores[0].name").value("가나다가게"))
+                    .andExpect(jsonPath("$.data.stores[1].name").value("다리가게"))
+                    .andExpect(jsonPath("$.data.stores[2].name").value("사랑가게"));
+
+            // desc: 사랑 → 다리 → 가나다
+            mockMvc.perform(get("/api/stores")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "name")
+                            .param("sortDirection", "desc")
+                            .param("pageNum", "1")
+                            .param("perPage", "10")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.stores[0].name").value("사랑가게"))
+                    .andExpect(jsonPath("$.data.stores[1].name").value("다리가게"))
+                    .andExpect(jsonPath("$.data.stores[2].name").value("가나다가게"));
+
+            System.out.println("✅ sortField=name asc/desc 정상 동작");
+        }
+
+        @Test
+        @DisplayName("sortField=favoriteCount - 위도/경도 있을 때 정상 동작")
+        @Transactional
+        void shouldSortByFavoriteCountWithLocation() throws Exception {
+            Owner owner = createTestOwner("test_owner_sort_fav", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+
+            Store store1 = createTestStore("가게1", owner, category, "37.5665", "126.9780");
+            Store store2 = createTestStore("가게2", owner, category, "37.5666", "126.9781");
+            Store store3 = createTestStore("가게3", owner, category, "37.5667", "126.9782");
+
+            Long categoryId = category.getId();
+
+            mockMvc.perform(get("/api/stores")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "favoriteCount")
+                            .param("sortDirection", "desc")
+                            .param("pageNum", "1")
+                            .param("perPage", "10")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.stores").isArray())
+                    .andExpect(jsonPath("$.data.stores.length()").value(3))
+                    .andExpect(jsonPath("$.data.stores[0].favoriteCount").exists())
+                    .andExpect(jsonPath("$.data.stores[1].favoriteCount").exists())
+                    .andExpect(jsonPath("$.data.stores[2].favoriteCount").exists());
+
+            System.out.println("✅ sortField=favoriteCount (위도/경도 있을 때) 정상 동작");
+        }
+
+        @Test
+        @DisplayName("sortField=favoriteCount - 위도/경도 없을 때 정상 동작")
+        @Transactional
+        void shouldSortByFavoriteCountWithoutLocation() throws Exception {
+            Owner owner = createTestOwner("test_owner_sort_fav_no_loc", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+
+            createTestStore("가게1", owner, category, "37.5665", "126.9780");
+            createTestStore("가게2", owner, category, "37.5666", "126.9781");
+
+            Long categoryId = category.getId();
+
+            mockMvc.perform(get("/api/stores")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "favoriteCount")
+                            .param("sortDirection", "asc")
+                            .param("pageNum", "1")
+                            .param("perPage", "10")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.stores").isArray())
+                    .andExpect(jsonPath("$.data.stores.length()").value(2))
+                    .andExpect(jsonPath("$.data.stores[0].favoriteCount").exists())
+                    .andExpect(jsonPath("$.data.stores[1].favoriteCount").exists());
+
+            System.out.println("✅ sortField=favoriteCount (위도/경도 없을 때) COUNT(f) 정상 동작");
+        }
+
+        @Test
+        @DisplayName("sortField=distance - 위도/경도 있을 때 거리순 정렬 정상 동작")
+        @Transactional
+        void shouldSortByDistanceWithLocation() throws Exception {
+            Owner owner = createTestOwner("test_owner_sort_dist", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+
+            // 기준점(37.5665, 126.9780)에서 가까운 순: store1 < store2 < store3
+            Store store1 = createTestStore("가장 가까운 가게", owner, category, "37.5665", "126.9780");
+            Store store2 = createTestStore("중간 거리 가게", owner, category, "37.5670", "126.9790");
+            Store store3 = createTestStore("먼 가게", owner, category, "37.5700", "126.9850");
+
+            Long categoryId = category.getId();
+
+            mockMvc.perform(get("/api/stores")
+                            .param("lat", "37.5665")
+                            .param("lng", "126.9780")
+                            .param("categoryId", String.valueOf(categoryId))
+                            .param("sortField", "distance")
+                            .param("sortDirection", "asc")
+                            .param("pageNum", "1")
+                            .param("perPage", "10")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.stores[0].id").value(store1.getId()))
+                    .andExpect(jsonPath("$.data.stores[0].distance").value(0.0))
+                    .andExpect(jsonPath("$.data.stores[1].id").value(store2.getId()))
+                    .andExpect(jsonPath("$.data.stores[2].id").value(store3.getId()));
+
+            System.out.println("✅ sortField=distance (위도/경도 있을 때) 거리순 정렬 정상 동작");
         }
     }
 }
