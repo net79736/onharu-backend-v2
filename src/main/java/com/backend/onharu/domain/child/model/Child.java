@@ -30,7 +30,7 @@ public class Child extends BaseEntity {
     @JoinColumn(name = "USER_ID", nullable = false, unique = true)
     private User user;
 
-    @Column(name = "NICKNAME", nullable = false, length = 100)
+    @Column(name = "NICKNAME", nullable = false, unique = true, length = 100)
     private String nickname;
 
     @Column(name = "CERTIFICATE", nullable = false, length = 255)
