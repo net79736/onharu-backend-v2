@@ -5,6 +5,9 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.backend.onharu.domain.user.model.User;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
  * 사용자 JPA Repository
@@ -35,4 +38,14 @@ public interface UserJpaRepository extends JpaRepository<User, Long> {
      * @return 조호된 사용자 엔티티
      */
     Optional<User> findByNameAndPhone(String name, String phone);
+
+    /**
+     * 사용자 비밀번호를 임시 비밀번호로 초기화 합니다.
+     *
+     * @param id 사용자 ID
+     * @param password 임시 비밀번호
+     */
+    @Modifying
+    @Query("UPDATE User u SET u.password = :password WHERE u.id = :id")
+    void resetPassword(@Param("id") Long id, @Param("password") String password);
 }
