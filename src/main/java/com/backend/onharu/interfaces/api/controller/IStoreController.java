@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.CategoryResponse;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.GetStoreDetailByIdRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.GetStoreDetailResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreResponse;
@@ -27,7 +28,8 @@ public interface IStoreController {
     @Operation(summary = "가게 상세 정보 조회", description = "가게의 상세 정보를 반환합니다.")
     ResponseEntity<ResponseDTO<GetStoreDetailResponse>> getStore(
             @Schema(description = "가게 ID", example = "1")
-            Long storeId
+            Long storeId,
+            @ParameterObject GetStoreDetailByIdRequest request
     );
 
     @Operation(

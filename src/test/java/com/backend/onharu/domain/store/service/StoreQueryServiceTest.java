@@ -133,7 +133,7 @@ class StoreQueryServiceTest {
             // when
             CoreException coreException = Assertions.assertThrows(
                 CoreException.class, 
-                () -> storeQueryService.getStore(new GetStoreByIdQuery(storeId))
+                () -> storeQueryService.getStoreById(new GetStoreByIdQuery(storeId))
             );
 
             // then
@@ -163,7 +163,7 @@ class StoreQueryServiceTest {
             );
 
             // when
-            Store store = storeQueryService.getStore(
+            Store store = storeQueryService.getStoreById(
                 new GetStoreByIdQuery(savedStore.getId())
             ); // 가게 조회
 

@@ -181,7 +181,7 @@ class StoreTagQueryServiceTest {
             storeRepository.save(savedStore); // Store 저장
 
             // when
-            Store store = storeQueryService.getStore(new GetStoreByIdQuery(savedStore.getId())); // 영화 조회
+            Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(savedStore.getId())); // 영화 조회
             List<StoreTag> storeTags = store.getStoreTags(); // StoreTag 목록 조회
 
             // then
@@ -226,7 +226,7 @@ class StoreTagQueryServiceTest {
             );
 
             // when
-            Store store = storeQueryService.getStore(new GetStoreByIdQuery(savedStore.getId()));
+            Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(savedStore.getId()));
             List<StoreTag> storeTags = store.getStoreTags();
 
             // then
@@ -289,8 +289,8 @@ class StoreTagQueryServiceTest {
             storeRepository.save(store2);
 
             // when
-            Store fetchedStore1 = storeQueryService.getStore(new GetStoreByIdQuery(store1.getId()));
-            Store fetchedStore2 = storeQueryService.getStore(new GetStoreByIdQuery(store2.getId()));
+            Store fetchedStore1 = storeQueryService.getStoreById(new GetStoreByIdQuery(store1.getId()));
+            Store fetchedStore2 = storeQueryService.getStoreById(new GetStoreByIdQuery(store2.getId()));
             
             List<StoreTag> storeTags1 = fetchedStore1.getStoreTags();
             List<StoreTag> storeTags2 = fetchedStore2.getStoreTags();

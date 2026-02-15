@@ -10,6 +10,20 @@ public class StoreQuery {
     }
 
     /**
+     * 가게 상세 정보 조회 (radius는 nullable 옵션)
+     */
+    public record GetStoreQuery(
+        Long storeId,
+        Double lat,
+        Double lng
+    ) {
+        // 위/경도 유무 확인
+        public boolean hasLocation() {
+            return lat != null || lng != null;
+        }
+    }
+
+    /**
      * 가게 목록 조회 (위치 기반 검색)
      */
     public record SearchStoresQuery(
@@ -20,7 +34,7 @@ public class StoreQuery {
     ) {
         // 위/경도 유무 확인
         public boolean hasLocation() {
-            return lat != null && lng != null;
+            return lat != null || lng != null;
         }
     }
 

@@ -22,6 +22,7 @@ import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.UpdateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreQuery.FindWithCategoryAndFavoriteCountByOwnerIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.BusinessHours;
@@ -60,8 +61,13 @@ public class StoreFacade {
      * @param storeId 가게 ID
      * @return 조회된 가게 엔티티
      */
-    public Store getStore(Long storeId) {
-        return storeQueryService.getStore(new GetStoreByIdQuery(storeId));
+    public StoreWithFavoriteCount getStore(GetStoreQuery query) {
+        if (query.hasLocation()) {
+            return storeQueryService.getStoreDetailByIdAndLocation(
+                new GetStoreQuery(query.storeId(), query.lat(), query.lng())
+            );
+        }
+        return storeQueryService.getStoreDetailById(query);
     }
 
     /**
@@ -151,7 +157,7 @@ public class StoreFacade {
     @Transactional
     public void updateStore(UpdateStoreCommand command, Long ownerId) {
         // 가게 정보 조회
-        Store store = storeQueryService.getStore(new GetStoreByIdQuery(command.id()));
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(command.id()));
         
         // 사업자 정보 조회
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
@@ -233,7 +239,7 @@ public class StoreFacade {
      */
     public void updateCategory(Long storeId, Long categoryId, Long ownerId) {
         // 가게 정보 조회
-        Store store = storeQueryService.getStore(new GetStoreByIdQuery(storeId));
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(storeId));
         
         // 사업자 정보 조회
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
@@ -256,7 +262,7 @@ public class StoreFacade {
      */
     public void deleteStore(DeleteStoreCommand command, Long ownerId) {
         // 가게 정보 조회
-        Store store = storeQueryService.getStore(new GetStoreByIdQuery(command.id()));
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(command.id()));
         
         // 사업자 정보 조회
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
@@ -277,7 +283,7 @@ public class StoreFacade {
      */
     public void changeOpenStatus(Long storeId, Boolean isOpen, Long ownerId) {
         // 가게 정보 조회
-        Store store = storeQueryService.getStore(new GetStoreByIdQuery(storeId));
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(storeId));
         
         // 사업자 정보 조회
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));

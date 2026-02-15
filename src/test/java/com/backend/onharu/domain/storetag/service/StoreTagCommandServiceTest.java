@@ -183,7 +183,7 @@ class StoreTagCommandServiceTest {
             storeRepository.save(savedStore);
 
             // then
-            Store store = storeQueryService.getStore(new GetStoreByIdQuery(savedStore.getId()));
+            Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(savedStore.getId()));
             assertThat(store.getStoreTags()).hasSize(2);
             assertThat(store.getStoreTags()).extracting(st -> st.getTag().getName())
                 .contains("커피", "디저트");
@@ -231,12 +231,12 @@ class StoreTagCommandServiceTest {
             storeRepository.save(savedStore);
 
             // when
-            Store store = storeQueryService.getStore(new GetStoreByIdQuery(savedStore.getId()));
+            Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(savedStore.getId()));
             store.removeTag(tag2); // tag2 제거
             storeRepository.save(store); // StoreTag 저장
 
             // then
-            Store updatedStore = storeQueryService.getStore(new GetStoreByIdQuery(savedStore.getId()));
+            Store updatedStore = storeQueryService.getStoreById(new GetStoreByIdQuery(savedStore.getId()));
             assertThat(updatedStore.getStoreTags()).hasSize(2);
             assertThat(updatedStore.getStoreTags()).extracting(st -> st.getTag().getName())
                 .contains("커피", "브런치")
@@ -286,7 +286,7 @@ class StoreTagCommandServiceTest {
             storeRepository.save(savedStore);
             
             // StoreTag ID 저장
-            Store store = storeQueryService.getStore(new GetStoreByIdQuery(savedStore.getId()));
+            Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(savedStore.getId()));
             assertThat(store.getStoreTags()).hasSize(3);
             Long storeTagId1 = store.getStoreTags().get(0).getId();
             Long storeTagId2 = store.getStoreTags().get(1).getId();
@@ -349,7 +349,7 @@ class StoreTagCommandServiceTest {
             savedStore.addTag(tag2);
             storeRepository.save(savedStore);
             
-            Store store = storeQueryService.getStore(new GetStoreByIdQuery(savedStore.getId()));
+            Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(savedStore.getId()));
             assertThat(store.getStoreTags()).hasSize(2);
             Long storeTagId1 = store.getStoreTags().get(0).getId();
             Long storeTagId2 = store.getStoreTags().get(1).getId();
@@ -363,7 +363,7 @@ class StoreTagCommandServiceTest {
             storeRepository.save(store);
 
             // then
-            Store updatedStore = storeQueryService.getStore(new GetStoreByIdQuery(savedStore.getId()));
+            Store updatedStore = storeQueryService.getStoreById(new GetStoreByIdQuery(savedStore.getId()));
             assertThat(updatedStore.getStoreTags()).isEmpty();
             
             System.out.println("✅ StoreTag 리스트 클리어 성공");

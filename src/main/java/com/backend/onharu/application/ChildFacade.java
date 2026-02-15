@@ -2,21 +2,18 @@ package com.backend.onharu.application;
 
 import java.util.List;
 
-import com.backend.onharu.domain.favorite.dto.FavoriteCommand.CreateFavoriteCommand;
-import com.backend.onharu.domain.favorite.dto.FavoriteCommand.DeleteFavoriteCommand;
-import com.backend.onharu.domain.favorite.dto.FavoriteQuery.GetFavoriteByIdQuery;
-import com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoritesByChildIdQuery;
-import com.backend.onharu.domain.favorite.model.Favorite;
-import com.backend.onharu.domain.favorite.service.FavoriteCommandService;
-import com.backend.onharu.domain.favorite.service.FavoriteQueryService;
-import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
-import com.backend.onharu.domain.store.model.Store;
-import com.backend.onharu.domain.store.service.StoreQueryService;
 import org.springframework.stereotype.Component;
 
 import com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.child.service.ChildQueryService;
+import com.backend.onharu.domain.favorite.dto.FavoriteCommand.CreateFavoriteCommand;
+import com.backend.onharu.domain.favorite.dto.FavoriteCommand.DeleteFavoriteCommand;
+import com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoritesByChildIdQuery;
+import com.backend.onharu.domain.favorite.dto.FavoriteQuery.GetFavoriteByIdQuery;
+import com.backend.onharu.domain.favorite.model.Favorite;
+import com.backend.onharu.domain.favorite.service.FavoriteCommandService;
+import com.backend.onharu.domain.favorite.service.FavoriteQueryService;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CreateReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdQuery;
@@ -25,6 +22,9 @@ import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservation
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.reservation.service.ReservationCommandService;
 import com.backend.onharu.domain.reservation.service.ReservationQueryService;
+import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
+import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.store.service.StoreQueryService;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.GetStoreScheduleByIdQuery;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.storeschedule.service.StoreScheduleQueryService;
@@ -128,7 +128,7 @@ public class ChildFacade {
         );
 
         // 가게 정보 조회
-        Store store = storeQueryService.getStore(
+        Store store = storeQueryService.getStoreById(
                 new GetStoreByIdQuery(command.storeId())
         );
 

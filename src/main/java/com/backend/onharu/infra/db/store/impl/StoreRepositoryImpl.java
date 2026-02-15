@@ -15,6 +15,8 @@ import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByNameParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByOwnerIdParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindWithCategoryAndFavoriteCountByLocationParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreByIdParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreDetailByIdAndLocationParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreDetailByIdParam;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCountByLocationProjection;
 import com.backend.onharu.domain.store.model.Store;
@@ -41,6 +43,18 @@ public class StoreRepositoryImpl implements StoreRepository {
     @Override
     public Store getStoreById(GetStoreByIdParam param) {
         return storeJpaRepository.findById(param.storeId())
+                .orElseThrow(() -> new CoreException(STORE_NOT_FOUND));
+    }
+
+    @Override
+    public StoreWithFavoriteCountByLocationProjection getStoreDetailByIdAndLocation(GetStoreDetailByIdAndLocationParam param) {
+        return storeJpaRepository.getStoreDetailByIdAndLocation(param.storeId(), param.lat(), param.lng())
+                .orElseThrow(() -> new CoreException(STORE_NOT_FOUND));
+    }
+
+    @Override
+    public StoreWithFavoriteCount getStoreDetailById(GetStoreDetailByIdParam param) {
+        return storeJpaRepository.getStoreDetailById(param.storeId())
                 .orElseThrow(() -> new CoreException(STORE_NOT_FOUND));
     }
 

@@ -13,12 +13,15 @@ import com.backend.onharu.domain.store.dto.StoreQuery.FindByCategoryIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByNameQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.FindWithCategoryAndFavoriteCountByOwnerIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindAllWithCategoryAndFavoriteCountParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByCategoryIdParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByNameParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindWithCategoryAndFavoriteCountByLocationParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreByIdParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreDetailByIdAndLocationParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreDetailByIdParam;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCountByLocationProjection;
 import com.backend.onharu.domain.store.model.Store;
@@ -39,8 +42,33 @@ public class StoreQueryService {
      * @param query 가게 ID
      * @return 조회된 Store 엔티티 (없으면 예외 발생)
      */
-    public Store getStore(GetStoreByIdQuery query) {
+    public Store getStoreById(GetStoreByIdQuery query) {
         return storeRepository.getStoreById(new GetStoreByIdParam(query.storeId()));
+    }
+
+    /**
+     * 가게 상세 정보 조회
+     * 
+     * @param query 가게 ID
+     * @return 조회된 가게 상세 정보
+     * @return
+     */
+    public StoreWithFavoriteCount getStoreDetailById(GetStoreQuery query) {
+        return storeRepository.getStoreDetailById(new GetStoreDetailByIdParam(query.storeId()));
+    }
+
+    /**
+     * 가게 상세 정보 조회
+     * 
+     * @param query 가게 ID
+     * @return 조회된 가게 상세 정보
+     * @return
+     */
+    public StoreWithFavoriteCount getStoreDetailByIdAndLocation(GetStoreQuery query) {
+        StoreWithFavoriteCountByLocationProjection content = storeRepository.getStoreDetailByIdAndLocation(new GetStoreDetailByIdAndLocationParam(query.storeId(), query.lat(), query.lng()));
+        // 가게 엔티티 조회
+        Store store = storeRepository.getStoreById(new GetStoreByIdParam(content.getId()));
+        return new StoreWithFavoriteCount(store, content.getDistance(), content.getFavoriteCount());
     }
 
     /**

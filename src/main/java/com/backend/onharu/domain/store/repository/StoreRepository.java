@@ -12,6 +12,8 @@ import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByNameParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByOwnerIdParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindWithCategoryAndFavoriteCountByLocationParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreByIdParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreDetailByIdAndLocationParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreDetailByIdParam;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCountByLocationProjection;
 import com.backend.onharu.domain.store.model.Store;
@@ -35,6 +37,16 @@ public interface StoreRepository {
      * 가게 단건 조회
      */
     Store getStoreById(GetStoreByIdParam param);
+
+    /**
+     * 가게 상세 정보 조회
+     */
+    StoreWithFavoriteCount getStoreDetailById(GetStoreDetailByIdParam param);
+
+    /**
+     * 가게 상세 정보 조회 (위치 기반)
+     */
+    StoreWithFavoriteCountByLocationProjection getStoreDetailByIdAndLocation(GetStoreDetailByIdAndLocationParam param);
 
     /**
      * ID 목록으로 가게 목록 조회

@@ -87,7 +87,7 @@ public class OwnerFacade {
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(owenrId));
 
         // 가게 정보 조회
-        Store store = storeQueryService.getStore(new GetStoreByIdQuery(storeId));
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(storeId));
 
         // 사업자가 가게의 주인인지 확인
         store.BelongsTo(owner);
@@ -107,7 +107,7 @@ public class OwnerFacade {
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(owenrId));
 
         // 가게 정보 조회
-        Store store = storeQueryService.getStore(new GetStoreByIdQuery(storeId));
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(storeId));
 
         // 사업자가 가게의 주인인지 확인
         store.BelongsTo(owner);
@@ -141,7 +141,7 @@ public class OwnerFacade {
     @Transactional
     public void setAvailableDates(Long storeId, Long ownerId, SetAvailableDatesRequest request) {
         // 가게 정보 조회
-        Store store = storeQueryService.getStore(new GetStoreByIdQuery(storeId));
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(storeId));
 
         // 사업자 정보 조회
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
@@ -183,7 +183,7 @@ public class OwnerFacade {
     @Transactional
     public void updateAvailableDates(Long storeId, Long ownerId, UpdateAvailableDatesRequest request) {
         // 가게 정보 조회
-        Store store = storeQueryService.getStore(new GetStoreByIdQuery(storeId));
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(storeId));
 
         // 사업자 정보 조회
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
@@ -236,7 +236,7 @@ public class OwnerFacade {
      */
     public void removeAvailableDates(Long storeId, Long ownerId, RemoveAvailableDatesRequest request) {
         // 가게 정보 조회
-        Store store = storeQueryService.getStore(new GetStoreByIdQuery(storeId));
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(storeId));
 
         // 사업자 정보 조회
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
@@ -265,7 +265,7 @@ public class OwnerFacade {
         Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(reservationId));
 
         // Store 조회
-        Store store = storeQueryService.getStore(new GetStoreByIdQuery(reservation.getStoreSchedule().getStore().getId()));
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(reservation.getStoreSchedule().getStore().getId()));
 
         // Owner 조회
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));

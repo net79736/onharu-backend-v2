@@ -17,6 +17,34 @@ public class StoreRepositroyParam {
         }
     }
 
+    /**
+     * 가게 상세 정보 조회용 파라미터
+     */
+    public record GetStoreDetailByIdParam(
+        Long storeId
+    ) {
+        public GetStoreDetailByIdParam {
+            if (storeId == null) {
+                throw new CoreException(ErrorType.Store.STORE_ID_MUST_NOT_BE_NULL);
+            }
+        }
+    }
+
+    /**
+     * 가게 상세 정보 조회용 파라미터
+     */
+    public record GetStoreDetailByIdAndLocationParam(
+            Long storeId,
+            Double lat,
+            Double lng
+    ) {
+        public GetStoreDetailByIdAndLocationParam {
+            if (storeId == null) {
+                throw new CoreException(ErrorType.Store.STORE_ID_MUST_NOT_BE_NULL);
+            }
+        }
+    }
+
     public record FindAllWithCategoryAndFavoriteCountParam(
             Long categoryId,
             String keyword

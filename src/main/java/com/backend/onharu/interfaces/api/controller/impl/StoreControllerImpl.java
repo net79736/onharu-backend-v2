@@ -35,6 +35,7 @@ import com.backend.onharu.domain.store.dto.CategoryQuery.FindAllByNameQuery;
 import com.backend.onharu.domain.store.dto.StoreCommand.CreateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.UpdateStoreCommand;
+import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.Category;
@@ -45,6 +46,7 @@ import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.controller.IStoreController;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.CategoryResponse;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.GetStoreDetailByIdRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.GetStoreDetailResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreResponse;
@@ -87,21 +89,30 @@ public class StoreControllerImpl implements IStoreController {
     @Override
     @GetMapping("/{storeId}")
     public ResponseEntity<ResponseDTO<GetStoreDetailResponse>> getStore(
-            @PathVariable("storeId") Long storeId
+            @PathVariable("storeId") Long storeId,
+            @ModelAttribute GetStoreDetailByIdRequest request
     ) {
         log.info("가게 상세 정보 조회 요청: storeId={}", storeId);
         
-        Store store = storeFacade.getStore(storeId);
+         StoreWithFavoriteCount storePage = storeFacade.getStore(new GetStoreQuery(storeId, request.lat(), request.lng()));
 
         // 가게에 첨부된 이미지 목록 조회
         List<File> files = fileQueryService.listByRef(
-                new ListByRefQuery(AttachmentType.STORE, store.getId())
+                new ListByRefQuery(AttachmentType.STORE, storePage.store().getId())
         );
+
+        // 이미지 목록 추출
         List<String> imagePaths = files.stream()
                 .map(File::getFilePath)
                 .toList();
-
-        GetStoreDetailResponse response = new GetStoreDetailResponse(store, imagePaths);
+        
+        // DTO 변환
+        GetStoreDetailResponse response = new GetStoreDetailResponse(
+            storePage.store(),
+            NumberUtils.truncateToIntegerAsDouble(storePage.distance()),
+            imagePaths,
+            storePage.favoriteCount()
+        );
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(response));
