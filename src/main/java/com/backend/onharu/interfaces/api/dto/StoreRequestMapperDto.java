@@ -1,13 +1,19 @@
 package com.backend.onharu.interfaces.api.dto;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.backend.onharu.domain.file.dto.FileCommand.ImageMetadata;
 import com.backend.onharu.domain.store.dto.StoreCommand.CreateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.UpdateStoreCommand;
+import com.backend.onharu.domain.store.model.BusinessHours;
+import com.backend.onharu.domain.store.model.StoreTag;
+import com.backend.onharu.domain.tag.model.Tag;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.BusinessHourResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.ImageMetadataRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
+import com.backend.onharu.utils.DateUtils;
 
 /**
  * API Request DTO를 도메인 Command로 변환하는 매퍼.
@@ -61,6 +67,19 @@ public final class StoreRequestMapperDto {
         );
     }
 
+    public static List<BusinessHourResponse> toBusinessHourResponses(List<BusinessHours> businessHours) {
+        if (businessHours == null || businessHours.isEmpty()) {
+            return List.of();
+        }
+        return businessHours.stream()
+                .map(bh -> new BusinessHourResponse(
+                    List.of(DateUtils.toLocalDate(bh.getBusinessDay())),
+                    bh.getOpenTime(),
+                    bh.getCloseTime()
+                ))
+                .collect(Collectors.toList());
+    }
+
     /**
      * API 이미지 메타데이터 목록을 도메인 ImageMetadata 목록으로 변환.
      * null 또는 빈 목록이면 null을 반환합니다.
@@ -71,6 +90,20 @@ public final class StoreRequestMapperDto {
         }
         return images.stream()
                 .map(img -> new ImageMetadata(img.fileKey(), img.filePath(), img.displayOrder()))
+                .toList();
+    }
+
+    /**
+     * StoreTag 목록을 태그 이름 목록으로 변환.
+     * null 또는 빈 목록이면 빈 리스트를 반환합니다.
+     */
+    public static List<String> toTagNames(List<StoreTag> storeTags) {
+        if (storeTags == null || storeTags.isEmpty()) {
+            return List.of();
+        }
+        return storeTags.stream()
+                .map(StoreTag::getTag)
+                .map(Tag::getName)
                 .toList();
     }
 }

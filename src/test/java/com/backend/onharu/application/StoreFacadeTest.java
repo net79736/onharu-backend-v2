@@ -27,11 +27,13 @@ import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.store.dto.StoreCommand.CreateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.UpdateStoreCommand;
+import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.model.StoreTag;
+import com.backend.onharu.domain.store.service.StoreQueryService;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.tag.model.Tag;
 import com.backend.onharu.domain.user.model.User;
@@ -49,6 +51,9 @@ class StoreFacadeTest {
 
     @Autowired
     private StoreFacade storeFacade;
+
+    @Autowired
+    private StoreQueryService storeQueryService;
 
     @Autowired
     private StoreJpaRepository storeJpaRepository;
@@ -191,7 +196,7 @@ class StoreFacadeTest {
             Store store = createTestStore("테스트 가게", owner, category);
 
             // when
-            Store result = storeFacade.getStore(store.getId());
+            Store result = storeQueryService.getStoreById(new GetStoreByIdQuery(store.getId()));
 
             // then
             assertThat(result).isNotNull();
@@ -487,7 +492,7 @@ class StoreFacadeTest {
                     .containsExactlyInAnyOrder("커피", "디저트", "브런치");
 
             // 태그가 DB에 저장되었는지 확인 (StoreQueryService를 통해 다시 조회)
-            Store savedStore = storeFacade.getStore(store.getId());
+            Store savedStore = storeQueryService.getStoreById(new GetStoreByIdQuery(store.getId()));
             assertThat(savedStore).isNotNull();
             assertThat(savedStore.getStoreTags().size()).isEqualTo(3);
             assertThat(savedStore.getStoreTags()).extracting(st -> st.getTag().getName())
@@ -563,7 +568,7 @@ class StoreFacadeTest {
             assertThat(newTag.getTag().getId()).isNotEqualTo(existingTag.getId()); // 새로운 태그
 
             // DB에서 다시 조회하여 확인
-            Store savedStore = storeFacade.getStore(store.getId());
+            Store savedStore = storeQueryService.getStoreById(new GetStoreByIdQuery(store.getId()));
             assertThat(savedStore.getStoreTags().size()).isEqualTo(2);
 
             System.out.println("✅ 가게 등록 성공 (기존 태그 재사용)");

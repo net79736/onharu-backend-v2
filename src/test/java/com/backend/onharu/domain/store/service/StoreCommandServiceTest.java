@@ -177,7 +177,7 @@ class StoreCommandServiceTest {
             assertThat(store.getIsOpen()).isFalse();
 
             // DB에 저장되었는지 확인
-            Store savedStore = storeQueryService.getStore(
+            Store savedStore = storeQueryService.getStoreById(
                     new GetStoreByIdQuery(store.getId())
             );
             assertThat(savedStore).isNotNull();
@@ -238,7 +238,7 @@ class StoreCommandServiceTest {
             storeCommandService.updateStore(command, category2); // 가게 정보 수정
 
             // then
-            Store updatedStore = storeQueryService.getStore(
+            Store updatedStore = storeQueryService.getStoreById(
                     new GetStoreByIdQuery(savedStore.getId())
             ); // 가게 정보 수정 후 조회
 
@@ -284,7 +284,7 @@ class StoreCommandServiceTest {
             ); // 가게 영업 상태 변경
 
             // then
-            Store updatedStore = storeQueryService.getStore(
+            Store updatedStore = storeQueryService.getStoreById(
                     new GetStoreByIdQuery(savedStore.getId())
             ); // 가게 영업 상태 변경 후 조회
             assertThat(updatedStore.getIsOpen()).isTrue();

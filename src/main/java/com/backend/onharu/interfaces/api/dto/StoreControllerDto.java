@@ -3,17 +3,22 @@ package com.backend.onharu.interfaces.api.dto;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
-import com.backend.onharu.domain.store.model.StoreTag;
-import com.backend.onharu.domain.tag.model.Tag;
-import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.StoreScheduleResponse;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class StoreControllerDto {
+
+    @Schema(description = "가게 상세 정보 조회 요청")
+    public record GetStoreDetailByIdRequest(
+            @Schema(description = "위도", example = "37.5665")
+            Double lat,
+            @Schema(description = "경도", example = "126.9780")
+            Double lng
+    ) {
+    }
 
     @Schema(description = "가게 목록 조회 요청")
     public record SearchStoresRequest(
@@ -78,7 +83,7 @@ public class StoreControllerDto {
         /**
          * 첨부 이미지 목록으로 상세 응답 생성
          */
-        public GetStoreDetailResponse(Store store, List<String> images) {
+        public GetStoreDetailResponse(Store store, Double distance, List<String> images, Long favoriteCount) {
             this(new StoreDetailResponse(
                 store.getId(),
                 store.getName(),
@@ -89,13 +94,14 @@ public class StoreControllerDto {
                 store.getIntroduction(),
                 store.getIntro(),
                 store.getCategory().getId(),
+                store.getCategory().getName(),
                 store.getIsOpen(),
                 store.getIsSharing(),
-                0.0,
-                null,
-                null,
-                null,
-                resolveImages(images)
+                distance,
+                StoreRequestMapperDto.toBusinessHourResponses(store.getBusinessHours()),
+                StoreRequestMapperDto.toTagNames(store.getStoreTags()),
+                resolveImages(images),
+                favoriteCount
             ));
         }
     }
@@ -166,10 +172,7 @@ public class StoreControllerDto {
                 store.getCategory().getName(),
                 store.getIsOpen(),
                 store.getIsSharing(),
-                store.getStoreTags().stream()
-                    .map(StoreTag::getTag)
-                    .map(Tag::getName)
-                    .collect(Collectors.toList()),
+                StoreRequestMapperDto.toTagNames(store.getStoreTags()),
                 distance,
                 resolveImages(images),
                 favoriteCount
@@ -205,6 +208,9 @@ public class StoreControllerDto {
             @Schema(description = "카테고리 ID", example = "1")
             Long categoryId,
 
+            @Schema(description = "카테고리 이름", example = "카페")
+            String categoryName,
+
             @Schema(description = "영업중 여부", example = "true")
             Boolean isOpen,
 
@@ -217,14 +223,14 @@ public class StoreControllerDto {
             @Schema(description = "영업시간 목록")
             List<BusinessHourResponse> businessHours,
 
-            @Schema(description = "예약 가능 일정 목록")
-            List<StoreScheduleResponse> storeSchedules,
-
             @Schema(description = "태그 목록")
-            List<String> tags,
+            List<String> tagNames,
 
             @Schema(description = "첨부 이미지 URL 목록 (다중 이미지, 표시 순서대로). 기존 단일 image 대체.")
-            List<String> images
+            List<String> images,
+
+            @Schema(description = "찜 개수", example = "3")
+            Long favoriteCount
     ) {
     }
 
