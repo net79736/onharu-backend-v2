@@ -5,6 +5,8 @@ import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByLoginIdPa
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByNameAndPhoneParam;
 import com.backend.onharu.domain.user.model.User;
 
+import static com.backend.onharu.domain.user.dto.UserRepositoryParam.*;
+
 /**
  * 사용자 Repository 인터페이스
  * 
@@ -51,4 +53,9 @@ public interface UserRepository {
      * @return 조회된 사용자 엔티티 (Optional)
      */
     User getUserByNameAndPhone(GetUserByNameAndPhoneParam param);
+
+    /**
+     * 사용자 ID 와 임시 비밀번호로 사용자 비밀번호를 초기화합니다.
+     */
+    void UpdateUserByIdAndPassword(UpdateUserByIdAndPasswordParam param);
 }

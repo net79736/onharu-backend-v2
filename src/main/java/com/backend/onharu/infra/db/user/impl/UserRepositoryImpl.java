@@ -50,4 +50,9 @@ public class UserRepositoryImpl implements UserRepository {
         return userJpaRepository.findByNameAndPhone(param.name(), param.phone())
                 .orElseThrow(() -> new CoreException(ErrorType.User.USER_NOT_FOUND));
     }
+
+    @Override
+    public void UpdateUserByIdAndPassword(UpdateUserByIdAndPasswordParam param) {
+        userJpaRepository.resetPassword(param.id(), param.password());
+    }
 }

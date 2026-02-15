@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.backend.onharu.domain.support.error.ErrorType.User.USER_ID_ALREADY_EXISTS;
+import static com.backend.onharu.domain.user.dto.UserCommand.*;
+import static com.backend.onharu.domain.user.dto.UserRepositoryParam.*;
 
 /**
  * 사용자 Command Service
@@ -103,5 +105,19 @@ public class UserCommandService {
                 .build();
 
         return userRepository.save(user);
+    }
+
+    /**
+     * 사용자의 비밀번호를 임시 비밀번호로 초기화 합니다.
+     *
+     * @param command 비밀번호 초기화 Command
+     */
+    public void updateUserByIdAndPassword(UpdatePasswordCommand command) {
+        userRepository.UpdateUserByIdAndPassword(
+                new UpdateUserByIdAndPasswordParam(
+                        command.id(),
+                        command.password()
+                )
+        );
     }
 }

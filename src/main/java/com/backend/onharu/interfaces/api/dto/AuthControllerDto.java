@@ -19,10 +19,10 @@ public class AuthControllerDto {
     }
 
     public record ResetPasswordRequest(
-            @Schema(description = "이메일", example = "user1234@test.com")
-            String email,
             @Schema(description = "사용자 이름", example = "홍길동")
             String name,
+            @Schema(description = "아이디", example = "user1234@test.com")
+            String loginId,
             @Schema(description = "전화번호", example = "01012345678")
             String phone
     ) {

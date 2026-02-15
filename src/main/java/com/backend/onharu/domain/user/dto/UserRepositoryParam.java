@@ -32,4 +32,13 @@ public class UserRepositoryParam {
             String phone
     ) {
     }
+
+    /**
+     * 사용자 ID 와 임시 비밀번호로 사용자 비밀번호를 초기화합니다.
+     */
+    public record UpdateUserByIdAndPasswordParam(
+            Long id,
+            String password
+    ) {
+    }
 }
