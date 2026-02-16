@@ -11,9 +11,11 @@ import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByStoreIdQuery;
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.reservation.service.ReservationQueryService;
+import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdAndScheduleDateQuery;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdQuery;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.storeschedule.service.StoreScheduleQueryService;
+import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.GetAvailableDatesRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -78,10 +80,10 @@ public class StoreScheduleFacade {
      * @param storeId 가게 ID
      * @return 모든 일정 목록과 예약 가능한 일정 ID Set을 포함한 DTO
      */
-    public StoreScheduleWithAvailability getAllStoreSchedulesWithAvailability(Long storeId) {
+    public StoreScheduleWithAvailability getAllStoreSchedulesWithAvailability(Long storeId, GetAvailableDatesRequest request) {
         // 1. 가게의 모든 일정 조회
-        List<StoreSchedule> allSchedules = storeScheduleQueryService.findAllByStoreId(
-                new FindAllByStoreIdQuery(storeId));
+        List<StoreSchedule> allSchedules = storeScheduleQueryService.findAllByStoreIdAndScheduleDate(
+                new FindAllByStoreIdAndScheduleDateQuery(storeId, request.availableDate()));
 
         // 2. 해당 가게의 모든 예약 조회
         List<Reservation> reservations = reservationQueryService.findByStoreId(

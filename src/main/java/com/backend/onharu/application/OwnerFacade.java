@@ -70,7 +70,7 @@ public class OwnerFacade {
         Page<StoreWithFavoriteCount> stores = storeQueryService.findWithCategoryAndFavoriteCountByOwnerId(new FindWithCategoryAndFavoriteCountByOwnerIdQuery(ownerId), pageable);
 
         // 각 가게가 해당 사업자의 소유인지 검증
-        stores.forEach(store -> store.store().BelongsTo(owner));
+        stores.forEach(store -> store.store().belongsTo(owner));
 
         return stores;
     }
@@ -90,7 +90,7 @@ public class OwnerFacade {
         Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(storeId));
 
         // 사업자가 가게의 주인인지 확인
-        store.BelongsTo(owner);
+        store.belongsTo(owner);
 
         return store;
     }
@@ -110,7 +110,7 @@ public class OwnerFacade {
         Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(storeId));
 
         // 사업자가 가게의 주인인지 확인
-        store.BelongsTo(owner);
+        store.belongsTo(owner);
 
         // 예약 목록 조회
         return reservationQueryService.findByStoreId(new FindByStoreIdQuery(storeId));
@@ -120,14 +120,26 @@ public class OwnerFacade {
      * 사업자의 특정 예약의 상세 정보를 조회
      * 
      * @param reservationId 예약 ID
+     * @param ownerId 사업자 ID
+     * @param storeId 가게 ID
+     * 
      * @return 사업자의 특정 예약의 상세 정보
      */
-    public Reservation getStoreBooking(Long reservationId, Long storeId) {
+    public Reservation getStoreBooking(Long reservationId, Long ownerId, Long storeId) {
+        // 사업자 정보 조회
+        Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
+
+        // 가게 정보 조회
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(storeId));
+
+        // 사업자가 가게의 주인인지 확인
+        store.belongsTo(owner);
+
         // 예약 정보 조회
         Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(reservationId));
 
         // 예약이 해당 가게의 예약인지 확인
-        reservation.BelongsTo(storeId);
+        reservation.belongsToStore(storeId);
 
         return reservation;
     }
@@ -147,7 +159,7 @@ public class OwnerFacade {
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
 
         // 사업자가 가게의 주인인지 확인
-        store.BelongsTo(owner);
+        store.belongsTo(owner);
 
         // 일정 중복 검증 (요청 내부 중복 + 기존 DB 일정과의 중복)
         List<ScheduleTimeRange> timeRanges = request.storeSchedules().stream()
@@ -189,18 +201,21 @@ public class OwnerFacade {
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
 
         // 사업자가 가게의 주인인지 확인
-        store.BelongsTo(owner);
+        store.belongsTo(owner);
 
         // 일정 중복 검증 (요청 내부 중복 + 기존 DB 일정과의 중복, 자기 자신은 제외)
+        // 스케쥴 아이디 목록
         Set<Long> updatingScheduleIds = request.storeSchedules().stream()
                 .map(req -> req.id())
                 .collect(Collectors.toSet());
+        // 일정 시간 범위 객체 리스트
         List<ScheduleTimeRange> timeRanges = request.storeSchedules().stream()
                 .map(req -> new ScheduleTimeRange(
                         req.scheduleDate(),
                         req.startTime(),
                         req.endTime()))
                 .toList();
+        // 일정 중복 검증
         storeScheduleValidator.validateNoDuplicates(storeId, timeRanges, updatingScheduleIds);
 
         // 각 스케줄이 해당 가게에 속하는지 검증하고 업데이트
@@ -242,7 +257,7 @@ public class OwnerFacade {
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
 
         // 사업자가 가게의 주인인지 확인
-        store.BelongsTo(owner);
+        store.belongsTo(owner);
 
         // 요청 데이터를 리스트로 변환
         List<StoreSchedule> schedules = request.storeScheduleIds().stream()
@@ -271,7 +286,7 @@ public class OwnerFacade {
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
 
         // 사업자가 가게의 주인인지 확인
-        store.BelongsTo(owner);
+        store.belongsTo(owner);
 
         // 예약 승인
         reservationCommandService.completeReservation(new CompleteReservationCommand(reservation.getId()));

@@ -58,6 +58,7 @@ import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UploadStoresByEx
 import com.backend.onharu.utils.NumberUtils;
 import com.backend.onharu.utils.SecurityUtils;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -139,8 +140,7 @@ public class StoreControllerImpl implements IStoreController {
         );
 
         // 위/경도 유무에 따라 쿼리 타입이 달라짐 → Pageable 생성 방식 분기
-        boolean hasLocation = request.lat() != null && request.lng() != null;
-        String sortField = StoreSearchSortResolver.resolve(request.sortField(), hasLocation);
+        String sortField = StoreSearchSortResolver.resolve(request.sortField(), request.hasLocation());
         
         Pageable pageable = PageableUtil.ofOneBased(
             request.pageNum(),
@@ -212,7 +212,7 @@ public class StoreControllerImpl implements IStoreController {
     @Override
     @PostMapping
     public ResponseEntity<ResponseDTO<OpenStoreResponse>> openStore(
-            @RequestBody OpenStoreRequest request
+            @Valid @RequestBody OpenStoreRequest request
     ) {
         Long ownerId = SecurityUtils.getCurrentUserId();
         log.info("가게 정보 작성 요청: ownerId={}, request={}", ownerId, request);
@@ -316,25 +316,26 @@ public class StoreControllerImpl implements IStoreController {
     }
 
     /**
-        * 엑셀 파일을 통해 가게 정보를 일괄 등록합니다.
-        *
-        * POST /api/stores/upload-excel
-        * Content-Type: multipart/form-data
-        * - file: 엑셀 파일 (첫 번째 행은 헤더, 두 번째 행부터 데이터)
-        *
-        * 엑셀 컬럼 포맷(0-based index):
-        * 0: 카테고리 ID (Long)
-        * 1: 가게 이름 (String)
-        * 2: 주소 (String)
-        * 3: 전화번호 (String)
-        * 4: 위도 (String)
-        * 5: 경도 (String)
-        * 6: 가게 소개 (String)
-        * 7: 한줄 소개 (String)
-        * 8: 태그 목록 (쉼표로 구분된 문자열, 예: "커피, 디저트, 브런치")
-        *
-        * 업로드한 가게의 사업자(owner)는 현재 로그인한 사용자로 설정됩니다.
-        */
+     * 엑셀 파일을 통해 가게 정보를 일괄 등록합니다.
+     *
+     * POST /api/stores/upload-excel
+     * Content-Type: multipart/form-data
+     * - file: 엑셀 파일 (첫 번째 행은 헤더, 두 번째 행부터 데이터)
+     *
+     * 엑셀 컬럼 포맷(0-based index):
+     * 0: 카테고리 ID (Long)
+     * 1: 가게 이름 (String)
+     * 2: 주소 (String)
+     * 3: 전화번호 (String)
+     * 4: 위도 (String)
+     * 5: 경도 (String)
+     * 6: 가게 소개 (String)
+     * 7: 한줄 소개 (String)
+     * 8: 태그 목록 (쉼표로 구분된 문자열, 예: "커피, 디저트, 브런치")
+     *
+     * 업로드한 가게의 사업자(owner)는 현재 로그인한 사용자로 설정됩니다.
+    */
+    @Override
     @PostMapping(
         value = "/upload-excel",
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE
@@ -342,19 +343,19 @@ public class StoreControllerImpl implements IStoreController {
     public ResponseEntity<ResponseDTO<UploadStoresByExcelResponse>> uploadStoresByExcel(
         @RequestPart("file") MultipartFile file
     ) {
-    Long ownerId = SecurityUtils.getCurrentUserId() != null ? SecurityUtils.getCurrentUserId() : 33L;
+        Long ownerId = SecurityUtils.getCurrentUserId() != null ? SecurityUtils.getCurrentUserId() : 33L;
 
-    log.info("가게 엑셀 업로드 요청: ownerId={}, fileName={}", ownerId, file != null ? file.getOriginalFilename() : null);
+        log.info("가게 엑셀 업로드 요청: ownerId={}, fileName={}", ownerId, file != null ? file.getOriginalFilename() : null);
 
-    int[] result = storeExcelFacade.importStoresFromExcel(file, ownerId);
+        int[] result = storeExcelFacade.importStoresFromExcel(file, ownerId);
 
-    UploadStoresByExcelResponse response = new UploadStoresByExcelResponse(
-            result[0],
-            result[1],
-            result[2]
-    );
+        UploadStoresByExcelResponse response = new UploadStoresByExcelResponse(
+                result[0],
+                result[1],
+                result[2]
+        );
 
-    return ResponseEntity.status(HttpStatus.OK)
-            .body(ResponseDTO.success(response));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
     }
 }

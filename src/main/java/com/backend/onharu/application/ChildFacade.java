@@ -1,5 +1,8 @@
 package com.backend.onharu.application;
 
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_EXCEEDS_MAX;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_MUST_NOT_BE_NULL;
+
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -64,6 +67,14 @@ public class ChildFacade {
             throw new CoreException(ErrorType.Reservation.RESERVATION_ALREADY_EXISTS);
         }
 
+        // 예약 인원이 최대 수용 인원을 초과하는지 검증
+        if (command.people() == null || command.people() <= 0) {
+            throw new CoreException(RESERVATION_PEOPLE_MUST_NOT_BE_NULL);
+        }
+        if (storeSchedule.getMaxPeople() != null && command.people() > storeSchedule.getMaxPeople()) {
+            throw new CoreException(RESERVATION_PEOPLE_EXCEEDS_MAX);
+        }
+
         // 예약 생성
         reservationCommandService.createReservation(command, storeSchedule, child);
     }
@@ -79,7 +90,10 @@ public class ChildFacade {
         Child child = childQueryService.getChildById(new GetChildByIdQuery(childId));
 
         // 예약이 해당 아동에 속하는지 확인
-        reservation.BelongsTo(child.getId());
+        reservation.belongsToChild(child.getId());
+
+        // 예약이 완료 상태인 경우 취소할 수 없도록 예외를 발생시킨다.
+        reservation.validateCancelable();
 
         // 예약 취소
         reservationCommandService.cancelReservation(command);
@@ -111,7 +125,7 @@ public class ChildFacade {
         Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(reservationId));
 
         // 현재 로그인한 아동 정보와 예약자 정보가 다르면 예외 발생
-        reservation.BelongsTo(child.getId());
+        reservation.belongsToChild(child.getId());
 
         return reservation;
     }

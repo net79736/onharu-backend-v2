@@ -7,6 +7,8 @@ import java.util.List;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotNull;
 
 public class StoreScheduleControllerDto {
 
@@ -52,6 +54,14 @@ public class StoreScheduleControllerDto {
                     isAvailable
             );
         }
+    }
+
+    public record GetAvailableDatesRequest(
+            @NotNull(message = "예약 가능한 날짜는 필수입니다.")
+            @FutureOrPresent(message = "예약 가능한 날짜는 오늘 이후여야 합니다.")
+            @Schema(description = "예약 가능한 날짜", example = "2024-12-31")
+            LocalDate availableDate
+    ) {
     }
 
     public record GetAvailableDatesResponse(
