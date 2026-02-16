@@ -112,7 +112,6 @@ public interface IOwnerController {
                             examples = @ExampleObject(
                                     name = "예약 거절 예시",
                                     value = "{\n" +
-                                            "  \"reservationId\": 1,\n" +
                                             "  \"rejectReason\": \"일정 변경으로 인한 거절\"\n" +
                                             "}"
                             )
@@ -134,7 +133,6 @@ public interface IOwnerController {
                             examples = @ExampleObject(
                                     name = "예약 가능한 날짜 생성 예시",
                                     value = "{\n" +
-                                            "  \"storeId\": 1,\n" +
                                             "  \"storeSchedules\": [\n" +
                                             "    {\n" +
                                             "      \"scheduleDate\": \"2024-12-31\",\n" +
@@ -169,7 +167,6 @@ public interface IOwnerController {
                             examples = @ExampleObject(
                                     name = "예약 가능한 날짜 수정 예시",
                                     value = "{\n" +
-                                            "  \"storeId\": 1,\n" +
                                             "  \"storeSchedules\": [\n" +
                                             "    {\n" +
                                             "      \"id\": 1,\n" +
@@ -206,7 +203,6 @@ public interface IOwnerController {
                             examples = @ExampleObject(
                                     name = "예약 가능한 날짜 삭제 예시",
                                     value = "{\n" +
-                                            "  \"storeId\": 1,\n" +
                                             "  \"storeScheduleIds\": [1, 2, 3]\n" +
                                             "}"
                             )

@@ -494,10 +494,7 @@ class OwnerFacadeTest {
                     )
             );
 
-            SetAvailableDatesRequest request = new SetAvailableDatesRequest(
-                    store.getId(),
-                    scheduleRequests
-            );
+            SetAvailableDatesRequest request = new SetAvailableDatesRequest(scheduleRequests);
 
             // when
             ownerFacade.setAvailableDates(store.getId(), owner.getId(), request);
@@ -533,10 +530,7 @@ class OwnerFacadeTest {
                     )
             );
 
-            SetAvailableDatesRequest request = new SetAvailableDatesRequest(
-                    store.getId(),
-                    scheduleRequests
-            );
+            SetAvailableDatesRequest request = new SetAvailableDatesRequest(scheduleRequests);
 
             // when & then
             CoreException exception = Assertions.assertThrows(
@@ -565,7 +559,6 @@ class OwnerFacadeTest {
             StoreSchedule schedule2 = createTestStoreSchedule(store, 14, 15);
 
             RemoveAvailableDatesRequest request = new RemoveAvailableDatesRequest(
-                    store.getId(),
                     List.of(schedule1.getId(), schedule2.getId())
             );
 
@@ -595,7 +588,6 @@ class OwnerFacadeTest {
             StoreSchedule schedule = createTestStoreSchedule(store, 10, 11);
 
             RemoveAvailableDatesRequest request = new RemoveAvailableDatesRequest(
-                    store.getId(),
                     List.of(schedule.getId())
             );
 

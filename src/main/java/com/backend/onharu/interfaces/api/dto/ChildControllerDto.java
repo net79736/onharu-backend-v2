@@ -161,9 +161,6 @@ public class ChildControllerDto {
 
     @Schema(description = "가게 예약 생성 요청")
     public record BookStoreRequest(
-            @Schema(description = "가게 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-            Long storeId,
-
             @Schema(description = "가게 일정 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
             Long storeScheduleId,
 

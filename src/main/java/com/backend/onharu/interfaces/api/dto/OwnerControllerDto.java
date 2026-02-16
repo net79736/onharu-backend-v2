@@ -188,10 +188,6 @@ public class OwnerControllerDto {
     }
 
     public record SetAvailableDatesRequest(
-            @NotNull(message = "가게 ID는 필수입니다.")
-            @Schema(description = "가게 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-            Long storeId,
-
             @Valid
             @NotEmpty(message = "예약 가능한 일정은 최소 1개 이상 등록해야 합니다.")
             @Schema(description = "예약 가능한 일정 목록", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -223,9 +219,6 @@ public class OwnerControllerDto {
     }
 
     public record RemoveAvailableDatesRequest(
-            @Schema(description = "가게 ID", example = "1")
-            Long storeId,
-
             @Schema(description = "삭제할 일정 ID 목록")
             List<Long> storeScheduleIds
     ) {
@@ -256,10 +249,6 @@ public class OwnerControllerDto {
     }
 
     public record UpdateAvailableDatesRequest(
-            @NotNull(message = "가게 ID는 필수입니다.")
-            @Schema(description = "가게 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-            Long storeId,
-
             @Valid
             @NotEmpty(message = "수정할 일정은 최소 1개 이상이어야 합니다.")
             @Schema(description = "수정할 일정 목록", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -295,9 +284,6 @@ public class OwnerControllerDto {
     }
 
     public record RejectBookRequest(
-            @Schema(description = "예약 ID", example = "1")
-            Long reservationId,
-
             @Schema(description = "거절 사유", example = "일정 변경으로 인한 거절")
             String rejectReason
     ) {

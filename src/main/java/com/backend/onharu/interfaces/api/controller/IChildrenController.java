@@ -111,7 +111,6 @@ public interface IChildrenController {
                             examples = @ExampleObject(
                                     name = "가게 예약 생성 예시",
                                     value = "{\n" +
-                                            "  \"storeId\": 1,\n" +
                                             "  \"storeScheduleId\": 1,\n" +
                                             "  \"people\": 1\n" +
                                             "}"
