@@ -1,23 +1,26 @@
 package com.backend.onharu.interfaces.api.support;
 
-import com.backend.onharu.domain.support.error.CoreException;
-import com.backend.onharu.domain.support.error.ErrorCode;
-import com.backend.onharu.interfaces.api.common.dto.ErrorResponse;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.support.error.ErrorCode;
+import com.backend.onharu.interfaces.api.common.dto.ErrorResponse;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 전역 예외 처리를 담당하는 클래스입니다.
@@ -90,10 +93,10 @@ class ApiControllerAdvice extends ResponseEntityExceptionHandler {
         log.error("Validation exception occurred", ex);
 
         String message = Optional.of(Objects.requireNonNull(ex).getBindingResult())
-                .map(bindingResult -> bindingResult.getFieldErrors()
-                        .stream()
-                        .map(e -> String.format("%s : %s", e.getField(), e.getDefaultMessage()))
-                        .collect(Collectors.joining(", ")))
+                .map(bindingResult -> {
+                    List<FieldError> errors = bindingResult.getFieldErrors();
+                    return errors.isEmpty() ? "입력값 검증 중 에러가 발생했습니다." : errors.get(0).getDefaultMessage();
+                })
                 .orElse("입력값 검증 중 에러가 발생했습니다.");
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)

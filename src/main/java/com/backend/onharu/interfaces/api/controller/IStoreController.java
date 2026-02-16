@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.CategoryResponse;
@@ -14,6 +16,7 @@ import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreRespons
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UploadStoresByExcelResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -138,4 +141,9 @@ public interface IStoreController {
 
     @Operation(summary = "가게 카테고리 정보 목록 반환", description = "가게 카테고리 정보 목록을 반환합니다.")
     ResponseEntity<ResponseDTO<List<CategoryResponse>>> getCategoryList();
+
+    @Operation(summary = "엑셀 파일을 통해 가게 정보를 일괄 등록", description = "엑셀 파일을 통해 가게 정보를 일괄 등록합니다.")
+    ResponseEntity<ResponseDTO<UploadStoresByExcelResponse>> uploadStoresByExcel(
+            @RequestPart("file") MultipartFile file
+    );
 }
