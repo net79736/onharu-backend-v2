@@ -3,6 +3,7 @@ package com.backend.onharu.domain.storeschedule.repository;
 import java.util.List;
 
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByScheduleDateParam;
+import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdAndScheduleDateParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndDateParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndScheduleDateParam;
@@ -38,9 +39,14 @@ public interface StoreScheduleRepository {
     List<StoreSchedule> findAllByStoreId(FindAllByStoreIdParam param);
 
     /**
+     * 가게 ID와 날짜로 가게 일정 목록 조회
+     */
+    List<StoreSchedule> findAllByStoreIdAndScheduleDate(FindAllByStoreIdAndScheduleDateParam param);
+
+    /**
      * 영업일로 가게 일정 목록 조회
      */
-    List<StoreSchedule> findAllByBusinessDay(FindAllByScheduleDateParam param);
+    List<StoreSchedule> findAllByScheduleDate(FindAllByScheduleDateParam param);
 
     /**
      * 가게 ID와 영업일로 가게 일정 조회

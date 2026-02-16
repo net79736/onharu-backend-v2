@@ -14,9 +14,11 @@ import com.backend.onharu.application.StoreScheduleFacade;
 import com.backend.onharu.application.dto.StoreScheduleWithAvailability;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.controller.IStoreScheduleController;
+import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.GetAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.GetAvailableDatesResponse;
 import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.StoreScheduleResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,12 +48,13 @@ public class StoreScheduleControllerImpl implements IStoreScheduleController {
     @Override
     @GetMapping("/{storeId}/available-dates")
     public ResponseEntity<ResponseDTO<GetAvailableDatesResponse>> getAvailableDates(
-            @PathVariable("storeId") Long storeId
+            @PathVariable("storeId") Long storeId,
+            @Valid GetAvailableDatesRequest request
     ) {
-        log.info("예약 가능한 날짜 조회 요청: storeId={}", storeId);
+        log.info("예약 가능한 날짜 조회 요청: storeId={}, availableDate={}", storeId, request.availableDate());
 
         // Facade에서 모든 일정과 예약 가능 여부를 함께 조회
-        StoreScheduleWithAvailability result = storeScheduleFacade.getAllStoreSchedulesWithAvailability(storeId);
+        StoreScheduleWithAvailability result = storeScheduleFacade.getAllStoreSchedulesWithAvailability(storeId, request);
 
         // DTO로 변환
         List<StoreScheduleResponse> storeScheduleResponses = result.allSchedules().stream()

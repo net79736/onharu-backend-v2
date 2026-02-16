@@ -5,11 +5,13 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByBusinessDayQuery;
+import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdAndScheduleDateQuery;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdQuery;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindByStoreIdAndBusinessDayQuery;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindByStoreIdAndDateQuery;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.GetStoreScheduleByIdQuery;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByScheduleDateParam;
+import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdAndScheduleDateParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndDateParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndScheduleDateParam;
@@ -47,13 +49,24 @@ public class StoreScheduleQueryService {
     }
 
     /**
+     * 가게 ID와 날짜로 가게 일정 목록 조회
+     * 
+     * @param query 가게 ID
+     * @return 가게 ID에 해당하는 가게 일정 리스트
+     */
+    public List<StoreSchedule> findAllByStoreIdAndScheduleDate(FindAllByStoreIdAndScheduleDateQuery query) {
+        return storeScheduleRepository.findAllByStoreIdAndScheduleDate(
+                new FindAllByStoreIdAndScheduleDateParam(query.storeId(), query.scheduleDate()));
+    }
+
+    /**
      * 영업일로 가게 일정 목록 조회
      * 
      * @param query 영업일
      * @return 영업일이 일치하는 가게 일정 리스트
      */
     public List<StoreSchedule> findAllByBusinessDay(FindAllByBusinessDayQuery query) {
-        return storeScheduleRepository.findAllByBusinessDay(
+        return storeScheduleRepository.findAllByScheduleDate(
                 new FindAllByScheduleDateParam(query.scheduleDate()));
     }
 

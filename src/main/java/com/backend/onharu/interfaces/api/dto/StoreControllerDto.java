@@ -65,6 +65,10 @@ public class StoreControllerDto {
         public Integer perPage() {
             return perPage != null && perPage > 0 ? perPage : 10;
         }
+
+        public boolean hasLocation() {
+            return lat != null || lng != null;
+        }
     }
 
     public record SearchStoresResponse(

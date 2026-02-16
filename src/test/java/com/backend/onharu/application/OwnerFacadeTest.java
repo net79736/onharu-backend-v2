@@ -1,5 +1,6 @@
 package com.backend.onharu.application;
 
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STORE_ID_MISMATCH;
 import static com.backend.onharu.domain.support.error.ErrorType.Store.STORE_OWNER_MISMATCH;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -342,10 +343,10 @@ class OwnerFacadeTest {
     class GetStoreBookingTest {
 
         @Test
-        @DisplayName("사업자의 특정 예약의 상세 정보 조회 성공")
+        @DisplayName("성공: 사업자가 가게 주인이고, 예약이 해당 가게의 예약인 경우")
         @Transactional
-        public void shouldGetStoreBooking() {
-            // given
+        public void shouldGetStoreBooking_WhenOwnerIsStoreOwnerAndReservationBelongsToStore() {
+            // given: 사업자 O → 가게 O → 예약 O (모두 일치)
             Owner owner = createTestOwner("test_owner_get_booking", "테스트 사업자", "01012345678", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
@@ -362,17 +363,106 @@ class OwnerFacadeTest {
             );
 
             // when
-            // 주의: Reservation 모델에 BelongsTo(storeId) 메서드가 없으므로 컴파일 오류 발생 가능
-            // 실제 코드 수정 필요
-            // Reservation result = ownerFacade.getStoreBooking(reservation.getId(), store.getId());
+            Reservation result = ownerFacade.getStoreBooking(reservation.getId(), owner.getId(), store.getId());
 
             // then
-            // assertThat(result).isNotNull();
-            // assertThat(result.getId()).isEqualTo(reservation.getId());
+            assertThat(result).isNotNull();
+            assertThat(result.getId()).isEqualTo(reservation.getId());
+            assertThat(result.getStoreSchedule().getStore().getId()).isEqualTo(store.getId());
+            assertThat(result.getPeople()).isEqualTo(2);
+        }
 
-            System.out.println("⚠️ Reservation 모델에 BelongsTo(storeId) 메서드가 없어 테스트 생략");
-            System.out.println("   - 예약 ID: " + reservation.getId());
-            System.out.println("   - 가게 ID: " + store.getId());
+        @Test
+        @DisplayName("실패: 사업자가 가게 주인이 아닌 경우")
+        @Transactional
+        public void shouldThrowException_WhenOwnerIsNotStoreOwner() {
+            // given: owner1의 가게, owner2가 조회 시도
+            String uniqueLoginId1 = "test_owner1_booking_" + UUID.randomUUID().toString().substring(0, 8);
+            String uniqueLoginId2 = "test_owner2_booking_" + UUID.randomUUID().toString().substring(0, 8);
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹", "2234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner1, category);
+            StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
+            Child child = createTestChild("test_child_booking_other_owner", "테스트 아동", "01011112222");
+
+            Reservation reservation = reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(child)
+                            .storeSchedule(storeSchedule)
+                            .people(2)
+                            .status(ReservationType.WAITING)
+                            .build()
+            );
+
+            // when & then: owner2가 owner1의 가게 예약 조회 시도 → STORE_OWNER_MISMATCH
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> ownerFacade.getStoreBooking(reservation.getId(), owner2.getId(), store.getId())
+            );
+            assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
+        }
+
+        @Test
+        @DisplayName("실패: 예약이 해당 가게의 예약이 아닌 경우")
+        @Transactional
+        public void shouldThrowException_WhenReservationBelongsToOtherStore() {
+            // given: 사업자 O, 가게1 O, 예약은 가게2에 속함
+            Owner owner = createTestOwner("test_owner_get_booking_other", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store1 = createTestStore("테스트 가게1", owner, category);
+            Store store2 = createTestStore("테스트 가게2", owner, category);
+            StoreSchedule storeSchedule2 = createTestStoreSchedule(store2, 14, 15);
+            Child child = createTestChild("test_child_get_booking_other_store", "테스트 아동", "01011112222");
+
+            // 예약은 store2에 속함
+            Reservation reservation = reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(child)
+                            .storeSchedule(storeSchedule2)
+                            .people(2)
+                            .status(ReservationType.WAITING)
+                            .build()
+            );
+
+            // when & then: store1의 예약으로 조회 시도 → RESERVATION_STORE_ID_MISMATCH
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> ownerFacade.getStoreBooking(reservation.getId(), owner.getId(), store1.getId())
+            );
+            assertThat(exception.getErrorType()).isEqualTo(RESERVATION_STORE_ID_MISMATCH);
+        }
+
+        @Test
+        @DisplayName("실패: 사업자가 가게 주인이 아니고, 예약도 해당 가게의 예약이 아닌 경우")
+        @Transactional
+        public void shouldThrowException_WhenOwnerIsNotStoreOwnerAndReservationBelongsToOtherStore() {
+            // given: owner1의 가게1, owner2의 가게2, 예약은 가게1에 속함
+            // owner2가 가게1의 예약을 storeId=가게1로 조회 시도 → store.belongsTo(owner)에서 먼저 실패
+            String uniqueLoginId1 = "test_owner1_booking_both_" + UUID.randomUUID().toString().substring(0, 8);
+            String uniqueLoginId2 = "test_owner2_booking_both_" + UUID.randomUUID().toString().substring(0, 8);
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹", "2234567890");
+            Category category = createTestCategory("식당");
+            Store store1 = createTestStore("테스트 가게1", owner1, category);
+            StoreSchedule storeSchedule1 = createTestStoreSchedule(store1, 10, 11);
+            Child child = createTestChild("test_child_booking_both_mismatch", "테스트 아동", "01011112222");
+
+            Reservation reservation = reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(child)
+                            .storeSchedule(storeSchedule1)
+                            .people(2)
+                            .status(ReservationType.WAITING)
+                            .build()
+            );
+
+            // when & then: owner2가 가게1의 예약 조회 시도 → store 검증에서 먼저 STORE_OWNER_MISMATCH
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> ownerFacade.getStoreBooking(reservation.getId(), owner2.getId(), store1.getId())
+            );
+            assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
         }
     }
 

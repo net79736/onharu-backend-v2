@@ -8,8 +8,14 @@ import java.util.List;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 public class OwnerControllerDto {
 
@@ -20,10 +26,10 @@ public class OwnerControllerDto {
             @Schema(description = "페이지당 항목 수", example = "10")
             Integer perPage,
 
-            @Schema(description = "정렬 필드", example = "createdAt")
+            @Schema(description = "정렬 기준", example = "id", allowableValues = {"id", "name", "favoriteCount"})
             String sortField,
 
-            @Schema(description = "정렬 방향", example = "DESC")
+            @Schema(description = "정렬 방향", example = "desc", allowableValues = {"asc", "desc"})
             String sortDirection
     ) {
     }
@@ -182,25 +188,36 @@ public class OwnerControllerDto {
     }
 
     public record SetAvailableDatesRequest(
-            @Schema(description = "가게 ID", example = "1")
+            @NotNull(message = "가게 ID는 필수입니다.")
+            @Schema(description = "가게 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
             Long storeId,
 
-            @Schema(description = "예약 가능한 일정 목록")
+            @Valid
+            @NotEmpty(message = "예약 가능한 일정은 최소 1개 이상 등록해야 합니다.")
+            @Schema(description = "예약 가능한 일정 목록", requiredMode = Schema.RequiredMode.REQUIRED)
             List<StoreScheduleRequest> storeSchedules
     ) {
     }
 
     public record StoreScheduleRequest(
-            @Schema(description = "일정 날짜", example = "2024-12-31")
+            @NotNull(message = "일정 날짜는 필수입니다.")
+            @FutureOrPresent(message = "일정 날짜는 오늘 이후여야 합니다.")
+            @Schema(description = "일정 날짜", example = "2024-12-31", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDate scheduleDate,
 
-            @Schema(description = "시작 시간", example = "14:00")
+            @NotNull(message = "시작 시간은 필수입니다.")
+            @JsonFormat(pattern = "HH:mm")
+            @Schema(description = "시작 시간 (HH:mm 형식)", example = "14:00", type = "string", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalTime startTime,
 
-            @Schema(description = "종료 시간", example = "15:00")
+            @NotNull(message = "종료 시간은 필수입니다.")
+            @JsonFormat(pattern = "HH:mm")
+            @Schema(description = "종료 시간 (HH:mm 형식)", example = "15:00", type = "string", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalTime endTime,
 
-            @Schema(description = "최대 인원", example = "10")
+            @NotNull(message = "최대 인원은 필수입니다.")
+            @Positive(message = "최대 인원은 1 이상이어야 합니다.")
+            @Schema(description = "최대 인원", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
             Integer maxPeople
     ) {
     }
@@ -239,27 +256,40 @@ public class OwnerControllerDto {
     }
 
     public record UpdateAvailableDatesRequest(
-            @Schema(description = "가게 ID", example = "1") 
+            @NotNull(message = "가게 ID는 필수입니다.")
+            @Schema(description = "가게 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
             Long storeId,
-            @Schema(description = "수정할 일정 목록")
+
+            @Valid
+            @NotEmpty(message = "수정할 일정은 최소 1개 이상이어야 합니다.")
+            @Schema(description = "수정할 일정 목록", requiredMode = Schema.RequiredMode.REQUIRED)
             List<UpdateStoreScheduleRequest> storeSchedules
     ) {
     }
 
     public record UpdateStoreScheduleRequest(
-            @Schema(description = "일정 ID", example = "1")
+            @NotNull(message = "일정 ID는 필수입니다.")
+            @Schema(description = "일정 ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
             Long id,
 
-            @Schema(description = "일정 날짜", example = "2024-12-31")
+            @NotNull(message = "일정 날짜는 필수입니다.")
+            @FutureOrPresent(message = "일정 날짜는 오늘 이후여야 합니다.")
+            @Schema(description = "일정 날짜", example = "2024-12-31", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDate scheduleDate,
 
-            @Schema(description = "시작 시간", example = "14:00")
+            @NotNull(message = "시작 시간은 필수입니다.")
+            @JsonFormat(pattern = "HH:mm")
+            @Schema(description = "시작 시간 (HH:mm 형식)", example = "14:00", type = "string", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalTime startTime,
 
-            @Schema(description = "종료 시간", example = "15:00")
+            @NotNull(message = "종료 시간은 필수입니다.")
+            @JsonFormat(pattern = "HH:mm")
+            @Schema(description = "종료 시간 (HH:mm 형식)", example = "15:00", type = "string", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalTime endTime,
 
-            @Schema(description = "최대 인원", example = "10")
+            @NotNull(message = "최대 인원은 필수입니다.")
+            @Positive(message = "최대 인원은 1 이상이어야 합니다.")
+            @Schema(description = "최대 인원", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
             Integer maxPeople
     ) {
     }

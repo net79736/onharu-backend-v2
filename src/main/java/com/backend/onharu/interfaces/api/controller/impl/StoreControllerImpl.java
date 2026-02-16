@@ -140,8 +140,7 @@ public class StoreControllerImpl implements IStoreController {
         );
 
         // 위/경도 유무에 따라 쿼리 타입이 달라짐 → Pageable 생성 방식 분기
-        boolean hasLocation = request.lat() != null && request.lng() != null;
-        String sortField = StoreSearchSortResolver.resolve(request.sortField(), hasLocation);
+        String sortField = StoreSearchSortResolver.resolve(request.sortField(), request.hasLocation());
         
         Pageable pageable = PageableUtil.ofOneBased(
             request.pageNum(),

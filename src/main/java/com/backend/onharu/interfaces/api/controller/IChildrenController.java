@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.BookStoreRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.BookStoreResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.CancelReservationRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCardResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCertificateResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingDetailResponse;
@@ -123,7 +124,22 @@ public interface IChildrenController {
     @Operation(summary = "예약 취소", description = "기존 예약을 취소합니다.")
     ResponseEntity<ResponseDTO<Void>> cancelStore(
             @Schema(description = "예약 ID", example = "1")
-            Long reservationId
+            Long reservationId,
+            @RequestBody(
+                description = "예약 취소 요청",
+                required = true,
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = CancelReservationRequest.class),
+                        examples = @ExampleObject(
+                                name = "예약 취소 예시",
+                                value = "{\n" +
+                                        "  \"cancelReason\": \"일정 변경으로 인한 취소\"\n" +
+                                        "}"
+                        )
+                )
+        )
+            CancelReservationRequest request
     );
 
     @Operation(summary = "예약 신청 목록 조회", description = "내가 신청한 예약 목록을 조회합니다.")

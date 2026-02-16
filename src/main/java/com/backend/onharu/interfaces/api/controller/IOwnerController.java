@@ -70,7 +70,7 @@ public interface IOwnerController {
         parameters = {
             @Parameter(name = "pageNum", description = "페이지 번호 (1부터 시작)", example = "1", schema = @Schema(type = "integer"), required = true),
             @Parameter(name = "perPage", description = "페이지당 항목 수", example = "10", schema = @Schema(type = "integer"), required = true),
-            @Parameter(name = "sortField", description = "정렬 기준", example = "id", schema = @Schema(type = "string")),
+            @Parameter(name = "sortField", description = "정렬 기준", example = "id", schema = @Schema(type = "string", allowableValues = {"id", "name", "favoriteCount"})),
             @Parameter(name = "sortDirection", description = "정렬 방향", example = "desc", schema = @Schema(type = "string", allowableValues = {"asc", "desc"}))
         }
     )
@@ -173,7 +173,7 @@ public interface IOwnerController {
                                             "  \"storeSchedules\": [\n" +
                                             "    {\n" +
                                             "      \"id\": 1,\n" +
-                                            "      \"scheduleDate\": \"MON | TUE | WED | THU | FRI | SAT | SUN\",\n" +
+                                            "      \"scheduleDate\": \"2026-02-20\",\n" +
                                             "      \"startTime\": \"14:00\",\n" +
                                             "      \"endTime\": \"15:00\",\n" +
                                             "      \"maxPeople\": 10\n" +

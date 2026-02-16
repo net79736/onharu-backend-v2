@@ -6,6 +6,7 @@ import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.reservation.model.Reservation;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public class ChildControllerDto {
 
@@ -168,6 +169,14 @@ public class ChildControllerDto {
 
             @Schema(description = "인원 수", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
             Integer people
+    ) {
+    }
+
+    @Schema(description = "예약 취소 요청")
+    public record CancelReservationRequest(
+            @Size(max = 30, message = "예약 취소 사유는 30자 이하여야 합니다.")
+            @Schema(description = "예약 취소 사유", example = "일정 변경으로 인한 취소")
+            String cancelReason
     ) {
     }
 
