@@ -150,7 +150,7 @@ class ChildFacadeTest {
      * 테스트용 Child 생성 헬퍼 메서드 (기본값 사용)
      */
     private Child createTestChild(String loginId, String name, String phone) {
-        return createTestChild(loginId, name, phone, "테스트닉네임", "/certificates/test.pdf", true);
+        return createTestChild(loginId, name, phone, name + "닉네임", "/certificates/test.pdf", true);
     }
 
     /**
