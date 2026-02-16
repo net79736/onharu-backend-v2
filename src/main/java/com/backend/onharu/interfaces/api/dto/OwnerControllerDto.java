@@ -1,6 +1,7 @@
 package com.backend.onharu.interfaces.api.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -157,7 +158,7 @@ public class OwnerControllerDto {
             String status,
 
             @Schema(description = "예약 시간", example = "2024-12-31T14:00:00")
-            java.time.LocalDateTime reservationAt,
+            LocalDateTime reservationAt,
 
             @Schema(description = "취소 사유", example = "일정 변경으로 인한 취소")
             String cancelReason
