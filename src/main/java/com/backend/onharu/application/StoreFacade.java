@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.common.enums.AttachmentType;
-import com.backend.onharu.domain.common.enums.WeekType;
 import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.service.OwnerQueryService;
@@ -223,7 +222,7 @@ public class StoreFacade {
         businessHourRequests.stream()
                 .map(request -> BusinessHours.builder()
                         .store(store)
-                        .businessDay(WeekType.fromLocalDate(request.businessDay()))
+                        .businessDay(request.businessDay())
                         .openTime(request.openTime())
                         .closeTime(request.closeTime())
                         .build())

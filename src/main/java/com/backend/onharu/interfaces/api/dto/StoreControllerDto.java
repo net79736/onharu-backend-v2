@@ -1,9 +1,9 @@
 package com.backend.onharu.interfaces.api.dto;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import com.backend.onharu.domain.common.enums.WeekType;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 
@@ -236,7 +236,7 @@ public class StoreControllerDto {
 
     public record BusinessHourResponse(
             @Schema(description = "영업일", example = "MON, TUE, WED, THU, FRI, SAT, SUN", allowableValues = "MON, TUE, WED, THU, FRI, SAT, SUN")
-            List<LocalDate> businessDays,
+            WeekType businessDay,
 
             @Schema(description = "오픈 시간", example = "09:00")
             LocalTime openTime,
@@ -301,8 +301,8 @@ public class StoreControllerDto {
 
     @Schema(description = "영업시간 요청")
     public record BusinessHourRequest(
-            @Schema(description = "영업일", example = "2024-12-31", requiredMode = Schema.RequiredMode.REQUIRED)
-            LocalDate businessDay,
+            @Schema(description = "영업일", example = "MON", requiredMode = Schema.RequiredMode.REQUIRED)
+            WeekType businessDay,
 
             @Schema(description = "오픈 시간", example = "09:00", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalTime openTime,

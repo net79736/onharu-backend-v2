@@ -62,7 +62,7 @@ public interface IStoreController {
                                             "  \"tagNames\": [\"한식\", \"점심식사\", \"따뜻한\"],\n" +
                                             "  \"businessHours\": [\n" +
                                             "    {\n" +
-                                            "      \"businessDay\": \"2024-12-31\",\n" +
+                                            "      \"businessDay\": \"MON | TUE | WED | THU | FRI | SAT | SUN\",\n" +
                                             "      \"openTime\": \"09:00\",\n" +
                                             "      \"closeTime\": \"22:00\"\n" +
                                             "    }\n" +
@@ -112,7 +112,7 @@ public interface IStoreController {
                                             "  \"tagNames\": [\"한식\", \"점심식사\", \"따뜻한\"],\n" +
                                             "  \"businessHours\": [\n" +
                                             "    {\n" +
-                                            "      \"businessDay\": \"2024-12-31\",\n" +
+                                            "      \"businessDay\": \"MON | TUE | WED | THU | FRI | SAT | SUN\",\n" +
                                             "      \"openTime\": \"09:00\",\n" +
                                             "      \"closeTime\": \"22:00\"\n" +
                                             "    },\n" +

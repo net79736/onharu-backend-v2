@@ -173,7 +173,7 @@ public interface IOwnerController {
                                             "  \"storeSchedules\": [\n" +
                                             "    {\n" +
                                             "      \"id\": 1,\n" +
-                                            "      \"scheduleDate\": \"2024-12-31\",\n" +
+                                            "      \"scheduleDate\": \"MON | TUE | WED | THU | FRI | SAT | SUN\",\n" +
                                             "      \"startTime\": \"14:00\",\n" +
                                             "      \"endTime\": \"15:00\",\n" +
                                             "      \"maxPeople\": 10\n" +

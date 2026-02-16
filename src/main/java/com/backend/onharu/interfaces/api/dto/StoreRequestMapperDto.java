@@ -13,7 +13,6 @@ import com.backend.onharu.interfaces.api.dto.StoreControllerDto.BusinessHourResp
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.ImageMetadataRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
-import com.backend.onharu.utils.DateUtils;
 
 /**
  * API Request DTO를 도메인 Command로 변환하는 매퍼.
@@ -73,7 +72,7 @@ public final class StoreRequestMapperDto {
         }
         return businessHours.stream()
                 .map(bh -> new BusinessHourResponse(
-                    List.of(DateUtils.toLocalDate(bh.getBusinessDay())),
+                    bh.getBusinessDay(),
                     bh.getOpenTime(),
                     bh.getCloseTime()
                 ))
