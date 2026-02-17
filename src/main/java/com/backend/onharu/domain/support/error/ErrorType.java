@@ -366,6 +366,7 @@ public enum ErrorType implements IErrorType {
         RESERVATION_CHILD_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 ID는 필수입니다.", LogLevel.ERROR),
         RESERVATION_CHILD_ID_MISMATCH(ErrorCode.BAD_REQUEST, "예약자와 현재 로그인한 아동 정보가 일치하지 않습니다.", LogLevel.ERROR),
         RESERVATION_ALREADY_EXISTS(ErrorCode.BAD_REQUEST, "이미 예약된 가게 일정입니다.", LogLevel.WARN),
+        RESERVATION_NOT_COMPLETED(ErrorCode.BAD_REQUEST, "예약이 완료되지 않은 상태입니다.", LogLevel.ERROR)
         ;
 
         private final ErrorCode code;
@@ -424,6 +425,34 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum Favorite implements IErrorType {
         FAVORITE_NOT_FOUND(ErrorCode.NOT_FOUND, "찜하기 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 리뷰 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Review implements IErrorType {
+        REVIEW_NOT_FOUND(ErrorCode.NOT_FOUND, "리뷰 정보를 찾을 수 없습니다.", LogLevel.ERROR)
         ;
 
         private final ErrorCode code;
