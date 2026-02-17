@@ -1,29 +1,28 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.backend.onharu.application.ReviewFacade;
+import com.backend.onharu.domain.review.dto.ReviewCommand;
+import com.backend.onharu.domain.review.dto.ReviewCommand.CreateReviewCommand;
+import com.backend.onharu.domain.review.dto.ReviewQuery;
+import com.backend.onharu.domain.review.model.Review;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.controller.IReviewController;
-import com.backend.onharu.interfaces.api.dto.ReviewControllerDto.GetMyReviewListResponse;
-import com.backend.onharu.interfaces.api.dto.ReviewControllerDto.GetReviewDetailResponse;
-import com.backend.onharu.interfaces.api.dto.ReviewControllerDto.GetReviewListResponse;
-import com.backend.onharu.interfaces.api.dto.ReviewControllerDto.WriteReviewRequest;
-import com.backend.onharu.interfaces.api.dto.ReviewControllerDto.WriteReviewResponse;
-
+import com.backend.onharu.interfaces.api.dto.ReviewControllerDto.*;
+import com.backend.onharu.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+import static com.backend.onharu.domain.review.dto.ReviewCommand.*;
+import static com.backend.onharu.domain.review.dto.ReviewQuery.*;
 
 /**
  * 리뷰 관련 API를 제공하는 컨트롤러 구현체입니다.
- * 
+ * <p>
  * 감사 리뷰 작성, 조회, 삭제 기능을 제공합니다.
  */
 @Slf4j
@@ -32,9 +31,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ReviewControllerImpl implements IReviewController {
 
+    private final ReviewFacade reviewFacade;
+
     /**
      * 감사 리뷰 작성
-     * 
+     * <p>
      * POST /api/reviews/stores/{storeId}
      * 특정 가게에 대한 감사 리뷰를 작성합니다.
      *
@@ -49,14 +50,26 @@ public class ReviewControllerImpl implements IReviewController {
             @RequestBody WriteReviewRequest request
     ) {
         log.info("감사 리뷰 작성 요청: storeId={}, request={}", storeId, request);
-        
+
+        Long childId = SecurityUtils.getCurrentUserId(); // 현재 인증된 아동 ID
+
+        Review review = reviewFacade.createReview(
+                new CreateReviewCommand(
+                        childId,
+                        storeId,
+                        request.reservationId(),
+                        request.content())
+        ); // 리뷰 생성(저장)
+
+        WriteReviewResponse response = new WriteReviewResponse(review.getId()); // 응답 생성
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
     }
 
     /**
      * 감사 리뷰 목록 조회
-     * 
+     * <p>
      * GET /api/reviews
      * 전체 감사 리뷰 목록을 조회합니다.
      *
@@ -66,14 +79,29 @@ public class ReviewControllerImpl implements IReviewController {
     @GetMapping
     public ResponseEntity<ResponseDTO<GetReviewListResponse>> getAllReviews() {
         log.info("감사 리뷰 목록 조회 요청");
-        
+
+        List<Review> reviews = reviewFacade.findAll(); // 전체 리뷰 목록 조회
+
+        List<ReviewResponse> reviewResponses = reviews.stream()
+                .map(review -> new ReviewResponse(
+                        review.getId(),
+                        review.getChild().getId(),
+                        review.getStore().getId(),
+                        review.getReservation().getId(),
+                        review.getStore().getName(),
+                        review.getContent()
+                ))
+                .toList(); // 응답을 담을 ReviewResponse 목록 생성
+
+        GetReviewListResponse response = new GetReviewListResponse(reviewResponses); // 감사 리뷰 목록 조회 응답 생성
+
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
     }
 
     /**
      * 감사 리뷰 상세 조회
-     * 
+     * <p>
      * GET /api/reviews/stores/{storeId}
      * 특정 가게의 감사 리뷰를 조회합니다.
      *
@@ -86,14 +114,31 @@ public class ReviewControllerImpl implements IReviewController {
             @PathVariable("storeId") Long storeId
     ) {
         log.info("감사 리뷰 상세 조회 요청: storeId={}", storeId);
-        
+
+        List<Review> reviews = reviewFacade.findAllByStoreId(
+                new findAllByStoreIdQuery(storeId)
+        ); // 특정 가게에 달린 리뷰 목록 조회
+
+        List<ReviewResponse> reviewResponses = reviews.stream()
+                .map(review -> new ReviewResponse(
+                        review.getId(),
+                        review.getChild().getId(),
+                        review.getStore().getId(),
+                        review.getReservation().getId(),
+                        review.getStore().getName(),
+                        review.getContent()
+                ))
+                .toList(); // 응답을 담을 ReviewResponse 목록 생성
+
+        GetReviewDetailResponse response = new GetReviewDetailResponse(reviewResponses); // 감사 리뷰 상세 조회 응답 생성
+
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
     }
 
     /**
      * 내가 작성한 리뷰 목록 조회
-     * 
+     * <p>
      * GET /api/reviews/my
      * 내가 작성한 리뷰 목록을 조회합니다.
      *
@@ -103,14 +148,32 @@ public class ReviewControllerImpl implements IReviewController {
     @GetMapping("/my")
     public ResponseEntity<ResponseDTO<GetMyReviewListResponse>> getMyReviews() {
         log.info("내가 작성한 리뷰 목록 조회 요청");
-        
+
+        Long childId = SecurityUtils.getCurrentUserId(); // 현재 인증된 아동 ID 획득
+        List<Review> reviews = reviewFacade.findAllByChildId(
+                new FindAllByChildIdQuery(childId)
+        ); // 내가(아동이) 작성한 리뷰 목록 조회
+
+        List<ReviewResponse> reviewResponses = reviews.stream()
+                .map(review -> new ReviewResponse(
+                        review.getId(),
+                        review.getChild().getId(),
+                        review.getStore().getId(),
+                        review.getReservation().getId(),
+                        review.getStore().getName(),
+                        review.getContent()
+                ))
+                .toList(); // 응답을 담을 ReviewResponse 목록 생성
+
+        GetMyReviewListResponse response = new GetMyReviewListResponse(reviewResponses); // 내가 작성한 리뷰 목록 조회 응답 생성
+
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
     }
 
     /**
      * 리뷰 삭제
-     * 
+     * <p>
      * DELETE /api/reviews/{reviewId}
      * 특정 리뷰를 삭제합니다.
      *
@@ -123,7 +186,9 @@ public class ReviewControllerImpl implements IReviewController {
             @PathVariable("reviewId") Long reviewId
     ) {
         log.info("리뷰 삭제 요청: reviewId={}", reviewId);
-        
+
+        reviewFacade.deleteReview(new DeleteReviewCommand(reviewId)); // 리뷰 삭제
+
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));
     }
