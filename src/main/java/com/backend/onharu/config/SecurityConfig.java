@@ -43,6 +43,7 @@ public class SecurityConfig {
             "/api/admins/**", // 관리자 관련 API
             "/api/stores/**", // 가게 관련 API
             "/api/store-schedules/**", // 가게 스케줄 관련 API
+            "/api/reviews/**",
             "/api/upload/**", // S3 파일 업로드 관련 API
             "/api/auth/**", // 인증 관련 API
             "/api/files/**" // 파일(첨부) 메타데이터 API
