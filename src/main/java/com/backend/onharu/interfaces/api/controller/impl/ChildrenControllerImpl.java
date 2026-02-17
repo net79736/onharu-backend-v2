@@ -24,6 +24,7 @@ import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.controller.IChildrenController;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.BookStoreRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.BookStoreResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.CancelReservationRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCardResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCertificateResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingDetailResponse;
@@ -35,6 +36,7 @@ import com.backend.onharu.interfaces.api.dto.ChildControllerDto.UpdateCardReques
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.UpdateCertificateRequest;
 import com.backend.onharu.utils.SecurityUtils;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -278,14 +280,14 @@ public class ChildrenControllerImpl implements IChildrenController {
     @Override
     @PostMapping("/reservations/{reservationId}/cancel")
     public ResponseEntity<ResponseDTO<Void>> cancelStore(
-            @PathVariable("reservationId") Long reservationId
+            @PathVariable("reservationId") Long reservationId,
+            @Valid @RequestBody CancelReservationRequest request
     ) {
         Long childId = SecurityUtils.getCurrentUserId();
 
         log.info("예약 취소 요청: childId={}, reservationId={}", childId, reservationId);
 
-
-        childFacade.cancelReservation(new CancelReservationCommand(reservationId, "예약 취소"), childId);
+        childFacade.cancelReservation(new CancelReservationCommand(reservationId, request.cancelReason()), childId);
         
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));

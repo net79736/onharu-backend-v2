@@ -34,6 +34,23 @@ public class StoreScheduleRepositroyParam {
     }
 
     /**
+     * 가게 ID와 날짜로 가게 일정 목록 조회용 파라미터
+     */
+    public record FindAllByStoreIdAndScheduleDateParam(
+            Long storeId,
+            LocalDate scheduleDate
+    ) {
+        public FindAllByStoreIdAndScheduleDateParam {
+            if (storeId == null) {
+                throw new CoreException(ErrorType.Store.STORE_ID_MUST_NOT_BE_NULL);
+            }
+            if (scheduleDate == null) {
+                throw new CoreException(ErrorType.StoreSchedule.STORE_SCHEDULE_SCHEDULE_DATE_MUST_NOT_BE_NULL);
+            }
+        }
+    }
+
+    /**
      * 영업일로 가게 일정 목록 조회용 파라미터
      */
     public record FindAllByScheduleDateParam(

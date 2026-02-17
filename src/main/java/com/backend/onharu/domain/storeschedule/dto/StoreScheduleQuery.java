@@ -20,6 +20,15 @@ public class StoreScheduleQuery {
     }
 
     /**
+     * 가게 ID와 날짜로 가게 일정 목록 조회
+     */
+    public record FindAllByStoreIdAndScheduleDateQuery(
+            Long storeId,
+            LocalDate scheduleDate
+    ) {
+    }
+
+    /**
      * 영업일로 가게 일정 목록 조회
      */
     public record FindAllByBusinessDayQuery(

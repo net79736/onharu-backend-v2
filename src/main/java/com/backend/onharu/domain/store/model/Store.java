@@ -134,7 +134,7 @@ public class Store extends BaseEntity {
      * @param owner 사업자
      * @return 사업자가 가게의 주인인지 여부
      */
-    public void BelongsTo(Owner owner) {
+    public void belongsTo(Owner owner) {
         if (!this.owner.getId().equals(owner.getId())) {
             throw new CoreException(ErrorType.Store.STORE_OWNER_MISMATCH);
         }

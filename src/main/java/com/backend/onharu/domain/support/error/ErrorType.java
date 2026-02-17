@@ -365,8 +365,12 @@ public enum ErrorType implements IErrorType {
         RESERVATION_STATUS_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "예약 상태는 필수입니다.", LogLevel.ERROR),
         RESERVATION_CHILD_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 ID는 필수입니다.", LogLevel.ERROR),
         RESERVATION_CHILD_ID_MISMATCH(ErrorCode.BAD_REQUEST, "예약자와 현재 로그인한 아동 정보가 일치하지 않습니다.", LogLevel.ERROR),
+        RESERVATION_STORE_ID_MISMATCH(ErrorCode.BAD_REQUEST, "해당 예약은 요청한 가게의 예약이 아닙니다.", LogLevel.ERROR),
         RESERVATION_ALREADY_EXISTS(ErrorCode.BAD_REQUEST, "이미 예약된 가게 일정입니다.", LogLevel.WARN),
         RESERVATION_NOT_COMPLETED(ErrorCode.BAD_REQUEST, "예약이 완료되지 않은 상태입니다.", LogLevel.ERROR)
+        RESERVATION_PEOPLE_EXCEEDS_MAX(ErrorCode.BAD_REQUEST, "예약 인원이 최대 수용 인원을 초과합니다.", LogLevel.WARN),
+        RESERVATION_STATUS_COMPLETED_CANNOT_CANCEL(ErrorCode.BAD_REQUEST, "완료된 예약은 취소할 수 없습니다.", LogLevel.ERROR),
+        RESERVATION_STATUS_CANCELED_ALREADY_CANCELED(ErrorCode.BAD_REQUEST, "이미 취소된 예약입니다.", LogLevel.ERROR),
         ;
 
         private final ErrorCode code;

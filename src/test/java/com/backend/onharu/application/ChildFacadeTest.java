@@ -37,6 +37,7 @@ import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.infra.db.child.ChildJpaRepository;
 import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
@@ -290,6 +291,39 @@ class ChildFacadeTest {
             );
             
             assertThat(exception.getErrorType()).isEqualTo(RESERVATION_ALREADY_EXISTS);
+        }
+
+        @Test
+        @DisplayName("예약 생성 실패 - 최대 인원 초과")
+        public void shouldThrowExceptionWhenPeopleExceedsMaxPeople() {
+            // given: maxPeople=5인 일정에 10명 예약 시도
+            Child child = createTestChild("test_child", "테스트 아동", "01012345678");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category);
+            StoreSchedule storeSchedule = storeScheduleJpaRepository.save(
+                StoreSchedule.builder()
+                    .store(store)
+                    .scheduleDate(LocalDate.now().plusDays(1))
+                    .startTime(LocalTime.of(10, 0))
+                    .endTime(LocalTime.of(11, 0))
+                    .maxPeople(5)
+                    .build()
+            );
+
+            CreateReservationCommand command = new CreateReservationCommand(
+                child.getId(),
+                storeSchedule.getId(),
+                10  // maxPeople(5) 초과
+            );
+
+            // when & then
+            CoreException exception = Assertions.assertThrows(
+                CoreException.class,
+                () -> childFacade.reserve(command)
+            );
+
+            assertThat(exception.getErrorType()).isEqualTo(ErrorType.Reservation.RESERVATION_PEOPLE_EXCEEDS_MAX);
         }
     }
 

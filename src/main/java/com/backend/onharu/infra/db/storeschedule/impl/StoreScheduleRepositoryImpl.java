@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByScheduleDateParam;
+import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdAndScheduleDateParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndDateParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndScheduleDateParam;
@@ -51,7 +52,12 @@ public class StoreScheduleRepositoryImpl implements StoreScheduleRepository {
     }
 
     @Override
-    public List<StoreSchedule> findAllByBusinessDay(FindAllByScheduleDateParam param) {
+    public List<StoreSchedule> findAllByStoreIdAndScheduleDate(FindAllByStoreIdAndScheduleDateParam param) {
+        return storeScheduleJpaRepository.findByStoreIdAndScheduleDate(param.storeId(), param.scheduleDate());
+    }
+
+    @Override
+    public List<StoreSchedule> findAllByScheduleDate(FindAllByScheduleDateParam param) {
         return storeScheduleJpaRepository.findAllByScheduleDate(param.scheduleDate());
     }
 

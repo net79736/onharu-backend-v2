@@ -30,6 +30,7 @@ import com.backend.onharu.domain.file.service.FileQueryService;
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.store.support.StoreSearchSortResolver;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.controller.IOwnerController;
@@ -50,6 +51,7 @@ import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
 import com.backend.onharu.utils.NumberUtils;
 import com.backend.onharu.utils.SecurityUtils;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -173,10 +175,12 @@ public class OwnerControllerImpl implements IOwnerController {
 
         log.info("사업자 가게 목록 조회 요청: ownerId={}, request={}", ownerId, request);
 
+        // 정렬 필드 변환
+        String sortField = StoreSearchSortResolver.resolve(request.sortField(), false);
         Pageable pageable = PageableUtil.ofOneBased(
-                request.pageNum(), 
-                request.perPage(), 
-                request.sortField(), 
+                request.pageNum(),
+                request.perPage(),
+                sortField,
                 request.sortDirection()
         );
 
@@ -265,9 +269,11 @@ public class OwnerControllerImpl implements IOwnerController {
         @PathVariable("storeId") Long storeId,
         @PathVariable("reservationId") Long reservationId
     ) {
-        log.info("예약 관리 상세 조회 요청: storeId={}, reservationId={}", storeId, reservationId);
+        Long ownerId = SecurityUtils.getCurrentUserId();
 
-        Reservation reservation = ownerFacade.getStoreBooking(reservationId, storeId);
+        log.info("예약 관리 상세 조회 요청: ownerId={}, storeId={}, reservationId={}", ownerId, storeId, reservationId);
+
+        Reservation reservation = ownerFacade.getStoreBooking(reservationId, ownerId, storeId);
         ReservationResponse reservationResponse = new ReservationResponse(reservation);
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -335,7 +341,7 @@ public class OwnerControllerImpl implements IOwnerController {
     @PostMapping("/stores/{storeId}/available-dates")
     public ResponseEntity<ResponseDTO<Void>> setAvailableDates(
             @PathVariable("storeId") Long storeId,
-            @RequestBody SetAvailableDatesRequest request
+            @Valid @RequestBody SetAvailableDatesRequest request
     ) {
         Long ownerId = SecurityUtils.getCurrentUserId();
 
@@ -361,7 +367,7 @@ public class OwnerControllerImpl implements IOwnerController {
     @PutMapping("/stores/{storeId}/available-dates")
     public ResponseEntity<ResponseDTO<Void>> updateAvailableDates(
             @PathVariable("storeId") Long storeId,
-            @RequestBody UpdateAvailableDatesRequest request
+            @Valid @RequestBody UpdateAvailableDatesRequest request
     ) {
         Long ownerId = SecurityUtils.getCurrentUserId();
 

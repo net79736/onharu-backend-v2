@@ -1,7 +1,13 @@
 package com.backend.onharu.domain.reservation.model;
 
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_CHILD_ID_MISMATCH;
+
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_NOT_COMPLETED;
+
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_CANCELED_ALREADY_CANCELED;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_COMPLETED_CANNOT_CANCEL;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STORE_ID_MISMATCH;
+
 import static java.util.Optional.ofNullable;
 
 import java.time.LocalDateTime;
@@ -121,10 +127,10 @@ public class Reservation extends BaseEntity {
 
     /**
      * 예약이 해당 아동에 속하는지 확인합니다.
-     * 
+     *
      * @param childId 아동 ID
      */
-    public void BelongsTo(Long childId) {
+    public void belongsToChild(Long childId) {
         if (!this.child.getId().equals(childId)) {
             throw new CoreException(RESERVATION_CHILD_ID_MISMATCH);
         }
@@ -140,6 +146,29 @@ public class Reservation extends BaseEntity {
 
         if (this.status != ReservationType.COMPLETED) { // 예약 상태가 완료 상태가 아닐 경우
             throw new CoreException(RESERVATION_NOT_COMPLETED);
+
+     * 예약이 해당 가게에 속하는지 확인합니다.
+     *
+     * @param storeId 가게 ID
+     */
+    public void belongsToStore(Long storeId) {
+        if (!this.storeSchedule.getStore().getId().equals(storeId)) {
+            throw new CoreException(RESERVATION_STORE_ID_MISMATCH);
+        }
+    }
+
+    /**
+     * 예약이 완료 상태인 경우 취소할 수 없도록 예외를 발생시킨다.
+     * 
+     * (예약 상태가 COMPLETED라면 예외 발생)
+     */
+    public void validateCancelable() {
+        if (this.status == ReservationType.COMPLETED) {
+            throw new CoreException(RESERVATION_STATUS_COMPLETED_CANNOT_CANCEL);
+        }
+
+        if (this.status == ReservationType.CANCELED) {
+            throw new CoreException(RESERVATION_STATUS_CANCELED_ALREADY_CANCELED);
         }
     }
 }

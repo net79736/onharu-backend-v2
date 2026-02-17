@@ -66,9 +66,17 @@ public interface StoreJpaRepository extends JpaRepository<Store, Long> {
                     "FROM Store s " +
                     "JOIN s.category c " +
                     "LEFT JOIN Favorite f ON f.store = s " +
+                    "LEFT JOIN StoreTag st ON st.store = s " +
+                    "LEFT JOIN Tag t ON t.id = st.tag.id " +
                     "WHERE s.owner.id = :ownerId " +
-                    "GROUP BY s ",
-            countQuery = "SELECT COUNT(s) FROM Store s JOIN category c ON s.category.id = c.id WHERE s.owner.id = :ownerId"
+                    "GROUP BY s",
+            countQuery = "SELECT COUNT(DISTINCT s.id) " +
+                         "FROM Store s " +
+                         "JOIN s.category c " +
+                         "LEFT JOIN Favorite f ON f.store = s " +
+                         "LEFT JOIN StoreTag st ON st.store = s " +
+                         "LEFT JOIN Tag t ON t.id = st.tag.id " +
+                         "WHERE s.owner.id = :ownerId"
     )
     Page<StoreWithFavoriteCount> findWithCategoryAndFavoriteCountByOwnerId(@Param("ownerId") Long ownerId, Pageable pageable);
 

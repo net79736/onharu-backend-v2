@@ -162,7 +162,7 @@ public class StoreFacade {
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
         
         // 사업자가 가게의 주인인지 확인
-        store.BelongsTo(owner);
+        store.belongsTo(owner);
         
         // 카테고리 정보 조회
         Category category = categoryRepository.getCategoryById(new GetCategoryByIdQuery(command.categoryId()));
@@ -244,7 +244,7 @@ public class StoreFacade {
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
         
         // 사업자가 가게의 주인인지 확인
-        store.BelongsTo(owner);
+        store.belongsTo(owner);
         
         // 카테고리 정보 조회
         Category category = categoryRepository.getCategoryById(new GetCategoryByIdQuery(categoryId));
@@ -267,7 +267,7 @@ public class StoreFacade {
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
         
         // 사업자가 가게의 주인인지 확인
-        store.BelongsTo(owner);
+        store.belongsTo(owner);
         
         // 가게 삭제
         storeCommandService.deleteStore(command);
@@ -288,7 +288,7 @@ public class StoreFacade {
         Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
         
         // 사업자가 가게의 주인인지 확인
-        store.BelongsTo(owner);
+        store.belongsTo(owner);
         
         // 영업 상태 변경
         storeCommandService.changeOpenStatus(new ChangeOpenStatusCommand(storeId, isOpen));
