@@ -164,5 +164,38 @@ public final class SecurityUtils implements ApplicationContextAware {
         }
         return null;
     }
+
+
+    /**
+     * 현재 인증된 사용자 ID 를 추출합니다.
+     * @return userId(도메인 상관없이)
+     */
+    public static Long getUserId() {
+        Authentication authentication = getCurrentAuthentication(); // 현재 인증된 사용자 객체 반환
+
+        if (authentication == null || !authentication.isAuthenticated() // 인증되지 않은 사용자이거나 익명 사용자인 경우
+                || authentication.getPrincipal().equals("anonymousUser")) {
+            return null;
+        }
+
+        // LocalUser 처리 (일반 로그인)
+        if (authentication.getPrincipal() instanceof LocalUser localUser) {
+            log.info("localUser: {}", localUser.getUser());
+            return localUser.getUser().getId();
+        }
+        // SocialUser 처리 (OAuth2 로그인)
+        else if (authentication.getPrincipal() instanceof SocialUser socialUser) {
+            log.info("socialUser: {}", socialUser.getUser());
+            return socialUser.getUser().getId();
+        }
+
+        // ApplicationContext 가 초기화되지 않은 경우 null 반환
+        if (applicationContext == null) {
+            log.info("ApplicationContext 가 초기화되지 않음");
+            return null;
+        }
+
+        return null; // userId 를 찾지 못한 경우
+    }
 }
 
