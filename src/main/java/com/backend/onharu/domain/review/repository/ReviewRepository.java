@@ -24,9 +24,9 @@ public interface ReviewRepository {
     void delete(Review review);
 
     /**
-     * 리뷰 전체 목록 조회
+     * 리뷰 전체 목록 조회(페이징)
      */
-    List<Review> findAll();
+    Page<Review> findAll(Pageable pageable);
 
     /**
      * 리뷰 단건 조회

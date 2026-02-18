@@ -3,6 +3,7 @@ package com.backend.onharu.interfaces.api.dto;
 import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.data.domain.Page;
 
 public class ReviewControllerDto {
 
@@ -21,18 +22,79 @@ public class ReviewControllerDto {
     ) {
     }
 
+    /**
+     * 감사 리뷰 목록 조회 요청
+     * @param pageNum 페이지 번호
+     * @param perPage 항목 수
+     * @param sortField 정렬 기준
+     * @param sortDirection 정렬 방향(오름차순, 내림차순)
+     */
+    public record GetReviewsRequest(
+            @Schema(description = "페이지 번호 (1부터 시작)", example = "1")
+            Integer pageNum,
+
+            @Schema(description = "페이지당 항목 수", example = "10")
+            Integer perPage,
+
+            @Schema(description = "정렬 기준", example = "id", allowableValues = {"id"})
+            String sortField,
+
+            @Schema(description = "정렬 방향", example = "desc", allowableValues = {"asc", "desc"})
+            String sortDirection
+    ) {
+    }
+
     public record GetReviewListResponse(
-            List<ReviewResponse> reviews
+            @Schema(description = "감사 리뷰 목록")
+            List<ReviewResponse> reviews,
+
+            @Schema(description = "전체 갯수")
+            Long totalCount,
+
+            @Schema(description = "현재 페이지 번호")
+            Integer currentPage,
+
+            @Schema(description = "전체 페이지 수")
+            Integer totalPages,
+
+            @Schema(description = "페이지당 항목 수")
+            Integer perPage
     ) {
     }
 
     public record GetReviewDetailResponse(
-            List<ReviewResponse> reviews
+            @Schema(description = "감사 리뷰 목록")
+            List<ReviewResponse> reviews,
+
+            @Schema(description = "전체 갯수")
+            Long totalCount,
+
+            @Schema(description = "현재 페이지 번호")
+            Integer currentPage,
+
+            @Schema(description = "전체 페이지 수")
+            Integer totalPages,
+
+            @Schema(description = "페이지당 항목 수")
+            Integer perPage
     ) {
     }
 
     public record GetMyReviewListResponse(
-            List<ReviewResponse> reviews
+            @Schema(description = "감사 리뷰 목록")
+            List<ReviewResponse> reviews,
+
+            @Schema(description = "전체 갯수")
+            Long totalCount,
+
+            @Schema(description = "현재 페이지 번호")
+            Integer currentPage,
+
+            @Schema(description = "전체 페이지 수")
+            Integer totalPages,
+
+            @Schema(description = "페이지당 항목 수")
+            Integer perPage
     ) {
     }
 

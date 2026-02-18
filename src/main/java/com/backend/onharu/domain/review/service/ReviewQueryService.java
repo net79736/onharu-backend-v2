@@ -33,11 +33,11 @@ public class ReviewQueryService {
     }
 
     /**
-     * 전체 리뷰 목록 조회
+     * 전체 리뷰 목록 조회(페이징)
      * @return 조회된 리뷰 목록
      */
-    public List<Review> findAll() {
-        return reviewRepository.findAll();
+    public Page<Review> findAll(Pageable pageable) {
+        return reviewRepository.findAll(pageable);
     }
 
     /**

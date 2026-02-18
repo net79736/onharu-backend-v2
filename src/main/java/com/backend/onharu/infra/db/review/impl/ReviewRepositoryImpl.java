@@ -34,8 +34,8 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
-    public List<Review> findAll() {
-        return reviewJpaRepository.findAll();
+    public Page<Review> findAll(Pageable pageable) {
+        return reviewJpaRepository.findAll(pageable);
     }
 
     @Override
