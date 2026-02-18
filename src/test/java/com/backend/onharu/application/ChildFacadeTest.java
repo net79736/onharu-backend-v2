@@ -50,6 +50,7 @@ import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
+import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -463,7 +464,7 @@ class ChildFacadeTest {
             );
 
             // when
-            List<Reservation> myBookings = childFacade.getMyBookings(child1.getId(), pageable).getContent();
+            List<Reservation> myBookings = childFacade.getMyBookings(child1.getId(), ReservationStatusFilter.ALL, pageable).getContent();
 
             // then
             assertThat(myBookings).isNotNull();
@@ -489,7 +490,7 @@ class ChildFacadeTest {
             );
 
             // when
-            List<Reservation> myBookings = childFacade.getMyBookings(child.getId(), pageable).getContent();
+            List<Reservation> myBookings = childFacade.getMyBookings(child.getId(), ReservationStatusFilter.ALL, pageable).getContent();
 
             // then
             assertThat(myBookings).isNotNull();
@@ -597,8 +598,8 @@ class ChildFacadeTest {
             Pageable pageable = PageableUtil.ofOneBased(1, 10, "id", "desc");
 
             // when
-            List<Reservation> child1Bookings = childFacade.getMyBookings(child1.getId(), pageable).getContent();
-            List<Reservation> child2Bookings = childFacade.getMyBookings(child2.getId(), pageable).getContent();
+            List<Reservation> child1Bookings = childFacade.getMyBookings(child1.getId(), ReservationStatusFilter.ALL, pageable).getContent();
+            List<Reservation> child2Bookings = childFacade.getMyBookings(child2.getId(), ReservationStatusFilter.ALL, pageable).getContent();
 
             // then: 각 아동은 자기 예약만 조회
             assertThat(child1Bookings).hasSize(1);

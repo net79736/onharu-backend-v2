@@ -9,11 +9,12 @@ import org.junit.jupiter.api.Test;
 import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindAllByStatusQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindAllByStoreIdAndStatusQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdAndStatusFilterQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdAndStatusQuery;
-import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByStoreIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetByStoreScheduleIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
+import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 
 @DisplayName("ReservationQuery 단위 테스트")
 class ReservationQueryTest {
@@ -47,7 +48,7 @@ class ReservationQueryTest {
             Long childId = 855L;
 
             // when
-            FindByChildIdQuery query = new FindByChildIdQuery(childId);
+            FindByChildIdAndStatusFilterQuery query = new FindByChildIdAndStatusFilterQuery(childId, ReservationStatusFilter.ALL);
 
             // then
             assertThat(query.childId()).isEqualTo(childId);

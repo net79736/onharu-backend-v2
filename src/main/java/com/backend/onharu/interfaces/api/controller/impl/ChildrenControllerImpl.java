@@ -1,8 +1,11 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
+import static com.backend.onharu.interfaces.api.common.util.PageableUtil.getCurrentPage;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -321,12 +324,18 @@ public class ChildrenControllerImpl implements IChildrenController {
             request.sortDirection()
         );
 
-        List<Reservation> reservations = childFacade.getMyBookings(childId, pageable).getContent(); // 내 예약 목록 조회
-        List<ReservationResponse> reservationResponses = reservations.stream()
+        Page<Reservation> reservations = childFacade.getMyBookings(childId, request.effectiveStatusFilter(), pageable); // 내 예약 목록 조회
+        List<ReservationResponse> reservationResponses = reservations.getContent().stream()
                 .map(ReservationResponse::new)
                 .collect(Collectors.toList());
 
-        GetMyBookingListResponse response = new GetMyBookingListResponse(reservationResponses);
+        GetMyBookingListResponse response = new GetMyBookingListResponse(
+            reservationResponses,
+            reservations.getTotalElements(),
+            getCurrentPage(reservations),
+            reservations.getTotalPages(),
+            reservations.getSize()
+        );
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(response));

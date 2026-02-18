@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByChildIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByStatusParam;
+import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusFilterParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdAndStatusParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdParam;
@@ -29,7 +29,7 @@ public interface ReservationRepository {
     /**
      * 아동 ID로 예약 목록 조회
      */
-    Page<Reservation> findByChildId(FindAllByChildIdParam param, Pageable pageable);
+    Page<Reservation> findByChildIdAndStatusFilter(FindByChildIdAndStatusFilterParam param, Pageable pageable);
 
     /**
      * 가게 일정 ID로 예약 단건 조회

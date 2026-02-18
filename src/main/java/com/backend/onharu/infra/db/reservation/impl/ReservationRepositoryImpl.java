@@ -8,8 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByChildIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByStatusParam;
+import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusFilterParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdAndStatusParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdParam;
@@ -43,8 +43,11 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
-    public Page<Reservation> findByChildId(FindAllByChildIdParam param, Pageable pageable) {
-        return reservationJpaRepository.findByChildId(param.childId(), pageable);
+    public Page<Reservation> findByChildIdAndStatusFilter(FindByChildIdAndStatusFilterParam param, Pageable pageable) {
+        // statusFilter가 null이면 ALL로 간주
+        return param.statusFilter().toReservationType()
+                .map(status -> reservationJpaRepository.findByChildIdAndStatus(param.childId(), status, pageable))
+                .orElseGet(() -> reservationJpaRepository.findByChildId(param.childId(), pageable));
     }
 
     @Override

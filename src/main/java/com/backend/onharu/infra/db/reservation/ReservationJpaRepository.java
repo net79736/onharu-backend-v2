@@ -44,6 +44,11 @@ public interface ReservationJpaRepository extends JpaRepository<Reservation, Lon
     List<Reservation> findByChildIdAndStatus(Long childId, ReservationType status);
 
     /**
+     * 아동 ID와 상태로 예약 목록 조회 (페이징)
+     */
+    Page<Reservation> findByChildIdAndStatus(Long childId, ReservationType status, Pageable pageable);
+
+    /**
      * 가게 ID로 예약 목록 조회
      */
     List<Reservation> findByStoreSchedule_StoreId(Long storeId);

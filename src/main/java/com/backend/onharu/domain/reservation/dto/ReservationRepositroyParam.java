@@ -3,6 +3,7 @@ package com.backend.onharu.domain.reservation.dto;
 import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
+import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 
 public class ReservationRepositroyParam {
     /**
@@ -21,10 +22,11 @@ public class ReservationRepositroyParam {
     /**
      * 아동 ID로 예약 목록 조회용 파라미터
      */
-    public record FindAllByChildIdParam(
-            Long childId
+    public record FindByChildIdAndStatusFilterParam(
+            Long childId,
+            ReservationStatusFilter statusFilter
     ) {
-        public FindAllByChildIdParam {
+        public FindByChildIdAndStatusFilterParam {
             if (childId == null) {
                 throw new CoreException(ErrorType.Reservation.RESERVATION_CHILD_ID_MUST_NOT_BE_NULL);
             }

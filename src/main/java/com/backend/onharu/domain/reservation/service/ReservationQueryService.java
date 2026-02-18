@@ -8,13 +8,13 @@ import org.springframework.stereotype.Service;
 
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindAllByStatusQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindAllByStoreIdAndStatusQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdAndStatusFilterQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdAndStatusQuery;
-import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByStoreIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetByStoreScheduleIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
-import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByChildIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByStatusParam;
+import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusFilterParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdAndStatusParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdParam;
@@ -47,9 +47,9 @@ public class ReservationQueryService {
      * @param query 아동 ID
      * @return 아동 ID에 해당하는 예약 리스트
      */
-    public Page<Reservation> findByChildId(FindByChildIdQuery query, Pageable pageable) {
-        return reservationRepository.findByChildId(
-                new FindAllByChildIdParam(query.childId()), pageable);
+    public Page<Reservation> findByChildIdAndStatusFilter(FindByChildIdAndStatusFilterQuery query, Pageable pageable) {
+        return reservationRepository.findByChildIdAndStatusFilter(
+                new FindByChildIdAndStatusFilterParam(query.childId(), query.statusFilter()), pageable);
     }
 
     /**

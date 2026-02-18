@@ -21,7 +21,7 @@ import com.backend.onharu.domain.favorite.service.FavoriteCommandService;
 import com.backend.onharu.domain.favorite.service.FavoriteQueryService;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CreateReservationCommand;
-import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdAndStatusFilterQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetByStoreScheduleIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
 import com.backend.onharu.domain.reservation.model.Reservation;
@@ -35,6 +35,7 @@ import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.storeschedule.service.StoreScheduleQueryService;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
+import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -107,15 +108,12 @@ public class ChildFacade {
 
     /**
      * 내가 신청한 예약 목록 조회
-     * 
+     *
      * @return 내가 신청한 예약 목록
      */
-    public Page<Reservation> getMyBookings(Long childId, Pageable pageable) {
-        // 현재 로그인한 아동 정보 조회
+    public Page<Reservation> getMyBookings(Long childId, ReservationStatusFilter statusFilter, Pageable pageable) {
         Child child = childQueryService.getChildById(new GetChildByIdQuery(childId));
-
-        // 내가 신청한 예약 목록 조회
-        return reservationQueryService.findByChildId(new FindByChildIdQuery(child.getId()), pageable);
+        return reservationQueryService.findByChildIdAndStatusFilter(new FindByChildIdAndStatusFilterQuery(child.getId(), statusFilter), pageable);
     }
 
     /**
