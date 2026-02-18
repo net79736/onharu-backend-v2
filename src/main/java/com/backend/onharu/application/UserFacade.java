@@ -229,4 +229,19 @@ public class UserFacade {
 
         return user;
     }
+
+    /**
+     * 현재 사용자가 로그인 되었는지 확인합니다.
+     *
+     * @param query 사용자 ID 가 포함된 query
+     * @return 조회된 사용자 정보
+     */
+    public User getMe(GetUserByIdQuery query) {
+
+        User user = userQueryService.getUser(query);// 사용자 정보 조회
+
+        user.verifyStatus(); // 사용자 계정 상태 검증(ACTIVE 또는 PENDING 가 아닐경우 예외 발생)
+
+        return user;
+    }
 }

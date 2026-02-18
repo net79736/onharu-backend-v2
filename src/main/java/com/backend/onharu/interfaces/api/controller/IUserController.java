@@ -186,4 +186,14 @@ public interface IUserController {
             )
             finishSignUpOwnerRequest request
     );
+
+    /**
+     * 로그인 확인
+     *
+     * GET /api/users/me
+     * 세션에 인증된 사용자의 정보를 반환합니다.
+     */
+    @Operation(summary = "로그인 확인", description = "현재 로그인 여부를 확인하고 사용자 정보를 반환합니다.")
+    ResponseEntity<ResponseDTO<MeResponse>> getMe(
+    );
 }

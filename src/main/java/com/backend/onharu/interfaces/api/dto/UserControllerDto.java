@@ -1,5 +1,7 @@
 package com.backend.onharu.interfaces.api.dto;
 
+import com.backend.onharu.domain.common.enums.ProviderType;
+import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -267,6 +269,27 @@ public class UserControllerDto {
             @NotNull(message = "등급 정보는 필수 입력 값 입니다.")
             @Schema(description = "레벨 ID", example = "1")
             String levelId
+    ) {
+    }
+
+    /**
+     * 현재 로그인 여부 확인 응답 DTO
+     */
+    public record MeResponse(
+            @Schema(description = "사용자 ID", example = "1")
+            Long userId,
+
+            @Schema(description = "로그인 아이디", example = "child1234@test.com")
+            String loginId,
+
+            @Schema(description = "사용자 유형", example = "CHILD")
+            UserType userType,
+
+            @Schema(description = "계정 상태", example = "ACTIVE")
+            StatusType statusType,
+
+            @Schema(description = "계정 타입", example = "LOCAL")
+            ProviderType providerType
     ) {
     }
 }
