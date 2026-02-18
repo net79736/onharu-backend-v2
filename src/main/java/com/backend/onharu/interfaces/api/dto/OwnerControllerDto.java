@@ -122,9 +122,54 @@ public class OwnerControllerDto {
     }
 
     // 예약 관련 DTO
-    public record GetStoreBookingListResponse(
-            List<ReservationResponse> reservations
+    @Schema(description = "예약 관리 목록 조회 요청")
+    public record GetStoreBookingsRequest(
+            @Schema(description = "페이지 번호 (1부터 시작)", example = "1")
+            Integer pageNum,
+
+            @Schema(description = "페이지당 항목 수", example = "10")
+            Integer perPage,
+
+            @Schema(description = "예약 상태 필터 (ALL: 전체, 그 외: 해당 상태만)", example = "ALL", allowableValues = {"ALL", "WAITING", "CONFIRMED", "CANCELED", "COMPLETED", "REJECTED"})
+            ReservationStatusFilter statusFilter,
+
+            @Schema(description = "정렬 기준", example = "id", allowableValues = {"id"})
+            String sortField,
+
+            @Schema(description = "정렬 방향", example = "desc", allowableValues = {"asc", "desc"})
+            String sortDirection
     ) {
+        public Integer pageNum() {
+            return pageNum != null && pageNum > 0 ? pageNum : 1;
+        }
+
+        public Integer perPage() {
+            return perPage != null && perPage > 0 ? perPage : 10;
+        }
+
+        public ReservationStatusFilter effectiveStatusFilter() {
+            return statusFilter != null ? statusFilter : ReservationStatusFilter.ALL;
+        }
+    }
+
+    public record GetStoreBookingListResponse(
+            List<ReservationResponse> reservations,
+
+            @Schema(description = "전체 예약 개수 (페이징 사용 시)")
+            Long totalCount,
+
+            @Schema(description = "현재 페이지 번호 (페이징 사용 시)")
+            Integer currentPage,
+
+            @Schema(description = "전체 페이지 수 (페이징 사용 시)")
+            Integer totalPages,
+
+            @Schema(description = "페이지당 항목 수 (페이징 사용 시)")
+            Integer perPage
+    ) {
+        public static GetStoreBookingListResponse of(List<ReservationResponse> reservations, long totalCount, int currentPage, int totalPages, int perPage) {
+            return new GetStoreBookingListResponse(reservations, totalCount, currentPage, totalPages, perPage);
+        }
     }
 
     public record GetStoreBookingDetailResponse(

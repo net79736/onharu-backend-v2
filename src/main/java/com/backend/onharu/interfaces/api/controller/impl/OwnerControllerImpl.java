@@ -41,6 +41,7 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetMyStoresRespo
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetOwnerResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingDetailResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingListResponse;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingsRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RejectBookRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.ReservationResponse;
@@ -231,24 +232,38 @@ public class OwnerControllerImpl implements IOwnerController {
      * 
      * GET /api/owners/stores/{storeId}/reservations
      * 사업자의 예약 목록을 조회합니다.
+     * - 파라미터 없음: 기존 동작 (store_schedule별 최신 1건)
+     * - pageNum, perPage, statusFilter 등 제공 시: 페이징 + 필터 적용
      *
      * @return 예약 관리 목록
      */
     @Override
     @GetMapping("/stores/{storeId}/reservations")
     public ResponseEntity<ResponseDTO<GetStoreBookingListResponse>> getStoreBookings(
-            @PathVariable("storeId") Long storeId
+            @PathVariable("storeId") Long storeId,
+            @ModelAttribute GetStoreBookingsRequest request
     ) {
         Long ownerId = SecurityUtils.getCurrentUserId();
 
-        log.info("예약 관리 목록 조회 요청: ownerId={}, storeId={}", ownerId, storeId);
+        log.info("예약 관리 목록 조회 요청: ownerId={}, storeId={}, request={}", ownerId, storeId, request);
 
-        List<Reservation> reservations = ownerFacade.getStoreBookings(ownerId, storeId); // 가게의 예약 목록 조회
-        List<ReservationResponse> reservationResponses = reservations.stream()
+        Pageable pageable = PageableUtil.ofOneBased(
+                request.pageNum(),
+                request.perPage(),
+                request.sortField(),
+                request.sortDirection()
+        );
+        Page<Reservation> page = ownerFacade.getStoreBookings(ownerId, storeId, request.effectiveStatusFilter(), pageable);
+        List<ReservationResponse> reservationResponses = page.getContent().stream()
                 .map(ReservationResponse::new)
                 .collect(Collectors.toList());
-
-        GetStoreBookingListResponse response = new GetStoreBookingListResponse(reservationResponses); // 예약 관리 목록 응답 생성
+        GetStoreBookingListResponse response = GetStoreBookingListResponse.of(
+                reservationResponses,
+                page.getTotalElements(),
+                getCurrentPage(page),
+                page.getTotalPages(),
+                page.getSize()
+        );
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(response));

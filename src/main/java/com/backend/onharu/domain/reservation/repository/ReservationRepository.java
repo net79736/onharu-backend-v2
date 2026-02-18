@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByStatusParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusFilterParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusParam;
-import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdAndStatusParam;
+import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdAndStatusFilterParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetByStoreScheduleIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetReservationByIdParam;
@@ -42,9 +42,10 @@ public interface ReservationRepository {
     List<Reservation> findByStoreId(FindByStoreIdParam param);
 
     /**
-     * 가게 ID로 store_schedule별 가장 최근 예약 1건씩 조회
+     * 가게 ID와 상태 필터로 예약 목록 조회 (페이징)
      */
-    List<Reservation> findLatestReservationsByStoreId(Long storeId);
+    Page<Reservation> findByStoreIdAndStatusFilter(FindByStoreIdAndStatusFilterParam param, Pageable pageable);
+
 
     /**
      * 예약 상태로 예약 목록 조회
@@ -55,11 +56,6 @@ public interface ReservationRepository {
      * 아동 ID와 상태로 예약 목록 조회
      */
     List<Reservation> findByChildIdAndStatus(FindByChildIdAndStatusParam param);
-
-    /**
-     * 가게 ID와 상태로 예약 목록 조회
-     */
-    List<Reservation> findByStoreIdAndStatus(FindByStoreIdAndStatusParam param);
 
     /**
      * 예약 삭제

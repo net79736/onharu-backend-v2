@@ -54,23 +54,33 @@ public interface ReservationJpaRepository extends JpaRepository<Reservation, Lon
     List<Reservation> findByStoreSchedule_StoreId(Long storeId);
 
     /**
-     * 가게 ID와 상태로 예약 목록 조회
-     */
-    List<Reservation> findByStoreSchedule_StoreIdAndStatus(Long storeId, ReservationType status);
-
-    /**
-     * 가게 ID로 store_schedule별 가장 최근 예약 1건씩 조회
-     * 취소 후 재예약 시 최신 건만 반환
+     * 가게 ID로 예약 목록 조회 (페이징)
      */
     @Query("""
-            SELECT r
-            FROM Reservation r
-            WHERE r.storeSchedule.store.id = :storeId
-              AND r.id = (
-                    SELECT MAX(r2.id)
-                    FROM Reservation r2
-                    WHERE r2.storeSchedule = r.storeSchedule
-              )
-            """)
-    List<Reservation> findLatestReservationsByStoreId(@Param("storeId") Long storeId);
+        SELECT r
+        FROM Reservation r
+        WHERE r.storeSchedule.store.id = :storeId
+          AND r.id = (
+                SELECT MAX(r2.id)
+                FROM Reservation r2
+                WHERE r2.storeSchedule = r.storeSchedule
+          )
+        """)
+    Page<Reservation> findLatestReservationsByStoreId(@Param("storeId") Long storeId, Pageable pageable);
+
+    /**
+     * 가게 ID와 상태로 예약 목록 조회 (페이징)
+     */
+    @Query("""
+        SELECT r
+        FROM Reservation r
+        WHERE r.storeSchedule.store.id = :storeId
+          AND r.status = :status
+          AND r.id = (
+                SELECT MAX(r2.id)
+                FROM Reservation r2
+                WHERE r2.storeSchedule = r.storeSchedule
+          )
+        """)
+    Page<Reservation> findLatestReservationsByStoreIdAndStatus(@Param("storeId") Long storeId, @Param("status") ReservationType status, Pageable pageable);
 }

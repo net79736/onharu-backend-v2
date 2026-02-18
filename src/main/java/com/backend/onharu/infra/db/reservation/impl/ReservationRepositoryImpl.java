@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByStatusParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusFilterParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusParam;
-import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdAndStatusParam;
+import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdAndStatusFilterParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetByStoreScheduleIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetReservationByIdParam;
@@ -61,8 +61,11 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
-    public List<Reservation> findLatestReservationsByStoreId(Long storeId) {
-        return reservationJpaRepository.findLatestReservationsByStoreId(storeId);
+    public Page<Reservation> findByStoreIdAndStatusFilter(FindByStoreIdAndStatusFilterParam param, Pageable pageable) {
+        // statusFilter가 null이면 ALL로 간주
+        return param.statusFilter().toReservationType()
+                .map(status -> reservationJpaRepository.findLatestReservationsByStoreIdAndStatus(param.storeId(), status, pageable))
+                .orElseGet(() -> reservationJpaRepository.findLatestReservationsByStoreId(param.storeId(), pageable));
     }
 
     @Override
@@ -73,11 +76,6 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     @Override
     public List<Reservation> findByChildIdAndStatus(FindByChildIdAndStatusParam param) {
         return reservationJpaRepository.findByChildIdAndStatus(param.childId(), param.status());
-    }
-
-    @Override
-    public List<Reservation> findByStoreIdAndStatus(FindByStoreIdAndStatusParam param) {
-        return reservationJpaRepository.findByStoreSchedule_StoreIdAndStatus(param.storeId(), param.status());
     }
 
     @Override

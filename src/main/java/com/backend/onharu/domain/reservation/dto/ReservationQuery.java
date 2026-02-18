@@ -38,6 +38,15 @@ public class ReservationQuery {
     }
 
     /**
+     * 가게 ID와 상태 필터로 예약 목록 조회 (사업자 예약 관리 목록)
+     */
+    public record FindByStoreIdAndStatusFilterQuery(
+            Long storeId,
+            ReservationStatusFilter statusFilter
+    ) {
+    }
+
+    /**
      * 예약 상태로 예약 목록 조회
      */
     public record FindAllByStatusQuery(

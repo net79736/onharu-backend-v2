@@ -47,6 +47,7 @@ import com.backend.onharu.infra.db.user.UserJpaRepository;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.StoreScheduleRequest;
+import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 
 @SpringBootTest
 @DisplayName("OwnerFacade 단위 테스트")
@@ -290,11 +291,11 @@ class OwnerFacadeTest {
             );
 
             // when
-            List<Reservation> bookings = ownerFacade.getStoreBookings(owner.getId(), store.getId());
+            Page<Reservation> bookings = ownerFacade.getStoreBookings(owner.getId(), store.getId(), ReservationStatusFilter.WAITING, Pageable.ofSize(10));
 
             // then
             assertThat(bookings).isNotNull();
-            assertThat(bookings.size()).isEqualTo(2);
+            assertThat(bookings.getTotalElements()).isEqualTo(2);
             assertThat(bookings).allMatch(r -> r.getStoreSchedule().getStore().getId().equals(store.getId()));
 
             // 예약 상세 정보 확인
@@ -316,7 +317,7 @@ class OwnerFacadeTest {
 
             System.out.println("✅ 사업자 가게의 예약 목록 조회 성공");
             System.out.println("   - 가게 ID: " + store.getId());
-            System.out.println("   - 예약 개수: " + bookings.size());
+            System.out.println("   - 예약 개수: " + bookings.getTotalElements());
             System.out.println("   - 예약1: 아동 ID " + booking1.getChild().getId() + ", 인원 " + booking1.getPeople());
             System.out.println("   - 예약2: 아동 ID " + booking2.getChild().getId() + ", 인원 " + booking2.getPeople());
         }
@@ -336,7 +337,7 @@ class OwnerFacadeTest {
             // when & then
             CoreException exception = Assertions.assertThrows(
                     CoreException.class,
-                    () -> ownerFacade.getStoreBookings(owner2.getId(), store.getId())
+                    () -> ownerFacade.getStoreBookings(owner2.getId(), store.getId(), ReservationStatusFilter.WAITING, Pageable.ofSize(10))
             );
 
             assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
@@ -372,14 +373,14 @@ class OwnerFacadeTest {
             );
 
             // when
-            List<Reservation> bookings = ownerFacade.getStoreBookings(owner.getId(), store.getId()); // 예약 목록 조회
+            Page<Reservation> bookings = ownerFacade.getStoreBookings(owner.getId(), store.getId(), ReservationStatusFilter.WAITING, Pageable.ofSize(10)); // 예약 목록 조회
             Reservation singleBooking = ownerFacade.getStoreBooking(latestReservation.getId(), owner.getId(), store.getId()); // 예약 단건 조회
 
             // then: 목록 조회 - store_schedule당 최신 1건만
             assertThat(bookings).hasSize(1);
-            assertThat(bookings.get(0).getId()).isEqualTo(latestReservation.getId()); // 예약 ID 일치
-            assertThat(bookings.get(0).getStatus()).isEqualTo(ReservationType.WAITING); // 예약 상태 일치
-            assertThat(bookings.get(0).getChild().getId()).isEqualTo(child2.getId()); // 아동 ID 일치
+            assertThat(bookings.getContent().get(0).getId()).isEqualTo(latestReservation.getId()); // 예약 ID 일치
+            assertThat(bookings.getContent().get(0).getStatus()).isEqualTo(ReservationType.WAITING); // 예약 상태 일치
+            assertThat(bookings.getContent().get(0).getChild().getId()).isEqualTo(child2.getId()); // 아동 ID 일치
 
             // then: 단건 조회 - 목록에서 반환된 최신 건으로 상세 조회 가능
             assertThat(singleBooking.getId()).isEqualTo(latestReservation.getId()); // 예약 ID 일치
