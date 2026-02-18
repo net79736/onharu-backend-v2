@@ -16,7 +16,7 @@ import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.service.OwnerQueryService;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CompleteReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.RejectReservationCommand;
-import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByStoreIdQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByStoreIdAndStatusFilterQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.reservation.service.ReservationCommandService;
@@ -38,6 +38,7 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RejectBookReques
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateAvailableDatesRequest;
+import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -96,24 +97,24 @@ public class OwnerFacade {
     }
 
     /**
-     * 사업자 가게의 예약 목록 조회
-     * 
-     * @param owenrId 사업자 ID
-     * @param storeId 가게 ID
-     * @return 사업자의 예약 목록
+     * 사업자 가게의 예약 목록 조회 (페이징 + 상태 필터)
+     *
+     * @param ownerId      사업자 ID
+     * @param storeId      가게 ID
+     * @param statusFilter 예약 상태 필터
+     * @param pageable     페이징 정보
+     * @return 사업자의 예약 목록 (페이지)
      */
-    public List<Reservation> getStoreBookings(Long owenrId, Long storeId) {
+    public Page<Reservation> getStoreBookings(Long ownerId, Long storeId, ReservationStatusFilter statusFilter, Pageable pageable) {
         // 사업자 정보 조회
-        Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(owenrId));
-
+        Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
         // 가게 정보 조회
         Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(storeId));
-
         // 사업자가 가게의 주인인지 확인
         store.belongsTo(owner);
-
         // 예약 목록 조회
-        return reservationQueryService.findByStoreId(new FindByStoreIdQuery(storeId));
+        return reservationQueryService.findByStoreIdAndStatusFilter(
+                new FindByStoreIdAndStatusFilterQuery(storeId, statusFilter), pageable);
     }
 
     /**

@@ -2,19 +2,21 @@ package com.backend.onharu.domain.reservation.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindAllByStatusQuery;
-import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindAllByStoreIdAndStatusQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdAndStatusFilterQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdAndStatusQuery;
-import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByStoreIdAndStatusFilterQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByStoreIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetByStoreScheduleIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
-import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByChildIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByStatusParam;
+import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusFilterParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusParam;
-import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdAndStatusParam;
+import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdAndStatusFilterParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetByStoreScheduleIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetReservationByIdParam;
@@ -45,9 +47,21 @@ public class ReservationQueryService {
      * @param query 아동 ID
      * @return 아동 ID에 해당하는 예약 리스트
      */
-    public List<Reservation> findByChildId(FindByChildIdQuery query) {
-        return reservationRepository.findByChildId(
-                new FindAllByChildIdParam(query.childId()));
+    public Page<Reservation> findByChildIdAndStatusFilter(FindByChildIdAndStatusFilterQuery query, Pageable pageable) {
+        return reservationRepository.findByChildIdAndStatusFilter(
+                new FindByChildIdAndStatusFilterParam(query.childId(), query.statusFilter()), pageable);
+    }
+
+
+    /**
+     * 가게 ID와 상태 필터로 예약 목록 조회 (페이징)
+     * 
+     * @param query 가게 ID와 상태 필터
+     * @param pageable 페이징 정보
+     * @return 가게 ID와 상태 필터에 해당하는 예약 리스트
+     */
+    public Page<Reservation> findByStoreIdAndStatusFilter(FindByStoreIdAndStatusFilterQuery query, Pageable pageable) {
+        return reservationRepository.findByStoreIdAndStatusFilter(new FindByStoreIdAndStatusFilterParam(query.storeId(), query.statusFilter()), pageable);
     }
 
     /**
@@ -57,12 +71,12 @@ public class ReservationQueryService {
      * @return 가게 일정 ID에 해당하는 예약 엔티티
      */
     public Reservation getByStoreScheduleId(GetByStoreScheduleIdQuery query) {
-        return reservationRepository.getByStoreScheduleId(new GetByStoreScheduleIdParam(query.storeScheduleId()));
+        return reservationRepository.getLatestByStoreScheduleId(new GetByStoreScheduleIdParam(query.storeScheduleId()));
     }
 
     /**
      * 가게 ID로 예약 목록 조회
-     * 
+     *
      * @param query 가게 ID
      * @return 가게 ID에 해당하는 예약 리스트
      */
@@ -91,16 +105,5 @@ public class ReservationQueryService {
     public List<Reservation> findByChildIdAndStatus(FindByChildIdAndStatusQuery query) {
         return reservationRepository.findByChildIdAndStatus(
                 new FindByChildIdAndStatusParam(query.childId(), query.status()));
-    }
-
-    /**
-     * 가게 ID와 상태로 예약 목록 조회
-     * 
-     * @param query 가게 ID와 상태
-     * @return 가게 ID와 상태에 해당하는 예약 리스트
-     */
-    public List<Reservation> findByStoreIdAndStatus(FindAllByStoreIdAndStatusQuery query) {
-        return reservationRepository.findByStoreIdAndStatus(
-                new FindByStoreIdAndStatusParam(query.storeId(), query.status()));
     }
 }

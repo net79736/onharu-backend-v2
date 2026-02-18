@@ -3,6 +3,7 @@ package com.backend.onharu.domain.reservation.dto;
 import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
+import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 
 public class ReservationRepositroyParam {
     /**
@@ -21,10 +22,11 @@ public class ReservationRepositroyParam {
     /**
      * 아동 ID로 예약 목록 조회용 파라미터
      */
-    public record FindAllByChildIdParam(
-            Long childId
+    public record FindByChildIdAndStatusFilterParam(
+            Long childId,
+            ReservationStatusFilter statusFilter
     ) {
-        public FindAllByChildIdParam {
+        public FindByChildIdAndStatusFilterParam {
             if (childId == null) {
                 throw new CoreException(ErrorType.Reservation.RESERVATION_CHILD_ID_MUST_NOT_BE_NULL);
             }
@@ -58,6 +60,20 @@ public class ReservationRepositroyParam {
     }
 
     /**
+     * 가게 ID와 상태 필터로 예약 목록 조회용 파라미터
+     */
+    public record FindByStoreIdAndStatusFilterParam(
+            Long storeId,
+            ReservationStatusFilter statusFilter
+    ) {
+        public FindByStoreIdAndStatusFilterParam {
+            if (storeId == null) {
+                throw new CoreException(ErrorType.Store.STORE_ID_MUST_NOT_BE_NULL);
+            }
+        }
+    }
+
+    /**
      * 예약 상태로 예약 목록 조회용 파라미터
      */
     public record FindAllByStatusParam(
@@ -80,23 +96,6 @@ public class ReservationRepositroyParam {
         public FindByChildIdAndStatusParam {
             if (childId == null) {
                 throw new CoreException(ErrorType.Reservation.RESERVATION_CHILD_ID_MUST_NOT_BE_NULL);
-            }
-            if (status == null) {
-                throw new CoreException(ErrorType.Reservation.RESERVATION_STATUS_MUST_NOT_BE_NULL);
-            }
-        }
-    }
-
-    /**
-     * 가게 ID와 상태로 예약 목록 조회용 파라미터
-     */
-    public record FindByStoreIdAndStatusParam(
-            Long storeId,
-            ReservationType status
-    ) {
-        public FindByStoreIdAndStatusParam {
-            if (storeId == null) {
-                throw new CoreException(ErrorType.Store.STORE_ID_MUST_NOT_BE_NULL);
             }
             if (status == null) {
                 throw new CoreException(ErrorType.Reservation.RESERVATION_STATUS_MUST_NOT_BE_NULL);

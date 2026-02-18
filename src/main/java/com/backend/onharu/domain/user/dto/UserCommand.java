@@ -1,14 +1,20 @@
 package com.backend.onharu.domain.user.dto;
 
+import static com.backend.onharu.domain.support.error.ErrorType.Child.CERTIFICATE_MUST_NOT_BE_BLANK;
+import static com.backend.onharu.domain.support.error.ErrorType.Child.NICKNAME_MUST_NOT_BE_BLANK;
+import static com.backend.onharu.domain.support.error.ErrorType.User.LOGIN_ID_MUST_NOT_BE_BLANK;
+import static com.backend.onharu.domain.support.error.ErrorType.User.NAME_MUST_NOT_BE_BLANK;
+import static com.backend.onharu.domain.support.error.ErrorType.User.PASSWORD_CONFIRM_MISMATCH;
+import static com.backend.onharu.domain.support.error.ErrorType.User.PASSWORD_CONFIRM_MUST_NOT_BE_BLANK;
+import static com.backend.onharu.domain.support.error.ErrorType.User.PASSWORD_MUST_NOT_BE_BLANK;
+import static com.backend.onharu.domain.support.error.ErrorType.User.PHONE_MUST_NOT_BE_BLANK;
+import static com.backend.onharu.domain.support.error.ErrorType.User.USER_ID_MUST_NOT_BE_NULL;
+import static com.backend.onharu.domain.support.error.ErrorType.User.USER_TYPE_MUST_NOT_BE_NULL;
+
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.support.error.CoreException;
-
-import static com.backend.onharu.domain.support.error.ErrorType.Child.CERTIFICATE_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.Child.NICKNAME_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.Owner.*;
-import static com.backend.onharu.domain.support.error.ErrorType.User.*;
 
 /**
  * 사용자 관련 Command DTO

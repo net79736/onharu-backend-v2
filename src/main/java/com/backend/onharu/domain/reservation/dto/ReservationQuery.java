@@ -1,6 +1,7 @@
 package com.backend.onharu.domain.reservation.dto;
 
 import com.backend.onharu.domain.common.enums.ReservationType;
+import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 
 public class ReservationQuery {
     /**
@@ -12,10 +13,11 @@ public class ReservationQuery {
     }
 
     /**
-     * 아동 ID로 예약 목록 조회 (내 예약 목록)
+     * 아동 ID와 상태 필터로 예약 목록 조회 (내 예약 목록)
      */
-    public record FindByChildIdQuery(
-            Long childId
+    public record FindByChildIdAndStatusFilterQuery(
+            Long childId,
+            ReservationStatusFilter statusFilter
     ) {
     }
 
@@ -32,6 +34,15 @@ public class ReservationQuery {
      */
     public record FindByStoreIdQuery(
             Long storeId
+    ) {
+    }
+
+    /**
+     * 가게 ID와 상태 필터로 예약 목록 조회 (사업자 예약 관리 목록)
+     */
+    public record FindByStoreIdAndStatusFilterQuery(
+            Long storeId,
+            ReservationStatusFilter statusFilter
     ) {
     }
 

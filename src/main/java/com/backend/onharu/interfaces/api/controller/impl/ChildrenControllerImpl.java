@@ -1,12 +1,17 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
+import static com.backend.onharu.interfaces.api.common.util.PageableUtil.getCurrentPage;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -21,6 +26,7 @@ import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReserv
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CreateReservationCommand;
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
+import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.controller.IChildrenController;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.BookStoreRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.BookStoreResponse;
@@ -29,6 +35,7 @@ import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCardResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCertificateResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingDetailResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingListResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingsRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.ReservationResponse;
@@ -296,24 +303,39 @@ public class ChildrenControllerImpl implements IChildrenController {
     /**
      * 예약 신청 목록 조회
      * 
-     * GET /children/reservations
+     * GET /api/childrens/reservations
      * 내가 신청한 예약 목록을 조회합니다.
      *
      * @return 내 예약 목록
      */
     @Override
     @GetMapping("/reservations")
-    public ResponseEntity<ResponseDTO<GetMyBookingListResponse>> getMyBookings() {
+    public ResponseEntity<ResponseDTO<GetMyBookingListResponse>> getMyBookings(
+            @ModelAttribute GetMyBookingsRequest request
+    ) {
         Long childId = SecurityUtils.getCurrentUserId();
 
-        log.info("예약 신청 목록 조회 요청: childId={}", childId);
+        log.info("예약 신청 목록 조회 요청: childId={}, request={}", childId, request);
 
-        List<Reservation> reservations = childFacade.getMyBookings(childId); // 내 예약 목록 조회
-        List<ReservationResponse> reservationResponses = reservations.stream()
+        Pageable pageable = PageableUtil.ofOneBased(
+            request.pageNum(),
+            request.perPage(),
+            request.sortField(),
+            request.sortDirection()
+        );
+
+        Page<Reservation> reservations = childFacade.getMyBookings(childId, request.effectiveStatusFilter(), pageable); // 내 예약 목록 조회
+        List<ReservationResponse> reservationResponses = reservations.getContent().stream()
                 .map(ReservationResponse::new)
                 .collect(Collectors.toList());
 
-        GetMyBookingListResponse response = new GetMyBookingListResponse(reservationResponses);
+        GetMyBookingListResponse response = new GetMyBookingListResponse(
+            reservationResponses,
+            reservations.getTotalElements(),
+            getCurrentPage(reservations),
+            reservations.getTotalPages(),
+            reservations.getSize()
+        );
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(response));

@@ -12,6 +12,7 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetMyStoresRespo
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetOwnerResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingDetailResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingListResponse;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingsRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RejectBookRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
@@ -79,10 +80,22 @@ public interface IOwnerController {
             @ParameterObject GetMyStoresRequest request
     );
 
-    @Operation(summary = "예약 관리 목록 조회", description = "사업자의 예약 목록을 조회합니다.")
+    @Operation(
+        summary = "예약 관리 목록 조회",
+        description = "사업자의 예약 목록을 조회합니다. 파라미터 없으면 store_schedule별 최신 1건, pageNum/perPage/statusFilter 제공 시 페이징+필터 적용.",
+        parameters = {
+            @Parameter(name = "pageNum", description = "페이지 번호 (1부터)", example = "1", schema = @Schema(type = "integer")),
+            @Parameter(name = "perPage", description = "페이지당 항목 수", example = "10", schema = @Schema(type = "integer")),
+            @Parameter(name = "statusFilter", description = "예약 상태 필터", example = "ALL", schema = @Schema(type = "string", allowableValues = {"ALL", "WAITING", "CONFIRMED", "CANCELED", "COMPLETED", "REJECTED"})),
+            @Parameter(name = "sortField", description = "정렬 기준", example = "id", schema = @Schema(type = "string")),
+            @Parameter(name = "sortDirection", description = "정렬 방향", example = "desc", schema = @Schema(type = "string"))
+        }
+    )
     ResponseEntity<ResponseDTO<GetStoreBookingListResponse>> getStoreBookings(
             @Schema(description = "가게 ID", example = "1")
-            Long storeId
+            Long storeId,
+            @Schema(description = "예약 관리 목록 조회 요청")
+            @ParameterObject GetStoreBookingsRequest request
     );
 
     @Operation(summary = "예약 관리 상세 조회", description = "사업자의 특정 예약의 상세 정보를 조회합니다.")
