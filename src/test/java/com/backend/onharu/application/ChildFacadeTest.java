@@ -17,6 +17,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -621,12 +624,15 @@ class ChildFacadeTest {
             );
             FavoriteQuery.FindFavoritesByChildIdQuery query = new FavoriteQuery.FindFavoritesByChildIdQuery(child.getId());
 
+            Pageable pageable = PageRequest.of(0, 10);
+
             // WHEN
-            List<Favorite> favorites = childFacade.getMyFavorites(query);
+            Page<Favorite> favorites = childFacade.getMyFavorites(query, pageable);
 
             // THEN
-            assertThat(favorites).hasSize(2);
-            assertThat(favorites).allMatch(f -> f.getChild().getId().equals(child.getId()));
+            assertThat(favorites.getTotalElements()).isEqualTo(2);
+            assertThat(favorites.getContent()).hasSize(2);
+            assertThat(favorites.getContent()).allMatch(f -> f.getChild().getId().equals(child.getId()));
         }
 
         @Test
@@ -637,11 +643,14 @@ class ChildFacadeTest {
 
             FavoriteQuery.FindFavoritesByChildIdQuery query = new FavoriteQuery.FindFavoritesByChildIdQuery(child.getId());
 
+            Pageable pageable = PageRequest.of(0, 10);
+
             // WHEN
-            List<Favorite> favorites = childFacade.getMyFavorites(query);
+            Page<Favorite> favorites = childFacade.getMyFavorites(query, pageable);
 
             // THEN
-            assertThat(favorites).isEmpty();
+            assertThat(favorites.getTotalElements()).isZero();
+            assertThat(favorites.getContent()).isEmpty();
         }
     }
 
