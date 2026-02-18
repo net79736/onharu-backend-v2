@@ -4,6 +4,8 @@ import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESE
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByChildIdParam;
@@ -41,18 +43,23 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
-    public List<Reservation> findByChildId(FindAllByChildIdParam param) {
-        return reservationJpaRepository.findByChildId(param.childId());
+    public Page<Reservation> findByChildId(FindAllByChildIdParam param, Pageable pageable) {
+        return reservationJpaRepository.findByChildId(param.childId(), pageable);
     }
 
     @Override
-    public Reservation getByStoreScheduleId(GetByStoreScheduleIdParam param) {
-        return reservationJpaRepository.getByStoreScheduleId(param.storeScheduleId()).orElse(null);
+    public Reservation getLatestByStoreScheduleId(GetByStoreScheduleIdParam param) {
+        return reservationJpaRepository.getLatestByStoreScheduleId(param.storeScheduleId()).orElse(null);
     }
 
     @Override
     public List<Reservation> findByStoreId(FindByStoreIdParam param) {
         return reservationJpaRepository.findByStoreSchedule_StoreId(param.storeId());
+    }
+
+    @Override
+    public List<Reservation> findLatestReservationsByStoreId(Long storeId) {
+        return reservationJpaRepository.findLatestReservationsByStoreId(storeId);
     }
 
     @Override

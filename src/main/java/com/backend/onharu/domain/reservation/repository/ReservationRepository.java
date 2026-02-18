@@ -2,6 +2,9 @@ package com.backend.onharu.domain.reservation.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByChildIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByStatusParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusParam;
@@ -26,17 +29,22 @@ public interface ReservationRepository {
     /**
      * 아동 ID로 예약 목록 조회
      */
-    List<Reservation> findByChildId(FindAllByChildIdParam param);
+    Page<Reservation> findByChildId(FindAllByChildIdParam param, Pageable pageable);
 
     /**
      * 가게 일정 ID로 예약 단건 조회
      */
-    Reservation getByStoreScheduleId(GetByStoreScheduleIdParam param);
+    Reservation getLatestByStoreScheduleId(GetByStoreScheduleIdParam param);
 
     /**
      * 가게 ID로 예약 목록 조회
      */
     List<Reservation> findByStoreId(FindByStoreIdParam param);
+
+    /**
+     * 가게 ID로 store_schedule별 가장 최근 예약 1건씩 조회
+     */
+    List<Reservation> findLatestReservationsByStoreId(Long storeId);
 
     /**
      * 예약 상태로 예약 목록 조회

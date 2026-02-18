@@ -103,6 +103,32 @@ public class ChildControllerDto {
     ) {
     }
 
+    @Schema(description = "내가 신청한 예약 목록 조회 요청")
+    public record GetMyBookingsRequest(
+            @Schema(description = "페이지 번호 (1부터 시작)", example = "1")
+            Integer pageNum,
+
+            @Schema(description = "페이지당 항목 수", example = "10")
+            Integer perPage,
+
+            @Schema(description = "정렬 기준", example = "id", allowableValues = {"id", "name", "favoriteCount", "distance"})
+            String sortField,
+
+            @Schema(description = "정렬 방향", example = "desc", allowableValues = {"asc", "desc"})
+            String sortDirection
+    ) {
+        /**
+         * 기본값 설정: pageNum이 null이거나 0 이하면 1, perPage가 null이거나 0 이하면 10
+         */
+        public Integer pageNum() {
+            return pageNum != null && pageNum > 0 ? pageNum : 1;
+        }
+
+        public Integer perPage() {
+            return perPage != null && perPage > 0 ? perPage : 10;
+        }
+    }
+
     // 예약 관련 DTO
     public record ReservationResponse(
             @Schema(description = "예약 ID", example = "1")

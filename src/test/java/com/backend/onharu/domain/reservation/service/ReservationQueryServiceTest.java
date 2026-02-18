@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.backend.onharu.domain.child.model.Child;
@@ -45,6 +47,7 @@ import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 
 @SpringBootTest
 @DisplayName("ReservationQueryService 단위 테스트")
@@ -275,9 +278,17 @@ class ReservationQueryServiceTest {
             Store savedStore = createTestStore("테스트 가게 목록", savedOwner, category);
             saveDummyReservations(savedChild, savedStore); // 예약 더미 데이터 생성
 
+            Pageable pageable = PageableUtil.ofOneBased(
+                1,
+                10,
+                "id",
+                "desc"
+            );
+
             // when
-            List<Reservation> reservations = reservationQueryService.findByChildId(
-                    new FindByChildIdQuery(savedChild.getId())
+            Page<Reservation> reservations = reservationQueryService.findByChildId(
+                    new FindByChildIdQuery(savedChild.getId()),
+                    pageable
             ); // 아동 ID로 예약 목록 조회
 
             // then
@@ -286,7 +297,7 @@ class ReservationQueryServiceTest {
 
             System.out.println("✅ 아동 ID로 예약 목록 조회 성공");
             System.out.println("   - 아동 ID: " + savedChild.getId());
-            System.out.println("   - 예약 개수: " + reservations.size());
+            System.out.println("   - 예약 개수: " + reservations.getTotalElements());
             reservations.forEach(r -> {
                 System.out.println("     * 예약 ID: " + r.getId() + ", 상태: " + r.getStatus() + ", 인원: " + r.getPeople());
             });

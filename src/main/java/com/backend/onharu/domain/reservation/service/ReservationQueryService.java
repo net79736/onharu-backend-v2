@@ -2,6 +2,8 @@ package com.backend.onharu.domain.reservation.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindAllByStatusQuery;
@@ -45,9 +47,9 @@ public class ReservationQueryService {
      * @param query 아동 ID
      * @return 아동 ID에 해당하는 예약 리스트
      */
-    public List<Reservation> findByChildId(FindByChildIdQuery query) {
+    public Page<Reservation> findByChildId(FindByChildIdQuery query, Pageable pageable) {
         return reservationRepository.findByChildId(
-                new FindAllByChildIdParam(query.childId()));
+                new FindAllByChildIdParam(query.childId()), pageable);
     }
 
     /**
@@ -57,18 +59,25 @@ public class ReservationQueryService {
      * @return 가게 일정 ID에 해당하는 예약 엔티티
      */
     public Reservation getByStoreScheduleId(GetByStoreScheduleIdQuery query) {
-        return reservationRepository.getByStoreScheduleId(new GetByStoreScheduleIdParam(query.storeScheduleId()));
+        return reservationRepository.getLatestByStoreScheduleId(new GetByStoreScheduleIdParam(query.storeScheduleId()));
     }
 
     /**
      * 가게 ID로 예약 목록 조회
-     * 
+     *
      * @param query 가게 ID
      * @return 가게 ID에 해당하는 예약 리스트
      */
     public List<Reservation> findByStoreId(FindByStoreIdQuery query) {
         return reservationRepository.findByStoreId(
                 new FindByStoreIdParam(query.storeId()));
+    }
+
+    /**
+     * 가게 ID로 store_schedule별 가장 최근 예약 1건씩 조회
+     */
+    public List<Reservation> findLatestReservationsByStoreId(Long storeId) {
+        return reservationRepository.findLatestReservationsByStoreId(storeId);
     }
 
     /**

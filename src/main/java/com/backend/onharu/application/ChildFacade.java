@@ -5,6 +5,8 @@ import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESE
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
@@ -63,7 +65,9 @@ public class ChildFacade {
 
         // 조회한 가게 일정이 이미 예약된 일정인지 체크 (테이블 조회해서 확인)
         Reservation reservation = reservationQueryService.getByStoreScheduleId(new GetByStoreScheduleIdQuery(command.storeScheduleId()));        
-        if (reservation != null) {
+        // 예약 가능 여부 확인
+        boolean isUnavailable = reservation != null && !reservation.isAvailable();
+        if (isUnavailable) {
             throw new CoreException(ErrorType.Reservation.RESERVATION_ALREADY_EXISTS);
         }
 
@@ -71,6 +75,8 @@ public class ChildFacade {
         if (command.people() == null || command.people() <= 0) {
             throw new CoreException(RESERVATION_PEOPLE_MUST_NOT_BE_NULL);
         }
+
+        // 예약 인원이 최대 수용 인원을 초과하는지 검증
         if (storeSchedule.getMaxPeople() != null && command.people() > storeSchedule.getMaxPeople()) {
             throw new CoreException(RESERVATION_PEOPLE_EXCEEDS_MAX);
         }
@@ -104,12 +110,12 @@ public class ChildFacade {
      * 
      * @return 내가 신청한 예약 목록
      */
-    public List<Reservation> getMyBookings(Long childId) {
+    public Page<Reservation> getMyBookings(Long childId, Pageable pageable) {
         // 현재 로그인한 아동 정보 조회
         Child child = childQueryService.getChildById(new GetChildByIdQuery(childId));
 
         // 내가 신청한 예약 목록 조회
-        return reservationQueryService.findByChildId(new FindByChildIdQuery(child.getId()));
+        return reservationQueryService.findByChildId(new FindByChildIdQuery(child.getId()), pageable);
     }
 
     /**

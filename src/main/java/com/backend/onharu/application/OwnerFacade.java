@@ -16,7 +16,6 @@ import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.service.OwnerQueryService;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CompleteReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.RejectReservationCommand;
-import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByStoreIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.reservation.service.ReservationCommandService;
@@ -112,8 +111,8 @@ public class OwnerFacade {
         // 사업자가 가게의 주인인지 확인
         store.belongsTo(owner);
 
-        // 예약 목록 조회
-        return reservationQueryService.findByStoreId(new FindByStoreIdQuery(storeId));
+        // store_schedule별 가장 최근 예약 1건씩 조회
+        return reservationQueryService.findLatestReservationsByStoreId(storeId);
     }
 
     /**

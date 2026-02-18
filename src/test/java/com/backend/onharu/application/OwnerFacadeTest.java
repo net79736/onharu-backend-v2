@@ -36,6 +36,7 @@ import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.infra.db.child.ChildJpaRepository;
+import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
 import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
@@ -76,11 +77,15 @@ class OwnerFacadeTest {
     private ChildJpaRepository childJpaRepository;
 
     @Autowired
+    private FavoriteJpaRepository favoriteJpaRepository;
+
+    @Autowired
     private LevelJpaRepository levelJpaRepository;
 
     @BeforeEach
     public void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
+        favoriteJpaRepository.deleteAll();
         reservationJpaRepository.deleteAll();
         storeScheduleJpaRepository.deleteAll();
         storeJpaRepository.deleteAll();
@@ -335,6 +340,51 @@ class OwnerFacadeTest {
             );
 
             assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
+        }
+
+        @Test
+        @DisplayName("동일 스케줄에 취소+재예약 시 목록·단건 조회 모두 최신 예약 1건만 반환")
+        @Transactional
+        public void shouldGetLatestReservationOnlyWhenSameScheduleHasCanceledAndWaiting() {
+            // given: schedule에 child1 CANCELED → child2 WAITING (취소 후 재예약)
+            Child child1 = createTestChild("test_child_canceled", "취소한 아동", "01011111111");
+            Child child2 = createTestChild("test_child_rebooked", "재예약한 아동", "01022222222");
+            Owner owner = createTestOwner("test_owner_latest", "테스트 사업자", "01033334444", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category);
+            StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
+
+            reservationJpaRepository.save(
+                Reservation.builder()
+                    .child(child1)
+                    .storeSchedule(storeSchedule)
+                    .people(2)
+                    .status(ReservationType.CANCELED)
+                    .build()
+            );
+            Reservation latestReservation = reservationJpaRepository.save(
+                Reservation.builder()
+                    .child(child2)
+                    .storeSchedule(storeSchedule)
+                    .people(3)
+                    .status(ReservationType.WAITING)
+                    .build()
+            );
+
+            // when
+            List<Reservation> bookings = ownerFacade.getStoreBookings(owner.getId(), store.getId()); // 예약 목록 조회
+            Reservation singleBooking = ownerFacade.getStoreBooking(latestReservation.getId(), owner.getId(), store.getId()); // 예약 단건 조회
+
+            // then: 목록 조회 - store_schedule당 최신 1건만
+            assertThat(bookings).hasSize(1);
+            assertThat(bookings.get(0).getId()).isEqualTo(latestReservation.getId()); // 예약 ID 일치
+            assertThat(bookings.get(0).getStatus()).isEqualTo(ReservationType.WAITING); // 예약 상태 일치
+            assertThat(bookings.get(0).getChild().getId()).isEqualTo(child2.getId()); // 아동 ID 일치
+
+            // then: 단건 조회 - 목록에서 반환된 최신 건으로 상세 조회 가능
+            assertThat(singleBooking.getId()).isEqualTo(latestReservation.getId()); // 예약 ID 일치
+            assertThat(singleBooking.getStatus()).isEqualTo(ReservationType.WAITING); // 예약 상태 일치
+            assertThat(singleBooking.getChild().getId()).isEqualTo(child2.getId()); // 아동 ID 일치
         }
     }
 
