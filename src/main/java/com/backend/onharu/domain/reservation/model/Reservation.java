@@ -142,11 +142,14 @@ public class Reservation extends BaseEntity {
      * @param childId 아동 ID
      */
     public void verifyWriteable(Long childId) {
-        BelongsTo(childId); // 예약이 아동에 속하는지 확인
+        belongsToChild(childId); // 예약이 아동에 속하는지 확인
 
         if (this.status != ReservationType.COMPLETED) { // 예약 상태가 완료 상태가 아닐 경우
             throw new CoreException(RESERVATION_NOT_COMPLETED);
+        }
+    }
 
+    /**
      * 예약이 해당 가게에 속하는지 확인합니다.
      *
      * @param storeId 가게 ID
