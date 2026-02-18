@@ -3,14 +3,13 @@ package com.backend.onharu.interfaces.api.controller.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.backend.onharu.interfaces.api.common.util.PageableUtil;
+import com.backend.onharu.interfaces.api.dto.ReviewControllerDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.backend.onharu.application.ChildFacade;
 import com.backend.onharu.domain.favorite.dto.FavoriteCommand.CreateFavoriteCommand;
@@ -74,23 +73,39 @@ public class FavoriteControllerImpl implements IFavoriteController {
      */
     @Override
     @GetMapping
-    public ResponseEntity<ResponseDTO<GetMyFavoriteListResponse>> getMyFavorite() {
+    public ResponseEntity<ResponseDTO<GetMyFavoriteListResponse>> getMyFavorite(
+            @ModelAttribute ReviewControllerDto.GetReviewsRequest request
+    ) {
         Long childId = SecurityUtils.getCurrentUserId();
 
         log.info("찜목록 조회 요청: childId={}", childId);
 
+        Pageable pageable = PageableUtil.ofOneBased(
+                request.pageNum(),
+                request.perPage(),
+                request.sortField(),
+                request.sortDirection()
+        ); // 페이징 정보
+
         // 내 찜목록 조회
-        List<Favorite> favorites = childFacade.getMyFavorites(
-                new FindFavoritesByChildIdQuery(childId)
+        Page<Favorite> favorites = childFacade.getMyFavorites(
+                new FindFavoritesByChildIdQuery(childId),
+                pageable
         );
 
         // 응답 리스트 생성
-        List<FavoriteResponse> favoriteResponses = favorites.stream()
-                .map(FavoriteResponse::new)
-                .collect(Collectors.toList());
+        Page<FavoriteResponse> favoriteResponses = favorites.map(FavoriteResponse::new);
+
+        GetMyFavoriteListResponse response = new GetMyFavoriteListResponse(
+                favoriteResponses.getContent(),
+                favoriteResponses.getTotalElements(),
+                favoriteResponses.getNumber() + 1,
+                favoriteResponses.getTotalPages(),
+                favoriteResponses.getSize()
+        );
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(new GetMyFavoriteListResponse(favoriteResponses)));
+                .body(ResponseDTO.success(response));
     }
 
     /**

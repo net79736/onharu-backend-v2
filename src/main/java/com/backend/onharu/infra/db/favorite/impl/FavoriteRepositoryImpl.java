@@ -7,6 +7,8 @@ import com.backend.onharu.domain.favorite.repository.FavoriteRepository;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -35,8 +37,8 @@ public class FavoriteRepositoryImpl implements FavoriteRepository {
     }
 
     @Override
-    public List<Favorite> findByChildId(FindFavoritesByChildIdParam param) {
-        return favoriteJpaRepository.findByChild_Id(param.childId());
+    public Page<Favorite> findByChildId(FindFavoritesByChildIdParam param, Pageable pageable) {
+        return favoriteJpaRepository.findByChild_Id(param.childId(), pageable);
     }
 
     @Override

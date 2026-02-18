@@ -3,10 +3,14 @@ package com.backend.onharu.interfaces.api.controller;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.CreateFavoriteResponse;
 import com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.GetMyFavoriteListResponse;
+import com.backend.onharu.interfaces.api.dto.ReviewControllerDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+import static com.backend.onharu.interfaces.api.dto.ReviewControllerDto.*;
 
 /**
  * 찜하기 API 설명 입니다.
@@ -35,7 +39,9 @@ public interface IFavoriteController {
      * </p>
      */
     @Operation(summary = "내가 찜한 가게 목록 조회", description = "내가 찜한 가게목록을 조회합니다.")
-    ResponseEntity<ResponseDTO<GetMyFavoriteListResponse>> getMyFavorite();
+    ResponseEntity<ResponseDTO<GetMyFavoriteListResponse>> getMyFavorite(
+            @ModelAttribute GetReviewsRequest request
+    );
 
     /**
      * 내가 등록한 찜하기 취소

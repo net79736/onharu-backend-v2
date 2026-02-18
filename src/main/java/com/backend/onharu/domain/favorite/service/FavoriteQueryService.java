@@ -7,6 +7,8 @@ import com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam.FindFavori
 import com.backend.onharu.domain.favorite.model.Favorite;
 import com.backend.onharu.domain.favorite.repository.FavoriteRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,14 +37,15 @@ public class FavoriteQueryService {
     }
 
     /**
-     * 아동 ID 로 찜하기 목록 조회
+     * 아동 ID 로 찜하기 목록 조회(페이징)
      *
      * @param query 아동 ID
      * @return 아동 ID 에 해당하는 찜하기 리스트
      */
-    public List<Favorite> findFavoritesByChildId(FindFavoritesByChildIdQuery query) {
+    public Page<Favorite> findFavoritesByChildId(FindFavoritesByChildIdQuery query, Pageable pageable) {
         return favoriteRepository.findByChildId(
-                new FindFavoritesByChildIdParam(query.childId())
+                new FindFavoritesByChildIdParam(query.childId()),
+                pageable
         );
     }
 }
