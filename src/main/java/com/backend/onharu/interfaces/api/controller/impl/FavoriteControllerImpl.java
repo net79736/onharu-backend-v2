@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.dto.ReviewControllerDto;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -74,6 +75,7 @@ public class FavoriteControllerImpl implements IFavoriteController {
     @Override
     @GetMapping
     public ResponseEntity<ResponseDTO<GetMyFavoriteListResponse>> getMyFavorite(
+            @ParameterObject
             @ModelAttribute ReviewControllerDto.GetReviewsRequest request
     ) {
         Long childId = SecurityUtils.getCurrentUserId();

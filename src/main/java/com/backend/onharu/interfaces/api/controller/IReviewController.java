@@ -54,6 +54,7 @@ public interface IReviewController {
     @Operation(summary = "감사 리뷰 목록 조회", description = "전체 감사 리뷰 목록을 조회합니다.")
     ResponseEntity<ResponseDTO<GetReviewListResponse>> getAllReviews(
             @Schema(description = "감사 리뷰 목록 조회 요청")
+            @ParameterObject
             @ModelAttribute GetReviewsRequest request
     );
 

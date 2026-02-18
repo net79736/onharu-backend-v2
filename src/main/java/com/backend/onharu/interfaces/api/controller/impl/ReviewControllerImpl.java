@@ -10,6 +10,7 @@ import com.backend.onharu.interfaces.api.dto.ReviewControllerDto.*;
 import com.backend.onharu.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -78,6 +79,7 @@ public class ReviewControllerImpl implements IReviewController {
     @Override
     @GetMapping
     public ResponseEntity<ResponseDTO<GetReviewListResponse>> getAllReviews(
+            @ParameterObject
             @ModelAttribute GetReviewsRequest request
     ) {
         log.info("감사 리뷰 목록 조회 요청");
@@ -126,6 +128,7 @@ public class ReviewControllerImpl implements IReviewController {
     @GetMapping("/stores/{storeId}")
     public ResponseEntity<ResponseDTO<GetReviewDetailResponse>> getStoreReviews(
             @PathVariable("storeId") Long storeId,
+            @ParameterObject
             @ModelAttribute GetReviewsRequest request
     ) {
         log.info("감사 리뷰 상세 조회 요청: storeId={}", storeId);
@@ -175,6 +178,7 @@ public class ReviewControllerImpl implements IReviewController {
     @Override
     @GetMapping("/my")
     public ResponseEntity<ResponseDTO<GetMyReviewListResponse>> getMyReviews(
+            @ParameterObject
             @ModelAttribute GetReviewsRequest request
     ) {
         log.info("내가 작성한 리뷰 목록 조회 요청");

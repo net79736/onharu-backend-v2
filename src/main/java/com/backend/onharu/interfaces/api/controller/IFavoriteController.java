@@ -7,6 +7,7 @@ import com.backend.onharu.interfaces.api.dto.ReviewControllerDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -40,6 +41,7 @@ public interface IFavoriteController {
      */
     @Operation(summary = "내가 찜한 가게 목록 조회", description = "내가 찜한 가게목록을 조회합니다.")
     ResponseEntity<ResponseDTO<GetMyFavoriteListResponse>> getMyFavorite(
+            @ParameterObject
             @ModelAttribute GetReviewsRequest request
     );
 
