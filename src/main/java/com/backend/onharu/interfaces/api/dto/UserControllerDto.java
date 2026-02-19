@@ -158,6 +158,48 @@ public class UserControllerDto {
     }
 
     /**
+     * 사용자(아동) 프로필 조회 응답 DTO
+     */
+    public record ChildProfileResponse(
+            @Schema(description = "로그인 아이디", example = "child1234@test.com")
+            String loginId,
+
+            @Schema(description = "이름", example = "홍길동")
+            String name,
+
+            @Schema(description = "전화번호", example = "01099992222")
+            String phone,
+
+            @Schema(description = "닉네임", example = "코끼리땃쥐")
+            String nickname,
+
+            @Schema(description = "증명서", example = "/certificate/certificate.jpg")
+            String certificate
+    ) {
+    }
+
+    /**
+     * 사용자(가게) 프로필 조회 응답 DTO
+     */
+    public record OwnerProfileResponse(
+            @Schema(description = "로그인 아이디", example = "owner1234@test.com")
+            String loginId,
+
+            @Schema(description = "이름", example = "홍길동")
+            String name,
+
+            @Schema(description = "전화번호", example = "01099992222")
+            String phone,
+
+            @Schema(description = "등급명", example = "새싹")
+            String levelName,
+
+            @Schema(description = "사업자 등록번호", example = "1234567890")
+            String businessNumber
+    ) {
+    }
+
+    /**
      * 아동 프로필 수정 요청 DTO
      * 공통 정보(이름, 전화번호)와 아동 전용 정보(닉네임)를 함께 받습니다.
      */
@@ -197,7 +239,7 @@ public class UserControllerDto {
 
             @NotNull(message = "등급 정보는 필수 입력 값 입니다.")
             @Schema(description = "레벨 ID", example = "1")
-            String levelId,
+            Long levelId,
 
             @NotBlank(message = "사업자 번호는 필수 입력 값 입니다.")
             @Pattern(regexp = "^\\d{10}$", message = "사업자 번호는 숫자 10자리여야 합니다. (예: 1234567890)")

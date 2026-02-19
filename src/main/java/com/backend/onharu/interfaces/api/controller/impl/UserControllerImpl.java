@@ -1,7 +1,23 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
-import com.backend.onharu.domain.user.dto.UserQuery;
+import com.backend.onharu.application.UserFacade;
+import com.backend.onharu.domain.user.dto.UserCommand.LoginUserCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
+import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpChildUserOAuthCommand;
+import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpOwnerUserOAuthCommand;
+import com.backend.onharu.domain.user.dto.UserProfile.UserChildProfile;
+import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.infra.security.LocalUser;
+import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
+import com.backend.onharu.interfaces.api.controller.IUserController;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.*;
 import com.backend.onharu.utils.SecurityUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,43 +27,10 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.backend.onharu.application.UserFacade;
-import com.backend.onharu.domain.user.dto.UserCommand.LoginUserCommand;
-import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
-import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
-import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpChildUserOAuthCommand;
-import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpOwnerUserOAuthCommand;
-import com.backend.onharu.domain.user.model.User;
-import com.backend.onharu.infra.security.LocalUser;
-import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
-import com.backend.onharu.interfaces.api.controller.IUserController;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.LoginUserRequest;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpChildRequest;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpChildResponse;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpOwnerRequest;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpOwnerResponse;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.UpdateChildProfileRequest;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.UpdateOwnerProfileRequest;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.finishSignUpChildRequest;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.finishSignUpOwnerRequest;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
+import static com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
 import static com.backend.onharu.domain.user.dto.UserQuery.*;
-import static com.backend.onharu.interfaces.api.dto.UserControllerDto.*;
 
 /**
  * 사용자 관련 API를 제공하는 컨트롤러 구현체입니다.
@@ -136,24 +119,62 @@ public class UserControllerImpl implements IUserController {
                 .body(ResponseDTO.success(response));
     }
 
+
     /**
-     * 사용자 프로필 조회
-     * <p>.
-     * GET /api/users/{userId}/profile
-     * Spring Security Context에서 현재 사용자의 역할을 확인하여 역할별 프로필을 반환합니다.
+     * 사용자(아동) 프로필 조회
+     * <p>
+     * GET /api/users/profile/child
      *
-     * @param userId 사용자 ID
-     * @return 역할별 프로필 정보
+     * @return 아동 프로필 정보
      */
     @Override
-    @GetMapping("/{userId}/profile")
-    public ResponseEntity<ResponseDTO<?>> getProfile(
-            @PathVariable("userId") Long userId
-    ) {
-        log.info("사용자 프로필 조회 요청: userId={}", userId);
+    @GetMapping("/profile/child")
+    public ResponseEntity<ResponseDTO<ChildProfileResponse>> getChildProfile() {
+
+        Long userId = SecurityUtils.getUserId(); // 세션에 인증된 사용자 ID 추출
+        Long childId = SecurityUtils.getCurrentUserId();// 세션에 인증된 아동 ID 추출
+
+        UserChildProfile childProfile = userFacade.getChildProfile(new GetChildProfileQuery(userId, childId)); // 프로필 조회
+
+        // 응답 생성
+        ChildProfileResponse response = new ChildProfileResponse(
+                childProfile.user().getLoginId(),
+                childProfile.user().getName(),
+                childProfile.user().getPhone(),
+                childProfile.child().getNickname(),
+                childProfile.child().getCertificate()
+        );
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
+    }
+
+    /**
+     * 사용자(가게) 프로필 조회
+     * <p>
+     * GET /api/users/profile/owner
+     *
+     * @return 가게 프로필 정보
+     */
+    @Override
+    public ResponseEntity<ResponseDTO<OwnerProfileResponse>> getOwnerProfile() {
+
+        Long userId = SecurityUtils.getUserId(); // 세션에 인증된 사용자 ID 추출
+        Long ownerId = SecurityUtils.getCurrentUserId();// 세션에 인증된 가게 ID 추출
+
+        UserOwnerProfile ownerProfile = userFacade.getOwnerProfile(new GetOwnerProfileQuery(userId, ownerId)); // 프로필 조회
+
+        // 응답 생성
+        OwnerProfileResponse response = new OwnerProfileResponse(
+                ownerProfile.user().getLoginId(),
+                ownerProfile.user().getName(),
+                ownerProfile.user().getPhone(),
+                ownerProfile.level().getName(),
+                ownerProfile.owner().getBusinessNumber()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
     }
 
     /**
@@ -263,6 +284,7 @@ public class UserControllerImpl implements IUserController {
 
     /**
      * 소셜 사용자(아동) 회원가입 마무리
+     *
      * @param user
      * @param request
      * @return
@@ -292,6 +314,7 @@ public class UserControllerImpl implements IUserController {
 
     /**
      * 소셜 사용자(사업자) 회원가입 마무리
+     *
      * @param user
      * @param request
      * @return
@@ -323,6 +346,7 @@ public class UserControllerImpl implements IUserController {
     /**
      * 현재 로그인한 사용자 확인
      * GET /api/users/me
+     *
      * @return 현재 로그인한 사용자 ID, 로그인 아이디, 사용자 타입, 계정 상태, 계정 타입
      */
     @Override

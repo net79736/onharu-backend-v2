@@ -47,4 +47,26 @@ public class UserQuery {
             String phone
     ) {
     }
+
+    /**
+     * 사용자(아동) 프로필 조회 Query
+     * @param userId 사용자 ID
+     * @param childId 아동 ID
+     */
+    public record GetChildProfileQuery(
+            Long userId,
+            Long childId
+    ) {
+    }
+
+    /**
+     * 사용자(가게) 프로필 조회 Query
+     * @param userId 사용자 ID
+     * @param ownerId 가게 ID
+     */
+    public record GetOwnerProfileQuery(
+            Long userId,
+            Long ownerId
+    ) {
+    }
 }

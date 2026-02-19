@@ -79,16 +79,15 @@ public interface IUserController {
     );
 
     /**
-     * 사용자 프로필 조회
-     * <p>
-     * GET /users/{userId}/profile
-     * 사용자 프로필을 조회합니다.
+     * 사용자(아동) 프로필 조회 요청
+     * GET /users/profile/child
+     * 세션에 인증된 정보로 아동 프로필을 조회합니다.
      */
-    @Operation(summary = "사용자 프로필 조회", description = "사용자 프로필을 조회합니다.")
-    ResponseEntity<ResponseDTO<?>> getProfile(
-            @Schema(description = "사용자 ID", example = "1")
-            Long userId
-    );
+    @Operation(summary = "프로필 조회(아동)", description = "현재 세션에 인증된 아동 ID 로 사용자(아동)의 프로필을 조회합니다.")
+    ResponseEntity<ResponseDTO<ChildProfileResponse>> getChildProfile();
+
+    @Operation(summary = "프로필 조회(가게)", description = "현재 세션에 인증된 가게 ID 로 사용자(가게)의 프로필을 조회합니다.")
+    ResponseEntity<ResponseDTO<OwnerProfileResponse>> getOwnerProfile();
 
     /**
      * 사용자 프로필 수정
