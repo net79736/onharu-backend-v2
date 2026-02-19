@@ -1,13 +1,9 @@
 package com.backend.onharu.domain.reservation.model;
 
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_CHILD_ID_MISMATCH;
-
-import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_NOT_COMPLETED;
-
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_CANCELED_ALREADY_CANCELED;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_COMPLETED_CANNOT_CANCEL;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STORE_ID_MISMATCH;
-
 import static java.util.Optional.ofNullable;
 
 import java.time.LocalDateTime;
@@ -19,6 +15,7 @@ import com.backend.onharu.domain.common.base.BaseEntity;
 import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.support.error.ErrorType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,7 +25,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
@@ -50,7 +46,7 @@ public class Reservation extends BaseEntity {
     @JoinColumn(name = "CHILD_ID", nullable = false)
     private Child child;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "STORE_SCHEDULE_ID", nullable = false)
     private StoreSchedule storeSchedule;
 
@@ -173,5 +169,25 @@ public class Reservation extends BaseEntity {
         if (this.status == ReservationType.CANCELED) {
             throw new CoreException(RESERVATION_STATUS_CANCELED_ALREADY_CANCELED);
         }
+    }
+
+    /**
+     * 해당 슬롯이 예약 가능한지 확인합니다.
+     * 취소/거절된 예약은 재예약 가능합니다.
+     *
+     * @return 재예약 가능 여부 (CANCELED, REJECTED인 경우 true)
+     */
+    public boolean isRebookable() {
+        return this.status == ReservationType.CANCELED || this.status == ReservationType.REJECTED;
+    }
+
+    /**
+     * 예약 가능 여부를 확인합니다.
+     * 취소/거절 상태일 때만 true (재예약 가능).
+     *
+     * @return 예약 가능 여부
+     */
+    public boolean isAvailable() {
+        return isRebookable();
     }
 }

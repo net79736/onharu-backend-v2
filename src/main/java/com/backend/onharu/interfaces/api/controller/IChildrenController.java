@@ -1,5 +1,6 @@
 package com.backend.onharu.interfaces.api.controller;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,6 +12,7 @@ import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCardResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCertificateResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingDetailResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingListResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingsRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.UpdateCardRequest;
@@ -142,7 +144,10 @@ public interface IChildrenController {
     );
 
     @Operation(summary = "예약 신청 목록 조회", description = "내가 신청한 예약 목록을 조회합니다.")
-    ResponseEntity<ResponseDTO<GetMyBookingListResponse>> getMyBookings();
+    ResponseEntity<ResponseDTO<GetMyBookingListResponse>> getMyBookings(
+            @Schema(description = "내가 신청한 예약 목록 조회 요청")
+            @ParameterObject GetMyBookingsRequest request
+    );
 
     @Operation(summary = "예약 신청 상세 조회", description = "내가 신청한 특정 예약의 상세 정보를 조회합니다.")
     ResponseEntity<ResponseDTO<GetMyBookingDetailResponse>> getMyBooking(

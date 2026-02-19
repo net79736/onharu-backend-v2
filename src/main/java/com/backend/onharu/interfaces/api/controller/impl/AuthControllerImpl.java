@@ -1,11 +1,7 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
-import com.backend.onharu.application.AuthFacade;
-import com.backend.onharu.domain.email.dto.EmailAuthenticationCommand.CreateEmailAuthenticationCommand;
-import com.backend.onharu.domain.email.dto.EmailAuthenticationCommand.CompleteEmailAuthenticationCommand;
-import com.backend.onharu.domain.user.dto.UserCommand;
-import com.backend.onharu.domain.user.dto.UserQuery.GetUserByNameAndPhoneQuery;
-import com.backend.onharu.domain.user.model.User;
+import java.time.LocalDateTime;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +9,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.onharu.application.AuthFacade;
+import com.backend.onharu.domain.email.dto.EmailAuthenticationCommand.CompleteEmailAuthenticationCommand;
+import com.backend.onharu.domain.email.dto.EmailAuthenticationCommand.CreateEmailAuthenticationCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.ResetPasswordUserCommand;
+import com.backend.onharu.domain.user.dto.UserQuery.GetUserByNameAndPhoneQuery;
+import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.controller.IAuthController;
 import com.backend.onharu.interfaces.api.dto.AuthControllerDto.FindIdRequest;
@@ -23,10 +25,6 @@ import com.backend.onharu.interfaces.api.dto.AuthControllerDto.VerifyEmailCodeRe
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.time.LocalDateTime;
-
-import static com.backend.onharu.domain.user.dto.UserCommand.*;
 
 /**
  * 인증 관련 API를 제공하는 컨트롤러 구현체입니다.

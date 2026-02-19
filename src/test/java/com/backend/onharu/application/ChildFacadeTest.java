@@ -51,6 +51,8 @@ import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.interfaces.api.common.util.PageableUtil;
+import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -247,7 +249,7 @@ class ChildFacadeTest {
             childFacade.reserve(command); // 예약 생성
 
             // then
-            Reservation reservation = reservationJpaRepository.getByStoreScheduleId(storeSchedule.getId())
+            Reservation reservation = reservationJpaRepository.getLatestByStoreScheduleId(storeSchedule.getId())
                 .orElse(null); // 예약 조회
             assertThat(reservation).isNotNull();
             assertThat(reservation.getChild().getId()).isEqualTo(child.getId());
@@ -456,8 +458,15 @@ class ChildFacadeTest {
                     .build()
             );
 
+            Pageable pageable = PageableUtil.ofOneBased(
+                1,
+                10,
+                "id",
+                "desc"
+            );
+
             // when
-            List<Reservation> myBookings = childFacade.getMyBookings(child1.getId());
+            List<Reservation> myBookings = childFacade.getMyBookings(child1.getId(), ReservationStatusFilter.ALL, pageable).getContent();
 
             // then
             assertThat(myBookings).isNotNull();
@@ -475,8 +484,15 @@ class ChildFacadeTest {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
 
+            Pageable pageable = PageableUtil.ofOneBased(
+                1,
+                10,
+                "id",
+                "desc"
+            );
+
             // when
-            List<Reservation> myBookings = childFacade.getMyBookings(child.getId());
+            List<Reservation> myBookings = childFacade.getMyBookings(child.getId(), ReservationStatusFilter.ALL, pageable).getContent();
 
             // then
             assertThat(myBookings).isNotNull();
@@ -550,6 +566,60 @@ class ChildFacadeTest {
             );
             
             assertThat(exception.getErrorType()).isEqualTo(RESERVATION_CHILD_ID_MISMATCH);
+        }
+
+        @Test
+        @DisplayName("동일 스케줄에 취소+재예약 시 각 아동이 자기 예약만 조회")
+        @Rollback(value = false)
+        public void shouldGetOwnReservationsWhenSameScheduleHasCanceledAndWaiting() {
+            // given: schedule에 child1 CANCELED → child2 WAITING (취소 후 재예약)
+            Child child1 = createTestChild("test_child_canceled", "취소한 아동", "01011111111");
+            Child child2 = createTestChild("test_child_rebooked", "재예약한 아동", "01022222222");
+            Owner owner = createTestOwner("test_owner", "테스트 사업자", "01033334444", "새싹", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category);
+            StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
+
+            Reservation canceledReservation = reservationJpaRepository.save(
+                Reservation.builder()
+                    .child(child1)
+                    .storeSchedule(storeSchedule)
+                    .people(2)
+                    .status(ReservationType.CANCELED)
+                    .build()
+            );
+            Reservation waitingReservation = reservationJpaRepository.save(
+                Reservation.builder()
+                    .child(child2)
+                    .storeSchedule(storeSchedule)
+                    .people(3)
+                    .status(ReservationType.WAITING)
+                    .build()
+            );
+
+            Pageable pageable = PageableUtil.ofOneBased(1, 10, "id", "desc");
+
+            // when
+            List<Reservation> child1Bookings = childFacade.getMyBookings(child1.getId(), ReservationStatusFilter.ALL, pageable).getContent();
+            List<Reservation> child2Bookings = childFacade.getMyBookings(child2.getId(), ReservationStatusFilter.ALL, pageable).getContent();
+
+            // then: 각 아동은 자기 예약만 조회
+            assertThat(child1Bookings).hasSize(1);
+            assertThat(child1Bookings.get(0).getId()).isEqualTo(canceledReservation.getId());
+            assertThat(child1Bookings.get(0).getStatus()).isEqualTo(ReservationType.CANCELED);
+            assertThat(child1Bookings.get(0).getChild().getId()).isEqualTo(child1.getId());
+
+            assertThat(child2Bookings).hasSize(1);
+            assertThat(child2Bookings.get(0).getId()).isEqualTo(waitingReservation.getId());
+            assertThat(child2Bookings.get(0).getStatus()).isEqualTo(ReservationType.WAITING);
+            assertThat(child2Bookings.get(0).getChild().getId()).isEqualTo(child2.getId());
+
+            // 각자 자신의 예약 상세 조회도 가능
+            Reservation child1Detail = childFacade.getMyBooking(canceledReservation.getId(), child1.getId());
+            assertThat(child1Detail.getStatus()).isEqualTo(ReservationType.CANCELED);
+
+            Reservation child2Detail = childFacade.getMyBooking(waitingReservation.getId(), child2.getId());
+            assertThat(child2Detail.getStatus()).isEqualTo(ReservationType.WAITING);
         }
     }
 

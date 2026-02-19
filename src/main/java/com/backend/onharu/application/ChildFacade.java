@@ -21,7 +21,7 @@ import com.backend.onharu.domain.favorite.service.FavoriteCommandService;
 import com.backend.onharu.domain.favorite.service.FavoriteQueryService;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CreateReservationCommand;
-import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdAndStatusFilterQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetByStoreScheduleIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
 import com.backend.onharu.domain.reservation.model.Reservation;
@@ -35,6 +35,7 @@ import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.storeschedule.service.StoreScheduleQueryService;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
+import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -65,7 +66,9 @@ public class ChildFacade {
 
         // 조회한 가게 일정이 이미 예약된 일정인지 체크 (테이블 조회해서 확인)
         Reservation reservation = reservationQueryService.getByStoreScheduleId(new GetByStoreScheduleIdQuery(command.storeScheduleId()));        
-        if (reservation != null) {
+        // 예약 가능 여부 확인
+        boolean isUnavailable = reservation != null && !reservation.isAvailable();
+        if (isUnavailable) {
             throw new CoreException(ErrorType.Reservation.RESERVATION_ALREADY_EXISTS);
         }
 
@@ -73,6 +76,8 @@ public class ChildFacade {
         if (command.people() == null || command.people() <= 0) {
             throw new CoreException(RESERVATION_PEOPLE_MUST_NOT_BE_NULL);
         }
+
+        // 예약 인원이 최대 수용 인원을 초과하는지 검증
         if (storeSchedule.getMaxPeople() != null && command.people() > storeSchedule.getMaxPeople()) {
             throw new CoreException(RESERVATION_PEOPLE_EXCEEDS_MAX);
         }
@@ -103,15 +108,12 @@ public class ChildFacade {
 
     /**
      * 내가 신청한 예약 목록 조회
-     * 
+     *
      * @return 내가 신청한 예약 목록
      */
-    public List<Reservation> getMyBookings(Long childId) {
-        // 현재 로그인한 아동 정보 조회
+    public Page<Reservation> getMyBookings(Long childId, ReservationStatusFilter statusFilter, Pageable pageable) {
         Child child = childQueryService.getChildById(new GetChildByIdQuery(childId));
-
-        // 내가 신청한 예약 목록 조회
-        return reservationQueryService.findByChildId(new FindByChildIdQuery(child.getId()));
+        return reservationQueryService.findByChildIdAndStatusFilter(new FindByChildIdAndStatusFilterQuery(child.getId(), statusFilter), pageable);
     }
 
     /**

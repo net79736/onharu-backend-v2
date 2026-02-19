@@ -120,7 +120,7 @@ public interface IStoreController {
                                             "      \"closeTime\": \"22:00\"\n" +
                                             "    },\n" +
                                             "    {\n" +
-                                            "      \"businessDay\": \"2025-01-01\",\n" +
+                                            "      \"businessDay\": \"MON | TUE | WED | THU | FRI | SAT | SUN\",\n" +
                                             "      \"openTime\": \"10:00\",\n" +
                                             "      \"closeTime\": \"21:00\"\n" +
                                             "    }\n" +

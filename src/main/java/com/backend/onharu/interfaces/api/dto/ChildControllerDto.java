@@ -103,6 +103,42 @@ public class ChildControllerDto {
     ) {
     }
 
+    @Schema(description = "내가 신청한 예약 목록 조회 요청")
+    public record GetMyBookingsRequest(
+            @Schema(description = "페이지 번호 (1부터 시작)", example = "1")
+            Integer pageNum,
+
+            @Schema(description = "페이지당 항목 수", example = "10")
+            Integer perPage,
+
+            @Schema(description = "예약 상태 필터 (ALL: 전체, 그 외: 해당 상태만)", example = "ALL", allowableValues = {"ALL", "WAITING", "CONFIRMED", "CANCELED", "COMPLETED", "REJECTED"})
+            ReservationStatusFilter statusFilter,
+
+            @Schema(description = "정렬 기준", example = "id", allowableValues = {"id"})
+            String sortField,
+
+            @Schema(description = "정렬 방향", example = "desc", allowableValues = {"asc", "desc"})
+            String sortDirection
+    ) {
+        /**
+         * 기본값 설정: pageNum이 null이거나 0 이하면 1, perPage가 null이거나 0 이하면 10
+         */
+        public Integer pageNum() {
+            return pageNum != null && pageNum > 0 ? pageNum : 1;
+        }
+
+        public Integer perPage() {
+            return perPage != null && perPage > 0 ? perPage : 10;
+        }
+
+        /**
+         * statusFilter가 null이면 ALL로 간주
+         */
+        public ReservationStatusFilter effectiveStatusFilter() {
+            return statusFilter != null ? statusFilter : ReservationStatusFilter.ALL;
+        }
+    }
+
     // 예약 관련 DTO
     public record ReservationResponse(
             @Schema(description = "예약 ID", example = "1")
@@ -183,7 +219,21 @@ public class ChildControllerDto {
     }
 
     public record GetMyBookingListResponse(
-            List<ReservationResponse> reservations
+            @Schema(description = "예약 목록")
+            List<ReservationResponse> reservations,
+
+            @Schema(description = "전체 가게 개수")
+            Long totalCount,
+            
+            @Schema(description = "현재 페이지 번호")
+            Integer currentPage,
+            
+            @Schema(description = "전체 페이지 수")
+            Integer totalPages,
+            
+            @Schema(description = "페이지당 항목 수")
+            Integer perPage
+
     ) {
     }
 
