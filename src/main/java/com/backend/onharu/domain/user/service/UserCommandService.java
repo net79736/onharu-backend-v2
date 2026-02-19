@@ -145,12 +145,21 @@ public class UserCommandService {
      *
      * @param command 사용자 제거 Command (서용자 ID 포함)
      */
-    public void updateDeletedUser(UpdateDeletedUser command) {
+    public void updateDeletedUser(UpdateDeletedUserCommand command) {
         userRepository.updateDeletedUser(
                 new UpdateDeletedUserParam(
                         command.userId(),
                         command.statusType()
                 )
         );
+    }
+
+    /**
+     * 사용자 정보 업데이트(더티체킹)
+     *
+     * @param command 사용자 엔티티
+     */
+    public void changePasswordUser(SavedUserCommand command) {
+        userRepository.save(command.user());
     }
 }

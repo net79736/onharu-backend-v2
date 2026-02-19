@@ -15,6 +15,7 @@ import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.user.model.User;
 
 /**
  * 사용자 관련 Command DTO
@@ -187,9 +188,30 @@ public class UserCommand {
     /**
      * 사용자 제거 Command
      */
-    public record UpdateDeletedUser(
+    public record UpdateDeletedUserCommand(
             Long userId,
             StatusType statusType
+    ) {
+    }
+
+    /**
+     * 비밀번호 변경 Command
+     */
+    public record ChangePasswordCommand(
+            Long userId,
+            String currentPassword,
+            String newPassword,
+            String newPasswordConfirm
+    ) {
+    }
+
+    /**
+     * 더티체킹으로 엔티티 저장/수정 Command
+     *
+     * @param user 사용자 엔티티
+     */
+    public record SavedUserCommand(
+            User user
     ) {
     }
 }

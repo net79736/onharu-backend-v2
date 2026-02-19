@@ -1,14 +1,5 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
-import java.time.LocalDateTime;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.backend.onharu.application.AuthFacade;
 import com.backend.onharu.domain.email.dto.EmailAuthenticationCommand.CompleteEmailAuthenticationCommand;
 import com.backend.onharu.domain.email.dto.EmailAuthenticationCommand.CreateEmailAuthenticationCommand;
@@ -17,14 +8,21 @@ import com.backend.onharu.domain.user.dto.UserQuery.GetUserByNameAndPhoneQuery;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.controller.IAuthController;
-import com.backend.onharu.interfaces.api.dto.AuthControllerDto.FindIdRequest;
-import com.backend.onharu.interfaces.api.dto.AuthControllerDto.FindIdResponse;
-import com.backend.onharu.interfaces.api.dto.AuthControllerDto.ResetPasswordRequest;
-import com.backend.onharu.interfaces.api.dto.AuthControllerDto.SendEmailCodeRequest;
-import com.backend.onharu.interfaces.api.dto.AuthControllerDto.VerifyEmailCodeRequest;
-
+import com.backend.onharu.interfaces.api.dto.AuthControllerDto.*;
+import com.backend.onharu.utils.SecurityUtils;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDateTime;
+
+import static com.backend.onharu.domain.user.dto.UserCommand.ChangePasswordCommand;
 
 /**
  * 인증 관련 API를 제공하는 컨트롤러 구현체입니다.
@@ -69,6 +67,7 @@ public class AuthControllerImpl implements IAuthController {
      * <p>
      * 이메일로 비밀번호 재설정을 요청합니다.
      * POST /api/auth/reset-password
+     *
      * @param request 비밀번호 재설정 요청
      * @return 비밀번호 재설정 결과
      */
@@ -137,6 +136,37 @@ public class AuthControllerImpl implements IAuthController {
                 request.code(),
                 LocalDateTime.now()
         ));
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 비밀번호 변경
+     * POST /api/auth/change-password
+     * 새 비밀번호로 변경합니다.
+     *
+     * @param request 비밀번호 변경 요청
+     * @return 변경 결과
+     */
+    @Override
+    @PostMapping("/change-password")
+    public ResponseEntity<ResponseDTO<Void>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        log.info("비밀번호 변경 요청: {}", request);
+
+        Long userId = SecurityUtils.getUserId();
+
+        // 비밀번호 변경
+        authFacade.changePassword(
+                new ChangePasswordCommand(
+                        userId,
+                        request.currentPassword(),
+                        request.newPassword(),
+                        request.newPasswordConfirm()
+                )
+        );
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));

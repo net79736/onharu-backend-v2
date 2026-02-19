@@ -1,10 +1,5 @@
 package com.backend.onharu.domain.user.model;
 
-import static com.backend.onharu.domain.support.error.ErrorType.User.LOGIN_ID_OR_PASSWORD_MISMATCH;
-import static com.backend.onharu.domain.support.error.ErrorType.User.USER_STATUS_BLOCKED;
-import static com.backend.onharu.domain.support.error.ErrorType.User.USER_STATUS_DELETED;
-import static com.backend.onharu.domain.support.error.ErrorType.User.USER_STATUS_LOCKED;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +23,8 @@ import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import static com.backend.onharu.domain.support.error.ErrorType.User.*;
 
 /**
  * 사용자 엔티티
@@ -111,9 +108,10 @@ public class User extends BaseEntity {
      * 비밀번호를 변경합니다.
      * 
      * @param newPassword 새로운 비밀번호
+     * @param passwordEncoder 비밀번호 변환 인코더
      */
-    public void changePassword(String newPassword) {
-        this.password = newPassword;
+    public void changePassword(String newPassword, PasswordEncoder passwordEncoder) {
+        this.password = passwordEncoder.encode(newPassword);
     }
 
     /**
@@ -134,6 +132,19 @@ public class User extends BaseEntity {
     public void verifyPassword(String password, PasswordEncoder passwordEncoder) {
         if (!passwordEncoder.matches(password, this.password)) {
             throw new CoreException(LOGIN_ID_OR_PASSWORD_MISMATCH);
+        }
+    }
+
+    /**
+     * 새 비밀번호 확인이 일치하는지 검증합니다.
+     *
+     * @param password 새 비밀번호
+     * @param passwordConfirm 새 비밀번호 확인
+     * @throws CoreException PASSWORD_CONFIRM_MISMATCH 두 비밀번호가 일치하지 않는 경우
+     */
+    public void confirmPassword(String password, String passwordConfirm) {
+        if (!password.equals(passwordConfirm)) {
+            throw new CoreException(PASSWORD_CONFIRM_MISMATCH);
         }
     }
 
