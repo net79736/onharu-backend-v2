@@ -76,8 +76,8 @@ public interface IAuthController {
                                     value = "{\n" +
                                             "  \"email\": \"skhrnt2945@naver.com\"\n" +
                                             "}"
+                            )
                     )
-                )
             )
             SendEmailCodeRequest request
     );
@@ -105,6 +105,33 @@ public interface IAuthController {
                     )
             )
             VerifyEmailCodeRequest request
+    );
+
+    /**
+     * 새 비밀번호로 변경 요청을 수행합니다.
+     * <p>
+     * POST /api/auth/change-password
+     */
+    @Operation(summary = "비밀번호 변경", description = "새 비밀번호로 변경합니다.")
+    ResponseEntity<ResponseDTO<Void>> changePassword(
+            @RequestBody(
+                    description = "새 비밀번호로 변경합니다.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ChangePasswordRequest.class),
+                            examples = @ExampleObject(
+                                    name = "비밀번호 변경 요청 예시",
+                                    value = """
+                                            {
+                                              "currentPassword": "f0bb2780!",
+                                              "newPassword": "password123!",
+                                              "newPasswordConfirm": "password123!"
+                                            }
+                                            """
+                            )
+                    )
+            )
+            ChangePasswordRequest request
     );
 
 //    @Operation(summary = "SMS 인증 코드 발송", description = "전화번호로 SMS 인증 코드를 발송합니다.")
