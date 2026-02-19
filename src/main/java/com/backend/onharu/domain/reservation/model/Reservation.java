@@ -1,9 +1,6 @@
 package com.backend.onharu.domain.reservation.model;
 
-import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_CHILD_ID_MISMATCH;
-import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_CANCELED_ALREADY_CANCELED;
-import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_COMPLETED_CANNOT_CANCEL;
-import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STORE_ID_MISMATCH;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.*;
 import static java.util.Optional.ofNullable;
 
 import java.time.LocalDateTime;

@@ -100,7 +100,23 @@ public interface IUserController {
      */
     @Operation(summary = "프로필 수정(아동)", description = "사용자(아동)의 프로필을 수정합니다.")
     ResponseEntity<ResponseDTO<Void>> updateChildProfile(
-            @Schema(description = "아동 프로필 수정 요청")
+            @RequestBody(
+                    description = "아동 프로필 수정 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UpdateChildProfileRequest.class),
+                            examples = @ExampleObject(
+                                    name = "프로필 수정 요청 예시",
+                                    value = """
+                                        {
+                                          "name": "홍길동",
+                                          "phone": "01033337777",
+                                          "nickname": "온하루"
+                                        }
+                                        """
+                            )
+                    )
+            )
             UpdateChildProfileRequest childRequest
     );
 
@@ -110,7 +126,24 @@ public interface IUserController {
      */
     @Operation(summary = "프로필 수정(사업자)", description = "사용자(사업자)의 프로필을 수정합니다.")
     ResponseEntity<ResponseDTO<Void>> updateOwnerProfile(
-            @Schema(description = "사업자 프로필 수정 요청")
+            @RequestBody(
+                    description = "사업자 프로필 수정 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UpdateOwnerProfileRequest.class),
+                            examples = @ExampleObject(
+                                    name = "프로필 수정 요청 예시",
+                                    value = """
+                                        {
+                                          "name": "홍길동",
+                                          "phone": "01033337777",
+                                          "levelId": "1",
+                                          "businessNumber": "1234567890"
+                                        }
+                                        """
+                            )
+                    )
+            )
             UpdateOwnerProfileRequest ownerRequest
     );
 
@@ -128,7 +161,22 @@ public interface IUserController {
      */
     @Operation(summary = "로컬 사용자 로그인", description = "아이디와 비밀번호로 로그인을 수행합니다.")
     ResponseEntity<ResponseDTO<Void>> login(
-            @Schema(description = "사용자 로그인 요청")
+            @RequestBody(
+                    description = "사용자 로그인 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = LoginUserRequest.class),
+                            examples = @ExampleObject(
+                                    name = "로그인 요청 예시",
+                                    value = """
+                                        {
+                                          "loginId": "child1234@test.com",
+                                          "password": "password123!"
+                                        }
+                                        """
+                            )
+                    )
+            )
             LoginUserRequest request,
             HttpServletRequest httpRequest
     );
