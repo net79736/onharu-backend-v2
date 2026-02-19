@@ -16,8 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.backend.onharu.domain.support.error.ErrorType.User.USER_ID_ALREADY_EXISTS;
+import static com.backend.onharu.domain.user.dto.UserCommand.*;
 import static com.backend.onharu.domain.user.dto.UserCommand.UpdatePasswordCommand;
 import static com.backend.onharu.domain.user.dto.UserCommand.UpdateUserCommand;
+import static com.backend.onharu.domain.user.dto.UserRepositoryParam.*;
 import static com.backend.onharu.domain.user.dto.UserRepositoryParam.UpdateUserByIdAndNameAndPhoneParam;
 import static com.backend.onharu.domain.user.dto.UserRepositoryParam.UpdateUserByIdAndPasswordParam;
 
@@ -134,6 +136,20 @@ public class UserCommandService {
                         command.userId(),
                         command.name(),
                         command.phone()
+                )
+        );
+    }
+
+    /**
+     * 사용자 계정을 비활성화 시킵니다.
+     *
+     * @param command 사용자 제거 Command (서용자 ID 포함)
+     */
+    public void updateDeletedUser(UpdateDeletedUser command) {
+        userRepository.updateDeletedUser(
+                new UpdateDeletedUserParam(
+                        command.userId(),
+                        command.statusType()
                 )
         );
     }

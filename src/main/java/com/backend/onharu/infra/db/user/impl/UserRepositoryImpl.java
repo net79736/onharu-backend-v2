@@ -64,4 +64,9 @@ public class UserRepositoryImpl implements UserRepository {
                 param.phone()
         );
     }
+
+    @Override
+    public void updateDeletedUser (UpdateDeletedUserParam param) {
+        userJpaRepository.updateDeletedUser(param.userId(), param.statusType());
+    }
 }

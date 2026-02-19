@@ -16,10 +16,6 @@ import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.support.error.CoreException;
 
-import static com.backend.onharu.domain.support.error.ErrorType.Child.CERTIFICATE_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.Child.NICKNAME_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.User.*;
-
 /**
  * 사용자 관련 Command DTO
  * <p>
@@ -185,6 +181,15 @@ public class UserCommand {
             String name,
             String phone,
             String businessNumber
+    ) {
+    }
+
+    /**
+     * 사용자 제거 Command
+     */
+    public record UpdateDeletedUser(
+            Long userId,
+            StatusType statusType
     ) {
     }
 }

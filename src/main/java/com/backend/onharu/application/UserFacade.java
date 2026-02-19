@@ -370,8 +370,21 @@ public class UserFacade {
         );
     }
 
-    // 회원탈퇴
-    public void deleteUser() {
+    /**
+     * 사용자 계정을 비활성화 시킵니다.
+     *
+     * @param command 사용자 제거 Command (사용자 ID, 사용자 계정 상태가 포함된 Command)
+     */
+    public void updateDeletedUser(UpdateDeletedUser command) {
+        // 사용자 조회
+        User user = userQueryService.getUser(
+                new GetUserByIdQuery(command.userId())
+        );
 
+        user.verifyStatus(); // 계정 상태 확인
+
+        user.changeStatus(StatusType.DELETED); // 계정 상태 변경(상태만 삭제됨 으로 변경하고 도메인 제거 x)
+
+        userCommandService.updateDeletedUser(command); // 변경된 사용자 갱신
     }
 }

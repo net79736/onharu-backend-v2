@@ -147,10 +147,13 @@ public interface IUserController {
             UpdateOwnerProfileRequest ownerRequest
     );
 
+    /**
+     * 사용자 회원 탈퇴 (소프트 삭제)
+     * DELETE /api/users
+     * 사용자 계정상태를 삭제됨으로 변경합니다.
+     */
     @Operation(summary = "사용자 회원 탈퇴", description = "사용자 회원 탈퇴를 진행 합니다.")
     ResponseEntity<ResponseDTO<Void>> deleteUser(
-            @Schema(description = "사용자 ID", example = "1")
-            Long userId
     );
 
     /**
