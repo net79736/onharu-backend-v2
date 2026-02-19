@@ -173,7 +173,7 @@ public interface IUserController {
                                     name = "로그인 요청 예시",
                                     value = """
                                         {
-                                          "loginId": "child1234@test.com",
+                                          "loginId": "child123@test.com",
                                           "password": "password123!"
                                         }
                                         """
