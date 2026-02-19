@@ -73,9 +73,11 @@ public interface IAuthController {
                             schema = @Schema(implementation = SendEmailCodeRequest.class),
                             examples = @ExampleObject(
                                     name = "이메일 인증 코드 발송 요청 예시",
-                                    value = "{\n" +
-                                            "  \"email\": \"skhrnt2945@naver.com\"\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "email": "skhrnt2945@naver.com"
+                                            }
+                                            """
                             )
                     )
             )
@@ -97,10 +99,12 @@ public interface IAuthController {
                             schema = @Schema(implementation = SendEmailCodeRequest.class),
                             examples = @ExampleObject(
                                     name = "이메일 인증 코드 검증 요청 예시",
-                                    value = "{\n" +
-                                            "  \"email\": \"skhrnt2945@naver.com\",\n" +
-                                            "  \"code\": \"f0bb2780-14b9-4c15-9161-c533f8b5b398\",\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "email": "skhrnt2945@naver.com",
+                                              "code": "f0bb2780-14b9-4c15-9161-c533f8b5b398"
+                                            }
+                                            """
                             )
                     )
             )
