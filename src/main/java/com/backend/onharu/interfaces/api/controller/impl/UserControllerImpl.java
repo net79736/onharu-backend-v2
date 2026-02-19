@@ -1,6 +1,8 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
 import com.backend.onharu.application.UserFacade;
+import com.backend.onharu.domain.common.enums.StatusType;
+import com.backend.onharu.domain.user.dto.UserCommand;
 import com.backend.onharu.domain.user.dto.UserCommand.LoginUserCommand;
 import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
 import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
@@ -29,6 +31,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
 
+import static com.backend.onharu.domain.user.dto.UserCommand.*;
 import static com.backend.onharu.domain.user.dto.UserCommand.UpdateChildProfileCommand;
 import static com.backend.onharu.domain.user.dto.UserCommand.UpdateOwnerProfileCommand;
 import static com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
@@ -246,18 +249,25 @@ public class UserControllerImpl implements IUserController {
     /**
      * 사용자 회원 탈퇴
      * <p>
-     * DELETE /api/users/{userId}
-     * 사용자 정보를 삭제합니다.
+     * DELETE /api/users
+     * 사용자 계정상태를 삭제됨으로 변경합니다.
      *
-     * @param userId 사용자 ID
      * @return 삭제 결과
      */
     @Override
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<ResponseDTO<Void>> deleteUser(
-            @PathVariable("userId") Long userId
-    ) {
-        log.info("사용자 정보 삭제 요청: userId={}", userId);
+    @DeleteMapping
+    public ResponseEntity<ResponseDTO<Void>> deleteUser() {
+        log.info("사용자 정보 삭제 요청");
+
+        Long userId = SecurityUtils.getUserId(); // 세션에 인증된 사용자 ID 추출
+
+        // 회원 탈퇴 갱신
+        userFacade.updateDeletedUser(
+                new UpdateDeletedUser(
+                        userId,
+                        StatusType.DELETED
+                )
+        );
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));

@@ -1,5 +1,6 @@
 package com.backend.onharu.domain.user.repository;
 
+import com.backend.onharu.domain.user.dto.UserRepositoryParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByIdParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByLoginIdParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByNameAndPhoneParam;
@@ -66,4 +67,10 @@ public interface UserRepository {
      * @param param 사용자 ID, 이름, 전화번호가 포함된 파라미터
      */
     void updateUserByIdAndNameAndPhone(UpdateUserByIdAndNameAndPhoneParam param);
+
+    /**
+     * 제거된 사용자를 업데이트 합니다. (소프트 삭제)
+     * @param param 사용자 ID, 사용자 계정 상태가 포함된 파라미터
+     */
+    void updateDeletedUser(UserRepositoryParam.UpdateDeletedUserParam param);
 }

@@ -1,5 +1,7 @@
 package com.backend.onharu.domain.user.dto;
 
+import com.backend.onharu.domain.common.enums.StatusType;
+
 /**
  * 사용자 Repository 파라미터
  * <p>
@@ -53,6 +55,17 @@ public class UserRepositoryParam {
             Long userId,
             String name,
             String phone
+    ) {
+    }
+
+    /**
+     * 제거된 사용자를 업데이트 합니다. (소프트 삭제)
+     * @param userId 사용자 ID
+     * @param statusType 계정 상태(DELETED)
+     */
+    public record UpdateDeletedUserParam(
+            Long userId,
+            StatusType statusType
     ) {
     }
 }
