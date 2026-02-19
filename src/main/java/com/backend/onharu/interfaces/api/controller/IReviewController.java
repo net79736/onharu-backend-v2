@@ -9,7 +9,9 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @Tag(name = "Review", description = "리뷰 API")
@@ -50,24 +52,37 @@ public interface IReviewController {
      * GET /api/reviews
      */
     @Operation(summary = "감사 리뷰 목록 조회", description = "전체 감사 리뷰 목록을 조회합니다.")
-    ResponseEntity<ResponseDTO<GetReviewListResponse>> getAllReviews();
+    ResponseEntity<ResponseDTO<GetReviewListResponse>> getAllReviews(
+            @Schema(description = "감사 리뷰 목록 조회 요청")
+            @ParameterObject
+            @ModelAttribute GetReviewsRequest request
+    );
 
     /**
-     * 감사 리뷰 상세 조회
+     * 감사 리뷰 상세 조회(페이징)
      * GET /api/reviews/stores/{storeId}
      */
     @Operation(summary = "감사 리뷰 상세 조회", description = "가게의 감사 리뷰를 조회합니다.")
     ResponseEntity<ResponseDTO<GetReviewDetailResponse>> getStoreReviews(
             @Parameter(description = "가게 ID", example = "1", required = true)
-            @PathVariable Long storeId
+            @PathVariable
+            Long storeId,
+
+            @Schema(description = "감사 리뷰 목록 조회 요청")
+            @ParameterObject
+            GetReviewsRequest request
     );
 
     /**
-     * 내가(아동이) 작성한 리뷰 목록 조회
+     * 내가(아동이) 작성한 리뷰 목록 조회(페이징)
      * GET /api/reviews/my
      */
     @Operation(summary = "내가 작성한 리뷰 목록 조회", description = "내가 작성한 리뷰 목록을 조회합니다.")
-    ResponseEntity<ResponseDTO<GetMyReviewListResponse>> getMyReviews();
+    ResponseEntity<ResponseDTO<GetMyReviewListResponse>> getMyReviews(
+            @Schema(description = "감사 리뷰 목록 조회 요청")
+            @ParameterObject
+            GetReviewsRequest request
+    );
 
     /**
      * 리뷰 삭제

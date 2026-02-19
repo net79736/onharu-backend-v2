@@ -1,24 +1,25 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
 import com.backend.onharu.application.ReviewFacade;
-import com.backend.onharu.domain.review.dto.ReviewCommand;
 import com.backend.onharu.domain.review.dto.ReviewCommand.CreateReviewCommand;
-import com.backend.onharu.domain.review.dto.ReviewQuery;
 import com.backend.onharu.domain.review.model.Review;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
+import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.controller.IReviewController;
 import com.backend.onharu.interfaces.api.dto.ReviewControllerDto.*;
 import com.backend.onharu.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-import static com.backend.onharu.domain.review.dto.ReviewCommand.*;
-import static com.backend.onharu.domain.review.dto.ReviewQuery.*;
+import static com.backend.onharu.domain.review.dto.ReviewCommand.DeleteReviewCommand;
+import static com.backend.onharu.domain.review.dto.ReviewQuery.FindAllByChildIdQuery;
+import static com.backend.onharu.domain.review.dto.ReviewQuery.findAllByStoreIdQuery;
 
 /**
  * 리뷰 관련 API를 제공하는 컨트롤러 구현체입니다.
@@ -77,23 +78,38 @@ public class ReviewControllerImpl implements IReviewController {
      */
     @Override
     @GetMapping
-    public ResponseEntity<ResponseDTO<GetReviewListResponse>> getAllReviews() {
+    public ResponseEntity<ResponseDTO<GetReviewListResponse>> getAllReviews(
+            @ParameterObject
+            @ModelAttribute GetReviewsRequest request
+    ) {
         log.info("감사 리뷰 목록 조회 요청");
 
-        List<Review> reviews = reviewFacade.findAll(); // 전체 리뷰 목록 조회
+        Pageable pageable = PageableUtil.ofOneBased(
+                request.pageNum(),
+                request.perPage(),
+                request.sortField(),
+                request.sortDirection()
+        ); // 페이징 정보
 
-        List<ReviewResponse> reviewResponses = reviews.stream()
-                .map(review -> new ReviewResponse(
+        Page<Review> reviews = reviewFacade.findAll(pageable); // 전체 리뷰 목록 조회
+
+        Page<ReviewResponse> reviewResponses = reviews.map(
+                review -> new ReviewResponse(
                         review.getId(),
                         review.getChild().getId(),
                         review.getStore().getId(),
                         review.getReservation().getId(),
                         review.getStore().getName(),
                         review.getContent()
-                ))
-                .toList(); // 응답을 담을 ReviewResponse 목록 생성
+                )); // 응답을 담을 ReviewResponse 목록 생성
 
-        GetReviewListResponse response = new GetReviewListResponse(reviewResponses); // 감사 리뷰 목록 조회 응답 생성
+        GetReviewListResponse response = new GetReviewListResponse(
+                reviewResponses.getContent(),
+                reviews.getTotalElements(),
+                reviewResponses.getNumber() + 1,
+                reviewResponses.getTotalPages(),
+                reviewResponses.getSize()
+        ); // 감사 리뷰 목록 조회 응답 생성
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(response));
@@ -111,26 +127,41 @@ public class ReviewControllerImpl implements IReviewController {
     @Override
     @GetMapping("/stores/{storeId}")
     public ResponseEntity<ResponseDTO<GetReviewDetailResponse>> getStoreReviews(
-            @PathVariable("storeId") Long storeId
+            @PathVariable("storeId") Long storeId,
+            @ParameterObject
+            @ModelAttribute GetReviewsRequest request
     ) {
         log.info("감사 리뷰 상세 조회 요청: storeId={}", storeId);
 
-        List<Review> reviews = reviewFacade.findAllByStoreId(
-                new findAllByStoreIdQuery(storeId)
+        Pageable pageable = PageableUtil.ofOneBased(
+                request.pageNum(),
+                request.perPage(),
+                request.sortField(),
+                request.sortDirection()
+        ); // 페이징 정보
+
+        Page<Review> reviews = reviewFacade.findByStoreId(
+                new findAllByStoreIdQuery(storeId),
+                pageable
         ); // 특정 가게에 달린 리뷰 목록 조회
 
-        List<ReviewResponse> reviewResponses = reviews.stream()
-                .map(review -> new ReviewResponse(
+        Page<ReviewResponse> reviewResponses = reviews.map(review ->
+                new ReviewResponse(
                         review.getId(),
                         review.getChild().getId(),
                         review.getStore().getId(),
                         review.getReservation().getId(),
                         review.getStore().getName(),
                         review.getContent()
-                ))
-                .toList(); // 응답을 담을 ReviewResponse 목록 생성
+                )); // 응답을 담을 ReviewResponse 목록 생성
 
-        GetReviewDetailResponse response = new GetReviewDetailResponse(reviewResponses); // 감사 리뷰 상세 조회 응답 생성
+        GetReviewDetailResponse response = new GetReviewDetailResponse(
+                reviewResponses.getContent(),
+                reviews.getTotalElements(),
+                reviewResponses.getNumber() + 1,
+                reviewResponses.getTotalPages(),
+                reviewResponses.getSize()
+        ); // 감사 리뷰 상세 조회 응답 생성
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(response));
@@ -146,26 +177,43 @@ public class ReviewControllerImpl implements IReviewController {
      */
     @Override
     @GetMapping("/my")
-    public ResponseEntity<ResponseDTO<GetMyReviewListResponse>> getMyReviews() {
+    public ResponseEntity<ResponseDTO<GetMyReviewListResponse>> getMyReviews(
+            @ParameterObject
+            @ModelAttribute GetReviewsRequest request
+    ) {
         log.info("내가 작성한 리뷰 목록 조회 요청");
 
         Long childId = SecurityUtils.getCurrentUserId(); // 현재 인증된 아동 ID 획득
-        List<Review> reviews = reviewFacade.findAllByChildId(
-                new FindAllByChildIdQuery(childId)
+
+        Pageable pageable = PageableUtil.ofOneBased(
+                request.pageNum(),
+                request.perPage(),
+                request.sortField(),
+                request.sortDirection()
+        ); // 페이징 정보
+
+        Page<Review> reviews = reviewFacade.findByChildId(
+                new FindAllByChildIdQuery(childId),
+                pageable
         ); // 내가(아동이) 작성한 리뷰 목록 조회
 
-        List<ReviewResponse> reviewResponses = reviews.stream()
-                .map(review -> new ReviewResponse(
+        Page<ReviewResponse> reviewResponses = reviews.map(review ->
+                new ReviewResponse(
                         review.getId(),
                         review.getChild().getId(),
                         review.getStore().getId(),
                         review.getReservation().getId(),
                         review.getStore().getName(),
                         review.getContent()
-                ))
-                .toList(); // 응답을 담을 ReviewResponse 목록 생성
+                )); // 응답을 담을 ReviewResponse 목록 생성
 
-        GetMyReviewListResponse response = new GetMyReviewListResponse(reviewResponses); // 내가 작성한 리뷰 목록 조회 응답 생성
+        GetMyReviewListResponse response = new GetMyReviewListResponse(
+                reviewResponses.getContent(),
+                reviews.getTotalElements(),
+                reviewResponses.getNumber() + 1,
+                reviewResponses.getTotalPages(),
+                reviewResponses.getSize()
+        ); // 내가 작성한 리뷰 목록 조회 응답 생성
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(response));

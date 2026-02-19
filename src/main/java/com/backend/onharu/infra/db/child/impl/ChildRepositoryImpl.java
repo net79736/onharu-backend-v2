@@ -12,6 +12,8 @@ import com.backend.onharu.infra.db.child.ChildJpaRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.backend.onharu.domain.child.dto.ChildRepositoryParam.*;
+
 /**
  * 아동 Repository 구현체
  */
@@ -36,5 +38,13 @@ public class ChildRepositoryImpl implements ChildRepository {
     public Child getChildByLoginId(GetChildByLoginIdParam param) {
         return childJpaRepository.findByUser_LoginId(param.loginId())
                 .orElseThrow(() -> new CoreException(ErrorType.Child.CHILD_NOT_FOUND));
+    }
+
+    @Override
+    public void updateChildNicknameById(UpdateChildNicknameByIdParam param) {
+        childJpaRepository.updateChildNicknameById(
+                param.childId(),
+                param.nickname()
+        );
     }
 }

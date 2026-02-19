@@ -1,5 +1,7 @@
 package com.backend.onharu.interfaces.api.dto;
 
+import com.backend.onharu.domain.common.enums.ProviderType;
+import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -156,6 +158,48 @@ public class UserControllerDto {
     }
 
     /**
+     * 사용자(아동) 프로필 조회 응답 DTO
+     */
+    public record ChildProfileResponse(
+            @Schema(description = "로그인 아이디", example = "child1234@test.com")
+            String loginId,
+
+            @Schema(description = "이름", example = "홍길동")
+            String name,
+
+            @Schema(description = "전화번호", example = "01099992222")
+            String phone,
+
+            @Schema(description = "닉네임", example = "코끼리땃쥐")
+            String nickname,
+
+            @Schema(description = "증명서", example = "/certificate/certificate.jpg")
+            String certificate
+    ) {
+    }
+
+    /**
+     * 사용자(가게) 프로필 조회 응답 DTO
+     */
+    public record OwnerProfileResponse(
+            @Schema(description = "로그인 아이디", example = "owner1234@test.com")
+            String loginId,
+
+            @Schema(description = "이름", example = "홍길동")
+            String name,
+
+            @Schema(description = "전화번호", example = "01099992222")
+            String phone,
+
+            @Schema(description = "등급명", example = "새싹")
+            String levelName,
+
+            @Schema(description = "사업자 등록번호", example = "1234567890")
+            String businessNumber
+    ) {
+    }
+
+    /**
      * 아동 프로필 수정 요청 DTO
      * 공통 정보(이름, 전화번호)와 아동 전용 정보(닉네임)를 함께 받습니다.
      */
@@ -195,7 +239,7 @@ public class UserControllerDto {
 
             @NotNull(message = "등급 정보는 필수 입력 값 입니다.")
             @Schema(description = "레벨 ID", example = "1")
-            String levelId,
+            Long levelId,
 
             @NotBlank(message = "사업자 번호는 필수 입력 값 입니다.")
             @Pattern(regexp = "^\\d{10}$", message = "사업자 번호는 숫자 10자리여야 합니다. (예: 1234567890)")
@@ -267,6 +311,27 @@ public class UserControllerDto {
             @NotNull(message = "등급 정보는 필수 입력 값 입니다.")
             @Schema(description = "레벨 ID", example = "1")
             String levelId
+    ) {
+    }
+
+    /**
+     * 현재 로그인 여부 확인 응답 DTO
+     */
+    public record MeResponse(
+            @Schema(description = "사용자 ID", example = "1")
+            Long userId,
+
+            @Schema(description = "로그인 아이디", example = "child1234@test.com")
+            String loginId,
+
+            @Schema(description = "사용자 유형", example = "CHILD")
+            UserType userType,
+
+            @Schema(description = "계정 상태", example = "ACTIVE")
+            StatusType statusType,
+
+            @Schema(description = "계정 타입", example = "LOCAL")
+            ProviderType providerType
     ) {
     }
 }

@@ -7,9 +7,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.backend.onharu.domain.level.dto.LevelCommand.UpdateNameByIdCommand;
+import static com.backend.onharu.domain.level.dto.LevelRepositoryParam.UpdateNameByIdParam;
+
 /**
  * 등급 Command Service
- *
+ * <p>
  * 등급 도메인의 상태를 변경하는 비즈니스 로직을 처리하는 서비스 입니다.
  */
 @Service
@@ -31,5 +34,19 @@ public class LevelCommandService {
                 .build();
 
         return levelRepository.save(level);
+    }
+
+    /**
+     * 등급 정보를 수정합니다.
+     *
+     * @param command 등급명, 등급 ID 를 포함한 등급 수정 Command
+     */
+    public void updateNameById(UpdateNameByIdCommand command) {
+        levelRepository.updateNameById(
+                new UpdateNameByIdParam(
+                        command.name(),
+                        command.id()
+                )
+        );
     }
 }

@@ -5,6 +5,9 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.backend.onharu.domain.child.model.Child;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
  * 아동 JPA Repository
@@ -25,4 +28,14 @@ public interface ChildJpaRepository extends JpaRepository<Child, Long> {
      * @return Child (없으면 Optional.empty())
      */
     Optional<Child> findByUser_Id(Long userId);
+
+    /**
+     * 아동 정보 수정
+     *
+     * @param id 아동 ID
+     * @param nickname 닉네임
+     */
+    @Query("UPDATE Child c SET c.nickname = :nickname where c.id = :id")
+    @Modifying
+    void updateChildNicknameById(@Param("id") Long id, @Param("nickname") String nickname);
 }

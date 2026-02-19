@@ -79,29 +79,37 @@ public interface IUserController {
     );
 
     /**
-     * 사용자 프로필 조회
-     * <p>
-     * GET /users/{userId}/profile
-     * 사용자 프로필을 조회합니다.
+     * 사용자(아동) 프로필 조회 요청
+     * GET /users/profile/child
+     * 세션에 인증된 정보로 아동 프로필을 조회합니다.
      */
-    @Operation(summary = "사용자 프로필 조회", description = "사용자 프로필을 조회합니다.")
-    ResponseEntity<ResponseDTO<?>> getProfile(
-            @Schema(description = "사용자 ID", example = "1")
-            Long userId
+    @Operation(summary = "프로필 조회(아동)", description = "현재 세션에 인증된 아동 ID 로 사용자(아동)의 프로필을 조회합니다.")
+    ResponseEntity<ResponseDTO<ChildProfileResponse>> getChildProfile();
+
+    /**
+     * 사용자(사업자) 프로필 조회 요청
+     * GET /users/profile/owner
+     * 세션에 인증된 정보로 사업자 프로필을 조회합니다.
+     */
+    @Operation(summary = "프로필 조회(사업자)", description = "현재 세션에 인증된 사업자 ID 로 사용자(사업자)의 프로필을 조회합니다.")
+    ResponseEntity<ResponseDTO<OwnerProfileResponse>> getOwnerProfile();
+
+    /**
+     * 사용자(아동) 프로필 수정 요청
+     * PUT /users/profile/child
+     */
+    @Operation(summary = "프로필 수정(아동)", description = "사용자(아동)의 프로필을 수정합니다.")
+    ResponseEntity<ResponseDTO<Void>> updateChildProfile(
+            @Schema(description = "아동 프로필 수정 요청")
+            UpdateChildProfileRequest childRequest
     );
 
     /**
-     * 사용자 프로필 수정
-     * <p>
-     * PUT /users/{userId}/profile
-     * 사용자 프로필을 수정합니다.
+     * 사용자(사업자) 프로필 수정 요청
+     * PUT /users/profile/owner
      */
-    @Operation(summary = "사용자 프로필 수정", description = "사용자 프로필을 수정합니다.")
-    ResponseEntity<ResponseDTO<Void>> updateProfile(
-            @Schema(description = "사용자 ID", example = "1")
-            Long userId,
-            @Schema(description = "아동 프로필 수정 요청")
-            UpdateChildProfileRequest childRequest,
+    @Operation(summary = "프로필 수정(사업자)", description = "사용자(사업자)의 프로필을 수정합니다.")
+    ResponseEntity<ResponseDTO<Void>> updateOwnerProfile(
             @Schema(description = "사업자 프로필 수정 요청")
             UpdateOwnerProfileRequest ownerRequest
     );
@@ -185,5 +193,15 @@ public interface IUserController {
                     )
             )
             finishSignUpOwnerRequest request
+    );
+
+    /**
+     * 로그인 확인
+     * <p>
+     * GET /api/users/me
+     * 세션에 인증된 사용자의 정보를 반환합니다.
+     */
+    @Operation(summary = "로그인 확인", description = "현재 로그인 여부를 확인하고 사용자 정보를 반환합니다.")
+    ResponseEntity<ResponseDTO<MeResponse>> getMe(
     );
 }

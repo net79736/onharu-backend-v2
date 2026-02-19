@@ -15,4 +15,16 @@ public class LevelCommand {
             @NotBlank @Size(max = 30) String name
     ) {
     }
+
+    /**
+     * 등급 수정 Command
+     *
+     * @param name 등급명
+     * @param id   등급 ID
+     */
+    public record UpdateNameByIdCommand(
+            String name,
+            Long id
+    ) {
+    }
 }

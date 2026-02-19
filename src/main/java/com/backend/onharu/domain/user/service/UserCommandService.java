@@ -16,8 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.backend.onharu.domain.support.error.ErrorType.User.USER_ID_ALREADY_EXISTS;
-import static com.backend.onharu.domain.user.dto.UserCommand.*;
-import static com.backend.onharu.domain.user.dto.UserRepositoryParam.*;
+import static com.backend.onharu.domain.user.dto.UserCommand.UpdatePasswordCommand;
+import static com.backend.onharu.domain.user.dto.UserCommand.UpdateUserCommand;
+import static com.backend.onharu.domain.user.dto.UserRepositoryParam.UpdateUserByIdAndNameAndPhoneParam;
+import static com.backend.onharu.domain.user.dto.UserRepositoryParam.UpdateUserByIdAndPasswordParam;
 
 /**
  * 사용자 Command Service
@@ -113,10 +115,25 @@ public class UserCommandService {
      * @param command 비밀번호 초기화 Command
      */
     public void updateUserByIdAndPassword(UpdatePasswordCommand command) {
-        userRepository.UpdateUserByIdAndPassword(
+        userRepository.updateUserByIdAndPassword(
                 new UpdateUserByIdAndPasswordParam(
                         command.id(),
                         command.password()
+                )
+        );
+    }
+
+    /**
+     * 사용자 정보를 수정합니다.
+     *
+     * @param command 사용자 수정 Command (사용자 ID, 이름, 전화번호)
+     */
+    public void updateUserByIdAndNameAndPhone(UpdateUserCommand command) {
+        userRepository.updateUserByIdAndNameAndPhone(
+                new UpdateUserByIdAndNameAndPhoneParam(
+                        command.userId(),
+                        command.name(),
+                        command.phone()
                 )
         );
     }

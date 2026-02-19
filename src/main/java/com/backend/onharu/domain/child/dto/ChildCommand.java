@@ -32,4 +32,16 @@ public class ChildCommand {
             }
         }
     }
+
+    /**
+     * 아동 프로필 정보 수정 Command
+     *
+     * @param childId 아동 ID
+     * @param nickname 닉네임
+     */
+    public record UpdateChildCommand(
+            Long childId,
+            String nickname
+    ) {
+    }
 }

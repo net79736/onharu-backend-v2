@@ -155,13 +155,13 @@ public class ChildFacade {
     }
 
     /**
-     * (아동)내가 등록한 찜하기 목록 조회
+     * (아동)내가 등록한 찜하기 목록 조회(페이징)
      * @param query
      * @return
      */
-    public List<Favorite> getMyFavorites(FindFavoritesByChildIdQuery query) {
+    public Page<Favorite> getMyFavorites(FindFavoritesByChildIdQuery query, Pageable pageable) {
         // 내가 등록한 찜 목록 조회
-        return favoriteQueryService.findFavoritesByChildId(query);
+        return favoriteQueryService.findFavoritesByChildId(query, pageable);
     }
 
     /**

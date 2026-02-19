@@ -3,6 +3,8 @@ package com.backend.onharu.domain.favorite.repository;
 import com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam.FindFavoritesByChildIdParam;
 import com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam.GetFavoriteByIdParam;
 import com.backend.onharu.domain.favorite.model.Favorite;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -22,9 +24,9 @@ public interface FavoriteRepository {
     Favorite getFavorite(GetFavoriteByIdParam favorite);
 
     /**
-     * 아동 ID 로 찜 목록 조회
+     * 아동 ID 로 찜 목록 조회(페이징)
      */
-    List<Favorite> findByChildId(FindFavoritesByChildIdParam param);
+    Page<Favorite> findByChildId(FindFavoritesByChildIdParam param, Pageable pageable);
 
     /**
      * 찜하기 삭제(취소)

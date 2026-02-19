@@ -4,6 +4,8 @@ import com.backend.onharu.domain.child.dto.ChildRepositoryParam.GetChildByIdPara
 import com.backend.onharu.domain.child.dto.ChildRepositoryParam.GetChildByLoginIdParam;
 import com.backend.onharu.domain.child.model.Child;
 
+import static com.backend.onharu.domain.child.dto.ChildRepositoryParam.*;
+
 /**
  * 아동 Repository 인터페이스
  */
@@ -32,4 +34,10 @@ public interface ChildRepository {
      * @return 조회된 아동 엔티티
      */
     Child getChildByLoginId(GetChildByLoginIdParam param);
+
+    /**
+     * 아동 ID 와 닉네임을 업데이트 합니다.
+     * @param param 아동 ID 와 닉네임을 포함한 파라미터
+     */
+    void updateChildNicknameById(UpdateChildNicknameByIdParam param);
 }
