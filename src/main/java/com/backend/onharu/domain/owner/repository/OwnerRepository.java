@@ -4,9 +4,11 @@ import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByIdPara
 import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByLoginIdParam;
 import com.backend.onharu.domain.owner.model.Owner;
 
+import static com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.UpdateOwnerBusinessNumberByIdParam;
+
 /**
  * 사업자 Repository 인터페이스
- * 
+ * <p>
  * 사업자 도메인 모델의 영속성을 관리하는 Repository 인터페이스입니다.
  * 도메인 레이어에 속하며, 실제 구현은 Infrastructure 레이어에서 제공됩니다.
  */
@@ -14,7 +16,7 @@ public interface OwnerRepository {
 
     /**
      * 사업자를 저장합니다.
-     * 
+     *
      * @param owner 저장할 사업자 엔티티
      * @return 저장된 사업자 엔티티
      */
@@ -22,17 +24,24 @@ public interface OwnerRepository {
 
     /**
      * 사업자를 조회합니다.
-     * 
-     * @param query 사업자 ID를 포함한 Query
+     *
+     * @param param 사업자 ID를 포함한 Query
      * @return 조회된 사업자 엔티티
      */
-    Owner getOwnerById(GetOwnerByIdParam query);
+    Owner getOwnerById(GetOwnerByIdParam param);
 
     /**
      * 로그인 ID로 사업자를 조회합니다.
-     * 
-     * @param query 로그인 ID를 포함한 Query
+     *
+     * @param param 로그인 ID를 포함한 Query
      * @return 조회된 사업자 엔티티
      */
-    Owner getOwnerByLoginId(GetOwnerByLoginIdParam query);
+    Owner getOwnerByLoginId(GetOwnerByLoginIdParam param);
+
+    /**
+     * 사업자 정보를 수정합니다.
+     *
+     * @param param 사업자 ID, 사업자 등록번호 를 포함한 param
+     */
+    void updateOwnerBusinessNumberById(UpdateOwnerBusinessNumberByIdParam param);
 }
