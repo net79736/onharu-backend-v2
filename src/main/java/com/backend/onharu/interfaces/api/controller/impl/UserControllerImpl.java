@@ -29,6 +29,8 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
 
+import static com.backend.onharu.domain.user.dto.UserCommand.UpdateChildProfileCommand;
+import static com.backend.onharu.domain.user.dto.UserCommand.UpdateOwnerProfileCommand;
 import static com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
 import static com.backend.onharu.domain.user.dto.UserQuery.*;
 
@@ -130,6 +132,7 @@ public class UserControllerImpl implements IUserController {
     @Override
     @GetMapping("/profile/child")
     public ResponseEntity<ResponseDTO<ChildProfileResponse>> getChildProfile() {
+        log.info("아동 프로필 조회");
 
         Long userId = SecurityUtils.getUserId(); // 세션에 인증된 사용자 ID 추출
         Long childId = SecurityUtils.getCurrentUserId();// 세션에 인증된 아동 ID 추출
@@ -150,17 +153,19 @@ public class UserControllerImpl implements IUserController {
     }
 
     /**
-     * 사용자(가게) 프로필 조회
+     * 사용자(사업자) 프로필 조회
      * <p>
      * GET /api/users/profile/owner
      *
-     * @return 가게 프로필 정보
+     * @return 사업자 프로필 정보
      */
     @Override
+    @GetMapping("/profile/owner")
     public ResponseEntity<ResponseDTO<OwnerProfileResponse>> getOwnerProfile() {
+        log.info("사업자 프로필 조회");
 
         Long userId = SecurityUtils.getUserId(); // 세션에 인증된 사용자 ID 추출
-        Long ownerId = SecurityUtils.getCurrentUserId();// 세션에 인증된 가게 ID 추출
+        Long ownerId = SecurityUtils.getCurrentUserId();// 세션에 인증된 사업자 ID 추출
 
         UserOwnerProfile ownerProfile = userFacade.getOwnerProfile(new GetOwnerProfileQuery(userId, ownerId)); // 프로필 조회
 
@@ -178,24 +183,61 @@ public class UserControllerImpl implements IUserController {
     }
 
     /**
-     * 사용자 프로필 수정
+     * 사용자(아동) 프로필 수정
      * <p>
-     * PUT /api/users/{userId}/profile
-     * 사용자 프로필을 수정합니다.
+     * PUT /api/users/profile/child
      *
-     * @param userId       사용자 ID
-     * @param childRequest 아동 프로필 수정 요청
-     * @param ownerRequest 사업자 프로필 수정 요청
-     * @return
+     * @param childRequest 수정할 프로필 정보(이름, 전화번호, 닉네임)
      */
     @Override
-    @PutMapping("/{userId}/profile")
-    public ResponseEntity<ResponseDTO<Void>> updateProfile(
-            @PathVariable("userId") Long userId,
-            @RequestBody UpdateChildProfileRequest childRequest,
-            @RequestBody UpdateOwnerProfileRequest ownerRequest
-    ) {
-        log.info("사용자 프로필 수정 요청: userId={}, childRequest={}, ownerRequest={}", userId, childRequest, ownerRequest);
+    @PutMapping("/profile/child")
+    public ResponseEntity<ResponseDTO<Void>> updateChildProfile(UpdateChildProfileRequest childRequest) {
+        log.info("아동 프로필 수정");
+
+        Long userId = SecurityUtils.getUserId(); // 세션에 인증된 사용자 ID 추출
+        Long childId = SecurityUtils.getCurrentUserId();// 세션에 인증된 아동 ID 추출
+
+        // 프로필 수정(사용자+아동)
+        userFacade.updateChildProfile(
+                new UpdateChildProfileCommand(
+                        userId,
+                        childId,
+                        childRequest.name(),
+                        childRequest.phone(),
+                        childRequest.nickname()
+                )
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 사용자(사업자) 프로필 수정
+     * <p>
+     * PUT /api/users/profile/owner
+     *
+     * @param ownerRequest 수정할 프로필 정보(이름, 전화번호, 등급 ID, 사업자 번호)
+     */
+    @Override
+    @PutMapping("/profile/owner")
+    public ResponseEntity<ResponseDTO<Void>> updateOwnerProfile(UpdateOwnerProfileRequest ownerRequest) {
+        log.info("사업자 프로필 수정");
+
+        Long userId = SecurityUtils.getUserId(); // 세션에 인증된 사용자 ID 추출
+        Long ownerId = SecurityUtils.getCurrentUserId();// 세션에 인증된 사업자 ID 추출
+
+        // 프로필 수정(사용자+사업자)
+        userFacade.updateOwnerProfile(
+                new UpdateOwnerProfileCommand(
+                        userId,
+                        ownerId,
+                        ownerRequest.levelId(),
+                        ownerRequest.name(),
+                        ownerRequest.phone(),
+                        ownerRequest.businessNumber()
+                )
+        );
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));
