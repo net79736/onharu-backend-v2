@@ -50,7 +50,7 @@ public class SecurityConfig {
     };
 
     public static final String[] AUTHENTICATE_PATH = {
-            "/api/users/logout/**", "/api/users/me/**"
+            "/api/users/logout/**", "/api/users/me/**", "/api/users"
     };
 
     public static final String[] ROLE_CHILD_PATH = {
