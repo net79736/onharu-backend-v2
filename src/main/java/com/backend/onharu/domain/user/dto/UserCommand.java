@@ -7,7 +7,6 @@ import com.backend.onharu.domain.support.error.CoreException;
 
 import static com.backend.onharu.domain.support.error.ErrorType.Child.CERTIFICATE_MUST_NOT_BE_BLANK;
 import static com.backend.onharu.domain.support.error.ErrorType.Child.NICKNAME_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.Owner.*;
 import static com.backend.onharu.domain.support.error.ErrorType.User.*;
 
 /**
@@ -140,6 +139,41 @@ public class UserCommand {
     public record UpdatePasswordCommand(
             Long id,
             String password
+    ) {
+    }
+
+    /**
+     * 사용자 수정 Command
+     */
+    public record UpdateUserCommand(
+            Long userId,
+            String name,
+            String phone
+    ) {
+    }
+
+    /**
+     * 사용자(아동) 프로필 수정 Command
+     */
+    public record UpdateChildProfileCommand(
+            Long userId,
+            Long childId,
+            String name,
+            String phone,
+            String nickname
+    ) {
+    }
+
+    /**
+     * 사용자(사업자) 프로필 수정 Command
+     */
+    public record UpdateOwnerProfileCommand(
+            Long userId,
+            Long ownerId,
+            Long levelId,
+            String name,
+            String phone,
+            String businessNumber
     ) {
     }
 }
