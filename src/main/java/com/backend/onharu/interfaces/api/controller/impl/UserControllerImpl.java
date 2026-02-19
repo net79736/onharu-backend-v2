@@ -2,7 +2,6 @@ package com.backend.onharu.interfaces.api.controller.impl;
 
 import com.backend.onharu.application.UserFacade;
 import com.backend.onharu.domain.common.enums.StatusType;
-import com.backend.onharu.domain.user.dto.UserCommand;
 import com.backend.onharu.domain.user.dto.UserCommand.LoginUserCommand;
 import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
 import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
@@ -263,7 +262,7 @@ public class UserControllerImpl implements IUserController {
 
         // 회원 탈퇴 갱신
         userFacade.updateDeletedUser(
-                new UpdateDeletedUser(
+                new UpdateDeletedUserCommand(
                         userId,
                         StatusType.DELETED
                 )

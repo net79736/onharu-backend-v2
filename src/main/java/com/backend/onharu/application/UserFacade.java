@@ -375,7 +375,7 @@ public class UserFacade {
      *
      * @param command 사용자 제거 Command (사용자 ID, 사용자 계정 상태가 포함된 Command)
      */
-    public void updateDeletedUser(UpdateDeletedUser command) {
+    public void updateDeletedUser(UpdateDeletedUserCommand command) {
         // 사용자 조회
         User user = userQueryService.getUser(
                 new GetUserByIdQuery(command.userId())
