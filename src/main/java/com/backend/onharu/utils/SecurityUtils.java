@@ -95,6 +95,26 @@ public final class SecurityUtils implements ApplicationContextAware {
         // ADMIN이나 NONE인 경우 null 반환
         return null;
     }
+
+    public static User getCurrentUser() {
+        Authentication authentication = getCurrentAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication.getPrincipal().equals("anonymousUser")) {
+            return null;
+        }
+        if (authentication.getPrincipal() instanceof LocalUser localUser) {
+            return localUser.getUser();
+        }
+        if (authentication.getPrincipal() instanceof SocialUser socialUser) {
+            return socialUser.getUser();
+        }
+        return null;
+    }
+
+    public static Long getCurrentUserEntityId() {
+        User user = getCurrentUser();
+        return user != null ? user.getId() : null;
+    }
     
     /**
      * 현재 인증된 사용자의 Authentication 객체를 반환합니다.

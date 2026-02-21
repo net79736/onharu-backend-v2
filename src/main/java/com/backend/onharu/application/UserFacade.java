@@ -1,5 +1,10 @@
 package com.backend.onharu.application;
 
+import java.util.UUID;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
 import com.backend.onharu.domain.child.dto.ChildCommand.CreateChildCommand;
 import com.backend.onharu.domain.child.service.ChildCommandService;
 import com.backend.onharu.domain.common.enums.StatusType;
@@ -26,12 +31,9 @@ import com.backend.onharu.domain.user.service.UserCommandService;
 import com.backend.onharu.domain.user.service.UserOAuthCommandService;
 import com.backend.onharu.domain.user.service.UserOAuthQueryService;
 import com.backend.onharu.domain.user.service.UserQueryService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 /**
  * 사용자 Facade
@@ -48,7 +50,7 @@ public class UserFacade {
     private final UserQueryService userQueryService;
     private final UserOAuthQueryService userOAuthQueryService;
     private final UserOAuthCommandService userOAuthCommandService;
-
+    private final NotificationFacade notificationFacade;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -119,6 +121,9 @@ public class UserFacade {
         user.verifyPassword(command.password(), passwordEncoder);
         user.verifyStatus();
 
+        // 알림 설정 생성
+        notificationFacade.ensureNotificationExists(user.getId());
+
         return user;
     }
 
@@ -163,6 +168,9 @@ public class UserFacade {
 
         user.verifyStatus();
 
+        // 알림 설정 생성
+        notificationFacade.ensureNotificationExists(user.getId());
+        
         return user;
     }
 
