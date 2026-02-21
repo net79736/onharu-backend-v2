@@ -6,7 +6,6 @@ import com.backend.onharu.domain.child.service.ChildCommandService;
 import com.backend.onharu.domain.child.service.ChildQueryService;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
-import com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByIdQuery;
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.level.service.LevelCommandService;
 import com.backend.onharu.domain.level.service.LevelQueryService;
@@ -39,6 +38,7 @@ import java.util.UUID;
 import static com.backend.onharu.domain.child.dto.ChildCommand.UpdateChildCommand;
 import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
 import static com.backend.onharu.domain.level.dto.LevelCommand.UpdateNameByIdCommand;
+import static com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByNameQuery;
 import static com.backend.onharu.domain.owner.dto.OwnerCommand.updateOwnerBusinessNumberByIdCommand;
 import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import static com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
@@ -75,14 +75,17 @@ public class UserFacade {
      * @return 생성된 사용자 엔티티
      */
     public User signUpChild(SignUpChildCommand command) {
-
+        // 아동 회원가입할 사용자 조회
         User user = userCommandService.signUpChild(command);
 
+        // 아동 회원가입 Command 생성
         CreateChildCommand createChildCommand = new CreateChildCommand(
                 user,
                 command.nickname(),
                 command.certificateFilePath()
         );
+
+        // 아동 회원가입 처리
         childCommandService.createChild(createChildCommand);
 
         return user;
@@ -97,21 +100,24 @@ public class UserFacade {
      * @return 생성된 사용자 엔티티
      */
     public User signUpOwner(SignUpOwnerCommand command) {
-
-        Level level = levelQueryService.getLevel(
-                new GetLevelByIdQuery(
-                        Long.valueOf(command.levelId())
+        // 기본 등급(비기너)을 이름으로 조회
+        Level level = levelQueryService.getLevelByName(
+                new GetLevelByNameQuery(
+                        "비기너"
                 )
         );
 
+        // 사용자 회원가입 처리
         User user = userCommandService.signUpOwner(command);
 
+        // 사업자 회원가입 Command 생성
         CreateOwnerCommand createOwnerCommand = new CreateOwnerCommand(
                 user,
                 level,
                 command.businessNumber()
         );
 
+        // 사업자 회원가입 처리
         ownerCommandService.createOwner(createOwnerCommand);
 
         return user;
@@ -126,12 +132,15 @@ public class UserFacade {
      * @return 로그인 사용자 엔티티
      */
     public User loginUser(LoginUserCommand command) {
-
+        // 로그인 아이디로 사용자 조회
         User user = userQueryService.getUserByLoginId(
                 new GetUserByLoginIdQuery(command.loginId())
         );
 
+        // 비밀번호 검증
         user.verifyPassword(command.password(), passwordEncoder);
+
+        // 사용자 계정 상태 검증
         user.verifyStatus();
 
         return user;
@@ -146,14 +155,15 @@ public class UserFacade {
      * @return 사용자 엔티티
      */
     public User loginUserOAuth(LoginUserOAuthCommand command) {
-
+        // 소셜 로그인 사용자 조회(UserOAuth 테이블에 없는 경우, 임시 사용자 생성)
         User user = userOAuthQueryService.getUserByUserOAuthQuery(
                         new GetUserByUserOAuthQuery(
                                 command.providerId()
                         )
                 )
-                .map(UserOAuth::getUser)
+                .map(UserOAuth::getUser) // 소셜 사용자 계정이 존재하는 경우, 해당 사용자 반환
                 .orElseGet(() -> {
+                    // 소셜 사용자 계정이 없는 경우, 임시 회원 생성
                     User tempUser = userCommandService.createUser(
                             new CreateUserCommand(
                                     command.loginId(),
@@ -164,7 +174,7 @@ public class UserFacade {
                                     StatusType.PENDING,
                                     command.providerType()
                             ));
-
+                    // 소셜 사용자(임시 회원) 회원가입 처리
                     userOAuthCommandService.createUserOAuth(
                             new CreateUserOAuth(
                                     tempUser,
@@ -173,12 +183,12 @@ public class UserFacade {
                             )
                     );
 
-                    return tempUser;
+                    return tempUser; // 임시 회원 반환
                 });
 
-        user.verifyStatus();
+        user.verifyStatus(); // 기존 사용자 계정 상태 검증
 
-        return user;
+        return user; // 기존 회원 반환
     }
 
     /**
@@ -190,21 +200,21 @@ public class UserFacade {
      * @return 사용자 엔티티
      */
     public User completeSignUpChildUserOAuth(SignUpChildUserOAuthCommand command) {
-
+        // 사용자 조회
         User user = userQueryService.getUser(
                 new GetUserByIdQuery(
                         Long.valueOf(command.userId())
                 )
         );
-
+        // 사용자 타입을 아동으로 변경
         user.changeUserTypeToChild();
-
+        // 아동 회원가입 Command
         CreateChildCommand createChildCommand = new CreateChildCommand(
                 user,
                 command.nickname(),
                 command.certificate()
         );
-
+        // 아동 회원가입 처리
         childCommandService.createChild(createChildCommand);
 
         return user;
@@ -219,27 +229,31 @@ public class UserFacade {
      * @return 사용자 엔티티
      */
     public User completeSignUpOwnerUserOAuth(SignUpOwnerUserOAuthCommand command) {
-
-        Level level = levelQueryService.getLevel(
-                new GetLevelByIdQuery(
-                        Long.valueOf(command.levelId())
+        // 기본 등급(비기너)을 이름으로 조회
+        Level level = levelQueryService.getLevelByName(
+                new GetLevelByNameQuery(
+                        "비기너"
                 )
         );
 
+        // 추가 정보를 받을 사용자 조회
         User user = userQueryService.getUser(
                 new GetUserByIdQuery(
                         Long.valueOf(command.userId())
                 )
         );
 
+        // 사용자 타입을 사업자로 변경
         user.changeUserTypeToOwner();
 
+        // 사업자 생성 Command
         CreateOwnerCommand createOwnerCommand = new CreateOwnerCommand(
                 user,
                 level,
                 command.businessNumber()
         );
 
+        // 사업자 생성
         ownerCommandService.createOwner(createOwnerCommand);
 
         return user;

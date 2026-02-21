@@ -4,6 +4,8 @@ import com.backend.onharu.domain.level.dto.LevelRepositoryParam.GetLevelByIdPara
 import com.backend.onharu.domain.level.dto.LevelRepositoryParam.GetLevelByNameParam;
 import com.backend.onharu.domain.level.model.Level;
 
+import java.util.List;
+
 import static com.backend.onharu.domain.level.dto.LevelRepositoryParam.UpdateNameByIdParam;
 
 /**
@@ -21,6 +23,12 @@ public interface LevelRepository {
      * @return 저장된 등급 엔티티
      */
     Level save(Level level);
+
+    /**
+     * 등급 목록을 조회합니다.
+     * @return 전체 등급 목록
+     */
+    List<Level> getLevels();
 
     /**
      * 등급 ID로 등급을 조회합니다.
