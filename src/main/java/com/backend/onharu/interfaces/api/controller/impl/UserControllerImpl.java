@@ -65,19 +65,20 @@ public class UserControllerImpl implements IUserController {
     ) {
         log.info("사업자 회원가입 요청: request={}", request);
 
+        // 사업자 회원가입 Command
         SignUpOwnerCommand command = new SignUpOwnerCommand(
                 request.loginId(),
                 request.password(),
                 request.passwordConfirm(),
                 request.name(),
                 request.phone(),
-                request.storeName(),
-                request.businessNumber(),
-                request.levelId()
+                request.businessNumber()
         );
 
+        // 사업자 회원가입
         User user = userFacade.signUpOwner(command);
 
+        // 응답 생성
         SignUpOwnerResponse response = new SignUpOwnerResponse(
                 user.getId()
         );
@@ -90,7 +91,7 @@ public class UserControllerImpl implements IUserController {
      * 아동 회원가입
      * <p>
      * POST /api/users/signup/child
-     * 아동 회원가입을 진행합니다. 사용자 정보와 증명서 파일 URL을 함께 받습니다.
+     * 아동 회원가입을 진행합니다. 사용자 정보와 증명서 파일 URL 을 함께 받습니다.
      *
      * @param request 아동 회원가입 요청 (증명서 파일 URL 포함)
      * @return 회원가입 결과
@@ -102,6 +103,7 @@ public class UserControllerImpl implements IUserController {
     ) {
         log.info("아동 회원가입 요청: request={}", request);
 
+        // 아동 회원가입 Command
         SignUpChildCommand command = new SignUpChildCommand(
                 request.loginId(),
                 request.password(),
@@ -112,8 +114,10 @@ public class UserControllerImpl implements IUserController {
                 request.certificate()
         );
 
+        // 아동 회원가입
         User user = userFacade.signUpChild(command);
 
+        // 응답 생성
         SignUpChildResponse response = new SignUpChildResponse(
                 user.getId(),
                 user.getLoginId()
@@ -250,8 +254,6 @@ public class UserControllerImpl implements IUserController {
      * <p>
      * DELETE /api/users
      * 사용자 계정상태를 삭제됨으로 변경합니다.
-     *
-     * @return 삭제 결과
      */
     @Override
     @DeleteMapping
@@ -286,6 +288,7 @@ public class UserControllerImpl implements IUserController {
     public ResponseEntity<ResponseDTO<Void>> login(@Valid @RequestBody LoginUserRequest request, HttpServletRequest httpRequest) {
         log.info("사용자 로그인 요청: loginUserRequest={}", request);
 
+        // 사용자 로그인
         User user = userFacade.loginUser(
                 new LoginUserCommand(
                         request.loginId(),
@@ -336,9 +339,7 @@ public class UserControllerImpl implements IUserController {
     /**
      * 소셜 사용자(아동) 회원가입 마무리
      *
-     * @param user
-     * @param request
-     * @return
+     * POST /api/users/signup/child/finish
      */
     @Override
     @PostMapping("/signup/child/finish")
@@ -346,7 +347,7 @@ public class UserControllerImpl implements IUserController {
             @AuthenticationPrincipal User user,
             @Valid @RequestBody finishSignUpChildRequest request) {
         log.info("소셜 사용자 아동 회원가입 마무리 요청");
-
+        // TODO: 인증 User 받아오는 로직 수정하기
         User childUser = userFacade.completeSignUpChildUserOAuth(
                 new SignUpChildUserOAuthCommand(
                         user.getId().toString(),
@@ -366,9 +367,7 @@ public class UserControllerImpl implements IUserController {
     /**
      * 소셜 사용자(사업자) 회원가입 마무리
      *
-     * @param user
-     * @param request
-     * @return
+     * POST /api/users/signup/owner/finish
      */
     @Override
     @PostMapping("/signup/owner/finish")
@@ -376,12 +375,12 @@ public class UserControllerImpl implements IUserController {
             @AuthenticationPrincipal User user,
             @Valid @RequestBody finishSignUpOwnerRequest request) {
         log.info("소셜 사용자 사업자 회원가입 마무리 요청");
+        // TODO: 인증 User 받아오는 로직 수정하기
 
         User ownerUser = userFacade.completeSignUpOwnerUserOAuth(
                 new SignUpOwnerUserOAuthCommand(
                         user.getId().toString(),
-                        request.businessNumber(),
-                        request.levelId()
+                        request.businessNumber()
                 )
         );
 
@@ -412,6 +411,7 @@ public class UserControllerImpl implements IUserController {
         MeResponse response = new MeResponse(
                 user.getId(),
                 user.getLoginId(),
+                user.getName(), // 아동은 이름, 사업자는 매장명 반환
                 user.getUserType(),
                 user.getStatusType(),
                 user.getProviderType()
