@@ -3,6 +3,7 @@ package com.backend.onharu.domain.tag.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.tag.dto.TagQuery.FindByIdsQuery;
 import com.backend.onharu.domain.tag.dto.TagQuery.FindByNameQuery;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TagQueryService {
     private final TagRepository tagRepository;
 
