@@ -8,6 +8,8 @@ import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 import static com.backend.onharu.domain.level.dto.LevelRepositoryParam.*;
 
 /**
@@ -22,6 +24,11 @@ public class LevelRepositoryImpl implements LevelRepository {
     @Override
     public Level save(Level level) {
         return levelJpaRepository.save(level);
+    }
+
+    @Override
+    public List<Level> getLevels() {
+        return levelJpaRepository.findAll();
     }
 
     @Override

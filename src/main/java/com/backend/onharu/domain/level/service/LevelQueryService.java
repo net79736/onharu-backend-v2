@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * 등급 Query Service
  * <p>
@@ -44,5 +46,14 @@ public class LevelQueryService {
      */
     public Level getLevelByName(GetLevelByNameQuery query) {
         return levelRepository.getLevelByName(new GetLevelByNameParam(query.name()));
+    }
+
+    /**
+     * 전체 등급 목록을 조회합니다.
+     *
+     * @return 조회된 등급 목록
+     */
+    public List<Level> getLevels() {
+        return levelRepository.getLevels();
     }
 }
