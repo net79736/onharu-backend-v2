@@ -62,14 +62,16 @@ public interface IUserController {
                             schema = @Schema(implementation = SignUpOwnerRequest.class),
                             examples = @ExampleObject(
                                     name = "사업자 회원가입 예시",
-                                    value = "{\n" +
-                                            "  \"loginId\": \"owner123@test.com\",\n" +
-                                            "  \"password\": \"password123!\",\n" +
-                                            "  \"passwordConfirm\": \"password123!\",\n" +
-                                            "  \"name\": \"따뜻한 식당\",\n" +
-                                            "  \"phone\": \"01012345678\",\n" +
-                                            "  \"businessNumber\": \"1234567890\",\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "loginId": "owner123@test.com",
+                                              "password": "password123!",
+                                              "passwordConfirm": "password123!",
+                                              "name": "따뜻한 식당",
+                                              "phone": "01012345678",
+                                              "businessNumber": "1234567890"
+                                            }
+                                            """
                             )
                     )
             )
@@ -106,12 +108,12 @@ public interface IUserController {
                             examples = @ExampleObject(
                                     name = "프로필 수정 요청 예시",
                                     value = """
-                                        {
-                                          "name": "홍길동",
-                                          "phone": "01033337777",
-                                          "nickname": "온하루"
-                                        }
-                                        """
+                                            {
+                                              "name": "홍길동",
+                                              "phone": "01033337777",
+                                              "nickname": "온하루"
+                                            }
+                                            """
                             )
                     )
             )
@@ -132,13 +134,13 @@ public interface IUserController {
                             examples = @ExampleObject(
                                     name = "프로필 수정 요청 예시",
                                     value = """
-                                        {
-                                          "name": "홍길동",
-                                          "phone": "01033337777",
-                                          "levelId": "1",
-                                          "businessNumber": "1234567890"
-                                        }
-                                        """
+                                            {
+                                              "name": "홍길동",
+                                              "phone": "01033337777",
+                                              "levelId": "1",
+                                              "businessNumber": "1234567890"
+                                            }
+                                            """
                             )
                     )
             )
@@ -170,11 +172,11 @@ public interface IUserController {
                             examples = @ExampleObject(
                                     name = "로그인 요청 예시",
                                     value = """
-                                        {
-                                          "loginId": "child123@test.com",
-                                          "password": "password123!"
-                                        }
-                                        """
+                                            {
+                                              "loginId": "child123@test.com",
+                                              "password": "password123!"
+                                            }
+                                            """
                             )
                     )
             )
@@ -195,7 +197,7 @@ public interface IUserController {
 
     /**
      * 아동 소셜 회원가입
-     *
+     * <p>
      * POST /api/users/signup/child/finish
      */
     @Operation(summary = "아동 소셜 회원가입 마무리", description = "아동 소셜 회원가입을 마무리합니다. 전화번호, 닉네임, 증명서 파일을 함께 받습니다.")
@@ -221,7 +223,7 @@ public interface IUserController {
 
     /**
      * 사업자 소셜 회원가입
-     *
+     * <p>
      * POST /api/users/signup/owner/finish
      */
     @Operation(summary = "사업자 소셜 회원가입 마무리", description = "사업자 소셜 회원가입을 마무리합니다. ")
@@ -234,11 +236,13 @@ public interface IUserController {
                             schema = @Schema(implementation = finishSignUpOwnerRequest.class),
                             examples = @ExampleObject(
                                     name = "사업자 회원가입 예시",
-                                    value = "{\n" +
-                                            "  \"phone\": \"01012345678\",\n" +
-                                            "  \"name\": \"따뜻한 식당\",\n" +
-                                            "  \"businessNumber\": \"1234567890\",\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "phone": "01012345678",
+                                              "name": "따뜻한 식당",
+                                              "businessNumber": "1234567890"
+                                            }
+                                            """
                             )
                     )
             )
