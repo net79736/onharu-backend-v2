@@ -20,7 +20,7 @@ public interface IUserController {
     /**
      * 아동 회원가입
      * <p>
-     * POST /users/signup/child
+     * POST /api/users/signup/child
      * 아동 회원가입을 진행합니다. 사용자 정보와 증명서 정보를 함께 받습니다.
      */
     @Operation(summary = "아동 회원가입", description = "아동 회원가입을 진행합니다. 사용자 정보와 증명서 정보를 함께 받습니다.")
@@ -50,7 +50,7 @@ public interface IUserController {
     /**
      * 사업자 회원가입
      * <p>
-     * POST /users/signup/owner
+     * POST /api/users/signup/owner
      * 사업자 회원가입을 진행합니다. 사용자 정보, 사업자 정보를 함께 받습니다.
      */
     @Operation(summary = "사업자 회원가입", description = "사업자 회원가입을 진행합니다. 사용자 정보, 사업자 정보를 함께 받습니다.")
@@ -66,11 +66,9 @@ public interface IUserController {
                                             "  \"loginId\": \"owner123@test.com\",\n" +
                                             "  \"password\": \"password123!\",\n" +
                                             "  \"passwordConfirm\": \"password123!\",\n" +
-                                            "  \"name\": \"홍길동\",\n" +
+                                            "  \"name\": \"따뜻한 식당\",\n" +
                                             "  \"phone\": \"01012345678\",\n" +
-                                            "  \"storeName\": \"따뜻한 식당\",\n" +
                                             "  \"businessNumber\": \"1234567890\",\n" +
-                                            "  \"levelId\": \"1\"\n" +
                                             "}"
                             )
                     )
@@ -80,7 +78,7 @@ public interface IUserController {
 
     /**
      * 사용자(아동) 프로필 조회 요청
-     * GET /users/profile/child
+     * GET /api/users/profile/child
      * 세션에 인증된 정보로 아동 프로필을 조회합니다.
      */
     @Operation(summary = "프로필 조회(아동)", description = "현재 세션에 인증된 아동 ID 로 사용자(아동)의 프로필을 조회합니다.")
@@ -88,7 +86,7 @@ public interface IUserController {
 
     /**
      * 사용자(사업자) 프로필 조회 요청
-     * GET /users/profile/owner
+     * GET /api/users/profile/owner
      * 세션에 인증된 정보로 사업자 프로필을 조회합니다.
      */
     @Operation(summary = "프로필 조회(사업자)", description = "현재 세션에 인증된 사업자 ID 로 사용자(사업자)의 프로필을 조회합니다.")
@@ -96,7 +94,7 @@ public interface IUserController {
 
     /**
      * 사용자(아동) 프로필 수정 요청
-     * PUT /users/profile/child
+     * PUT /api/users/profile/child
      */
     @Operation(summary = "프로필 수정(아동)", description = "사용자(아동)의 프로필을 수정합니다.")
     ResponseEntity<ResponseDTO<Void>> updateChildProfile(
@@ -122,7 +120,7 @@ public interface IUserController {
 
     /**
      * 사용자(사업자) 프로필 수정 요청
-     * PUT /users/profile/owner
+     * PUT /api/users/profile/owner
      */
     @Operation(summary = "프로필 수정(사업자)", description = "사용자(사업자)의 프로필을 수정합니다.")
     ResponseEntity<ResponseDTO<Void>> updateOwnerProfile(
@@ -159,7 +157,7 @@ public interface IUserController {
     /**
      * 로컬 사용자 로그인
      * <p>
-     * POST /users/login
+     * POST /api/users/login
      * 사용자의 아이디와 비밀번호로 로그인을 수행합니다.
      */
     @Operation(summary = "로컬 사용자 로그인", description = "아이디와 비밀번호로 로그인을 수행합니다.")
@@ -187,7 +185,7 @@ public interface IUserController {
     /**
      * 사용자 로그아웃
      * <p>
-     * POST /users/logout
+     * POST /api/users/logout
      */
     @Operation(summary = "로컬 사용자 로그아웃", description = "사용자의 로그아웃을 수행 합니다.")
     ResponseEntity<ResponseDTO<Void>> logout(
@@ -197,6 +195,8 @@ public interface IUserController {
 
     /**
      * 아동 소셜 회원가입
+     *
+     * POST /api/users/signup/child/finish
      */
     @Operation(summary = "아동 소셜 회원가입 마무리", description = "아동 소셜 회원가입을 마무리합니다. 전화번호, 닉네임, 증명서 파일을 함께 받습니다.")
     ResponseEntity<ResponseDTO<SignUpChildResponse>> finishSignUpChild(
@@ -221,8 +221,9 @@ public interface IUserController {
 
     /**
      * 사업자 소셜 회원가입
+     *
+     * POST /api/users/signup/owner/finish
      */
-
     @Operation(summary = "사업자 소셜 회원가입 마무리", description = "사업자 소셜 회원가입을 마무리합니다. ")
     ResponseEntity<ResponseDTO<SignUpChildResponse>> finishSignUpOwner(
             @AuthenticationPrincipal User user,
@@ -234,11 +235,9 @@ public interface IUserController {
                             examples = @ExampleObject(
                                     name = "사업자 회원가입 예시",
                                     value = "{\n" +
-
                                             "  \"phone\": \"01012345678\",\n" +
-                                            "  \"storeName\": \"따뜻한 식당\",\n" +
+                                            "  \"name\": \"따뜻한 식당\",\n" +
                                             "  \"businessNumber\": \"1234567890\",\n" +
-                                            "  \"levelId\": \"1\"\n" +
                                             "}"
                             )
                     )
