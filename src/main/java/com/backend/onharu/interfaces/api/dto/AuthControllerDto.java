@@ -4,7 +4,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
+/**
+ * AuthController 에서 사용되는 요청/응답 DTO 입니다.
+ */
 public class AuthControllerDto {
+
+    public record BusinessNumberRequest(
+            @NotBlank(message = "사업자 등록번호는 필수 입니다.")
+            @Pattern(regexp = "\\d{10}", message = "사업자 등록번호는 숫자 10 자리여야 합니다.")
+            @Schema(description = "사업자 등록번호", example = "1234567890")
+            String businessNumber
+    ) {
+    }
 
     public record FindIdRequest(
             @Schema(description = "사용자 이름", example = "홍길동")

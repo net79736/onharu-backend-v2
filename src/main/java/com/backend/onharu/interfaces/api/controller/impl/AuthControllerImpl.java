@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 
+import static com.backend.onharu.domain.owner.dto.OwnerCommand.checkBusinessNumberCommand;
 import static com.backend.onharu.domain.user.dto.UserCommand.ChangePasswordCommand;
 
 /**
@@ -36,6 +37,31 @@ import static com.backend.onharu.domain.user.dto.UserCommand.ChangePasswordComma
 public class AuthControllerImpl implements IAuthController {
 
     private final AuthFacade authFacade;
+
+    /**
+     * 사업자 등록번호 확인
+     * POST /api/auth/business-number
+     * 국세청 사업자 사업자등록정보 상태조회 서비스 API 를 호출하여 사업자 등록번호를 확인합니다.
+     *
+     * @param request 사업자 등록번호가 포함된 요청
+     * @return 유효한 사업자 여부
+     */
+    @Override
+    @PostMapping("/business-number")
+    public ResponseEntity<ResponseDTO<Boolean>> checkBusinessNumber(
+            @Valid @RequestBody BusinessNumberRequest request
+    ) {
+        log.info("사업자 등록번호 확인 요청: {}", request);
+
+        // 사업자 등록번호 확인 Command 생성
+        checkBusinessNumberCommand command = new checkBusinessNumberCommand(request.businessNumber());
+
+        // 사업자 등록번호 여부
+        boolean response = authFacade.checkBusinessNumber(command);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
+    }
 
     /**
      * 아이디 찾기
