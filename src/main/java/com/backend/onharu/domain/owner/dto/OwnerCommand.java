@@ -45,4 +45,14 @@ public class OwnerCommand {
             String businessNumber
     ) {
     }
+
+    /**
+     * 사업자 등록번호 확인 Command
+     *
+     * @param businessNumber 사업자 등록번호
+     */
+    public record checkBusinessNumberCommand(
+            String businessNumber
+    ) {
+    }
 }
