@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByCategoryIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByNameQuery;
@@ -33,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class StoreQueryService {
     private final StoreRepository storeRepository;
 

@@ -3,6 +3,7 @@ package com.backend.onharu.domain.file.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.file.dto.FileQuery.GetByFileKeyQuery;
 import com.backend.onharu.domain.file.dto.FileQuery.GetByIdQuery;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FileQueryService {
 
     private final FileRepository fileRepository;

@@ -46,7 +46,8 @@ public class SecurityConfig {
             "/api/reviews/**",
             "/api/upload/**", // S3 파일 업로드 관련 API
             "/api/auth/**", // 인증 관련 API
-            "/api/files/**" // 파일(첨부) 메타데이터 API
+            "/api/files/**", // 파일(첨부) 메타데이터 API
+            "/api/notifications/**", // 알림 관련 API
     };
 
     public static final String[] AUTHENTICATE_PATH = {

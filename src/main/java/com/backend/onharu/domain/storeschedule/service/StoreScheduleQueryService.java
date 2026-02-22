@@ -3,6 +3,7 @@ package com.backend.onharu.domain.storeschedule.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByBusinessDayQuery;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdAndScheduleDateQuery;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class StoreScheduleQueryService {
     private final StoreScheduleRepository storeScheduleRepository;
 

@@ -453,12 +453,12 @@ public enum ErrorType implements IErrorType {
     }
 
     /**
-     * 리뷰 관련 에러 타입
+     * 알림 관련 에러 타입
      */
     @AllArgsConstructor
-    public enum Review implements IErrorType {
-        REVIEW_NOT_FOUND(ErrorCode.NOT_FOUND, "리뷰 정보를 찾을 수 없습니다.", LogLevel.ERROR)
-        ;
+    public enum Notification implements IErrorType {
+        NOTIFICATION_NOT_FOUND(ErrorCode.NOT_FOUND, "알림 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        NOTIFICATION_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 ID는 필수입니다.", LogLevel.ERROR),
 
         private final ErrorCode code;
         private final String message;
@@ -479,4 +479,31 @@ public enum ErrorType implements IErrorType {
             return logLevel;
         }
     }
+
+    /**
+     * 리뷰 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Review implements IErrorType {
+        REVIEW_NOT_FOUND(ErrorCode.NOT_FOUND, "리뷰 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }   
 }
