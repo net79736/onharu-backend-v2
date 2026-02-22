@@ -6,23 +6,25 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.backend.onharu.domain.child.dto.ChildCommand.CreateChildCommand;
+import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.child.service.ChildCommandService;
+import com.backend.onharu.domain.child.service.ChildQueryService;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
-import com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByIdQuery;
 import com.backend.onharu.domain.level.model.Level;
+import com.backend.onharu.domain.level.service.LevelCommandService;
 import com.backend.onharu.domain.level.service.LevelQueryService;
 import com.backend.onharu.domain.owner.dto.OwnerCommand.CreateOwnerCommand;
+import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.service.OwnerCommandService;
-import com.backend.onharu.domain.user.dto.UserCommand.CreateUserCommand;
-import com.backend.onharu.domain.user.dto.UserCommand.LoginUserCommand;
-import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
-import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
+import com.backend.onharu.domain.owner.service.OwnerQueryService;
+import com.backend.onharu.domain.user.dto.UserCommand.*;
 import com.backend.onharu.domain.user.dto.UserOAuthCommand.CreateUserOAuth;
 import com.backend.onharu.domain.user.dto.UserOAuthCommand.LoginUserOAuthCommand;
 import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpChildUserOAuthCommand;
 import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpOwnerUserOAuthCommand;
 import com.backend.onharu.domain.user.dto.UserOAuthQuery.GetUserByUserOAuthQuery;
+import com.backend.onharu.domain.user.dto.UserProfile.UserChildProfile;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByLoginIdQuery;
 import com.backend.onharu.domain.user.model.User;
@@ -35,6 +37,16 @@ import com.backend.onharu.domain.user.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.backend.onharu.domain.child.dto.ChildCommand.UpdateChildCommand;
+import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
+import static com.backend.onharu.domain.level.dto.LevelCommand.UpdateNameByIdCommand;
+import static com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByNameQuery;
+import static com.backend.onharu.domain.owner.dto.OwnerCommand.updateOwnerBusinessNumberByIdCommand;
+import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
+import static com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
+import static com.backend.onharu.domain.user.dto.UserQuery.GetChildProfileQuery;
+import static com.backend.onharu.domain.user.dto.UserQuery.GetOwnerProfileQuery;
+
 /**
  * 사용자 Facade
  */
@@ -45,13 +57,16 @@ public class UserFacade {
 
     private final UserCommandService userCommandService;
     private final OwnerCommandService ownerCommandService;
+    private final OwnerQueryService ownerQueryService;
     private final ChildCommandService childCommandService;
+    private final ChildQueryService childQueryService;
     private final LevelQueryService levelQueryService;
     private final UserQueryService userQueryService;
     private final UserOAuthQueryService userOAuthQueryService;
     private final UserOAuthCommandService userOAuthCommandService;
     private final NotificationFacade notificationFacade;
     private final PasswordEncoder passwordEncoder;
+    private final LevelCommandService levelCommandService;
 
     /**
      * 아동 회원가입을 처리합니다.
@@ -62,14 +77,17 @@ public class UserFacade {
      * @return 생성된 사용자 엔티티
      */
     public User signUpChild(SignUpChildCommand command) {
-
+        // 아동 회원가입할 사용자 조회
         User user = userCommandService.signUpChild(command);
 
+        // 아동 회원가입 Command 생성
         CreateChildCommand createChildCommand = new CreateChildCommand(
                 user,
                 command.nickname(),
                 command.certificateFilePath()
         );
+
+        // 아동 회원가입 처리
         childCommandService.createChild(createChildCommand);
 
         return user;
@@ -84,21 +102,24 @@ public class UserFacade {
      * @return 생성된 사용자 엔티티
      */
     public User signUpOwner(SignUpOwnerCommand command) {
-
-        Level level = levelQueryService.getLevel(
-                new GetLevelByIdQuery(
-                        Long.valueOf(command.levelId())
+        // 기본 등급(비기너)을 이름으로 조회
+        Level level = levelQueryService.getLevelByName(
+                new GetLevelByNameQuery(
+                        "비기너"
                 )
         );
 
+        // 사용자 회원가입 처리
         User user = userCommandService.signUpOwner(command);
 
+        // 사업자 회원가입 Command 생성
         CreateOwnerCommand createOwnerCommand = new CreateOwnerCommand(
                 user,
                 level,
                 command.businessNumber()
         );
 
+        // 사업자 회원가입 처리
         ownerCommandService.createOwner(createOwnerCommand);
 
         return user;
@@ -113,12 +134,15 @@ public class UserFacade {
      * @return 로그인 사용자 엔티티
      */
     public User loginUser(LoginUserCommand command) {
-
+        // 로그인 아이디로 사용자 조회
         User user = userQueryService.getUserByLoginId(
                 new GetUserByLoginIdQuery(command.loginId())
         );
 
+        // 비밀번호 검증
         user.verifyPassword(command.password(), passwordEncoder);
+
+        // 사용자 계정 상태 검증
         user.verifyStatus();
 
         // 알림 설정 생성
@@ -136,14 +160,15 @@ public class UserFacade {
      * @return 사용자 엔티티
      */
     public User loginUserOAuth(LoginUserOAuthCommand command) {
-
+        // 소셜 로그인 사용자 조회(UserOAuth 테이블에 없는 경우, 임시 사용자 생성)
         User user = userOAuthQueryService.getUserByUserOAuthQuery(
                         new GetUserByUserOAuthQuery(
                                 command.providerId()
                         )
                 )
-                .map(UserOAuth::getUser)
+                .map(UserOAuth::getUser) // 소셜 사용자 계정이 존재하는 경우, 해당 사용자 반환
                 .orElseGet(() -> {
+                    // 소셜 사용자 계정이 없는 경우, 임시 회원 생성
                     User tempUser = userCommandService.createUser(
                             new CreateUserCommand(
                                     command.loginId(),
@@ -154,7 +179,7 @@ public class UserFacade {
                                     StatusType.PENDING,
                                     command.providerType()
                             ));
-
+                    // 소셜 사용자(임시 회원) 회원가입 처리
                     userOAuthCommandService.createUserOAuth(
                             new CreateUserOAuth(
                                     tempUser,
@@ -163,15 +188,15 @@ public class UserFacade {
                             )
                     );
 
-                    return tempUser;
+                    return tempUser; // 임시 회원 반환
                 });
 
-        user.verifyStatus();
+        user.verifyStatus(); // 기존 사용자 계정 상태 검증
 
         // 알림 설정 생성
         notificationFacade.ensureNotificationExists(user.getId());
         
-        return user;
+        return user; // 기존 회원 반환
     }
 
     /**
@@ -183,21 +208,21 @@ public class UserFacade {
      * @return 사용자 엔티티
      */
     public User completeSignUpChildUserOAuth(SignUpChildUserOAuthCommand command) {
-
+        // 사용자 조회
         User user = userQueryService.getUser(
                 new GetUserByIdQuery(
                         Long.valueOf(command.userId())
                 )
         );
-
+        // 사용자 타입을 아동으로 변경
         user.changeUserTypeToChild();
-
+        // 아동 회원가입 Command
         CreateChildCommand createChildCommand = new CreateChildCommand(
                 user,
                 command.nickname(),
                 command.certificate()
         );
-
+        // 아동 회원가입 처리
         childCommandService.createChild(createChildCommand);
 
         return user;
@@ -212,29 +237,176 @@ public class UserFacade {
      * @return 사용자 엔티티
      */
     public User completeSignUpOwnerUserOAuth(SignUpOwnerUserOAuthCommand command) {
-
-        Level level = levelQueryService.getLevel(
-                new GetLevelByIdQuery(
-                        Long.valueOf(command.levelId())
+        // 기본 등급(비기너)을 이름으로 조회
+        Level level = levelQueryService.getLevelByName(
+                new GetLevelByNameQuery(
+                        "비기너"
                 )
         );
 
+        // 추가 정보를 받을 사용자 조회
         User user = userQueryService.getUser(
                 new GetUserByIdQuery(
                         Long.valueOf(command.userId())
                 )
         );
 
+        // 사용자 타입을 사업자로 변경
         user.changeUserTypeToOwner();
 
+        // 사업자 생성 Command
         CreateOwnerCommand createOwnerCommand = new CreateOwnerCommand(
                 user,
                 level,
                 command.businessNumber()
         );
 
+        // 사업자 생성
         ownerCommandService.createOwner(createOwnerCommand);
 
         return user;
+    }
+
+    /**
+     * 현재 사용자가 로그인 되었는지 확인합니다.
+     *
+     * @param query 사용자 ID 가 포함된 query
+     * @return 조회된 사용자 정보
+     */
+    public User getMe(GetUserByIdQuery query) {
+
+        User user = userQueryService.getUser(query);// 사용자 정보 조회
+
+        user.verifyStatus(); // 사용자 계정 상태 검증(ACTIVE 또는 PENDING 가 아닐경우 예외 발생)
+
+        return user;
+    }
+
+    /**
+     * 사용자(아동) 프로필 조회
+     *
+     * @param query 사용자 ID 와 아동 ID 가 포함된 query
+     * @return 조회된 사용자 및 아동 엔티티
+     */
+    public UserChildProfile getChildProfile(GetChildProfileQuery query) {
+        // 사용자 조회
+        User user = userQueryService.getUser(
+                new GetUserByIdQuery(query.userId())
+        );
+
+        user.verifyStatus(); // 계정 상태 확인
+
+        // 아동 조회
+        Child child = childQueryService.getChildById(
+                new GetChildByIdQuery(query.childId())
+        );
+
+        return new UserChildProfile(user, child);
+    }
+
+    /**
+     * 사용자(사업자) 프로필 조회
+     *
+     * @param query 사용자 ID, 등급 ID, 사업자 ID 가 포함된 query
+     * @return 조회된 사용자, 등급, 사업자 엔티티
+     */
+    public UserOwnerProfile getOwnerProfile(GetOwnerProfileQuery query) {
+        // 사용자 조회
+        User user = userQueryService.getUser(
+                new GetUserByIdQuery(query.userId())
+        );
+
+        user.verifyStatus(); // 계정 상태 확인
+
+        // 사업자 조회
+        Owner owner = ownerQueryService.getOwnerById(
+                new GetOwnerByIdQuery(query.ownerId())
+        );
+
+        Level level = owner.getLevel(); // 사업자에 연결된 등급 도메인 추출
+
+        return new UserOwnerProfile(user, level, owner);
+    }
+
+    /**
+     * 사용자(아동) 프로필 수정
+     *
+     * @param command 사용자 ID, 아동 ID, 이름, 전화번호, 닉네임이 포함된 command
+     */
+    public void updateChildProfile(UpdateChildProfileCommand command) {
+        // 사용자 조회
+        User user = userQueryService.getUser(
+                new GetUserByIdQuery(command.userId())
+        );
+        user.verifyStatus(); // 계정 상태 확인
+
+        // 사용자 정보 업데이트
+        userCommandService.updateUserByIdAndNameAndPhone(
+                new UpdateUserCommand(
+                        command.userId(),
+                        user.getName(),
+                        user.getPhone()
+                )
+        );
+
+        // 아동 정보 업데이트
+        childCommandService.updateChildByNickname(
+                new UpdateChildCommand(
+                        command.childId(),
+                        command.nickname()
+                )
+        );
+    }
+
+    // 사용자(사업자) 프로필 수정
+    public void updateOwnerProfile(UpdateOwnerProfileCommand command) {
+        // 사용자 조회
+        User user = userQueryService.getUser(
+                new GetUserByIdQuery(command.userId())
+        );
+        user.verifyStatus(); // 계정 상태 확인
+
+        // 사용자 정보 업데이트
+        userCommandService.updateUserByIdAndNameAndPhone(
+                new UpdateUserCommand(
+                        command.userId(),
+                        user.getName(),
+                        user.getPhone()
+                )
+        );
+
+        // 등급 정보 업데이트
+        levelCommandService.updateNameById(
+                new UpdateNameByIdCommand(
+                        command.name(),
+                        command.levelId()
+                )
+        );
+
+        // 사용자(사업자) 정보 업데이트
+        ownerCommandService.updateOwnerBusinessNumberById(
+                new updateOwnerBusinessNumberByIdCommand(
+                        command.ownerId(),
+                        command.businessNumber()
+                )
+        );
+    }
+
+    /**
+     * 사용자 계정을 비활성화 시킵니다.
+     *
+     * @param command 사용자 제거 Command (사용자 ID, 사용자 계정 상태가 포함된 Command)
+     */
+    public void updateDeletedUser(UpdateDeletedUserCommand command) {
+        // 사용자 조회
+        User user = userQueryService.getUser(
+                new GetUserByIdQuery(command.userId())
+        );
+
+        user.verifyStatus(); // 계정 상태 확인
+
+        user.changeStatus(StatusType.DELETED); // 계정 상태 변경(상태만 삭제됨 으로 변경하고 도메인 제거 x)
+
+        userCommandService.updateDeletedUser(command); // 변경된 사용자 갱신
     }
 }

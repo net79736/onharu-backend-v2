@@ -30,7 +30,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User getUser(GetUserByIdParam param) {
-        return userJpaRepository.findById(param.id())
+        return userJpaRepository.findById(param.userId())
                 .orElseThrow(() -> new CoreException(ErrorType.User.USER_NOT_FOUND));
     }
 
@@ -52,7 +52,21 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void UpdateUserByIdAndPassword(UpdateUserByIdAndPasswordParam param) {
+    public void updateUserByIdAndPassword(UpdateUserByIdAndPasswordParam param) {
         userJpaRepository.resetPassword(param.id(), param.password());
+    }
+
+    @Override
+    public void updateUserByIdAndNameAndPhone(UpdateUserByIdAndNameAndPhoneParam param) {
+        userJpaRepository.updateUser(
+                param.userId(),
+                param.name(),
+                param.phone()
+        );
+    }
+
+    @Override
+    public void updateDeletedUser (UpdateDeletedUserParam param) {
+        userJpaRepository.updateDeletedUser(param.userId(), param.statusType());
     }
 }

@@ -142,7 +142,8 @@ public enum ErrorType implements IErrorType {
         BUSINESS_NUMBER_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "사업자 번호는 필수입니다.", LogLevel.ERROR),
         LEVEL_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "등급 ID는 필수입니다.", LogLevel.ERROR),
         STORE_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "매장명은 필수입니다.", LogLevel.ERROR),
-        SAME_LEVEL_CAN_NOT_BE_ASSIGNED(ErrorCode.BAD_REQUEST, "이미 동일한 등급입니다.", LogLevel.ERROR)
+        SAME_LEVEL_CAN_NOT_BE_ASSIGNED(ErrorCode.BAD_REQUEST, "이미 동일한 등급입니다.", LogLevel.ERROR),
+        BUSINESS_NUMBER_MUST_BE_TEN_DIGITS(ErrorCode.BAD_REQUEST, "사업자 등록번호는 숫자 10자리로 구성되어야 합니다.", LogLevel.ERROR)
         ;
 
         private final ErrorCode code;
@@ -367,6 +368,7 @@ public enum ErrorType implements IErrorType {
         RESERVATION_CHILD_ID_MISMATCH(ErrorCode.BAD_REQUEST, "예약자와 현재 로그인한 아동 정보가 일치하지 않습니다.", LogLevel.ERROR),
         RESERVATION_STORE_ID_MISMATCH(ErrorCode.BAD_REQUEST, "해당 예약은 요청한 가게의 예약이 아닙니다.", LogLevel.ERROR),
         RESERVATION_ALREADY_EXISTS(ErrorCode.BAD_REQUEST, "이미 예약된 가게 일정입니다.", LogLevel.WARN),
+        RESERVATION_NOT_COMPLETED(ErrorCode.BAD_REQUEST, "예약이 완료되지 않은 상태입니다.", LogLevel.ERROR),
         RESERVATION_PEOPLE_EXCEEDS_MAX(ErrorCode.BAD_REQUEST, "예약 인원이 최대 수용 인원을 초과합니다.", LogLevel.WARN),
         RESERVATION_STATUS_COMPLETED_CANNOT_CANCEL(ErrorCode.BAD_REQUEST, "완료된 예약은 취소할 수 없습니다.", LogLevel.ERROR),
         RESERVATION_STATUS_CANCELED_ALREADY_CANCELED(ErrorCode.BAD_REQUEST, "이미 취소된 예약입니다.", LogLevel.ERROR),
@@ -457,7 +459,6 @@ public enum ErrorType implements IErrorType {
     public enum Notification implements IErrorType {
         NOTIFICATION_NOT_FOUND(ErrorCode.NOT_FOUND, "알림 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         NOTIFICATION_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 ID는 필수입니다.", LogLevel.ERROR),
-        ;
 
         private final ErrorCode code;
         private final String message;
@@ -478,4 +479,31 @@ public enum ErrorType implements IErrorType {
             return logLevel;
         }
     }
+
+    /**
+     * 리뷰 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Review implements IErrorType {
+        REVIEW_NOT_FOUND(ErrorCode.NOT_FOUND, "리뷰 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }   
 }

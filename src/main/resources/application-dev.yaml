@@ -5,6 +5,7 @@ spring:
     import:
       - application-smtp.yaml
       - application-oauth.yaml
+      - application-nts.yaml
   application:
     name: onharu
 

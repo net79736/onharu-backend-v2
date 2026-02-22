@@ -1,6 +1,7 @@
 package com.backend.onharu.interfaces.api.controller;
 
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
+import com.backend.onharu.interfaces.api.dto.LevelControllerDto;
 import com.backend.onharu.interfaces.api.dto.LevelControllerDto.CreateLevelRequest;
 import com.backend.onharu.interfaces.api.dto.LevelControllerDto.CreateLevelResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,13 +12,17 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
+
+import static com.backend.onharu.interfaces.api.dto.LevelControllerDto.*;
+
 @Tag(name = "Level", description = "등급 API")
 public interface ILevelController {
 
     /**
      * 등급 생성
      *
-     * POST /levels
+     * POST /api/levels
      * 등급 생성을 진행합니다. 등급명 정보를 받습니다.
      *
      * @param request 등급명
@@ -30,14 +35,69 @@ public interface ILevelController {
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = CreateLevelRequest.class),
-                            examples = @ExampleObject(
-                                    name = "등급 생성 예시",
-                                    value = "{\n" +
-                                            "  \"name\": \"새싹\"\n" +
-                                            "}"
-                            )
+                            examples = {
+                                    @ExampleObject(
+                                            name = "등급 생성 예시1(예약완료 0회)",
+                                            value = """
+                                                    {
+                                                      "name": "비기너"
+                                                    }
+                                                    """
+                                    ),
+                                    @ExampleObject(
+                                            name = "등급 생성 예시2(예약완료 1~4회)",
+                                            value = """
+                                                    {
+                                                      "name": "새싹"
+                                                    }
+                                                    """
+                                    ),
+                                    @ExampleObject(
+                                            name = "등급 생성 예시2(예약완료 5~9회)",
+                                            value = """
+                                                    {
+                                                      "name": "새싹2"
+                                                    }
+                                                    """
+                                    ),
+                                    @ExampleObject(
+                                            name = "등급 생성 예시2(예약완료 10~19회)",
+                                            value = """
+                                                    {
+                                                      "name": "새싹3"
+                                                    }
+                                                    """
+                                    ),
+                            }
                     )
             )
             CreateLevelRequest request
+    );
+
+    /**
+     * 등급 단일 조회
+     *
+     * GET /api/levels/{levelId}
+     * 특정 등급을 조회합니다. 등급 ID 를 받습니다.
+     *
+     * @param levelId 등급 ID
+     * @return 등급 ID, 등급명
+     */
+    @Operation(summary = "등급 조회", description = "등급 ID 로 등급을 조회합니다.")
+    ResponseEntity<ResponseDTO<LevelResponse>> getLevel(
+            @Schema(name = "등급 ID", description = "조회할 등급 ID")
+            Long levelId
+    );
+
+    /**
+     * 등급 목록 조회
+     *
+     * GET /api/levels
+     * 전체 등급 목록을 조회합니다.
+     *
+     * @return 등급 목록
+     */
+    @Operation(summary = "등급 목록 조회", description = "전체 등급 목록을 조회합니다.")
+    ResponseEntity<ResponseDTO<List<LevelResponse>>> getLevels(
     );
 }

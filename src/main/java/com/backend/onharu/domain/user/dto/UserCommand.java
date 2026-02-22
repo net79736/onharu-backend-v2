@@ -15,19 +15,20 @@ import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.user.model.User;
 
 /**
  * 사용자 관련 Command DTO
  * <p>
- * 사용자 도메인에서 사용되는 Command 패턴의 DTO를 정의합니다.
- * Command는 도메인 모델의 상태를 변경하는 작업을 나타냅니다.
+ * 사용자 도메인에서 사용되는 Command 패턴의 DTO 를 정의합니다.
+ * Command 는 도메인 모델의 상태를 변경하는 작업을 나타냅니다.
  */
 public class UserCommand {
 
     /**
      * 아동 회원가입 Command
      * <p>
-     * 아동 사용자 회원가입에 필요한 정보를 담는 Command입니다.
+     * 아동 사용자 회원가입에 필요한 정보를 담는 Command 입니다.
      */
     public record SignUpChildCommand(
             String loginId,
@@ -69,7 +70,7 @@ public class UserCommand {
     /**
      * 사업자 회원가입 Command
      * <p>
-     * 사업자 사용자 회원가입에 필요한 정보를 담는 Command입니다.
+     * 사업자 사용자 회원가입에 필요한 정보를 담는 Command 입니다.
      */
     public record SignUpOwnerCommand(
             String loginId,
@@ -77,16 +78,14 @@ public class UserCommand {
             String passwordConfirm,
             String name,
             String phone,
-            String storeName,
-            String businessNumber,
-            String levelId
+            String businessNumber
     ) {
     }
 
     /**
      * 사용자 생성 Command
      * <p>
-     * 사용자 엔티티를 생성하기 위한 Command입니다.
+     * 사용자 엔티티를 생성하기 위한 Command 입니다.
      */
     public record CreateUserCommand(
             String loginId,
@@ -146,6 +145,71 @@ public class UserCommand {
     public record UpdatePasswordCommand(
             Long id,
             String password
+    ) {
+    }
+
+    /**
+     * 사용자 수정 Command
+     */
+    public record UpdateUserCommand(
+            Long userId,
+            String name,
+            String phone
+    ) {
+    }
+
+    /**
+     * 사용자(아동) 프로필 수정 Command
+     */
+    public record UpdateChildProfileCommand(
+            Long userId,
+            Long childId,
+            String name,
+            String phone,
+            String nickname
+    ) {
+    }
+
+    /**
+     * 사용자(사업자) 프로필 수정 Command
+     */
+    public record UpdateOwnerProfileCommand(
+            Long userId,
+            Long ownerId,
+            Long levelId,
+            String name,
+            String phone,
+            String businessNumber
+    ) {
+    }
+
+    /**
+     * 사용자 제거 Command
+     */
+    public record UpdateDeletedUserCommand(
+            Long userId,
+            StatusType statusType
+    ) {
+    }
+
+    /**
+     * 비밀번호 변경 Command
+     */
+    public record ChangePasswordCommand(
+            Long userId,
+            String currentPassword,
+            String newPassword,
+            String newPasswordConfirm
+    ) {
+    }
+
+    /**
+     * 더티체킹으로 엔티티 저장/수정 Command
+     *
+     * @param user 사용자 엔티티
+     */
+    public record SavedUserCommand(
+            User user
     ) {
     }
 }

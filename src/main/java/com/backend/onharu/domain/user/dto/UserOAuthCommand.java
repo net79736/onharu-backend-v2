@@ -59,12 +59,10 @@ public class UserOAuthCommand {
      *
      * @param userId         소셜 사용자 ID
      * @param businessNumber 사업자 등록번호
-     * @param levelId        등급 ID
      */
     public record SignUpOwnerUserOAuthCommand(
             String userId,
-            String businessNumber,
-            String levelId
+            String businessNumber
     ) {
     }
 }

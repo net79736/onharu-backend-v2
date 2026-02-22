@@ -14,6 +14,31 @@ import org.springframework.http.ResponseEntity;
 public interface IAuthController {
 
     /**
+     * 사업자 등록번호 확인(국세청 API 호출)
+     * <p>
+     * POST /api/auth/business-number
+     */
+    @Operation(summary = "사업자 등록번호 확인", description = "국세청 API 를 호출하여 사업자 등록번호를 확인합니다.")
+    ResponseEntity<ResponseDTO<Boolean>> checkBusinessNumber(
+            @RequestBody(
+                    description = "사업자 등록번호를 포함한 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BusinessNumberRequest.class),
+                            examples = @ExampleObject(
+                                    name = "사업자 등록번호 확인 요청 예시 (쿠팡 사업자 등록번호)",
+                                    value = """
+                                            {
+                                              "businessNumber": "1208800767"
+                                            }
+                                            """
+                            )
+                    )
+            )
+            BusinessNumberRequest request
+    );
+
+    /**
      * 아이디 찾기를 수행합니다.
      * <p>
      * POST /api/auth/find-id
@@ -73,11 +98,13 @@ public interface IAuthController {
                             schema = @Schema(implementation = SendEmailCodeRequest.class),
                             examples = @ExampleObject(
                                     name = "이메일 인증 코드 발송 요청 예시",
-                                    value = "{\n" +
-                                            "  \"email\": \"skhrnt2945@naver.com\"\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "email": "skhrnt2945@naver.com"
+                                            }
+                                            """
+                            )
                     )
-                )
             )
             SendEmailCodeRequest request
     );
@@ -97,14 +124,43 @@ public interface IAuthController {
                             schema = @Schema(implementation = SendEmailCodeRequest.class),
                             examples = @ExampleObject(
                                     name = "이메일 인증 코드 검증 요청 예시",
-                                    value = "{\n" +
-                                            "  \"email\": \"skhrnt2945@naver.com\",\n" +
-                                            "  \"code\": \"f0bb2780-14b9-4c15-9161-c533f8b5b398\",\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "email": "skhrnt2945@naver.com",
+                                              "code": "f0bb2780-14b9-4c15-9161-c533f8b5b398"
+                                            }
+                                            """
                             )
                     )
             )
             VerifyEmailCodeRequest request
+    );
+
+    /**
+     * 새 비밀번호로 변경 요청을 수행합니다.
+     * <p>
+     * POST /api/auth/change-password
+     */
+    @Operation(summary = "비밀번호 변경", description = "새 비밀번호로 변경합니다.")
+    ResponseEntity<ResponseDTO<Void>> changePassword(
+            @RequestBody(
+                    description = "새 비밀번호로 변경합니다.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ChangePasswordRequest.class),
+                            examples = @ExampleObject(
+                                    name = "비밀번호 변경 요청 예시",
+                                    value = """
+                                            {
+                                              "currentPassword": "f0bb2780!",
+                                              "newPassword": "password123!",
+                                              "newPasswordConfirm": "password123!"
+                                            }
+                                            """
+                            )
+                    )
+            )
+            ChangePasswordRequest request
     );
 
 //    @Operation(summary = "SMS 인증 코드 발송", description = "전화번호로 SMS 인증 코드를 발송합니다.")

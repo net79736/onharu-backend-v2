@@ -9,6 +9,9 @@ import com.backend.onharu.domain.child.repository.ChildRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.backend.onharu.domain.child.dto.ChildCommand.*;
+import static com.backend.onharu.domain.child.dto.ChildRepositoryParam.*;
+
 /**
  * 아동 Command Service
  */
@@ -34,5 +37,15 @@ public class ChildCommandService {
                 .build();
 
         return childRepository.save(child);
+    }
+
+    /**
+     * 아동 정보를 수정합니다
+     * @param command 아동 수정 Command
+     */
+    public void updateChildByNickname(UpdateChildCommand command) {
+        childRepository.updateChildNicknameById(
+                new UpdateChildNicknameByIdParam(command.childId(), command.nickname())
+        );
     }
 }

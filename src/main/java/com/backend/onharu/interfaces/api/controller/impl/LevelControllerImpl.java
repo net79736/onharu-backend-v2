@@ -12,14 +12,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+import static com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByIdQuery;
+import static com.backend.onharu.interfaces.api.dto.LevelControllerDto.LevelResponse;
 
 /**
  * 등급 관련 API 를 제거하는 컨트롤러 구현체 입니다.
- *
+ * <p>
  * 등급 생성 기능을 제공합니다.
  */
 @Slf4j
@@ -32,7 +34,6 @@ public class LevelControllerImpl implements ILevelController {
 
     /**
      * 등급 생성
-     *
      * POST /api/levels
      * 신규 등급 생성을 진행합니다. 등급명 정보를 받습니다.
      *
@@ -61,4 +62,60 @@ public class LevelControllerImpl implements ILevelController {
                 .body(ResponseDTO.success(response));
     }
 
+    /**
+     * 등급 단일 조회
+     * GET /api/levels/{levelId}
+     * 특정 등급을 조회합니다. 등급 ID 를 받습니다.
+     *
+     * @param levelId 등급 ID
+     * @return 등급 정보가
+     */
+    @Override
+    @GetMapping("/{levelId}")
+    public ResponseEntity<ResponseDTO<LevelResponse>> getLevel(
+            @PathVariable Long levelId) {
+        log.info("등급 단일 조회 요청: levelId={}", levelId);
+
+        // Query 생성
+        GetLevelByIdQuery query = new GetLevelByIdQuery(levelId);
+        // 등급 단일 조회
+        Level level = levelFacade.getLevel(query);
+
+        // 응답 생성
+        LevelResponse response = new LevelResponse(
+                level.getId(),
+                level.getName()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
+    }
+
+    /**
+     * 등급 목록 조회
+     * GET /api/levels
+     * 전체 등급 목록을 조회합니다.
+     *
+     * @return 등급 목록
+     */
+    @Override
+    @GetMapping
+    public ResponseEntity<ResponseDTO<List<LevelResponse>>> getLevels() {
+        log.info("등급 목록 조회");
+
+        // 등급 목록 조회
+        List<Level> levels = levelFacade.getLevels();
+
+        // 응답 리스트 생성
+        List<LevelResponse> response = levels.stream()
+                .map(level ->
+                        new LevelResponse(
+                                level.getId(),
+                                level.getName()
+                        )
+                ).toList();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
+    }
 }

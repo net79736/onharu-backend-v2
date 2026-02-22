@@ -11,6 +11,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -299,12 +302,15 @@ class FavoriteQueryServiceTest {
             );
             FavoriteQuery.FindFavoritesByChildIdQuery query = new FavoriteQuery.FindFavoritesByChildIdQuery(child.getId());
 
+            Pageable pageable = PageRequest.of(0, 10);
+
             // WHEN
-            List<Favorite> favorites = favoriteQueryService.findFavoritesByChildId(query);
+            Page<Favorite> favorites = favoriteQueryService.findFavoritesByChildId(query, pageable);
 
             // THEN
-            assertThat(favorites).hasSize(2);
-            assertThat(favorites).allMatch(favorite -> favorite
+            assertThat(favorites.getTotalElements()).isEqualTo(2);
+            assertThat(favorites.getContent()).hasSize(2);
+            assertThat(favorites.getContent()).allMatch(favorite -> favorite
                     .getChild()
                     .getId()
                     .equals(child.getId()));
@@ -325,11 +331,14 @@ class FavoriteQueryServiceTest {
 
             FavoriteQuery.FindFavoritesByChildIdQuery query = new FavoriteQuery.FindFavoritesByChildIdQuery(child.getId());
 
+            Pageable pageable = PageRequest.of(0, 10);
+
             // WHEN
-            List<Favorite> favorites = favoriteQueryService.findFavoritesByChildId(query);
+            Page<Favorite> favorites = favoriteQueryService.findFavoritesByChildId(query, pageable);
 
             // THEN
-            assertThat(favorites).isEmpty();
+            assertThat(favorites.getTotalElements()).isZero();
+            assertThat(favorites.getContent()).isEmpty();
         }
     }
 }

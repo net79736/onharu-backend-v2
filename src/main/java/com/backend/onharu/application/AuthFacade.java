@@ -7,12 +7,16 @@ import com.backend.onharu.domain.email.model.EmailAuthentication;
 import com.backend.onharu.domain.email.service.EmailAuthenticationCommandService;
 import com.backend.onharu.domain.email.service.EmailAuthenticationQueryService;
 import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.user.dto.UserCommand.ChangePasswordCommand;
 import com.backend.onharu.domain.user.dto.UserCommand.ResetPasswordUserCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.SavedUserCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.UpdatePasswordCommand;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByNameAndPhoneQuery;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.domain.user.service.UserCommandService;
 import com.backend.onharu.domain.user.service.UserQueryService;
 import com.backend.onharu.infra.email.EmailSendService;
+import com.backend.onharu.infra.nts.NtsBusinessNumber;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -22,11 +26,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.backend.onharu.domain.owner.dto.OwnerCommand.checkBusinessNumberCommand;
 import static com.backend.onharu.domain.support.error.ErrorType.EmailAuthentication.EMAIL_NOT_VERIFIED;
-import static com.backend.onharu.domain.user.dto.UserCommand.UpdatePasswordCommand;
+import static com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
 
 /**
- * 사용자의 이메일 인증 및 처리를 수행하는 Facade 입니다.
+ * 사용자의 인증 및 처리를 수행하는 Facade 입니다.
  */
 @Component
 @RequiredArgsConstructor
@@ -40,6 +45,8 @@ public class AuthFacade {
 
     private final PasswordEncoder passwordEncoder;
     private final UserCommandService userCommandService;
+
+    private final NtsBusinessNumber ntsBusinessNumber;
 
     /**
      * 이메일 인증 코드 생성/재인증 메서드
@@ -134,5 +141,31 @@ public class AuthFacade {
         }
 
         return sb.toString();
+    }
+
+    /**
+     * 비밀번호 변경
+     */
+    public void changePassword(ChangePasswordCommand command) {
+        // 사용자 상태 확인 및 검증
+        User user = userQueryService.getUser(
+                new GetUserByIdQuery(command.userId())
+        );
+
+        user.verifyStatus(); // 사용자 계정 상태 검증
+        user.verifyPassword(command.currentPassword(), passwordEncoder); // 현재 입력한 비밀번호가 맞는지 검증
+        user.confirmPassword(command.newPassword(), command.newPasswordConfirm()); // 새 비밀번호의 입력이 같은지 검증
+        user.changePassword(command.newPassword(), passwordEncoder);// 비밀번호 변경
+
+        userCommandService.changePasswordUser(
+                new SavedUserCommand(user)
+        ); // 사용자 업데이트(더티체킹)
+    }
+
+    /**
+     * 사업자 등록번호 확인
+     */
+    public boolean checkBusinessNumber(checkBusinessNumberCommand command) {
+        return ntsBusinessNumber.isValid(command.businessNumber()); // 사업자 등록번호 유효 여부
     }
 }

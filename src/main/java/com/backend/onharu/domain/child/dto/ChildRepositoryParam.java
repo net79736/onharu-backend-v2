@@ -32,4 +32,13 @@ public class ChildRepositoryParam {
             }
         }
     }
+
+    /**
+     * 아동 ID 와 닉네임 수정 파라미터
+     */
+    public record UpdateChildNicknameByIdParam(
+            Long childId,
+            String nickname
+    ) {
+    }
 }
