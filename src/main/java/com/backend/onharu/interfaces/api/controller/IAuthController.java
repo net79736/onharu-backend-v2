@@ -14,6 +14,31 @@ import org.springframework.http.ResponseEntity;
 public interface IAuthController {
 
     /**
+     * 사업자 등록번호 확인(국세청 API 호출)
+     * <p>
+     * POST /api/auth/business-number
+     */
+    @Operation(summary = "사업자 등록번호 확인", description = "국세청 API 를 호출하여 사업자 등록번호를 확인합니다.")
+    ResponseEntity<ResponseDTO<Boolean>> checkBusinessNumber(
+            @RequestBody(
+                    description = "사업자 등록번호를 포함한 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BusinessNumberRequest.class),
+                            examples = @ExampleObject(
+                                    name = "사업자 등록번호 확인 요청 예시 (쿠팡 사업자 등록번호)",
+                                    value = """
+                                            {
+                                              "businessNumber": "1208800767"
+                                            }
+                                            """
+                            )
+                    )
+            )
+            BusinessNumberRequest request
+    );
+
+    /**
      * 아이디 찾기를 수행합니다.
      * <p>
      * POST /api/auth/find-id
