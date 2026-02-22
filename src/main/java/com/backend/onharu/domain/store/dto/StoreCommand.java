@@ -34,8 +34,8 @@ public class StoreCommand {
     public record UpdateStoreCommand(
             Long id,
             Long categoryId,
-            String phone,
             String address,
+            String phone,
             String lat,
             String lng,
             String introduction,
