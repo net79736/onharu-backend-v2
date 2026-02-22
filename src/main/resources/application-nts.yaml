@@ -2,6 +2,6 @@
 external:
   nts:
     base-url: https://api.odcloud.kr/api/nts-businessman/v1/status # 사업자 등록 상태조회 API 주소
-    serviceKey: ${serviceKey} # 인증키
+    serviceKey: ${NTS_API_SERVICE_KEY} # 인증키
     connect-timeout: 5000 # RestTemplate 으로 서버 연결 대기시간(5초)
     read-timeout: 5000 # RestTemplate 으로 응답 대기시간(5초)
