@@ -9,8 +9,8 @@ import com.backend.onharu.domain.store.dto.StoreCommand.UpdateStoreCommand;
 import com.backend.onharu.domain.store.model.BusinessHours;
 import com.backend.onharu.domain.store.model.StoreTag;
 import com.backend.onharu.domain.tag.model.Tag;
+import com.backend.onharu.interfaces.api.common.dto.ImageMetadataRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.BusinessHourResponse;
-import com.backend.onharu.interfaces.api.dto.StoreControllerDto.ImageMetadataRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
 
