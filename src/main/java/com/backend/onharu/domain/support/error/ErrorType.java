@@ -234,8 +234,8 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum Level implements IErrorType {
         LEVEL_NOT_FOUND(ErrorCode.NOT_FOUND, "등급 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        LEVEL_NAME_NOT_FOUND(ErrorCode.NOT_FOUND, "해당되는 이름의 등급을 찾을 수 없습니다.", LogLevel.ERROR),
         NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "등급명은 필수입니다.", LogLevel.ERROR)
-
         ;
 
         private final ErrorCode code;

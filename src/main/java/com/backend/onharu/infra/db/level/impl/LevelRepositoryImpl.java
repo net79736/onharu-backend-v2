@@ -40,7 +40,7 @@ public class LevelRepositoryImpl implements LevelRepository {
     @Override
     public Level getLevelByName(GetLevelByNameParam param) {
         return levelJpaRepository.findByName(param.name())
-                .orElseThrow(() -> new CoreException(ErrorType.Level.NAME_MUST_NOT_BE_BLANK));
+                .orElseThrow(() -> new CoreException(ErrorType.Level.LEVEL_NAME_NOT_FOUND));
     }
 
     @Override
