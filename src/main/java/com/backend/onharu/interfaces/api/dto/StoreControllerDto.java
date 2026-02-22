@@ -6,6 +6,7 @@ import java.util.List;
 import com.backend.onharu.domain.common.enums.WeekType;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.interfaces.api.common.dto.ImageMetadataRequest;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,7 +16,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 public class StoreControllerDto {
@@ -256,26 +256,6 @@ public class StoreControllerDto {
 
             @Schema(description = "마감 시간", example = "22:00")
             LocalTime closeTime
-    ) {
-    }
-
-    /**
-     * 이미 업로드된 이미지 메타데이터 (Presigned URL로 MinIO 업로드 완료 후 클라이언트가 보관한 정보)
-     */
-    @Schema(description = "이미 업로드된 이미지 메타데이터")
-    public record ImageMetadataRequest(
-        @NotBlank(message = "파일 키는 필수입니다.")
-        @Schema(description = "S3 객체 키", example = "image/uuid-photo.jpg", requiredMode = Schema.RequiredMode.NOT_REQUIRED) // 필수 아님
-        String fileKey,
-
-        @NotBlank(message = "파일 경로는 필수입니다.")
-        @Schema(description = "이미지 전체 URL", example = "https://minio.example.com/bucket/image/uuid-photo.jpg", requiredMode = Schema.RequiredMode.NOT_REQUIRED) // 필수 아님
-        String filePath,
-
-        @NotNull(message = "표시 순서는 필수입니다.")
-        @PositiveOrZero(message = "표시 순서는 0 이상의 숫자여야 합니다.")
-        @Schema(description = "표시 순서 (0이 대표 이미지)", example = "0", requiredMode = Schema.RequiredMode.NOT_REQUIRED) // 필수 아님
-        Integer displayOrder
     ) {
     }
 

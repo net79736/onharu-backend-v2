@@ -459,6 +459,7 @@ public enum ErrorType implements IErrorType {
     public enum Notification implements IErrorType {
         NOTIFICATION_NOT_FOUND(ErrorCode.NOT_FOUND, "알림 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         NOTIFICATION_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 ID는 필수입니다.", LogLevel.ERROR),
+        ;
 
         private final ErrorCode code;
         private final String message;
@@ -486,6 +487,7 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum Review implements IErrorType {
         REVIEW_NOT_FOUND(ErrorCode.NOT_FOUND, "리뷰 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        ;
 
         private final ErrorCode code;
         private final String message;
