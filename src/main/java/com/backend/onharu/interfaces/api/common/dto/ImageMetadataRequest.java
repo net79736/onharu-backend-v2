@@ -1,5 +1,9 @@
 package com.backend.onharu.interfaces.api.common.dto;
 
+import java.util.List;
+
+import com.backend.onharu.domain.file.dto.FileCommand.ImageMetadata;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,4 +30,20 @@ public record ImageMetadataRequest(
         @Schema(description = "표시 순서 (0이 대표 이미지)", example = "0", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
         Integer displayOrder
 ) {
+
+    /**
+     * API 이미지 메타데이터 목록을 도메인 ImageMetadata 목록으로 변환.
+     * null 또는 빈 목록이면 null을 반환합니다.
+     *
+     * @param images API 요청의 이미지 메타데이터 목록
+     * @return 도메인 ImageMetadata 목록, 입력이 null 또는 비어 있으면 null
+     */
+    public static List<ImageMetadata> toImageMetadataList(List<ImageMetadataRequest> images) {
+        if (images == null || images.isEmpty()) {
+            return null;
+        }
+        return images.stream()
+                .map(img -> new ImageMetadata(img.fileKey(), img.filePath(), img.displayOrder()))
+                .toList();
+    }
 }
