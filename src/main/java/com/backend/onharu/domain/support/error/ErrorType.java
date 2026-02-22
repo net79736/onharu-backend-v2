@@ -142,7 +142,8 @@ public enum ErrorType implements IErrorType {
         BUSINESS_NUMBER_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "사업자 번호는 필수입니다.", LogLevel.ERROR),
         LEVEL_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "등급 ID는 필수입니다.", LogLevel.ERROR),
         STORE_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "매장명은 필수입니다.", LogLevel.ERROR),
-        SAME_LEVEL_CAN_NOT_BE_ASSIGNED(ErrorCode.BAD_REQUEST, "이미 동일한 등급입니다.", LogLevel.ERROR)
+        SAME_LEVEL_CAN_NOT_BE_ASSIGNED(ErrorCode.BAD_REQUEST, "이미 동일한 등급입니다.", LogLevel.ERROR),
+        BUSINESS_NUMBER_MUST_BE_TEN_DIGITS(ErrorCode.BAD_REQUEST, "사업자 등록번호는 숫자 10자리로 구성되어야 합니다.", LogLevel.ERROR)
         ;
 
         private final ErrorCode code;
