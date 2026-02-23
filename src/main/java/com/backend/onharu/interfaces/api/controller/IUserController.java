@@ -1,6 +1,5 @@
 package com.backend.onharu.interfaces.api.controller;
 
-import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.dto.UserControllerDto.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @Tag(name = "User", description = "사용자 API")
 public interface IUserController {
@@ -32,15 +30,23 @@ public interface IUserController {
                             schema = @Schema(implementation = SignUpChildRequest.class),
                             examples = @ExampleObject(
                                     name = "아동 회원가입 예시",
-                                    value = "{\n" +
-                                            "  \"loginId\": \"child123@test.com\",\n" +
-                                            "  \"password\": \"password123!\",\n" +
-                                            "  \"passwordConfirm\": \"password123!\",\n" +
-                                            "  \"name\": \"홍길동\",\n" +
-                                            "  \"phone\": \"01012345678\",\n" +
-                                            "  \"nickname\": \"코끼리땃쥐\",\n" +
-                                            "  \"certificate\": \"/certificates/certificate.pdf\"\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "loginId": "child123@test.com",
+                                              "password": "password123!",
+                                              "passwordConfirm": "password123!",
+                                              "name": "홍길동",
+                                              "phone": "01012345678",
+                                              "nickname": "코끼리땃쥐",
+                                              "images": [
+                                                {
+                                                  "fileKey": "images/certificate.pdf",
+                                                  "filePath": "https://minio.example.com/bucket/images/certificate.pdf",
+                                                  "displayOrder": "0"
+                                                }
+                                              ]
+                                            }
+                                            """
                             )
                     )
             )
@@ -202,7 +208,6 @@ public interface IUserController {
      */
     @Operation(summary = "아동 소셜 회원가입 마무리", description = "아동 소셜 회원가입을 마무리합니다. 전화번호, 닉네임, 증명서 파일을 함께 받습니다.")
     ResponseEntity<ResponseDTO<SignUpChildResponse>> finishSignUpChild(
-            @AuthenticationPrincipal User user,
             @RequestBody(
                     description = "아동 소셜 회원가입 마무리 요청",
                     content = @Content(
@@ -210,11 +215,19 @@ public interface IUserController {
                             schema = @Schema(implementation = finishSignUpChildRequest.class),
                             examples = @ExampleObject(
                                     name = "아동 소셜 회원가입 요청",
-                                    value = "{\n" +
-                                            "  \"phone\": \"01012345678\",\n" +
-                                            "  \"nickname\": \"코끼리땃쥐\",\n" +
-                                            "  \"certificate\": \"/certificates/certificate.pdf\"\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "phone": "01012345678",
+                                              "nickname": "카카오아동닉네임",
+                                              "images": [
+                                                {
+                                                  "fileKey": "certificate/certificate.pdf",
+                                                  "filePath": "https://minio.example.com/bucket/images/certificate.pdf",
+                                                  "displayOrder": "0"
+                                                }
+                                              ]
+                                            }
+                                            """
                             )
                     )
             )
@@ -228,7 +241,6 @@ public interface IUserController {
      */
     @Operation(summary = "사업자 소셜 회원가입 마무리", description = "사업자 소셜 회원가입을 마무리합니다. ")
     ResponseEntity<ResponseDTO<SignUpChildResponse>> finishSignUpOwner(
-            @AuthenticationPrincipal User user,
             @RequestBody(
                     description = "사업자 소셜 회원가입 마무리 요청",
                     content = @Content(
