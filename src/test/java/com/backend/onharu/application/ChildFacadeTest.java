@@ -139,14 +139,13 @@ class ChildFacadeTest {
     /**
      * 테스트용 Child 생성 헬퍼 메서드 (User, Level 과 함께 생성)
      */
-    private Child createTestChild(String loginId, String name, String phone, String nickname, String certificate, Boolean isVerified) {
+    private Child createTestChild(String loginId, String name, String phone, String nickname, Boolean isVerified) {
         User user = createTestUserForChild(loginId, name, phone);
 
         return childJpaRepository.save(
             Child.builder()
                 .user(user)
                 .nickname(nickname)
-                .certificate(certificate)
                 .isVerified(isVerified != null ? isVerified : true)
                 .build()
         );
@@ -156,7 +155,7 @@ class ChildFacadeTest {
      * 테스트용 Child 생성 헬퍼 메서드 (기본값 사용)
      */
     private Child createTestChild(String loginId, String name, String phone) {
-        return createTestChild(loginId, name, phone, name + "닉네임", "/certificates/test.pdf", true);
+        return createTestChild(loginId, name, phone, name + "닉네임", true);
     }
 
     /**

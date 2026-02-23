@@ -28,7 +28,6 @@ class ChildTest {
         Child child = Child.builder()
                 .user(testUser)
                 .nickname("테스트닉네임")
-                .certificate("test/certificate")
                 .isVerified(null)
                 .build();
 

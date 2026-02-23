@@ -203,7 +203,6 @@ class OwnerFacadeTest {
                 Child.builder()
                         .user(user)
                         .nickname(name + "테스트 닉네임")
-                        .certificate("/certificates/test.pdf")
                         .isVerified(true)
                         .build()
         );

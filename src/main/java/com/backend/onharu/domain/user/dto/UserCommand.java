@@ -1,21 +1,16 @@
 package com.backend.onharu.domain.user.dto;
 
-import static com.backend.onharu.domain.support.error.ErrorType.Child.CERTIFICATE_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.Child.NICKNAME_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.User.LOGIN_ID_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.User.NAME_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.User.PASSWORD_CONFIRM_MISMATCH;
-import static com.backend.onharu.domain.support.error.ErrorType.User.PASSWORD_CONFIRM_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.User.PASSWORD_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.User.PHONE_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.User.USER_ID_MUST_NOT_BE_NULL;
-import static com.backend.onharu.domain.support.error.ErrorType.User.USER_TYPE_MUST_NOT_BE_NULL;
-
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.domain.file.dto.FileCommand;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.model.User;
+
+import java.util.List;
+
+import static com.backend.onharu.domain.support.error.ErrorType.Child.NICKNAME_MUST_NOT_BE_BLANK;
+import static com.backend.onharu.domain.support.error.ErrorType.User.*;
 
 /**
  * 사용자 관련 Command DTO
@@ -37,7 +32,7 @@ public class UserCommand {
             String name,
             String phone,
             String nickname,
-            String certificateFilePath
+            List<FileCommand.ImageMetadata> images
     ) {
         public SignUpChildCommand {
             if (loginId == null || loginId.isBlank()) {
@@ -60,9 +55,6 @@ public class UserCommand {
             }
             if (nickname == null || nickname.isBlank()) {
                 throw new CoreException(NICKNAME_MUST_NOT_BE_BLANK);
-            }
-            if (certificateFilePath == null || certificateFilePath.isBlank()) {
-                throw new CoreException(CERTIFICATE_MUST_NOT_BE_BLANK);
             }
         }
     }

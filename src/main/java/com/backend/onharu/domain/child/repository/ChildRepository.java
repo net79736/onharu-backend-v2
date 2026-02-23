@@ -4,7 +4,7 @@ import com.backend.onharu.domain.child.dto.ChildRepositoryParam.GetChildByIdPara
 import com.backend.onharu.domain.child.dto.ChildRepositoryParam.GetChildByLoginIdParam;
 import com.backend.onharu.domain.child.model.Child;
 
-import static com.backend.onharu.domain.child.dto.ChildRepositoryParam.*;
+import static com.backend.onharu.domain.child.dto.ChildRepositoryParam.UpdateChildNicknameByIdParam;
 
 /**
  * 아동 Repository 인터페이스

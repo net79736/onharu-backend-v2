@@ -597,8 +597,8 @@ class StoreFacadeTest {
             UpdateStoreCommand command = new UpdateStoreCommand(
                     store.getId(),
                     category2.getId(),
-                    "0298765432",
                     "서울시 서초구",
+                    "0298765432",
                     "37.4837",
                     "127.0324",
                     "업데이트된 가게 소개입니다.",

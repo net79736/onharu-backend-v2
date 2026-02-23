@@ -221,8 +221,8 @@ class StoreCommandServiceTest {
             UpdateStoreCommand command = new UpdateStoreCommand(
                     savedStore.getId(),
                     category2.getId(),
-                    "0298765432",
                     "서울시 서초구",
+                    "0298765432",
                     "37.4838",
                     "127.0324",
                     "새로운 소개",

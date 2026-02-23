@@ -11,10 +11,10 @@ public class ChildRepositoryParam {
      * 아동 ID로 조회하는 파라미터
      */
     public record GetChildByIdParam(
-            Long id
+            Long childId
     ) {
         public GetChildByIdParam {
-            if (id == null) {
+            if (childId == null) {
                 throw new CoreException(ErrorType.Child.CHILD_ID_MUST_NOT_BE_NULL);
             }
         }

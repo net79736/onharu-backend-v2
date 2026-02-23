@@ -32,7 +32,7 @@ public class ChildQueryService {
      * @return 조회된 사용자 엔티티
      */
     public Child getChildById(GetChildByIdQuery query) {
-        return childRepository.getChildById(new GetChildByIdParam(query.id()));
+        return childRepository.getChildById(new GetChildByIdParam(query.childId()));
     }
 
     /**
