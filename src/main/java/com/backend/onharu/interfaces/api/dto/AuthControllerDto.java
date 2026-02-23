@@ -75,7 +75,7 @@ public class AuthControllerDto {
 
     public record ValidatePasswordRequest(
             @NotBlank(message = "현재 비밀번호는 필수 입력 값 입니다.")
-            @Schema(description = "현재 비밀번호", example = "random123!")
+            @Schema(description = "현재 비밀번호", example = "password123!")
             String password
     ) {
     }
