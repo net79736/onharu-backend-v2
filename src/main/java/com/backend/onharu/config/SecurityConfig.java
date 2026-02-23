@@ -36,7 +36,7 @@ public class SecurityConfig {
             "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**",
             "/error", "/favicon.ico",
             "/api/users/login/**", "/api/users/signup/**",
-            "/api/users/logout/**", "/users/me/**",
+            "/api/users/logout/**", "/users/me/**", "/api/users/profile/**",
             "/api/levels/**", // 레벨 관련 API
             "/api/childrens/**", // 결식 아동 관련 API
             "/api/owners/**", // 사업자 관련 API
