@@ -1,5 +1,6 @@
 package com.backend.onharu.application;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.backend.onharu.domain.level.model.Level;
@@ -97,7 +98,7 @@ class UserFacadeTest {
                 "테스트 아동",
                 "01012345678",
                 "테스트 닉네임",
-                "/certificates/test.pdf"
+                    List.of() // 이미지 없음
             );
 
             // when
@@ -117,7 +118,6 @@ class UserFacadeTest {
             Child child = childJpaRepository.findByUser_LoginId(user.getLoginId()).orElse(null);
             assertNotNull(child);
             assertEquals(child.getUser().getId(), user.getId());
-            assertEquals(child.getCertificate(), "/certificates/test.pdf");
 
             System.out.println("✅ 아동 회원가입 성공 - User ID: " + user.getId());
             System.out.println("   - 로그인 ID: " + user.getLoginId());
@@ -150,7 +150,7 @@ class UserFacadeTest {
                 "새로운 아동",
                 "01022222222",
                     "테스트 닉네임",
-                "/certificates/new.pdf"
+                    List.of() // 이미지 없음
             );
 
             // when & then
