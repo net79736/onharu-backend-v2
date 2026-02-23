@@ -9,7 +9,7 @@ public class ChildQuery {
      * 아동 ID로 아동 조회 Query
      */
     public record GetChildByIdQuery(
-            Long id
+            Long childId
     ) {
     }
 

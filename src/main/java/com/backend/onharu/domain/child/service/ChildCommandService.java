@@ -32,7 +32,6 @@ public class ChildCommandService {
         Child child = Child.builder()
                 .user(command.user())
                 .nickname(command.nickname())
-                .certificate(command.certificate())
                 .isVerified(false) // 초기값은 미승인 상태
                 .build();
 
