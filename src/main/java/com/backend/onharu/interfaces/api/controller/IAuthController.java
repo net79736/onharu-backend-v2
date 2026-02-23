@@ -163,6 +163,31 @@ public interface IAuthController {
             ChangePasswordRequest request
     );
 
+    /**
+     * 입력한 비밀번호를 검증합니다.
+     *
+     * POST /api/auth/validate-password
+     */
+    @Operation(summary = "현재 비밀번호 검증", description = "현재 비밀번호가 DB 에 저장된 비밀번호와 일치하는지 확인합니다.")
+    ResponseEntity<ResponseDTO<Boolean>> validatePassword(
+            @RequestBody(
+                    description = "현재 비밀번호가 맞는지 확인합니다.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ValidatePasswordRequest.class),
+                            examples = @ExampleObject(
+                                    name = "현재 비밀번호 검증 요청 예시",
+                                    value = """
+                                            {
+                                              "password": "password123!"
+                                            }
+                                            """
+                            )
+                    )
+            )
+            ValidatePasswordRequest request
+    );
+
 //    @Operation(summary = "SMS 인증 코드 발송", description = "전화번호로 SMS 인증 코드를 발송합니다.")
 //    ResponseEntity<ResponseDTO<Void>> sendSmsCode(
 //            @Schema(description = "SMS 인증 발송 요청")
