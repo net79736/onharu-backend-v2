@@ -11,6 +11,7 @@ import com.backend.onharu.domain.user.dto.UserCommand.ChangePasswordCommand;
 import com.backend.onharu.domain.user.dto.UserCommand.ResetPasswordUserCommand;
 import com.backend.onharu.domain.user.dto.UserCommand.SavedUserCommand;
 import com.backend.onharu.domain.user.dto.UserCommand.UpdatePasswordCommand;
+import com.backend.onharu.domain.user.dto.UserQuery;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByNameAndPhoneQuery;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.domain.user.service.UserCommandService;
@@ -28,6 +29,7 @@ import java.util.List;
 
 import static com.backend.onharu.domain.owner.dto.OwnerCommand.checkBusinessNumberCommand;
 import static com.backend.onharu.domain.support.error.ErrorType.EmailAuthentication.EMAIL_NOT_VERIFIED;
+import static com.backend.onharu.domain.user.dto.UserQuery.*;
 import static com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
 
 /**
@@ -167,5 +169,17 @@ public class AuthFacade {
      */
     public boolean checkBusinessNumber(checkBusinessNumberCommand command) {
         return ntsBusinessNumber.isValid(command.businessNumber()); // 사업자 등록번호 유효 여부
+    }
+
+    /**
+     * 현재 비밀번호 확인
+     */
+    public boolean validatePassword(ValidatePasswordQuery query) {
+        // 사용자 조회
+        User user = userQueryService.getUser(new GetUserByIdQuery(query.userId()));
+        user.verifyStatus(); // 사용자 상태 확인
+        user.verifyPassword(query.password(), passwordEncoder); // 비밀번호 검증 (실패시 예외 발생)
+
+        return true;
     }
 }
