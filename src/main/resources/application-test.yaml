@@ -47,3 +47,11 @@ SMTP_HOST: localhost
 SMTP_PORT: 25
 SMTP_USERNAME: test
 SMTP_PASSWORD: test
+
+# 국세청 API 호출 테스트용
+external:
+  nts:
+    base-url: https://api.odcloud.kr/api/nts-businessman/v1/status
+    serviceKey: test
+    connect-timeout: 5000
+    read-timeout: 5000
