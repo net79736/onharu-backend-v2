@@ -69,4 +69,15 @@ public class UserQuery {
             Long ownerId
     ) {
     }
+
+    /**
+     * 비밀번호 조회 Query 입니다.
+     * @param userId 사용자 ID,
+     * @param password 비밀번호
+     */
+    public record ValidatePasswordQuery(
+            Long userId,
+            String password
+    ) {
+    }
 }
