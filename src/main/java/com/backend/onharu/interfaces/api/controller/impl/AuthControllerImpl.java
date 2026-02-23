@@ -210,7 +210,8 @@ public class AuthControllerImpl implements IAuthController {
      */
     @Override
     @PostMapping("/validate-password")
-    public ResponseEntity<ResponseDTO<Boolean>> validatePassword(ValidatePasswordRequest request) {
+    public ResponseEntity<ResponseDTO<Boolean>> validatePassword(
+            @Valid @RequestBody ValidatePasswordRequest request) {
         log.info("비밀번호 검증 요청: {}", request);
 
         Long userId = SecurityUtils.getUserId();
