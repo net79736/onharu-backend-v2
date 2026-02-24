@@ -100,7 +100,8 @@ public class ReviewControllerImpl implements IReviewController {
                         review.getStore().getId(),
                         review.getReservation().getId(),
                         review.getStore().getName(),
-                        review.getContent()
+                        review.getContent(),
+                        review.getCreatedAt().toLocalDate()
                 )); // 응답을 담을 ReviewResponse 목록 생성
 
         GetReviewListResponse response = new GetReviewListResponse(
@@ -152,7 +153,8 @@ public class ReviewControllerImpl implements IReviewController {
                         review.getStore().getId(),
                         review.getReservation().getId(),
                         review.getStore().getName(),
-                        review.getContent()
+                        review.getContent(),
+                        review.getCreatedAt().toLocalDate()
                 )); // 응답을 담을 ReviewResponse 목록 생성
 
         GetReviewDetailResponse response = new GetReviewDetailResponse(
@@ -204,7 +206,8 @@ public class ReviewControllerImpl implements IReviewController {
                         review.getStore().getId(),
                         review.getReservation().getId(),
                         review.getStore().getName(),
-                        review.getContent()
+                        review.getContent(),
+                        review.getCreatedAt().toLocalDate()
                 )); // 응답을 담을 ReviewResponse 목록 생성
 
         GetMyReviewListResponse response = new GetMyReviewListResponse(
