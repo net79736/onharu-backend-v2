@@ -46,6 +46,8 @@ public final class SecurityUtils implements ApplicationContextAware {
 
         if (authentication == null || !authentication.isAuthenticated() 
                 || authentication.getPrincipal().equals("anonymousUser")) {
+            log.info("authentication: {}", authentication);
+            log.info("authentication이 null 또는 익명 사용자");
             return null;
         }
         
@@ -73,11 +75,13 @@ public final class SecurityUtils implements ApplicationContextAware {
         
         // ApplicationContext가 초기화되지 않은 경우 null 반환
         if (applicationContext == null) {
+            log.info("applicationContext가 초기화되지 않음");
             return null;
         }
         
         if (userType == UserType.CHILD) {
             // 아동인 경우 아동 ID 반환
+            log.info("아동인 경우 아동 ID 반환");
             ChildJpaRepository childRepository = applicationContext.getBean(ChildJpaRepository.class);
             log.info(childRepository.findByUser_Id(user.getId()).toString());
             return childRepository.findByUser_Id(user.getId())
@@ -85,6 +89,7 @@ public final class SecurityUtils implements ApplicationContextAware {
                     .orElse(null);
         } else if (userType == UserType.OWNER) {
             // 사장인 경우 사장 ID 반환
+            log.info("사장인 경우 사장 ID 반환");
             OwnerJpaRepository ownerRepository = applicationContext.getBean(OwnerJpaRepository.class);
             log.info(ownerRepository.findByUser_Id(user.getId()).toString());
             return ownerRepository.findByUser_Id(user.getId())
@@ -122,6 +127,7 @@ public final class SecurityUtils implements ApplicationContextAware {
      * @return 현재 Authentication (인증되지 않은 경우 null)
      */
     public static Authentication getCurrentAuthentication() {
+        log.info("SecurityContextHolder.getContext().getAuthentication(): {}", SecurityContextHolder.getContext().getAuthentication());
         return SecurityContextHolder.getContext().getAuthentication();
     }
     
