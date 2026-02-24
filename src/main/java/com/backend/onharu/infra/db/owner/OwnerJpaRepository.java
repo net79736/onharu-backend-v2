@@ -4,6 +4,7 @@ import com.backend.onharu.domain.owner.model.Owner;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
@@ -35,5 +36,5 @@ public interface OwnerJpaRepository extends JpaRepository<Owner, Long> {
      */
     @Modifying
     @Query("UPDATE Owner o SET o.businessNumber = :businessNumber WHERE o.id = :id")
-    void updateOwnerBusinessNumberById(String businessNumber, Long id);
+    void updateOwnerBusinessNumberById(@Param("businessNumber") String businessNumber, @Param("id") Long id);
 }
