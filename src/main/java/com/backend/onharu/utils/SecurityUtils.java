@@ -80,47 +80,38 @@ public final class SecurityUtils implements ApplicationContextAware {
         }
         
         if (userType == UserType.CHILD) {
-            // 아동인 경우 아동 ID 반환
-            log.info("아동인 경우 아동 ID 반환");
+            log.info("아동인 경우 아동 ID 조회 시작 (User ID: {})", user.getId());
             ChildJpaRepository childRepository = applicationContext.getBean(ChildJpaRepository.class);
-            log.info(childRepository.findByUser_Id(user.getId()).toString());
+        
             return childRepository.findByUser_Id(user.getId())
-                    .map(child -> child.getId())
-                    .orElse(null);
-        } else if (userType == UserType.OWNER) {
-            // 사장인 경우 사장 ID 반환
-            log.info("사장인 경우 사장 ID 반환");
+                    .map(child -> {
+                        log.info("찾은 아동 ID: {}", child.getId());
+                        return child.getId();
+                    })
+                    .orElseGet(() -> {
+                        log.warn("DB에 해당 User ID({})를 가진 아동 정보가 없습니다. UserType: {}", userType);
+                        return null;
+                    });
+        }
+        else if (userType == UserType.OWNER) {
+            log.info("사장인 경우 사장 ID 조회 시작 (User ID: {})", user.getId());
             OwnerJpaRepository ownerRepository = applicationContext.getBean(OwnerJpaRepository.class);
-            log.info(ownerRepository.findByUser_Id(user.getId()).toString());
             return ownerRepository.findByUser_Id(user.getId())
-                    .map(owner -> owner.getId())
-                    .orElse(null);
+                    .map(owner -> {
+                        log.info("찾은 사장 ID: {}", owner.getId());
+                        return owner.getId();
+                    })
+                    .orElseGet(() -> {
+                        log.warn("DB에 해당 User ID({})를 가진 사장 정보가 없습니다. UserType: {}", userType);
+                        return null;
+                    });
         }
 
         // ADMIN이나 NONE인 경우 null 반환
+        log.warn("DB에 해당 User ID({})를 가진 아동 또는 사장 정보가 없습니다. UserType: {}", user.getId(), userType);
         return null;
     }
 
-    public static User getCurrentUser() {
-        Authentication authentication = getCurrentAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()
-                || authentication.getPrincipal().equals("anonymousUser")) {
-            return null;
-        }
-        if (authentication.getPrincipal() instanceof LocalUser localUser) {
-            return localUser.getUser();
-        }
-        if (authentication.getPrincipal() instanceof SocialUser socialUser) {
-            return socialUser.getUser();
-        }
-        return null;
-    }
-
-    public static Long getCurrentUserEntityId() {
-        User user = getCurrentUser();
-        return user != null ? user.getId() : null;
-    }
-    
     /**
      * 현재 인증된 사용자의 Authentication 객체를 반환합니다.
      * 

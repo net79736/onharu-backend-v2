@@ -31,7 +31,7 @@ public class NotificationControllerImpl implements INotificationController {
     @Override
     @GetMapping("/me")
     public ResponseEntity<ResponseDTO<GetNotificationResponse>> getNotification() {
-        Long userId = SecurityUtils.getCurrentUserEntityId();
+        Long userId = SecurityUtils.getUserId();
         log.info("getNotification userId: {}", userId);
 
         Notification notification = notificationFacade.getNotification(userId); // 알림 조회
@@ -46,7 +46,7 @@ public class NotificationControllerImpl implements INotificationController {
     public ResponseEntity<ResponseDTO<UpdateNotificationResponse>> updateNotification(
             @Valid @RequestBody UpdateNotificationRequest request
     ) {
-        Long userId = SecurityUtils.getCurrentUserEntityId();
+        Long userId = SecurityUtils.getUserId();
         log.info("updateNotification userId: {}", userId);
 
         Notification notification = notificationFacade.updateNotification(userId, request); // 알림 수정
