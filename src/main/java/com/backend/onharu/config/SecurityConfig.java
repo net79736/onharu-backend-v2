@@ -36,7 +36,7 @@ public class SecurityConfig {
             "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**",
             "/error", "/favicon.ico",
             "/api/users/login/**", "/api/users/signup/**",
-            "/api/users/logout/**", "/users/me/**", "/api/users/profile/**",
+            "/api/users/logout/**", "/api/users/profile/**",
             "/api/levels/**", // 레벨 관련 API
             "/api/childrens/**", // 결식 아동 관련 API
             "/api/owners/**", // 사업자 관련 API
@@ -67,7 +67,9 @@ public class SecurityConfig {
     };
 
     private static final String PORT_FRONT_LOCAL = "http://localhost:5173";
+    private static final String PORT_FRONT_SERVER = "https://onharu-web.vercel.app/";
     private static final String PORT_BACK_LOCAL = "http://localhost:8080";
+    private static final String PORT_BACK_SERVER = "http://onharu-api.votex.co.kr:15080/";
 
     private final SocialUserService socialUserService;
 
@@ -80,7 +82,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(PORT_FRONT_LOCAL, PORT_BACK_LOCAL));
+        configuration.setAllowedOrigins(List.of(PORT_FRONT_LOCAL, PORT_BACK_LOCAL, PORT_FRONT_SERVER, PORT_BACK_SERVER));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
