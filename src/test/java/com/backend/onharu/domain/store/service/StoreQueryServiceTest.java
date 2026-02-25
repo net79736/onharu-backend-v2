@@ -224,7 +224,7 @@ class StoreQueryServiceTest {
         @Rollback(value = false)
         public void shouldGetStoresByCategoryId() {
             // given
-            Owner savedOwner1 = createTestOwner("test_owner_cat1", "테스트 사업자 카테고리1", "01011111111", "새싹", "1111111111");
+            Owner savedOwner1 = createTestOwner("test_owner_cat1", "테스트 사업자 카테고리1", "01011111111", "비기너", "1111111111");
             Owner savedOwner2 = createTestOwner("test_owner_cat2", "테스트 사업자 카테고리2", "01022222222", "새싹", "2222222222");
             Category category1 = createTestCategory("식당");
             Category category2 = createTestCategory("카페");
