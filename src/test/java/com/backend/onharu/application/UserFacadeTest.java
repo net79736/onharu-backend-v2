@@ -5,11 +5,7 @@ import java.util.UUID;
 
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.infra.db.level.LevelJpaRepository;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
@@ -169,8 +165,8 @@ class UserFacadeTest {
 
         @Test
         @DisplayName("사업자 회원가입 성공")
-        @Rollback(value = false)
         public void shouldSignUpOwner() {
+            // given
             // 기본 등급 저장
             Level level = levelJpaRepository.save(
                     Level.builder()
@@ -178,7 +174,6 @@ class UserFacadeTest {
                             .build()
             );
 
-            // given
             SignUpOwnerCommand command = new SignUpOwnerCommand(
                     "testOwner123@test.com",
                     "password123!",
@@ -221,6 +216,7 @@ class UserFacadeTest {
         @DisplayName("사업자 회원가입 실패 - 로그인 ID 중복")
         public void shouldThrowExceptionWhenLoginIdAlreadyExists() {
             // given
+            // 기본 등급 저장
             Level level = levelJpaRepository.save(
                     Level.builder()
                             .name("비기너")

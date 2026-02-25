@@ -217,7 +217,7 @@ class OwnerFacadeTest {
         @Rollback(value = false)
         public void shouldGetMyStores() {
             // given
-            Owner owner = createTestOwner("test_owner_get_stores", "테스트 사업자", "01012345678", "새싹", "1234567890"); // 사업자 생성
+            Owner owner = createTestOwner("test_owner_get_stores", "테스트 사업자", "01012345678", "비기너", "1234567890"); // 사업자 생성
             Category category = createTestCategory("식당");
             Store store1 = createTestStore("테스트 가게1", owner, category); // 가게1 생성
             Store store2 = createTestStore("테스트 가게2", owner, category); // 가게2 생성
@@ -242,7 +242,7 @@ class OwnerFacadeTest {
         @DisplayName("가게가 없을 때 빈 목록 반환")
         public void shouldReturnEmptyListWhenNoStores() {
             // given
-            Owner owner = createTestOwner("test_owner_empty_stores", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_empty_stores", "테스트 사업자", "01012345678", "새싹2", "1234567890");
             Pageable pageable = Pageable.ofSize(10);
 
             // when
@@ -263,7 +263,7 @@ class OwnerFacadeTest {
         @Transactional
         public void shouldGetStoreBookings() {
             // given
-            Owner owner = createTestOwner("test_owner_get_bookings", "테스트 사업자", "01012345678", "새싹", "1234567890"); // 사업자 생성
+            Owner owner = createTestOwner("test_owner_get_bookings", "테스트 사업자", "01012345678", "새싹3", "1234567890"); // 사업자 생성
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category); // 가게 생성
             StoreSchedule schedule1 = createTestStoreSchedule(store, 10, 11); // 가게 일정1 생성
@@ -328,8 +328,8 @@ class OwnerFacadeTest {
             // given
             String uniqueLoginId1 = "test_owner1_bookings_" + UUID.randomUUID().toString().substring(0, 8);
             String uniqueLoginId2 = "test_owner2_bookings_" + UUID.randomUUID().toString().substring(0, 8);
-            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹", "1234567890");
-            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹", "2234567890");
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹4", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹5", "2234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner1, category);
 
@@ -349,7 +349,7 @@ class OwnerFacadeTest {
             // given: schedule에 child1 CANCELED → child2 WAITING (취소 후 재예약)
             Child child1 = createTestChild("test_child_canceled", "취소한 아동", "01011111111");
             Child child2 = createTestChild("test_child_rebooked", "재예약한 아동", "01022222222");
-            Owner owner = createTestOwner("test_owner_latest", "테스트 사업자", "01033334444", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_latest", "테스트 사업자", "01033334444", "새싹6", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
@@ -397,7 +397,7 @@ class OwnerFacadeTest {
         @Transactional
         public void shouldGetStoreBooking_WhenOwnerIsStoreOwnerAndReservationBelongsToStore() {
             // given: 사업자 O → 가게 O → 예약 O (모두 일치)
-            Owner owner = createTestOwner("test_owner_get_booking", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_get_booking", "테스트 사업자", "01012345678", "새싹7", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
@@ -429,8 +429,8 @@ class OwnerFacadeTest {
             // given: owner1의 가게, owner2가 조회 시도
             String uniqueLoginId1 = "test_owner1_booking_" + UUID.randomUUID().toString().substring(0, 8);
             String uniqueLoginId2 = "test_owner2_booking_" + UUID.randomUUID().toString().substring(0, 8);
-            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹", "1234567890");
-            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹", "2234567890");
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹8", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹9", "2234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner1, category);
             StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
@@ -458,7 +458,7 @@ class OwnerFacadeTest {
         @Transactional
         public void shouldThrowException_WhenReservationBelongsToOtherStore() {
             // given: 사업자 O, 가게1 O, 예약은 가게2에 속함
-            Owner owner = createTestOwner("test_owner_get_booking_other", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_get_booking_other", "테스트 사업자", "01012345678", "새싹10", "1234567890");
             Category category = createTestCategory("식당");
             Store store1 = createTestStore("테스트 가게1", owner, category);
             Store store2 = createTestStore("테스트 가게2", owner, category);
@@ -491,8 +491,8 @@ class OwnerFacadeTest {
             // owner2가 가게1의 예약을 storeId=가게1로 조회 시도 → store.belongsTo(owner)에서 먼저 실패
             String uniqueLoginId1 = "test_owner1_booking_both_" + UUID.randomUUID().toString().substring(0, 8);
             String uniqueLoginId2 = "test_owner2_booking_both_" + UUID.randomUUID().toString().substring(0, 8);
-            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹", "1234567890");
-            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹", "2234567890");
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹11", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹12", "2234567890");
             Category category = createTestCategory("식당");
             Store store1 = createTestStore("테스트 가게1", owner1, category);
             StoreSchedule storeSchedule1 = createTestStoreSchedule(store1, 10, 11);
@@ -525,7 +525,7 @@ class OwnerFacadeTest {
         @Transactional
         public void shouldSetAvailableDates() {
             // given
-            Owner owner = createTestOwner("test_owner_set_dates", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_set_dates", "테스트 사업자", "01012345678", "새싹13", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
 
@@ -566,8 +566,8 @@ class OwnerFacadeTest {
             // given
             String uniqueLoginId1 = "test_owner1_dates_" + UUID.randomUUID().toString().substring(0, 8);
             String uniqueLoginId2 = "test_owner2_dates_" + UUID.randomUUID().toString().substring(0, 8);
-            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹", "1234567890");
-            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹", "2234567890");
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹14", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹15", "2234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner1, category);
 
@@ -601,7 +601,7 @@ class OwnerFacadeTest {
         @Rollback(value = false)
         public void shouldRemoveAvailableDates() {
             // given
-            Owner owner = createTestOwner("test_owner_remove_dates", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_remove_dates", "테스트 사업자", "01012345678", "새싹16", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
 
@@ -630,8 +630,8 @@ class OwnerFacadeTest {
             // given
             String uniqueLoginId1 = "test_owner1_remove_" + UUID.randomUUID().toString().substring(0, 8);
             String uniqueLoginId2 = "test_owner2_remove_" + UUID.randomUUID().toString().substring(0, 8);
-            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹", "1234567890");
-            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹", "2234567890");
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹17", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹18", "2234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner1, category);
 

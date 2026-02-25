@@ -262,7 +262,7 @@ class StoreTagCommandServiceTest {
         public void shouldDeleteStoreTagsWhenStoreIsDeleted() {
             // given
             String uniqueLoginId = "test_owner_orphan_" + System.currentTimeMillis();
-            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 고아", "01011112222", "새싹");
+            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 고아", "01011112222", "새싹4");
             Category category = createTestCategory("식당");
             
             Store savedStore = storeJpaRepository.save(
