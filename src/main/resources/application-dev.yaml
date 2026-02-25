@@ -21,8 +21,6 @@ spring:
     show-sql: ${JPA_SHOW_SQL:true}
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO}
-      naming:
-        physical-strategy: com.backend.onharu.config.CustomPhysicalNamingStrategy
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
