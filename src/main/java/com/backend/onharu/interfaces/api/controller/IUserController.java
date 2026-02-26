@@ -159,7 +159,7 @@ public interface IUserController {
      * 사용자 계정상태를 삭제됨으로 변경합니다.
      */
     @Operation(summary = "사용자 회원 탈퇴", description = "사용자 회원 탈퇴를 진행 합니다.")
-    ResponseEntity<ResponseDTO<Void>> deleteUser(
+    ResponseEntity<ResponseDTO<String>> deleteUser(
     );
 
     /**
@@ -169,7 +169,7 @@ public interface IUserController {
      * 사용자의 아이디와 비밀번호로 로그인을 수행합니다.
      */
     @Operation(summary = "로컬 사용자 로그인", description = "아이디와 비밀번호로 로그인을 수행합니다.")
-    ResponseEntity<ResponseDTO<Void>> login(
+    ResponseEntity<ResponseDTO<String>> login(
             @RequestBody(
                     description = "사용자 로그인 요청",
                     content = @Content(
@@ -196,7 +196,7 @@ public interface IUserController {
      * POST /api/users/logout
      */
     @Operation(summary = "로컬 사용자 로그아웃", description = "사용자의 로그아웃을 수행 합니다.")
-    ResponseEntity<ResponseDTO<Void>> logout(
+    ResponseEntity<ResponseDTO<String>> logout(
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse
     );

@@ -1,5 +1,6 @@
 package com.backend.onharu.application;
 
+import com.backend.onharu.application.dto.UserLogin;
 import com.backend.onharu.domain.child.dto.ChildCommand.CreateChildCommand;
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.child.service.ChildCommandService;
@@ -39,9 +40,11 @@ import java.util.UUID;
 
 import static com.backend.onharu.domain.child.dto.ChildCommand.UpdateChildCommand;
 import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
+import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
 import static com.backend.onharu.domain.level.dto.LevelCommand.UpdateNameByIdCommand;
 import static com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByNameQuery;
 import static com.backend.onharu.domain.owner.dto.OwnerCommand.updateOwnerBusinessNumberByIdCommand;
+import static com.backend.onharu.domain.owner.dto.OwnerQuery.*;
 import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import static com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
 import static com.backend.onharu.domain.user.dto.UserQuery.GetChildProfileQuery;
@@ -68,6 +71,18 @@ public class UserFacade {
     private final PasswordEncoder passwordEncoder;
     private final LevelCommandService levelCommandService;
     private final FileFacade fileFacade;
+
+    /**
+     * 로그인 아이디로 사용자를 조회합니다.
+     *
+     * @param query 로그인 아이디가 포함된 Query
+     * @return 조호된 사용자 엔티티
+     */
+    public User getUser(GetUserByLoginIdQuery query) {
+        return userQueryService.getUserByLoginId(
+                new GetUserByLoginIdQuery(query.loginId())
+        );
+    }
 
     /**
      * 아동 회원가입을 처리합니다.
@@ -131,6 +146,29 @@ public class UserFacade {
     }
 
     /**
+     * 사용자 타입별로 로그인 정보를 분리합니다.
+     * @param user 사용자 엔티티
+     * @return 사용자, 아동/사업자 타입별 ID (다른 타입은 null)
+     */
+    public UserLogin divideUserType(User user) {
+        return switch (user.getUserType()) {
+            case CHILD -> {
+                Child child = childQueryService.getChildByUserId(
+                        new GetChildByUserIdQuery(user.getId())
+                );
+                yield new UserLogin(user, child.getId());
+            }
+            case OWNER -> {
+                Owner owner = ownerQueryService.getOwnerByUserId(
+                        new GetOwnerByUserIdQuery(user.getId())
+                );
+                yield new UserLogin(user, owner.getId());
+            }
+            case ADMIN, NONE -> new UserLogin(user, null);
+        };
+    }
+
+    /**
      * 사용자 로그인을 처리합니다.
      * <p>
      * User 를 생성하고 비밀번호와 계정 상태를 검증합니다.
@@ -139,7 +177,7 @@ public class UserFacade {
      * @return 로그인 사용자 엔티티
      */
     @Transactional
-    public User loginUser(LoginUserCommand command) {
+    public UserLogin loginUser(LoginUserCommand command) {
         // 로그인 아이디로 사용자 조회
         User user = userQueryService.getUserByLoginId(
                 new GetUserByLoginIdQuery(command.loginId())
@@ -151,10 +189,13 @@ public class UserFacade {
         // 사용자 계정 상태 검증
         user.verifyStatus();
 
+        // 사용자 타입별 조회
+        UserLogin userLogin = divideUserType(user);
+
         // 알림 설정 생성
         notificationFacade.ensureNotificationExists(user.getId());
 
-        return user;
+        return userLogin;
     }
 
     /**
@@ -202,7 +243,7 @@ public class UserFacade {
 
         // 알림 설정 생성
         notificationFacade.ensureNotificationExists(user.getId());
-        
+
         return user; // 기존 회원 반환
     }
 
@@ -212,10 +253,10 @@ public class UserFacade {
      * 추가 정보를 받아 소셜 사용자 아동의 회원가입을 마무리 합니다.
      *
      * @param command 아동 회원가입에 필요한 추가 정보
-     * @return 사용자 엔티티
+     * @return 사용자 와 childId 가 포함된 DTO
      */
     @Transactional
-    public User completeSignUpChildUserOAuth(SignUpChildUserOAuthCommand command) {
+    public UserLogin completeSignUpChildUserOAuth(SignUpChildUserOAuthCommand command) {
         // 사용자 조회
         User user = userQueryService.getUser(
                 new GetUserByIdQuery(
@@ -236,7 +277,7 @@ public class UserFacade {
         // 메타데이터 등록(파일 저장)
         fileFacade.registerFiles(AttachmentType.CHILD, child.getId(), command.images());
 
-        return user;
+        return new UserLogin(user, child.getId());
     }
 
     /**
@@ -248,7 +289,7 @@ public class UserFacade {
      * @return 사용자 엔티티
      */
     @Transactional
-    public User completeSignUpOwnerUserOAuth(SignUpOwnerUserOAuthCommand command) {
+    public UserLogin completeSignUpOwnerUserOAuth(SignUpOwnerUserOAuthCommand command) {
         // 기본 등급(비기너)을 이름으로 조회
         Level level = levelQueryService.getLevelByName(
                 new GetLevelByNameQuery(
@@ -274,9 +315,9 @@ public class UserFacade {
         );
 
         // 사업자 생성
-        ownerCommandService.createOwner(createOwnerCommand);
+        Owner owner = ownerCommandService.createOwner(createOwnerCommand);
 
-        return user;
+        return new UserLogin(user, owner.getId());
     }
 
     /**
@@ -349,18 +390,13 @@ public class UserFacade {
      */
     @Transactional
     public void updateChildProfile(UpdateChildProfileCommand command) {
-        // 사용자 조회
-        User user = userQueryService.getUser(
-                new GetUserByIdQuery(command.userId())
-        );
-        user.verifyStatus(); // 계정 상태 확인
 
         // 사용자 정보 업데이트
         userCommandService.updateUserByIdAndNameAndPhone(
                 new UpdateUserCommand(
                         command.userId(),
-                        user.getName(),
-                        user.getPhone()
+                        command.name(),
+                        command.phone()
                 )
         );
 

@@ -1,6 +1,7 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
 import com.backend.onharu.application.UserFacade;
+import com.backend.onharu.application.dto.UserLogin;
 import com.backend.onharu.domain.common.enums.AttachmentType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.file.dto.FileCommand;
@@ -242,7 +243,7 @@ public class UserControllerImpl implements IUserController {
     @Override
     @PutMapping("/profile/owner")
     public ResponseEntity<ResponseDTO<Void>> updateOwnerProfile(UpdateOwnerProfileRequest ownerRequest) {
-        log.info("사업자 프로필 수정");
+        log.info("사업자 프로필 수정 request: {}", ownerRequest);
 
         Long userId = SecurityUtils.getUserId(); // 세션에 인증된 사용자 ID 추출
         Long ownerId = SecurityUtils.getCurrentUserId();// 세션에 인증된 사업자 ID 추출
@@ -271,7 +272,7 @@ public class UserControllerImpl implements IUserController {
      */
     @Override
     @DeleteMapping
-    public ResponseEntity<ResponseDTO<Void>> deleteUser() {
+    public ResponseEntity<ResponseDTO<String>> deleteUser() {
         log.info("사용자 정보 삭제 요청");
 
         Long userId = SecurityUtils.getUserId(); // 세션에 인증된 사용자 ID 추출
@@ -284,8 +285,10 @@ public class UserControllerImpl implements IUserController {
                 )
         );
 
+        String response = "회원 탈퇴 성공";
+
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
     }
 
     /**
@@ -299,18 +302,18 @@ public class UserControllerImpl implements IUserController {
      */
     @Override
     @PostMapping("/login")
-    public ResponseEntity<ResponseDTO<Void>> login(@Valid @RequestBody LoginUserRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<ResponseDTO<String>> login(@Valid @RequestBody LoginUserRequest request, HttpServletRequest httpRequest) {
         log.info("사용자 로그인 요청: loginUserRequest={}", request);
 
         // 사용자 로그인
-        User user = userFacade.loginUser(
+        UserLogin userLogin = userFacade.loginUser(
                 new LoginUserCommand(
                         request.loginId(),
                         request.password()
                 )
         );
 
-        LocalUser localUser = new LocalUser(user); // UserDetails 구현체 변환
+        LocalUser localUser = new LocalUser(userLogin.user(), userLogin.domainId()); // 로그인 사용자 정보를 UserDetails 구현체 변환
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(localUser, null, localUser.getAuthorities()); // 인증 객체 생성
 
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
@@ -322,8 +325,10 @@ public class UserControllerImpl implements IUserController {
                         securityContext
                 ); // 세션 생성
 
+        String response = "로그인 성공";
+
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
     }
 
     /**
@@ -336,7 +341,7 @@ public class UserControllerImpl implements IUserController {
      */
     @Override
     @PostMapping("/logout")
-    public ResponseEntity<ResponseDTO<Void>> logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+    public ResponseEntity<ResponseDTO<String>> logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         log.info("사용자 로그아웃 요청");
 
         Authentication authentication = SecurityContextHolder.getContext()
@@ -346,8 +351,10 @@ public class UserControllerImpl implements IUserController {
             new SecurityContextLogoutHandler().logout(httpRequest, httpResponse, authentication); // 세션 무효화 및 인증 삭제
         }
 
+        String response = "로그아웃 성공";
+
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
     }
 
     /**
@@ -375,12 +382,15 @@ public class UserControllerImpl implements IUserController {
         );
 
         // 소셜 사용자 아동 회원가입
-        User childUser = userFacade.completeSignUpChildUserOAuth(command);
+        UserLogin userLogin = userFacade.completeSignUpChildUserOAuth(command);
+
+        // 소셜 사용자 인증 업데이트
+        SecurityUtils.renewSocialUserAuthentication(userLogin.user(), userLogin.domainId());
 
         // 응답 생성
         SignUpChildResponse response = new SignUpChildResponse(
-                childUser.getId(),
-                childUser.getLoginId()
+                userLogin.user().getId(),
+                userLogin.user().getLoginId()
         );
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -401,16 +411,21 @@ public class UserControllerImpl implements IUserController {
         // 소셜 로그인에 인증된 사용자 ID 추출
         String userId = Objects.requireNonNull(SecurityUtils.getCurrentOAuth2User()).getName();
 
-        User ownerUser = userFacade.completeSignUpOwnerUserOAuth(
+        // 소셜 사용자(사업자) 회원강비
+        UserLogin userLogin = userFacade.completeSignUpOwnerUserOAuth(
                 new SignUpOwnerUserOAuthCommand(
                         userId,
                         request.businessNumber()
                 )
         );
 
+        // 소셜 사용자 인증 업데이트
+        SecurityUtils.renewSocialUserAuthentication(userLogin.user(), userLogin.domainId()); //
+
+        // 응답 작성
         SignUpChildResponse response = new SignUpChildResponse(
-                ownerUser.getId(),
-                ownerUser.getLoginId()
+                userLogin.user().getId(),
+                userLogin.user().getLoginId()
         );
 
         return ResponseEntity.status(HttpStatus.OK)
