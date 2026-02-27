@@ -100,8 +100,10 @@ public enum ErrorType implements IErrorType {
         PASSWORD_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "비밀번호는 필수입니다.", LogLevel.ERROR),
         PASSWORD_CONFIRM_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "비밀번호 확인은 필수입니다.", LogLevel.ERROR),
         PASSWORD_CONFIRM_MISMATCH(ErrorCode.BAD_REQUEST, "비밀번호와 비밀번호 확인이 일치하지 않습니다.", LogLevel.ERROR),
-        NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "이름은 필수입니다.", LogLevel.ERROR),
+        USER_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "이름은 필수입니다.", LogLevel.ERROR),
+        USER_NAME_MUST_BE_NO_MORE_THAN_30_CHARACTERS_LONG(ErrorCode.BAD_REQUEST, "사용자 이름은 30자 이내여야 합니다.", LogLevel.ERROR),
         PHONE_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "전화번호는 필수입니다.", LogLevel.ERROR),
+        PHONE_INVALID_FORMAT(ErrorCode.BAD_REQUEST, "잘못된 전화번호 형식 입니다.", LogLevel.ERROR),
         USER_TYPE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 유형은 필수입니다.", LogLevel.ERROR),
         PROVIDER_TYPE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "제공자 유형은 필수입니다.", LogLevel.ERROR),
         LOGIN_ID_OR_PASSWORD_MISMATCH(ErrorCode.BAD_REQUEST, "아이디 또는 비밀번호가 잘못되었습니다.", LogLevel.ERROR),
@@ -138,13 +140,13 @@ public enum ErrorType implements IErrorType {
     public enum Owner implements IErrorType {
         OWNER_NOT_FOUND(ErrorCode.NOT_FOUND, "사업자 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         OWNER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사업자 ID는 필수입니다.", LogLevel.ERROR),
-        LOGIN_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사업자 로그인 ID는 필수입니다.", LogLevel.ERROR),
+        OWNER_LOGIN_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사업자 로그인 ID는 필수입니다.", LogLevel.ERROR),
         BUSINESS_NUMBER_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "사업자 번호는 필수입니다.", LogLevel.ERROR),
+        BUSINESS_NUMBER_MUST_BE_TEN_DIGITS(ErrorCode.BAD_REQUEST, "사업자 등록번호는 숫자 10자리로 구성되어야 합니다.", LogLevel.ERROR),
         LEVEL_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "등급 ID는 필수입니다.", LogLevel.ERROR),
         STORE_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "매장명은 필수입니다.", LogLevel.ERROR),
         SAME_LEVEL_CAN_NOT_BE_ASSIGNED(ErrorCode.BAD_REQUEST, "이미 동일한 등급입니다.", LogLevel.ERROR),
-        BUSINESS_NUMBER_MUST_BE_TEN_DIGITS(ErrorCode.BAD_REQUEST, "사업자 등록번호는 숫자 10자리로 구성되어야 합니다.", LogLevel.ERROR),
-        USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 ID는 필수입니다.", LogLevel.ERROR),
+        OWNER_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 ID는 필수입니다.", LogLevel.ERROR),
         ;
 
         private final ErrorCode code;
@@ -174,10 +176,12 @@ public enum ErrorType implements IErrorType {
     public enum Child implements IErrorType {
         CHILD_NOT_FOUND(ErrorCode.NOT_FOUND, "아동 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         CHILD_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 ID는 필수입니다.", LogLevel.ERROR),
-        LOGIN_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 로그인 ID는 필수입니다.", LogLevel.ERROR),
+        CHILD_LOGIN_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 로그인 ID는 필수입니다.", LogLevel.ERROR),
         CERTIFICATE_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "증명서 파일 경로는 필수입니다.", LogLevel.ERROR),
         NICKNAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "닉네임은 필수입니다.", LogLevel.ERROR),
-        USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 ID는 필수입니다.", LogLevel.ERROR)
+        NICKNAME_INVALID_FORMAT(ErrorCode.BAD_REQUEST, "닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.", LogLevel.ERROR),
+        NICKNAME_MUST_BE_NO_MORE_THAN_100_CHARACTERS_LONG(ErrorCode.BAD_REQUEST, "닉네임은 100자 이내여야 합니다.", LogLevel.ERROR),
+        CHILD_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 ID는 필수입니다.", LogLevel.ERROR)
         ;
 
         private final ErrorCode code;
