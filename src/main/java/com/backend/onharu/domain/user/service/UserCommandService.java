@@ -122,7 +122,7 @@ public class UserCommandService {
     /**
      * 사용자 계정을 비활성화 시킵니다.
      *
-     * @param command 사용자 제거 Command (서용자 ID 포함)
+     * @param command 사용자 제거 Command (사용자 ID 포함)
      */
     public void updateDeletedUser(UpdateDeletedUserCommand command) {
         userRepository.updateDeletedUser(
@@ -131,5 +131,15 @@ public class UserCommandService {
                         command.statusType()
                 )
         );
+    }
+
+
+    /**
+     * 사용자 도메인의 수정사항을 DB 에 반영합니다.
+     *
+     * @param command 사용자 변경 Command (사용자 객체 포함)
+     */
+    public void updateUser(UpdateUserCommand command) {
+        userRepository.save(command.user());
     }
 }
