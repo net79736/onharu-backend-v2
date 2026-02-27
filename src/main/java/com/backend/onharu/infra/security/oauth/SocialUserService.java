@@ -1,6 +1,7 @@
 package com.backend.onharu.infra.security.oauth;
 
 import com.backend.onharu.application.UserFacade;
+import com.backend.onharu.application.dto.UserLogin;
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.user.dto.UserOAuthCommand;
 import com.backend.onharu.domain.user.model.User;
@@ -59,6 +60,10 @@ public class SocialUserService extends DefaultOAuth2UserService {
                 oAuthAttributes.getProviderId() // 소셜 로그인 식별자
         ));
 
-        return new SocialUser(user, attributes); // 사용자(User) 정보를 시큐리티 객체(SocialUser) 반환
+        UserLogin userLogin = userFacade.divideUserType(user);
+
+        return new SocialUser(userLogin.user(), userLogin.domainId(), attributes); // 사용자(User) 정보를 시큐리티 객체(SocialUser) 반환
     }
+
+
 }

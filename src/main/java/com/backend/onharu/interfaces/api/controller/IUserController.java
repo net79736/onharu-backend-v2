@@ -105,7 +105,7 @@ public interface IUserController {
      * PUT /api/users/profile/child
      */
     @Operation(summary = "프로필 수정(아동)", description = "사용자(아동)의 프로필을 수정합니다.")
-    ResponseEntity<ResponseDTO<Void>> updateChildProfile(
+    ResponseEntity<ResponseDTO<String>> updateChildProfile(
             @RequestBody(
                     description = "아동 프로필 수정 요청",
                     content = @Content(
@@ -131,7 +131,7 @@ public interface IUserController {
      * PUT /api/users/profile/owner
      */
     @Operation(summary = "프로필 수정(사업자)", description = "사용자(사업자)의 프로필을 수정합니다.")
-    ResponseEntity<ResponseDTO<Void>> updateOwnerProfile(
+    ResponseEntity<ResponseDTO<String>> updateOwnerProfile(
             @RequestBody(
                     description = "사업자 프로필 수정 요청",
                     content = @Content(
@@ -143,7 +143,6 @@ public interface IUserController {
                                             {
                                               "name": "홍길동",
                                               "phone": "01033337777",
-                                              "levelId": "1",
                                               "businessNumber": "1234567890"
                                             }
                                             """
@@ -159,7 +158,7 @@ public interface IUserController {
      * 사용자 계정상태를 삭제됨으로 변경합니다.
      */
     @Operation(summary = "사용자 회원 탈퇴", description = "사용자 회원 탈퇴를 진행 합니다.")
-    ResponseEntity<ResponseDTO<Void>> deleteUser(
+    ResponseEntity<ResponseDTO<String>> deleteUser(
     );
 
     /**
@@ -169,21 +168,32 @@ public interface IUserController {
      * 사용자의 아이디와 비밀번호로 로그인을 수행합니다.
      */
     @Operation(summary = "로컬 사용자 로그인", description = "아이디와 비밀번호로 로그인을 수행합니다.")
-    ResponseEntity<ResponseDTO<Void>> login(
+    ResponseEntity<ResponseDTO<String>> login(
             @RequestBody(
                     description = "사용자 로그인 요청",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = LoginUserRequest.class),
-                            examples = @ExampleObject(
-                                    name = "로그인 요청 예시",
-                                    value = """
-                                            {
-                                              "loginId": "child123@test.com",
-                                              "password": "password123!"
-                                            }
-                                            """
-                            )
+                            examples = {
+                                    @ExampleObject(
+                                            name = "로그인 요청 예시(아동)",
+                                            value = """
+                                                    {
+                                                      "loginId": "child123@test.com",
+                                                      "password": "password123!"
+                                                    }
+                                                    """
+                                    ),
+                                    @ExampleObject(
+                                            name = "로그인 요청 예시(사업자)",
+                                            value = """
+                                                    {
+                                                      "loginId": "owner123@test.com",
+                                                      "password": "password123!"
+                                                    }
+                                                    """
+                                    )
+                            }
                     )
             )
             LoginUserRequest request,
@@ -196,7 +206,7 @@ public interface IUserController {
      * POST /api/users/logout
      */
     @Operation(summary = "로컬 사용자 로그아웃", description = "사용자의 로그아웃을 수행 합니다.")
-    ResponseEntity<ResponseDTO<Void>> logout(
+    ResponseEntity<ResponseDTO<String>> logout(
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse
     );

@@ -45,20 +45,6 @@ public class UserRepositoryParam {
     }
 
     /**
-     * 사용자 정보를 업데이트 합니다.
-     *
-     * @param userId    사용자 ID
-     * @param name  사용자 이름
-     * @param phone 사용자 전화번호
-     */
-    public record UpdateUserByIdAndNameAndPhoneParam(
-            Long userId,
-            String name,
-            String phone
-    ) {
-    }
-
-    /**
      * 제거된 사용자를 업데이트 합니다. (소프트 삭제)
      * @param userId 사용자 ID
      * @param statusType 계정 상태(DELETED)

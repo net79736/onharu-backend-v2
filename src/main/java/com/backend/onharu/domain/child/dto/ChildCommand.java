@@ -22,24 +22,12 @@ public class ChildCommand {
             String nickname
     ) {
         public CreateChildCommand {
-            if (user == null || user.getId() == null) {
+            if (user == null) {
                 throw new CoreException(USER_ID_MUST_NOT_BE_NULL);
             }
             if (nickname == null || nickname.isBlank()) {
                 throw new CoreException(NICKNAME_MUST_NOT_BE_BLANK);
             }
         }
-    }
-
-    /**
-     * 아동 프로필 정보 수정 Command
-     *
-     * @param childId  아동 ID
-     * @param nickname 닉네임
-     */
-    public record UpdateChildCommand(
-            Long childId,
-            String nickname
-    ) {
     }
 }

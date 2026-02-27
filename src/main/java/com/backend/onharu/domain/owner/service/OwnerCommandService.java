@@ -7,9 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.backend.onharu.domain.owner.dto.OwnerCommand.updateOwnerBusinessNumberByIdCommand;
-import static com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.UpdateOwnerBusinessNumberByIdParam;
-
 /**
  * 사업자 Command Service
  * <p>
@@ -36,19 +33,5 @@ public class OwnerCommandService {
                 .build();
 
         return ownerRepository.save(owner);
-    }
-
-    /**
-     * 사업자 정보를 수정합니다.
-     *
-     * @param command 사업자 수정 Command(사업자 ID, 사업자 등록번호 포함)
-     */
-    public void updateOwnerBusinessNumberById(updateOwnerBusinessNumberByIdCommand command) {
-        ownerRepository.updateOwnerBusinessNumberById(
-                new UpdateOwnerBusinessNumberByIdParam(
-                        command.ownerId(),
-                        command.businessNumber()
-                )
-        );
     }
 }

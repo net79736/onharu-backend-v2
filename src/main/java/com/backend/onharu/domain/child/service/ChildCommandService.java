@@ -1,16 +1,11 @@
 package com.backend.onharu.domain.child.service;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.backend.onharu.domain.child.dto.ChildCommand.CreateChildCommand;
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.child.repository.ChildRepository;
-
 import lombok.RequiredArgsConstructor;
-
-import static com.backend.onharu.domain.child.dto.ChildCommand.*;
-import static com.backend.onharu.domain.child.dto.ChildRepositoryParam.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 아동 Command Service
@@ -24,7 +19,7 @@ public class ChildCommandService {
 
     /**
      * 아동을 생성합니다.
-     * 
+     *
      * @param command 아동 생성 Command
      * @return 생성된 아동 엔티티
      */
@@ -36,15 +31,5 @@ public class ChildCommandService {
                 .build();
 
         return childRepository.save(child);
-    }
-
-    /**
-     * 아동 정보를 수정합니다
-     * @param command 아동 수정 Command
-     */
-    public void updateChildByNickname(UpdateChildCommand command) {
-        childRepository.updateChildNicknameById(
-                new UpdateChildNicknameByIdParam(command.childId(), command.nickname())
-        );
     }
 }

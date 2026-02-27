@@ -22,9 +22,10 @@ import java.util.Map;
 public class SocialUser implements OAuth2User {
 
     /**
-     * 사용자 도메인(User) 엔티티
+     * 인증 성공후 SecurityContext 에서 꺼내서 사용 가능한 User 엔티티, 아동/사업자 ID 입니다
      */
     private final User user;
+    private final Long domainId;
 
     /**
      * 소셜 로그인 제공자(OAuth2 제공자)로부터 받은 속성 목록

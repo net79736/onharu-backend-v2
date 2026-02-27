@@ -1,5 +1,14 @@
 package com.backend.onharu.infra.security;
 
+import com.backend.onharu.application.UserFacade;
+import com.backend.onharu.application.dto.UserLogin;
+import com.backend.onharu.domain.child.dto.ChildQuery;
+import com.backend.onharu.domain.child.model.Child;
+import com.backend.onharu.domain.child.service.ChildQueryService;
+import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.domain.owner.dto.OwnerQuery;
+import com.backend.onharu.domain.owner.model.Owner;
+import com.backend.onharu.domain.owner.service.OwnerQueryService;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByLoginIdQuery;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.domain.user.service.UserQueryService;
@@ -21,10 +30,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LocalUserService implements UserDetailsService {
 
-    /**
-     * 사용자(User) 도메인 조회 서비스
-     */
+    private final UserFacade userFacade;
+
     private final UserQueryService userQueryService;
+    private final ChildQueryService childQueryService;
+    private final OwnerQueryService ownerQueryService;
 
     /**
      * 시큐리티가 사용하는 고유 식별자를 이용해 DB 에서 사용자 정보를 조회합니다.
@@ -37,8 +47,9 @@ public class LocalUserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.info("loadUserByUsername 호출: {}", username);
 
-        User user = userQueryService.getUserByLoginId(new GetUserByLoginIdQuery(username)); // 사용자 User 조회
+        User user = userFacade.getUser(new GetUserByLoginIdQuery(username));// 사용자 User 조회
+        UserLogin userLogin = userFacade.divideUserType(user); // 사용자 타입별 조회
 
-        return new LocalUser(user); // 사용자 엔티티(User)를 시큐리티 객체(LocalUser)로 변환하여 반환합니다
+        return new LocalUser(userLogin.user(), userLogin.domainId()); // 사용자 엔티티(User)를 시큐리티 객체(LocalUser)로 변환하여 반환합니다
     }
 }

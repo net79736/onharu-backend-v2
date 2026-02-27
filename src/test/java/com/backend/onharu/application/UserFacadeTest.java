@@ -111,7 +111,7 @@ class UserFacadeTest {
             assertEquals(user.getStatusType(), StatusType.PENDING);
 
             // Child 엔티티도 생성되었는지 확인
-            Child child = childJpaRepository.findByUser_LoginId(user.getLoginId()).orElse(null);
+            Child child = childJpaRepository.findByUser_Id(user.getId()).orElse(null);
             assertNotNull(child);
             assertEquals(child.getUser().getId(), user.getId());
 
