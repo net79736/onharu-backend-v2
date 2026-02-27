@@ -38,9 +38,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+import static com.backend.onharu.domain.child.dto.ChildCommand.*;
 import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
 import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
 import static com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByNameQuery;
+import static com.backend.onharu.domain.owner.dto.OwnerCommand.*;
 import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByUserIdQuery;
 import static com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
@@ -396,6 +398,9 @@ public class UserFacade {
         // 업데이트할 사용자 및 이름, 전화번호 검증
         user.verifyUpdate(command.name(), command.phone());
 
+        // 사용자 변경사항 DB 반영
+        userCommandService.updateUser(new UpdateUserCommand(user));
+
         // 아동 조회
         Child child = childQueryService.getChildById(
                 new GetChildByIdQuery(command.childId())
@@ -403,6 +408,9 @@ public class UserFacade {
 
         // 아동 닉네임 검증 및 변경
         child.verifyAndUpdate(command.nickname());
+
+        // 아동 변경사항 DB 반영
+        childCommandService.updateChild(new UpdateChildCommand(child));
     }
 
     /**
@@ -420,6 +428,9 @@ public class UserFacade {
         // 업데이트할 사용자 및 이름, 전화번호 검증
         user.verifyUpdate(command.name(), command.phone());
 
+        // 사용자 변경사항 DB 반영
+        userCommandService.updateUser(new UpdateUserCommand(user));
+
         // 사업자 조회
         Owner owner = ownerQueryService.getOwnerById(
                 new GetOwnerByIdQuery(command.ownerId())
@@ -427,6 +438,9 @@ public class UserFacade {
 
         // 사업자 번호 검증 및 변경
         owner.verifyAndUpdate(command.businessNumber());
+
+        // 사업자 변경사항 DB 반영
+        ownerCommandService.updateOwner(new UpdateOwnerCommand(owner));
     }
 
     /**
