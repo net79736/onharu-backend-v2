@@ -2,10 +2,11 @@ package com.backend.onharu.domain.owner.dto;
 
 import com.backend.onharu.domain.support.error.CoreException;
 
-import static com.backend.onharu.domain.support.error.ErrorType.Owner.USER_ID_MUST_NOT_BE_NULL;
+import static com.backend.onharu.domain.support.error.ErrorType.Owner.OWNER_ID_MUST_NOT_BE_NULL;
+import static com.backend.onharu.domain.support.error.ErrorType.Owner.OWNER_USER_ID_MUST_NOT_BE_NULL;
 
 /**
- * 사업자 관련 Query DTO
+ * 사업자 도메인의 QueryService 사용될 DTO
  */
 public class OwnerQuery {
 
@@ -17,16 +18,11 @@ public class OwnerQuery {
     public record GetOwnerByIdQuery(
             Long id
     ) {
-    }
-
-    /**
-     * 로그인 아이디로 사업자 조회 Query
-     *
-     * @param loginId 로그인 아이디
-     */
-    public record GetOwnerByLoginIdQuery(
-            String loginId
-    ) {
+        public GetOwnerByIdQuery {
+            if (id == null) {
+                throw new CoreException(OWNER_ID_MUST_NOT_BE_NULL);
+            }
+        }
     }
 
     /**
@@ -39,7 +35,7 @@ public class OwnerQuery {
     ) {
         public GetOwnerByUserIdQuery {
             if (userId == null) {
-                throw new CoreException(USER_ID_MUST_NOT_BE_NULL);
+                throw new CoreException(OWNER_USER_ID_MUST_NOT_BE_NULL);
             }
         }
     }

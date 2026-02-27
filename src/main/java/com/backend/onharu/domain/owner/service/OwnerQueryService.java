@@ -1,9 +1,7 @@
 package com.backend.onharu.domain.owner.service;
 
 import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
-import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByLoginIdQuery;
 import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByIdParam;
-import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByLoginIdParam;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.repository.OwnerRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,16 +32,6 @@ public class OwnerQueryService {
      */
     public Owner getOwnerById(GetOwnerByIdQuery query) {
         return ownerRepository.getOwnerById(new GetOwnerByIdParam(query.id()));
-    }
-
-    /**
-     * 로그인 ID로 사용자를 조회합니다.
-     *
-     * @param query 로그인 ID를 포함한 Query
-     * @return 조회된 사용자 엔티티
-     */
-    public Owner getOwnerByLoginId(GetOwnerByLoginIdQuery query) {
-        return ownerRepository.getOwnerByLoginId(new GetOwnerByLoginIdParam(query.loginId()));
     }
 
     /**
