@@ -38,14 +38,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
-import static com.backend.onharu.domain.child.dto.ChildCommand.UpdateChildCommand;
 import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
 import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
-import static com.backend.onharu.domain.level.dto.LevelCommand.UpdateNameByIdCommand;
 import static com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByNameQuery;
-import static com.backend.onharu.domain.owner.dto.OwnerCommand.updateOwnerBusinessNumberByIdCommand;
-import static com.backend.onharu.domain.owner.dto.OwnerQuery.*;
 import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
+import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByUserIdQuery;
 import static com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
 import static com.backend.onharu.domain.user.dto.UserQuery.GetChildProfileQuery;
 import static com.backend.onharu.domain.user.dto.UserQuery.GetOwnerProfileQuery;
@@ -147,6 +144,7 @@ public class UserFacade {
 
     /**
      * 사용자 타입별로 로그인 정보를 분리합니다.
+     *
      * @param user 사용자 엔티티
      * @return 사용자, 아동/사업자 타입별 ID (다른 타입은 null)
      */
@@ -384,64 +382,51 @@ public class UserFacade {
     }
 
     /**
-     * 사용자(아동) 프로필 수정
+     * 사용자(아동) 프로필 수정 (User 와 Child 는 Dirty Checking 업데이트)
      *
-     * @param command 사용자 ID, 아동 ID, 이름, 전화번호, 닉네임이 포함된 command
+     * @param command 사용자 ID, 아동 ID, 이름, 전화번호, 닉네임이 포함된 Command
      */
     @Transactional
     public void updateChildProfile(UpdateChildProfileCommand command) {
-
-        // 사용자 정보 업데이트
-        userCommandService.updateUserByIdAndNameAndPhone(
-                new UpdateUserCommand(
-                        command.userId(),
-                        command.name(),
-                        command.phone()
-                )
+        // 사용자 조회
+        User user = userQueryService.getUser(
+                new GetUserByIdQuery(command.userId())
         );
 
-        // 아동 정보 업데이트
-        childCommandService.updateChildByNickname(
-                new UpdateChildCommand(
-                        command.childId(),
-                        command.nickname()
-                )
+        // 업데이트할 사용자 및 이름, 전화번호 검증
+        user.verifyUpdate(command.name(), command.phone());
+
+        // 아동 조회
+        Child child = childQueryService.getChildById(
+                new GetChildByIdQuery(command.childId())
         );
+
+        // 아동 닉네임 검증 및 변경
+        child.verifyAndUpdate(command.nickname());
     }
 
-    // 사용자(사업자) 프로필 수정
+    /**
+     * 사용자(사업자) 프로필 수정 (User 와 Owner 는 Dirty Checking 업데이트)
+     *
+     * @param command 사용자 ID, 사업자 ID, 이름, 전화번호, 사업자 번호가 포함된 Command
+     */
     @Transactional
     public void updateOwnerProfile(UpdateOwnerProfileCommand command) {
         // 사용자 조회
         User user = userQueryService.getUser(
                 new GetUserByIdQuery(command.userId())
         );
-        user.verifyStatus(); // 계정 상태 확인
 
-        // 사용자 정보 업데이트
-        userCommandService.updateUserByIdAndNameAndPhone(
-                new UpdateUserCommand(
-                        command.userId(),
-                        user.getName(),
-                        user.getPhone()
-                )
+        // 업데이트할 사용자 및 이름, 전화번호 검증
+        user.verifyUpdate(command.name(), command.phone());
+
+        // 사업자 조회
+        Owner owner = ownerQueryService.getOwnerById(
+                new GetOwnerByIdQuery(command.ownerId())
         );
 
-        // 등급 정보 업데이트
-        levelCommandService.updateNameById(
-                new UpdateNameByIdCommand(
-                        command.name(),
-                        command.levelId()
-                )
-        );
-
-        // 사용자(사업자) 정보 업데이트
-        ownerCommandService.updateOwnerBusinessNumberById(
-                new updateOwnerBusinessNumberByIdCommand(
-                        command.ownerId(),
-                        command.businessNumber()
-                )
-        );
+        // 사업자 번호 검증 및 변경
+        owner.verifyAndUpdate(command.businessNumber());
     }
 
     /**
