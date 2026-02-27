@@ -27,6 +27,7 @@ import java.util.List;
 
 import static com.backend.onharu.domain.owner.dto.OwnerCommand.checkBusinessNumberCommand;
 import static com.backend.onharu.domain.support.error.ErrorType.EmailAuthentication.EMAIL_NOT_VERIFIED;
+import static com.backend.onharu.domain.user.dto.UserCommand.*;
 import static com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
 import static com.backend.onharu.domain.user.dto.UserQuery.ValidatePasswordQuery;
 
@@ -156,6 +157,9 @@ public class AuthFacade {
         user.verifyPassword(command.currentPassword(), passwordEncoder); // 현재 입력한 비밀번호가 맞는지 검증
         user.confirmPassword(command.newPassword(), command.newPasswordConfirm()); // 새 비밀번호의 입력이 같은지 검증
         user.changePassword(command.newPassword(), passwordEncoder);// 비밀번호 변경
+
+        // 사용자 변경사항 DB 반영
+        userCommandService.updateUser(new UpdateUserCommand(user));
     }
 
     /**
