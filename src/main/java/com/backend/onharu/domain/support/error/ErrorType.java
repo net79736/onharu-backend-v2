@@ -94,6 +94,7 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum User implements IErrorType {
         USER_NOT_FOUND(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다.", LogLevel.ERROR),
+        USER_MUST_NOT_BE_NULL(ErrorCode.NOT_FOUND, "사용자 정보는 필수입니다.", LogLevel.ERROR),
         USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 ID는 필수입니다.", LogLevel.ERROR),
         LOGIN_ID_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "로그인 ID는 필수입니다.", LogLevel.ERROR),
         USER_ID_ALREADY_EXISTS(ErrorCode.CONFLICT, "이미 존재하는 사용자 ID입니다.", LogLevel.WARN),
@@ -139,6 +140,7 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum Owner implements IErrorType {
         OWNER_NOT_FOUND(ErrorCode.NOT_FOUND, "사업자 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        OWNER_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사업자 정보는 필수입니다.", LogLevel.ERROR),
         OWNER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사업자 ID는 필수입니다.", LogLevel.ERROR),
         OWNER_LOGIN_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사업자 로그인 ID는 필수입니다.", LogLevel.ERROR),
         BUSINESS_NUMBER_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "사업자 번호는 필수입니다.", LogLevel.ERROR),
@@ -175,6 +177,7 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum Child implements IErrorType {
         CHILD_NOT_FOUND(ErrorCode.NOT_FOUND, "아동 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        CHILD_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 정보는 필수입니다.", LogLevel.ERROR),
         CHILD_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 ID는 필수입니다.", LogLevel.ERROR),
         CHILD_LOGIN_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 로그인 ID는 필수입니다.", LogLevel.ERROR),
         CERTIFICATE_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "증명서 파일 경로는 필수입니다.", LogLevel.ERROR),
