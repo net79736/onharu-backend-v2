@@ -164,6 +164,9 @@ public class UserControllerDto {
             @Schema(description = "전화번호", example = "01099992222")
             String phone,
 
+            @Schema(description = "사용자 유형", example = "CHILD")
+            UserType userType,
+
             @Schema(description = "닉네임", example = "코끼리땃쥐")
             String nickname,
 
@@ -184,6 +187,9 @@ public class UserControllerDto {
 
             @Schema(description = "전화번호", example = "01099992222")
             String phone,
+
+            @Schema(description = "사용자 유형", example = "OWNER")
+            UserType userType,
 
             @Schema(description = "등급명", example = "새싹")
             String levelName,

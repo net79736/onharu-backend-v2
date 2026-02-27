@@ -165,6 +165,7 @@ public class UserControllerImpl implements IUserController {
                 childProfile.user().getLoginId(),
                 childProfile.user().getName(),
                 childProfile.user().getPhone(),
+                childProfile.user().getUserType(),
                 childProfile.child().getNickname(),
                 imagePaths
         );
@@ -195,6 +196,7 @@ public class UserControllerImpl implements IUserController {
                 ownerProfile.user().getLoginId(),
                 ownerProfile.user().getName(),
                 ownerProfile.user().getPhone(),
+                ownerProfile.user().getUserType(),
                 ownerProfile.level().getName(),
                 ownerProfile.owner().getBusinessNumber()
         );
