@@ -56,13 +56,13 @@ public final class SecurityUtils implements ApplicationContextAware {
         
         // LocalUser 처리 (일반 로그인)
         if (authentication.getPrincipal() instanceof LocalUser localUser) {
-            log.info("localUser: {}", localUser.getUser());
-            return localUser.getDomainId(); // 인증에 담긴 domainId 반환(로그인할때, UserType 별로 domainId 가 나눠서 저장됨)
+            log.info("localUser: {}, domainId: {}", localUser.getUser(), localUser.getDomainId());
+            return localUser.getDomainId(); // 인증에 담긴 domainId 반환
         } 
         // SocialUser 처리 (OAuth2 로그인)
         else if (authentication.getPrincipal() instanceof SocialUser socialUser) {
-            log.info("socialUser: {}", socialUser.getUser());
-            return socialUser.getDomainId(); // 인증에 담긴 domainId 반환(로그인할때, UserType 별로 domainId 가 나눠서 저장됨)
+            log.info("socialUser: {}, domainId: {}", socialUser.getUser(), socialUser.getDomainId());
+            return socialUser.getDomainId(); // 인증에 담긴 domainId 반환
         }
         
         if (user == null) {
