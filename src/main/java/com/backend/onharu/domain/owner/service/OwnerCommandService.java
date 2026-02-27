@@ -1,11 +1,14 @@
 package com.backend.onharu.domain.owner.service;
 
+import com.backend.onharu.domain.owner.dto.OwnerCommand;
 import com.backend.onharu.domain.owner.dto.OwnerCommand.CreateOwnerCommand;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.repository.OwnerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.backend.onharu.domain.owner.dto.OwnerCommand.*;
 
 /**
  * 사업자 Command Service
@@ -33,5 +36,14 @@ public class OwnerCommandService {
                 .build();
 
         return ownerRepository.save(owner);
+    }
+
+    /**
+     * 사업자 도메인의 변경사항을 DB 에 반영합니다.
+     *
+     * @param command 사업자 수정 Command
+     */
+    public void updateOwner(UpdateOwnerCommand command) {
+        ownerRepository.save(command.owner());
     }
 }

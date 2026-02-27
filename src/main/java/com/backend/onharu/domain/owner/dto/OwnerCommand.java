@@ -1,11 +1,11 @@
 package com.backend.onharu.domain.owner.dto;
 
 import com.backend.onharu.domain.level.model.Level;
+import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.model.User;
 
-import static com.backend.onharu.domain.support.error.ErrorType.Owner.BUSINESS_NUMBER_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.Owner.LEVEL_ID_MUST_NOT_BE_NULL;
+import static com.backend.onharu.domain.support.error.ErrorType.Owner.*;
 import static com.backend.onharu.domain.support.error.ErrorType.User.USER_ID_MUST_NOT_BE_NULL;
 
 /**
@@ -46,5 +46,20 @@ public class OwnerCommand {
     public record checkBusinessNumberCommand(
             String businessNumber
     ) {
+    }
+
+    /**
+     * 사업자 변경 Command
+     *
+     * @param owner 사업자 도메인
+     */
+    public record UpdateOwnerCommand(
+            Owner owner
+    ) {
+        public UpdateOwnerCommand {
+            if (owner == null) {
+                throw new CoreException(OWNER_MUST_NOT_BE_NULL);
+            }
+        }
     }
 }
