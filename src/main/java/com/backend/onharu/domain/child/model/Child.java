@@ -1,12 +1,15 @@
 package com.backend.onharu.domain.child.model;
 
 import com.backend.onharu.domain.common.base.BaseEntity;
+import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.model.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import static com.backend.onharu.domain.support.error.ErrorType.Child.*;
 
 /**
  * 아동 엔티티
@@ -40,11 +43,24 @@ public class Child extends BaseEntity {
     }
 
     /**
-     * 아동의 개인 정보를 업데이트합니다.
+     * 아동의 닉네임을 검증하고 수정합니다.
      *
      * @param nickname 변경할 닉네임
      */
-    public void update(String nickname) {
+    public void verifyAndUpdate(String nickname) {
+        // 닉네임이 비어있는 경우
+        if (nickname == null || nickname.isBlank()) {
+            throw new CoreException(NICKNAME_MUST_NOT_BE_BLANK);
+        }
+        // 닉네임이 100글자를 초과할 경우
+        if (nickname.length() > 100) {
+            throw new CoreException(NICKNAME_MUST_BE_NO_MORE_THAN_100_CHARACTERS_LONG);
+        }
+        // 닉네임이 한글, 영문, 숫자가 아닌경우
+        if (!nickname.matches("^[a-zA-Z0-9가-힣]*$")) {
+            throw new CoreException(NICKNAME_INVALID_FORMAT);
+        }
+
         this.nickname = nickname;
     }
 
