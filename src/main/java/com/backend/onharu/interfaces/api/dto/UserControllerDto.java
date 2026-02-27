@@ -5,7 +5,10 @@ import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.interfaces.api.common.dto.ImageMetadataRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
@@ -227,10 +230,6 @@ public class UserControllerDto {
             @Pattern(regexp = "^01(?:0|[1-9])(?:\\d{3}|\\d{4})\\d{4}$", message = "올바른 전화번호 형식이 아닙니다. (예: 01012345678)")
             @Schema(description = "전화번호", example = "01012345678")
             String phone,
-
-            @NotNull(message = "등급 정보는 필수 입력 값 입니다.")
-            @Schema(description = "레벨 ID", example = "1")
-            Long levelId,
 
             @NotBlank(message = "사업자 번호는 필수 입력 값 입니다.")
             @Pattern(regexp = "^\\d{10}$", message = "사업자 번호는 숫자 10자리여야 합니다. (예: 1234567890)")
