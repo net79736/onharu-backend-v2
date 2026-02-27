@@ -1,11 +1,9 @@
 package com.backend.onharu.domain.owner.repository;
 
 import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByIdParam;
-import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByLoginIdParam;
 import com.backend.onharu.domain.owner.model.Owner;
 
 import static com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByUserIdParam;
-import static com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.UpdateOwnerBusinessNumberByIdParam;
 
 /**
  * 사업자 Repository 인터페이스
@@ -32,25 +30,10 @@ public interface OwnerRepository {
     Owner getOwnerById(GetOwnerByIdParam param);
 
     /**
-     * 로그인 ID로 사업자를 조회합니다.
-     *
-     * @param param 로그인 ID를 포함한 Param
-     * @return 조회된 사업자 엔티티
-     */
-    Owner getOwnerByLoginId(GetOwnerByLoginIdParam param);
-
-    /**
      * 사용자 ID 로 사업자를 조회합니다.
      *
      * @param param 사용자 ID 를 포함한 Param
      * @return 조회된 사업자 엔티티
      */
     Owner getOwnerByUserId(GetOwnerByUserIdParam param);
-
-    /**
-     * 사업자 정보를 수정합니다.
-     *
-     * @param param 사업자 ID, 사업자 등록번호 를 포함한 param
-     */
-    void updateOwnerBusinessNumberById(UpdateOwnerBusinessNumberByIdParam param);
 }
