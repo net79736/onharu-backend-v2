@@ -212,7 +212,9 @@ public class UserControllerImpl implements IUserController {
      */
     @Override
     @PutMapping("/profile/child")
-    public ResponseEntity<ResponseDTO<Void>> updateChildProfile(UpdateChildProfileRequest childRequest) {
+    public ResponseEntity<ResponseDTO<String>> updateChildProfile(
+            @Valid @RequestBody UpdateChildProfileRequest childRequest
+    ) {
         log.info("아동 프로필 수정");
 
         Long userId = SecurityUtils.getUserId(); // 세션에 인증된 사용자 ID 추출
@@ -229,8 +231,10 @@ public class UserControllerImpl implements IUserController {
                 )
         );
 
+        String response = "아동 프로필 수정 성공";
+
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
     }
 
     /**
@@ -242,7 +246,9 @@ public class UserControllerImpl implements IUserController {
      */
     @Override
     @PutMapping("/profile/owner")
-    public ResponseEntity<ResponseDTO<Void>> updateOwnerProfile(UpdateOwnerProfileRequest ownerRequest) {
+    public ResponseEntity<ResponseDTO<String>> updateOwnerProfile(
+            @Valid @RequestBody UpdateOwnerProfileRequest ownerRequest
+    ) {
         log.info("사업자 프로필 수정 request: {}", ownerRequest);
 
         Long userId = SecurityUtils.getUserId(); // 세션에 인증된 사용자 ID 추출
@@ -253,15 +259,16 @@ public class UserControllerImpl implements IUserController {
                 new UpdateOwnerProfileCommand(
                         userId,
                         ownerId,
-                        ownerRequest.levelId(),
                         ownerRequest.name(),
                         ownerRequest.phone(),
                         ownerRequest.businessNumber()
                 )
         );
 
+        String response = "사업자 프로필 수정 성공";
+
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(response));
     }
 
     /**
@@ -302,7 +309,9 @@ public class UserControllerImpl implements IUserController {
      */
     @Override
     @PostMapping("/login")
-    public ResponseEntity<ResponseDTO<String>> login(@Valid @RequestBody LoginUserRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<ResponseDTO<String>> login(
+            @Valid @RequestBody LoginUserRequest request, HttpServletRequest httpRequest
+    ) {
         log.info("사용자 로그인 요청: loginUserRequest={}", request);
 
         // 사용자 로그인
@@ -359,7 +368,7 @@ public class UserControllerImpl implements IUserController {
 
     /**
      * 소셜 사용자(아동) 회원가입 마무리
-     *
+     * <p>
      * POST /api/users/signup/child/finish
      */
     @Override
@@ -399,7 +408,7 @@ public class UserControllerImpl implements IUserController {
 
     /**
      * 소셜 사용자(사업자) 회원가입 마무리
-     *
+     * <p>
      * POST /api/users/signup/owner/finish
      */
     @Override
@@ -411,7 +420,7 @@ public class UserControllerImpl implements IUserController {
         // 소셜 로그인에 인증된 사용자 ID 추출
         String userId = Objects.requireNonNull(SecurityUtils.getCurrentOAuth2User()).getName();
 
-        // 소셜 사용자(사업자) 회원강비
+        // 소셜 사용자(사업자) 회원가입
         UserLogin userLogin = userFacade.completeSignUpOwnerUserOAuth(
                 new SignUpOwnerUserOAuthCommand(
                         userId,
