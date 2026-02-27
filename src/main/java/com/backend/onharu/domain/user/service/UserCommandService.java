@@ -4,9 +4,7 @@ import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.support.error.CoreException;
-import com.backend.onharu.domain.user.dto.UserCommand.CreateUserCommand;
-import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
-import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.*;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByLoginIdParam;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.domain.user.repository.UserRepository;
@@ -16,11 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.backend.onharu.domain.support.error.ErrorType.User.USER_ID_ALREADY_EXISTS;
-import static com.backend.onharu.domain.user.dto.UserCommand.*;
-import static com.backend.onharu.domain.user.dto.UserCommand.UpdatePasswordCommand;
-import static com.backend.onharu.domain.user.dto.UserCommand.UpdateUserCommand;
-import static com.backend.onharu.domain.user.dto.UserRepositoryParam.*;
-import static com.backend.onharu.domain.user.dto.UserRepositoryParam.UpdateUserByIdAndNameAndPhoneParam;
+import static com.backend.onharu.domain.user.dto.UserRepositoryParam.UpdateDeletedUserParam;
 import static com.backend.onharu.domain.user.dto.UserRepositoryParam.UpdateUserByIdAndPasswordParam;
 
 /**
@@ -126,21 +120,6 @@ public class UserCommandService {
     }
 
     /**
-     * 사용자 정보를 수정합니다.
-     *
-     * @param command 사용자 수정 Command (사용자 ID, 이름, 전화번호)
-     */
-    public void updateUserByIdAndNameAndPhone(UpdateUserCommand command) {
-        userRepository.updateUserByIdAndNameAndPhone(
-                new UpdateUserByIdAndNameAndPhoneParam(
-                        command.userId(),
-                        command.name(),
-                        command.phone()
-                )
-        );
-    }
-
-    /**
      * 사용자 계정을 비활성화 시킵니다.
      *
      * @param command 사용자 제거 Command (서용자 ID 포함)
@@ -152,14 +131,5 @@ public class UserCommandService {
                         command.statusType()
                 )
         );
-    }
-
-    /**
-     * 사용자 정보 업데이트(더티체킹)
-     *
-     * @param command 사용자 엔티티
-     */
-    public void changePasswordUser(SavedUserCommand command) {
-        userRepository.save(command.user());
     }
 }
