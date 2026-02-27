@@ -105,7 +105,7 @@ public interface IUserController {
      * PUT /api/users/profile/child
      */
     @Operation(summary = "프로필 수정(아동)", description = "사용자(아동)의 프로필을 수정합니다.")
-    ResponseEntity<ResponseDTO<Void>> updateChildProfile(
+    ResponseEntity<ResponseDTO<String>> updateChildProfile(
             @RequestBody(
                     description = "아동 프로필 수정 요청",
                     content = @Content(
@@ -131,7 +131,7 @@ public interface IUserController {
      * PUT /api/users/profile/owner
      */
     @Operation(summary = "프로필 수정(사업자)", description = "사용자(사업자)의 프로필을 수정합니다.")
-    ResponseEntity<ResponseDTO<Void>> updateOwnerProfile(
+    ResponseEntity<ResponseDTO<String>> updateOwnerProfile(
             @RequestBody(
                     description = "사업자 프로필 수정 요청",
                     content = @Content(
@@ -143,7 +143,6 @@ public interface IUserController {
                                             {
                                               "name": "홍길동",
                                               "phone": "01033337777",
-                                              "levelId": "1",
                                               "businessNumber": "1234567890"
                                             }
                                             """
@@ -175,15 +174,26 @@ public interface IUserController {
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = LoginUserRequest.class),
-                            examples = @ExampleObject(
-                                    name = "로그인 요청 예시",
-                                    value = """
-                                            {
-                                              "loginId": "child123@test.com",
-                                              "password": "password123!"
-                                            }
-                                            """
-                            )
+                            examples = {
+                                    @ExampleObject(
+                                            name = "로그인 요청 예시(아동)",
+                                            value = """
+                                                    {
+                                                      "loginId": "child123@test.com",
+                                                      "password": "password123!"
+                                                    }
+                                                    """
+                                    ),
+                                    @ExampleObject(
+                                            name = "로그인 요청 예시(사업자)",
+                                            value = """
+                                                    {
+                                                      "loginId": "owner123@test.com",
+                                                      "password": "password123!"
+                                                    }
+                                                    """
+                                    )
+                            }
                     )
             )
             LoginUserRequest request,
