@@ -1,12 +1,10 @@
 package com.backend.onharu.domain.child.repository;
 
 import com.backend.onharu.domain.child.dto.ChildRepositoryParam.GetChildByIdParam;
-import com.backend.onharu.domain.child.dto.ChildRepositoryParam.GetChildByLoginIdParam;
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.support.error.CoreException;
 
 import static com.backend.onharu.domain.child.dto.ChildRepositoryParam.GetChildByUserIdParam;
-import static com.backend.onharu.domain.child.dto.ChildRepositoryParam.UpdateChildNicknameByIdParam;
 
 /**
  * 아동 Repository 인터페이스
@@ -31,15 +29,6 @@ public interface ChildRepository {
     Child getChildById(GetChildByIdParam param);
 
     /**
-     * 로그인 ID로 아동을 조회합니다.
-     *
-     * @param param 로그인 ID를 포함한 파라미터
-     * @return 조회된 아동 엔티티
-     * @throws CoreException CHILD_NOT_FOUND 해당 ID 의 아동 엔티티가 없는 경우
-     */
-    Child getChildByLoginId(GetChildByLoginIdParam param);
-
-    /**
      * 사용자 ID 로 아동을 조회합니다.
      *
      * @param param 사용자 ID 를 포함한 파라미터
@@ -47,11 +36,4 @@ public interface ChildRepository {
      * @throws CoreException CHILD_NOT_FOUND 해당 ID 의 아동 엔티티가 없는 경우
      */
     Child getChildByUserId(GetChildByUserIdParam param);
-
-    /**
-     * 아동 ID 와 닉네임을 업데이트 합니다.
-     *
-     * @param param 아동 ID 와 닉네임을 포함한 파라미터
-     */
-    void updateChildNicknameById(UpdateChildNicknameByIdParam param);
 }

@@ -24,21 +24,6 @@ public class ChildRepositoryParam {
     }
 
     /**
-     * 로그인 ID로 조회하는 파라미터
-     *
-     * @param loginId 로그인 아이디
-     */
-    public record GetChildByLoginIdParam(
-            String loginId
-    ) {
-        public GetChildByLoginIdParam {
-            if (loginId == null || loginId.isBlank()) {
-                throw new CoreException(ErrorType.Child.LOGIN_ID_MUST_NOT_BE_NULL);
-            }
-        }
-    }
-
-    /**
      * 사용자 ID 로 아동을 조회하는 파라미터
      *
      * @param userId 사용자 ID
@@ -51,17 +36,5 @@ public class ChildRepositoryParam {
                 throw new CoreException(ErrorType.User.USER_ID_MUST_NOT_BE_NULL);
             }
         }
-    }
-
-    /**
-     * 아동 ID 와 닉네임 수정 파라미터
-     *
-     * @param childId  아동 ID
-     * @param nickname 닉네임
-     */
-    public record UpdateChildNicknameByIdParam(
-            Long childId,
-            String nickname
-    ) {
     }
 }

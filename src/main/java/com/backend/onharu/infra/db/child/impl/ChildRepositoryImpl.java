@@ -2,7 +2,6 @@ package com.backend.onharu.infra.db.child.impl;
 
 import com.backend.onharu.domain.child.dto.ChildRepositoryParam;
 import com.backend.onharu.domain.child.dto.ChildRepositoryParam.GetChildByIdParam;
-import com.backend.onharu.domain.child.dto.ChildRepositoryParam.GetChildByLoginIdParam;
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.child.repository.ChildRepository;
 import com.backend.onharu.domain.support.error.CoreException;
@@ -10,8 +9,6 @@ import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.infra.db.child.ChildJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-
-import static com.backend.onharu.domain.child.dto.ChildRepositoryParam.UpdateChildNicknameByIdParam;
 
 /**
  * 아동 Repository 구현체
@@ -34,22 +31,8 @@ public class ChildRepositoryImpl implements ChildRepository {
     }
 
     @Override
-    public Child getChildByLoginId(GetChildByLoginIdParam param) {
-        return childJpaRepository.findByUser_LoginId(param.loginId())
-                .orElseThrow(() -> new CoreException(ErrorType.Child.CHILD_NOT_FOUND));
-    }
-
-    @Override
     public Child getChildByUserId(ChildRepositoryParam.GetChildByUserIdParam param) {
         return childJpaRepository.findByUser_Id(param.userId())
                 .orElseThrow(() -> new CoreException(ErrorType.Child.CHILD_NOT_FOUND));
-    }
-
-    @Override
-    public void updateChildNicknameById(UpdateChildNicknameByIdParam param) {
-        childJpaRepository.updateChildNicknameById(
-                param.childId(),
-                param.nickname()
-        );
     }
 }
