@@ -25,21 +25,6 @@ public class ChildQuery {
     }
 
     /**
-     * 로그인 ID로 아동 조회 Query
-     *
-     * @param loginId 로그인 아이디
-     */
-    public record GetChildByLoginIdQuery(
-            String loginId
-    ) {
-        public GetChildByLoginIdQuery {
-            if (loginId == null || loginId.isBlank()) {
-                throw new CoreException(LOGIN_ID_MUST_NOT_BE_NULL);
-            }
-        }
-    }
-
-    /**
      * 사용자 ID로 아동 조회 Query
      *
      * @param userId 사용자 ID
@@ -49,7 +34,7 @@ public class ChildQuery {
     ) {
         public GetChildByUserIdQuery {
             if (userId == null) {
-                throw new CoreException(USER_ID_MUST_NOT_BE_NULL);
+                throw new CoreException(CHILD_USER_ID_MUST_NOT_BE_NULL);
             }
         }
     }
