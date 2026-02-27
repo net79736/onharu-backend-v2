@@ -4,6 +4,7 @@ import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.user.model.User;
 
 import java.util.List;
 
@@ -288,6 +289,21 @@ public class UserCommand {
             }
             if (!newPassword.equals(newPasswordConfirm)) {
                 throw new CoreException(PASSWORD_CONFIRM_MISMATCH);
+            }
+        }
+    }
+
+    /**
+     * 사용자 변경 Command
+     *
+     * @param user 사용자 도메인
+     */
+    public record UpdateUserCommand(
+            User user
+    ) {
+        public UpdateUserCommand {
+            if (user == null) {
+                throw new CoreException(USER_MUST_NOT_BE_NULL);
             }
         }
     }
