@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -11,10 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.application.validator.StoreScheduleValidator;
 import com.backend.onharu.application.validator.StoreScheduleValidator.ScheduleTimeRange;
+import com.backend.onharu.domain.common.enums.NotificationHistoryType;
 import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.service.OwnerQueryService;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CompleteReservationCommand;
+import com.backend.onharu.domain.reservation.dto.ReservationCommand.ConfirmReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.RejectReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByStoreIdAndStatusFilterQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
@@ -34,6 +37,7 @@ import com.backend.onharu.domain.storeschedule.service.StoreScheduleCommandServi
 import com.backend.onharu.domain.storeschedule.service.StoreScheduleQueryService;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
+import com.backend.onharu.event.model.ReservationEvent;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RejectBookRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
@@ -56,6 +60,7 @@ public class OwnerFacade {
     private final OwnerQueryService ownerQueryService;
     private final StoreScheduleCommandService storeScheduleCommandService;
     private final StoreScheduleValidator storeScheduleValidator;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * 사업자의 가게 목록 조회
@@ -272,15 +277,40 @@ public class OwnerFacade {
     }
 
     /**
-     * 예약 승인
-     * 
+     * 예약 확정 (승인) - WAITING → CONFIRMED
+     * 사업자가 예약을 승인/확인할 때 호출
+     *
      * @param reservationId 예약 ID
+     * @param ownerId 사업자 ID
      */
-    public void approveReservation(Long reservationId, Long ownerId) {
-        // 예약 정보 조회
+    public void confirmReservation(Long reservationId, Long ownerId) {
         Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(reservationId));
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(reservation.getStoreSchedule().getStore().getId()));
+        Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
 
-        // Store 조회
+        // 사업자가 가게의 주인인지 확인
+        store.belongsTo(owner);
+
+        // 예약 확정
+        reservationCommandService.confirmReservation(new ConfirmReservationCommand(reservation.getId()));
+
+        applicationEventPublisher.publishEvent(new ReservationEvent(
+                reservation.getId(),
+                owner.getId(),
+                reservation.getChild().getId(),
+                NotificationHistoryType.RESERVATION_CONFIRMED
+        ));
+    }
+
+    /**
+     * 예약 완료 - CONFIRMED → COMPLETED
+     * 서비스 이용이 완료되었을 때 사업자가 호출
+     *
+     * @param reservationId 예약 ID
+     * @param ownerId 사업자 ID
+     */
+    public void completeReservation(Long reservationId, Long ownerId) {
+        Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(reservationId));
         Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(reservation.getStoreSchedule().getStore().getId()));
 
         // Owner 조회
@@ -289,8 +319,15 @@ public class OwnerFacade {
         // 사업자가 가게의 주인인지 확인
         store.belongsTo(owner);
 
-        // 예약 승인
+        // 예약 완료
         reservationCommandService.completeReservation(new CompleteReservationCommand(reservation.getId()));
+
+        applicationEventPublisher.publishEvent(new ReservationEvent(
+                reservation.getId(),
+                owner.getId(),
+                reservation.getChild().getId(),
+                NotificationHistoryType.RESERVATION_COMPLETED
+        ));
     }
 
     /**

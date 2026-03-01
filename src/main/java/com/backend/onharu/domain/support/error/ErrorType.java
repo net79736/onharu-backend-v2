@@ -381,6 +381,8 @@ public enum ErrorType implements IErrorType {
         RESERVATION_PEOPLE_EXCEEDS_MAX(ErrorCode.BAD_REQUEST, "예약 인원이 최대 수용 인원을 초과합니다.", LogLevel.WARN),
         RESERVATION_STATUS_COMPLETED_CANNOT_CANCEL(ErrorCode.BAD_REQUEST, "완료된 예약은 취소할 수 없습니다.", LogLevel.ERROR),
         RESERVATION_STATUS_CANCELED_ALREADY_CANCELED(ErrorCode.BAD_REQUEST, "이미 취소된 예약입니다.", LogLevel.ERROR),
+        RESERVATION_STATUS_CANNOT_CONFIRM(ErrorCode.BAD_REQUEST, "대기 상태가 아닌 예약은 확정할 수 없습니다.", LogLevel.ERROR),
+        RESERVATION_STATUS_CANNOT_COMPLETE(ErrorCode.BAD_REQUEST, "확정된 예약만 완료할 수 있습니다.", LogLevel.ERROR),
         ;
 
         private final ErrorCode code;
@@ -468,6 +470,12 @@ public enum ErrorType implements IErrorType {
     public enum Notification implements IErrorType {
         NOTIFICATION_NOT_FOUND(ErrorCode.NOT_FOUND, "알림 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         NOTIFICATION_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 ID는 필수입니다.", LogLevel.ERROR),
+        NOTIFICATION_HISTORY_NOT_FOUND(ErrorCode.NOT_FOUND, "알림 히스토리를 찾을 수 없습니다.", LogLevel.ERROR),
+        NOTIFICATION_HISTORY_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "알림 히스토리 ID는 필수입니다.", LogLevel.ERROR),
+        NOTIFICATION_HISTORY_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "알림 히스토리 수신자 ID는 필수입니다.", LogLevel.ERROR),
+        NOTIFICATION_HISTORY_TYPE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "알림 유형은 필수입니다.", LogLevel.ERROR),
+        NOTIFICATION_HISTORY_TITLE_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "알림 제목은 필수입니다.", LogLevel.ERROR),
+        NOTIFICATION_HISTORY_MESSAGE_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "알림 메시지는 필수입니다.", LogLevel.ERROR),
         ;
 
         private final ErrorCode code;

@@ -2,6 +2,8 @@ package com.backend.onharu.infra.db.child.impl;
 
 import com.backend.onharu.domain.child.dto.ChildRepositoryParam;
 import com.backend.onharu.domain.child.dto.ChildRepositoryParam.GetChildByIdParam;
+import com.backend.onharu.domain.child.dto.ChildRepositoryParam.GetChildByLoginIdParam;
+import com.backend.onharu.domain.child.dto.ChildRepositoryParam.UpdateChildNicknameByIdParam;
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.child.repository.ChildRepository;
 import com.backend.onharu.domain.support.error.CoreException;

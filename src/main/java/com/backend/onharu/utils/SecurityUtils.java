@@ -90,7 +90,7 @@ public final class SecurityUtils implements ApplicationContextAware {
                         return child.getId();
                     })
                     .orElseGet(() -> {
-                        log.warn("DB에 해당 User ID({})를 가진 아동 정보가 없습니다. UserType: {}", userType);
+                        log.warn("DB에 해당 User ID를 가진 아동 정보가 없습니다. UserType: {}", userType);
                         return null;
                     });
         }
@@ -103,7 +103,7 @@ public final class SecurityUtils implements ApplicationContextAware {
                         return owner.getId();
                     })
                     .orElseGet(() -> {
-                        log.warn("DB에 해당 User ID({})를 가진 사장 정보가 없습니다. UserType: {}", userType);
+                        log.warn("DB에 해당 User ID를 가진 사장 정보가 없습니다. UserType: {}", userType);
                         return null;
                     });
         }

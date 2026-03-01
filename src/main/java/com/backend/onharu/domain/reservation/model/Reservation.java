@@ -1,6 +1,12 @@
 package com.backend.onharu.domain.reservation.model;
 
-import static com.backend.onharu.domain.support.error.ErrorType.Reservation.*;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_CHILD_ID_MISMATCH;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_NOT_COMPLETED;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_CANCELED_ALREADY_CANCELED;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_CANNOT_COMPLETE;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_CANNOT_CONFIRM;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_COMPLETED_CANNOT_CANCEL;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STORE_ID_MISMATCH;
 import static java.util.Optional.ofNullable;
 
 import java.time.LocalDateTime;
@@ -12,7 +18,6 @@ import com.backend.onharu.domain.common.base.BaseEntity;
 import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.support.error.CoreException;
-import com.backend.onharu.domain.support.error.ErrorType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -94,9 +99,28 @@ public class Reservation extends BaseEntity {
     }
 
     /**
-     * 예약을 완료 처리합니다.
+     * 예약을 확정합니다. (WAITING → CONFIRMED)
+     * 사업자가 예약을 승인할 때 사용
+     *
+     * @throws CoreException RESERVATION_STATUS_CANNOT_CONFIRM 대기 상태가 아닌 예약은 확정할 수 없음
+     */
+    public void confirm() {
+        if (this.status != ReservationType.WAITING) {
+            throw new CoreException(RESERVATION_STATUS_CANNOT_CONFIRM);
+        }
+        this.status = ReservationType.CONFIRMED;
+    }
+
+    /**
+     * 예약을 완료 처리합니다. (CONFIRMED → COMPLETED)
+     * 서비스 이용이 완료되었을 때 사업자가 호출
+     *
+     * @throws CoreException RESERVATION_STATUS_CANNOT_COMPLETE 확정된 예약만 완료 가능
      */
     public void complete() {
+        if (this.status != ReservationType.CONFIRMED) {
+            throw new CoreException(RESERVATION_STATUS_CANNOT_COMPLETE);
+        }
         this.status = ReservationType.COMPLETED;
     }
 

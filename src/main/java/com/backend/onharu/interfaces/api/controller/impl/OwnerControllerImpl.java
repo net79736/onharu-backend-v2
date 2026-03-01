@@ -296,13 +296,13 @@ public class OwnerControllerImpl implements IOwnerController {
     }
 
     /**
-     * 예약 승인
+     * 예약 확정(승인)
      * 
      * POST /api/owners/reservations/{reservationId}/approve
-     * 사업자가 예약을 승인합니다.
+     * 사업자가 예약을 확정합니다. (WAITING → CONFIRMED)
      *
      * @param reservationId 예약 ID
-     * @return 승인 결과
+     * @return 확정 결과
      */
     @Override
     @PostMapping("/reservations/{reservationId}/approve")
@@ -311,9 +311,33 @@ public class OwnerControllerImpl implements IOwnerController {
     ) {
         Long ownerId = SecurityUtils.getCurrentUserId();
 
-        log.info("예약 승인 요청: ownerId={}, reservationId={}", ownerId, reservationId);
+        log.info("예약 확정(승인) 요청: ownerId={}, reservationId={}", ownerId, reservationId);
 
-        ownerFacade.approveReservation(reservationId, ownerId);
+        ownerFacade.confirmReservation(reservationId, ownerId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 예약 완료
+     * 
+     * POST /api/owners/reservations/{reservationId}/complete
+     * 사업자가 예약을 완료 처리합니다. (CONFIRMED → COMPLETED)
+     *
+     * @param reservationId 예약 ID
+     * @return 완료 결과
+     */
+    @Override
+    @PostMapping("/reservations/{reservationId}/complete")
+    public ResponseEntity<ResponseDTO<Void>> completeBook(
+            @PathVariable("reservationId") Long reservationId
+    ) {
+        Long ownerId = SecurityUtils.getCurrentUserId();
+
+        log.info("예약 완료 요청: ownerId={}, reservationId={}", ownerId, reservationId);
+
+        ownerFacade.completeReservation(reservationId, ownerId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));
