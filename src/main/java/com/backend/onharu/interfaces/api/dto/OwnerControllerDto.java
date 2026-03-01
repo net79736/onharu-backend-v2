@@ -184,6 +184,9 @@ public class OwnerControllerDto {
             @Schema(description = "아이 ID", example = "1")
             Long childId,
 
+            @Schema(description = "아이 닉네임", example = "코끼리땃쥐")
+            String childNickname,
+
             @Schema(description = "가게 일정 ID", example = "1")
             Long storeScheduleId,
 
@@ -218,6 +221,7 @@ public class OwnerControllerDto {
             this(
                 reservation.getId(),
                 reservation.getChild().getId(),
+                reservation.getChild().getNickname(),
                 reservation.getStoreSchedule().getId(),
                 reservation.getStoreSchedule().getStore().getId(),
                 reservation.getStoreSchedule().getStore().getName(),
