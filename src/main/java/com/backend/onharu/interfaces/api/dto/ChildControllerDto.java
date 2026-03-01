@@ -156,6 +156,9 @@ public class ChildControllerDto {
             @Schema(description = "가게 이름", example = "따뜻한 식당")
             String storeName,
 
+            @Schema(description = "가게 주소", example = "서울시 강남구 테헤란로 123")
+            String storeAddress,
+
             @Schema(description = "예약 일정 날짜", example = "2024-12-31")
             java.time.LocalDate scheduleDate,
 
@@ -184,6 +187,7 @@ public class ChildControllerDto {
                 reservation.getStoreSchedule().getId(),
                 reservation.getStoreSchedule().getStore().getId(),
                 reservation.getStoreSchedule().getStore().getName(),
+                reservation.getStoreSchedule().getStore().getAddress(),
                 reservation.getStoreSchedule().getScheduleDate(),
                 reservation.getStoreSchedule().getStartTime(),
                 reservation.getStoreSchedule().getEndTime(),
