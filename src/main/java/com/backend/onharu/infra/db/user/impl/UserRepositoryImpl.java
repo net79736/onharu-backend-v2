@@ -1,18 +1,13 @@
 package com.backend.onharu.infra.db.user.impl;
 
-import org.springframework.stereotype.Repository;
-
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
-import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByIdParam;
-import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByLoginIdParam;
+import com.backend.onharu.domain.user.dto.UserRepositoryParam.*;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.domain.user.repository.UserRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
-
 import lombok.RequiredArgsConstructor;
-
-import static com.backend.onharu.domain.user.dto.UserRepositoryParam.*;
+import org.springframework.stereotype.Repository;
 
 /**
  * 사용자 Repository 구현체
@@ -57,16 +52,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void updateUserByIdAndNameAndPhone(UpdateUserByIdAndNameAndPhoneParam param) {
-        userJpaRepository.updateUser(
-                param.userId(),
-                param.name(),
-                param.phone()
-        );
-    }
-
-    @Override
-    public void updateDeletedUser (UpdateDeletedUserParam param) {
+    public void updateDeletedUser(UpdateDeletedUserParam param) {
         userJpaRepository.updateDeletedUser(param.userId(), param.statusType());
     }
 }

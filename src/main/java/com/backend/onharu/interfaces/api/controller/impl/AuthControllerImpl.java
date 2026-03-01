@@ -4,6 +4,7 @@ import com.backend.onharu.application.AuthFacade;
 import com.backend.onharu.domain.email.dto.EmailAuthenticationCommand.CompleteEmailAuthenticationCommand;
 import com.backend.onharu.domain.email.dto.EmailAuthenticationCommand.CreateEmailAuthenticationCommand;
 import com.backend.onharu.domain.user.dto.UserCommand.ResetPasswordUserCommand;
+import com.backend.onharu.domain.user.dto.UserQuery;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByNameAndPhoneQuery;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 
 import static com.backend.onharu.domain.owner.dto.OwnerCommand.checkBusinessNumberCommand;
 import static com.backend.onharu.domain.user.dto.UserCommand.ChangePasswordCommand;
+import static com.backend.onharu.domain.user.dto.UserQuery.*;
 
 /**
  * 인증 관련 API를 제공하는 컨트롤러 구현체입니다.
@@ -196,6 +198,33 @@ public class AuthControllerImpl implements IAuthController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 비밀번호 검증
+     * POST /api/auth/validate-password
+     * DB 에 저장된 비밀번호와 일치하는지 확인합니다.
+     *
+     * @param request 비밀번호 검증 요청
+     * @return 일치할 경우 True
+     */
+    @Override
+    @PostMapping("/validate-password")
+    public ResponseEntity<ResponseDTO<Boolean>> validatePassword(
+            @Valid @RequestBody ValidatePasswordRequest request) {
+        log.info("비밀번호 검증 요청: {}", request);
+
+        Long userId = SecurityUtils.getUserId();
+
+        // 비밀번호 검증
+        boolean response = authFacade.validatePassword(
+                new ValidatePasswordQuery(userId,
+                        request.password()
+                )
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
     }
 
     /**

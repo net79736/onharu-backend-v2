@@ -144,14 +144,13 @@ class FavoriteQueryServiceTest {
     /**
      * 테스트용 Child 생성
      */
-    private Child createTestChild(String loginId, String name, String phone, String nickname, String certificate, Boolean isVerified) {
+    private Child createTestChild(String loginId, String name, String phone, String nickname, Boolean isVerified) {
         User user = createTestUserForChild(loginId, name, phone);
 
         return childJpaRepository.save(
                 Child.builder()
                         .user(user)
                         .nickname(nickname)
-                        .certificate(certificate)
                         .isVerified(isVerified)
                         .build()
         );
@@ -196,7 +195,6 @@ class FavoriteQueryServiceTest {
                     "아동테스트",
                     "01022223333",
                     "닉네임테스트",
-                    "/certificate/1.pdf",
                     true
             );
             Level level = createTestLevel("줄기");
@@ -257,7 +255,6 @@ class FavoriteQueryServiceTest {
                     "아동테스트",
                     "01022223333",
                     "닉네임테스트",
-                    "/certificate/1.pdf",
                     true
             );
             Level level = createTestLevel("줄기");
@@ -325,7 +322,6 @@ class FavoriteQueryServiceTest {
                     "아동테스트",
                     "01022223333",
                     "닉네임테스트",
-                    "/certificate/1.pdf",
                     true
             );
 

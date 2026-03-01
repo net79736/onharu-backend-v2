@@ -3,8 +3,14 @@ package com.backend.onharu.interfaces.api.dto;
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.interfaces.api.common.dto.ImageMetadataRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+import java.util.List;
 
 public class UserControllerDto {
 
@@ -80,9 +86,9 @@ public class UserControllerDto {
             @Schema(description = "닉네임", example = "코끼리땃쥐")
             String nickname,
 
-            @NotBlank(message = "증명서 파일 경로는 필수입니다.")
-            @Schema(description = "아동 증명서 파일 경로", example = "/certificates/certificate.pdf")
-            String certificate
+            @Size(max = 10, message = "이미지는 최대 10개까지 등록할 수 있습니다.")
+            @Schema(description = "업로드된 이미지 목록 (Presigned URL 업로드 완료 후 fileKey, filePath)")
+            List<ImageMetadataRequest> images
     ) {
     }
 
@@ -158,11 +164,14 @@ public class UserControllerDto {
             @Schema(description = "전화번호", example = "01099992222")
             String phone,
 
+            @Schema(description = "사용자 유형", example = "CHILD")
+            UserType userType,
+
             @Schema(description = "닉네임", example = "코끼리땃쥐")
             String nickname,
 
-            @Schema(description = "증명서", example = "/certificate/certificate.jpg")
-            String certificate
+            @Schema(description = "첨부 파일 URL 목록", example = "https://minio.example.com/bucket/certificate/certificate.pdf")
+            List<String> images
     ) {
     }
 
@@ -178,6 +187,9 @@ public class UserControllerDto {
 
             @Schema(description = "전화번호", example = "01099992222")
             String phone,
+
+            @Schema(description = "사용자 유형", example = "OWNER")
+            UserType userType,
 
             @Schema(description = "등급명", example = "새싹")
             String levelName,
@@ -225,10 +237,6 @@ public class UserControllerDto {
             @Schema(description = "전화번호", example = "01012345678")
             String phone,
 
-            @NotNull(message = "등급 정보는 필수 입력 값 입니다.")
-            @Schema(description = "레벨 ID", example = "1")
-            Long levelId,
-
             @NotBlank(message = "사업자 번호는 필수 입력 값 입니다.")
             @Pattern(regexp = "^\\d{10}$", message = "사업자 번호는 숫자 10자리여야 합니다. (예: 1234567890)")
             @Schema(description = "사업자 번호", example = "1234567890")
@@ -270,9 +278,9 @@ public class UserControllerDto {
             @Schema(description = "닉네임", example = "코끼리땃쥐")
             String nickname,
 
-            @NotBlank(message = "증명서 파일 경로는 필수입니다.")
-            @Schema(description = "아동 증명서 파일 경로", example = "/certificates/certificate.pdf")
-            String certificate
+            @Size(max = 10, message = "이미지는 최대 10개까지 등록할 수 있습니다.")
+            @Schema(description = "업로드 완료 된 이미지 목록 (Presigned URL 업로드 완료된 fileKey, filePath)")
+            List<ImageMetadataRequest> images
     ) {
     }
 

@@ -110,12 +110,11 @@ public class TestDataHelper {
     /**
      * 테스트용 Child 생성 (User와 함께 생성)
      */
-    public Child createTestChild(String loginId, String name, String phone, String certificate, Boolean isVerified) {
+    public Child createTestChild(String loginId, String name, String phone, Boolean isVerified) {
         User user = createTestUserForChild(loginId, name, phone);
         return childJpaRepository.save(
                 Child.builder()
                         .user(user)
-                        .certificate(certificate)
                         .isVerified(isVerified != null ? isVerified : true)
                         .build()
         );
@@ -125,7 +124,7 @@ public class TestDataHelper {
      * 테스트용 Child 생성 (기본값 사용)
      */
     public Child createTestChild(String loginId, String name, String phone) {
-        return createTestChild(loginId, name, phone, "/certificates/test.pdf", true);
+        return createTestChild(loginId, name, phone);
     }
 
     /**

@@ -50,10 +50,6 @@ public interface UserJpaRepository extends JpaRepository<User, Long> {
     void resetPassword(@Param("id") Long id, @Param("password") String password);
 
     @Modifying
-    @Query("UPDATE User u SET u.name = :name, u.phone = :phone WHERE u.id = :id")
-    void updateUser(@Param("id") Long id, @Param("name") String name, @Param("phone") String phone);
-
-    @Modifying
     @Query("UPDATE User u SET u.statusType = :statusType WHERE u.id = :id")
-    void updateDeletedUser(@Param("id") Long id, @Param("statusType")StatusType statusType);
+    void updateDeletedUser(@Param("id") Long id, @Param("statusType") StatusType statusType);
 }

@@ -1,7 +1,10 @@
 package com.backend.onharu.domain.user.dto;
 
 import com.backend.onharu.domain.common.enums.ProviderType;
+import com.backend.onharu.domain.file.dto.FileCommand.ImageMetadata;
 import com.backend.onharu.domain.user.model.User;
+
+import java.util.List;
 
 /**
  * 소셜 사용자 관련 Command DTO
@@ -43,14 +46,14 @@ public class UserOAuthCommand {
     /**
      * 소셜 사용자(아동) 회원가입 Command
      *
-     * @param userId      소셜 사용자 ID
-     * @param nickname    닉네임
-     * @param certificate 증명서 문서 경로
+     * @param userId   소셜 사용자 ID
+     * @param nickname 닉네임
+     * @param images   업로드 된 메타 데이터
      */
     public record SignUpChildUserOAuthCommand(
             String userId,
             String nickname,
-            String certificate
+            List<ImageMetadata> images
     ) {
     }
 

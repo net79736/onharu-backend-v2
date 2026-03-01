@@ -7,38 +7,34 @@ import com.backend.onharu.domain.support.error.ErrorType;
  * 아동 Repository 파라미터
  */
 public class ChildRepositoryParam {
+
     /**
      * 아동 ID로 조회하는 파라미터
+     *
+     * @param childId 아동 ID
      */
     public record GetChildByIdParam(
-            Long id
+            Long childId
     ) {
         public GetChildByIdParam {
-            if (id == null) {
+            if (childId == null) {
                 throw new CoreException(ErrorType.Child.CHILD_ID_MUST_NOT_BE_NULL);
             }
         }
     }
 
     /**
-     * 로그인 ID로 조회하는 파라미터
+     * 사용자 ID 로 아동을 조회하는 파라미터
+     *
+     * @param userId 사용자 ID
      */
-    public record GetChildByLoginIdParam(
-            String loginId
+    public record GetChildByUserIdParam(
+            Long userId
     ) {
-        public GetChildByLoginIdParam {
-            if (loginId == null || loginId.isBlank()) {
-                throw new CoreException(ErrorType.Child.LOGIN_ID_MUST_NOT_BE_NULL);
+        public GetChildByUserIdParam {
+            if (userId == null) {
+                throw new CoreException(ErrorType.User.USER_ID_MUST_NOT_BE_NULL);
             }
         }
-    }
-
-    /**
-     * 아동 ID 와 닉네임 수정 파라미터
-     */
-    public record UpdateChildNicknameByIdParam(
-            Long childId,
-            String nickname
-    ) {
     }
 }

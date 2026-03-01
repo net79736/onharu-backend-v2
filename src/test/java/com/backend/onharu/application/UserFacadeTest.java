@@ -4,12 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
 import java.util.UUID;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import com.backend.onharu.domain.level.model.Level;
+import com.backend.onharu.infra.db.level.LevelJpaRepository;
+import org.junit.jupiter.api.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
@@ -98,7 +99,7 @@ class UserFacadeTest {
                 "테스트 아동",
                 "01012345678",
                 "테스트 닉네임",
-                "/certificates/test.pdf"
+                    List.of() // 이미지 없음
             );
 
             // when
@@ -115,10 +116,9 @@ class UserFacadeTest {
             assertEquals(user.getStatusType(), StatusType.PENDING);
 
             // Child 엔티티도 생성되었는지 확인
-            Child child = childJpaRepository.findByUser_LoginId(user.getLoginId()).orElse(null);
+            Child child = childJpaRepository.findByUser_Id(user.getId()).orElse(null);
             assertNotNull(child);
             assertEquals(child.getUser().getId(), user.getId());
-            assertEquals(child.getCertificate(), "/certificates/test.pdf");
 
             System.out.println("✅ 아동 회원가입 성공 - User ID: " + user.getId());
             System.out.println("   - 로그인 ID: " + user.getLoginId());
@@ -151,7 +151,7 @@ class UserFacadeTest {
                 "새로운 아동",
                 "01022222222",
                     "테스트 닉네임",
-                "/certificates/new.pdf"
+                    List.of() // 이미지 없음
             );
 
             // when & then
@@ -170,8 +170,8 @@ class UserFacadeTest {
 
         @Test
         @DisplayName("사업자 회원가입 성공")
-        @Rollback(value = false)
         public void shouldSignUpOwner() {
+            // given
             // 기본 등급 저장
             Level level = levelJpaRepository.save(
                     Level.builder()
@@ -179,7 +179,6 @@ class UserFacadeTest {
                             .build()
             );
 
-            // given
             SignUpOwnerCommand command = new SignUpOwnerCommand(
                     "testOwner123@test.com",
                     "password123!",
@@ -222,6 +221,7 @@ class UserFacadeTest {
         @DisplayName("사업자 회원가입 실패 - 로그인 ID 중복")
         public void shouldThrowExceptionWhenLoginIdAlreadyExists() {
             // given
+            // 기본 등급 저장
             Level level = levelJpaRepository.save(
                     Level.builder()
                             .name("비기너")

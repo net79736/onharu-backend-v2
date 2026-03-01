@@ -1,21 +1,19 @@
 package com.backend.onharu.domain.user.dto;
 
-import static com.backend.onharu.domain.support.error.ErrorType.Child.CERTIFICATE_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.Child.NICKNAME_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.User.LOGIN_ID_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.User.NAME_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.User.PASSWORD_CONFIRM_MISMATCH;
-import static com.backend.onharu.domain.support.error.ErrorType.User.PASSWORD_CONFIRM_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.User.PASSWORD_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.User.PHONE_MUST_NOT_BE_BLANK;
-import static com.backend.onharu.domain.support.error.ErrorType.User.USER_ID_MUST_NOT_BE_NULL;
-import static com.backend.onharu.domain.support.error.ErrorType.User.USER_TYPE_MUST_NOT_BE_NULL;
-
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.model.User;
+
+import java.util.List;
+
+import static com.backend.onharu.domain.file.dto.FileCommand.ImageMetadata;
+import static com.backend.onharu.domain.support.error.ErrorType.Child.CHILD_ID_MUST_NOT_BE_NULL;
+import static com.backend.onharu.domain.support.error.ErrorType.Child.NICKNAME_MUST_NOT_BE_BLANK;
+import static com.backend.onharu.domain.support.error.ErrorType.Owner.BUSINESS_NUMBER_MUST_NOT_BE_BLANK;
+import static com.backend.onharu.domain.support.error.ErrorType.Owner.OWNER_ID_MUST_NOT_BE_NULL;
+import static com.backend.onharu.domain.support.error.ErrorType.User.*;
 
 /**
  * 사용자 관련 Command DTO
@@ -37,7 +35,7 @@ public class UserCommand {
             String name,
             String phone,
             String nickname,
-            String certificateFilePath
+            List<ImageMetadata> images
     ) {
         public SignUpChildCommand {
             if (loginId == null || loginId.isBlank()) {
@@ -53,16 +51,13 @@ public class UserCommand {
                 throw new CoreException(PASSWORD_CONFIRM_MISMATCH);
             }
             if (name == null || name.isBlank()) {
-                throw new CoreException(NAME_MUST_NOT_BE_BLANK);
+                throw new CoreException(USER_NAME_MUST_NOT_BE_BLANK);
             }
             if (phone == null || phone.isBlank()) {
                 throw new CoreException(PHONE_MUST_NOT_BE_BLANK);
             }
             if (nickname == null || nickname.isBlank()) {
                 throw new CoreException(NICKNAME_MUST_NOT_BE_BLANK);
-            }
-            if (certificateFilePath == null || certificateFilePath.isBlank()) {
-                throw new CoreException(CERTIFICATE_MUST_NOT_BE_BLANK);
             }
         }
     }
@@ -80,6 +75,29 @@ public class UserCommand {
             String phone,
             String businessNumber
     ) {
+        public SignUpOwnerCommand {
+            if (loginId == null || loginId.isBlank()) {
+                throw new CoreException(LOGIN_ID_MUST_NOT_BE_BLANK);
+            }
+            if (password == null || password.isBlank()) {
+                throw new CoreException(PASSWORD_MUST_NOT_BE_BLANK);
+            }
+            if (passwordConfirm == null || passwordConfirm.isBlank()) {
+                throw new CoreException(PASSWORD_CONFIRM_MUST_NOT_BE_BLANK);
+            }
+            if (!password.equals(passwordConfirm)) {
+                throw new CoreException(PASSWORD_CONFIRM_MISMATCH);
+            }
+            if (name == null || name.isBlank()) {
+                throw new CoreException(USER_NAME_MUST_NOT_BE_BLANK);
+            }
+            if (phone == null || phone.isBlank()) {
+                throw new CoreException(PHONE_MUST_NOT_BE_BLANK);
+            }
+            if (businessNumber == null || businessNumber.isBlank()) {
+                throw new CoreException(BUSINESS_NUMBER_MUST_NOT_BE_BLANK);
+            }
+        }
     }
 
     /**
@@ -104,7 +122,7 @@ public class UserCommand {
                 throw new CoreException(PASSWORD_MUST_NOT_BE_BLANK);
             }
             if (name == null || name.isBlank()) {
-                throw new CoreException(NAME_MUST_NOT_BE_BLANK);
+                throw new CoreException(USER_NAME_MUST_NOT_BE_BLANK);
             }
             if (phone == null || phone.isBlank()) {
                 throw new CoreException(PHONE_MUST_NOT_BE_BLANK);
@@ -113,7 +131,10 @@ public class UserCommand {
                 throw new CoreException(USER_TYPE_MUST_NOT_BE_NULL);
             }
             if (statusType == null) {
-                statusType = StatusType.PENDING;
+                statusType = StatusType.PENDING; // 기본값은 대기상태
+            }
+            if (providerType == null) {
+                providerType = ProviderType.LOCAL; // 기본값은 로컬
             }
         }
     }
@@ -127,6 +148,14 @@ public class UserCommand {
             String loginId,
             String password
     ) {
+        public LoginUserCommand {
+            if (loginId == null || loginId.isBlank()) {
+                throw new CoreException(USER_ID_MUST_NOT_BE_NULL);
+            }
+            if (password == null || password.isBlank()) {
+                throw new CoreException(PASSWORD_MUST_NOT_BE_BLANK);
+            }
+        }
     }
 
     /**
@@ -137,6 +166,17 @@ public class UserCommand {
             String name,
             String phone
     ) {
+        public ResetPasswordUserCommand {
+            if (loginId == null || loginId.isBlank()) {
+                throw new CoreException(USER_ID_MUST_NOT_BE_NULL);
+            }
+            if (name == null || name.isBlank()) {
+                throw new CoreException(USER_NAME_MUST_NOT_BE_BLANK);
+            }
+            if (phone == null || phone.isBlank()) {
+                throw new CoreException(PHONE_MUST_NOT_BE_BLANK);
+            }
+        }
     }
 
     /**
@@ -146,16 +186,14 @@ public class UserCommand {
             Long id,
             String password
     ) {
-    }
-
-    /**
-     * 사용자 수정 Command
-     */
-    public record UpdateUserCommand(
-            Long userId,
-            String name,
-            String phone
-    ) {
+        public UpdatePasswordCommand {
+            if (id == null) {
+                throw new CoreException(USER_ID_MUST_NOT_BE_NULL);
+            }
+            if (password == null || password.isBlank()) {
+                throw new CoreException(PASSWORD_MUST_NOT_BE_BLANK);
+            }
+        }
     }
 
     /**
@@ -168,6 +206,23 @@ public class UserCommand {
             String phone,
             String nickname
     ) {
+        public UpdateChildProfileCommand {
+            if (userId == null) {
+                throw new CoreException(USER_ID_MUST_NOT_BE_NULL);
+            }
+            if (childId == null) {
+                throw new CoreException(CHILD_ID_MUST_NOT_BE_NULL);
+            }
+            if (name == null || name.isBlank()) {
+                throw new CoreException(USER_NAME_MUST_NOT_BE_BLANK);
+            }
+            if (phone == null || phone.isBlank()) {
+                throw new CoreException(PHONE_MUST_NOT_BE_BLANK);
+            }
+            if (nickname == null || nickname.isBlank()) {
+                throw new CoreException(NICKNAME_MUST_NOT_BE_BLANK);
+            }
+        }
     }
 
     /**
@@ -176,11 +231,27 @@ public class UserCommand {
     public record UpdateOwnerProfileCommand(
             Long userId,
             Long ownerId,
-            Long levelId,
             String name,
             String phone,
             String businessNumber
     ) {
+        public UpdateOwnerProfileCommand {
+            if (userId == null) {
+                throw new CoreException(USER_ID_MUST_NOT_BE_NULL);
+            }
+            if (ownerId == null) {
+                throw new CoreException(OWNER_ID_MUST_NOT_BE_NULL);
+            }
+            if (name == null || name.isBlank()) {
+                throw new CoreException(USER_NAME_MUST_NOT_BE_BLANK);
+            }
+            if (phone == null || phone.isBlank()) {
+                throw new CoreException(PHONE_MUST_NOT_BE_BLANK);
+            }
+            if (businessNumber == null || businessNumber.isBlank()) {
+                throw new CoreException(BUSINESS_NUMBER_MUST_NOT_BE_BLANK);
+            }
+        }
     }
 
     /**
@@ -190,6 +261,14 @@ public class UserCommand {
             Long userId,
             StatusType statusType
     ) {
+        public UpdateDeletedUserCommand {
+            if (userId == null) {
+                throw new CoreException(USER_ID_MUST_NOT_BE_NULL);
+            }
+            if (statusType == null) {
+                statusType = StatusType.PENDING;
+            }
+        }
     }
 
     /**
@@ -201,15 +280,31 @@ public class UserCommand {
             String newPassword,
             String newPasswordConfirm
     ) {
+        public ChangePasswordCommand {
+            if (userId == null) {
+                throw new CoreException(USER_ID_MUST_NOT_BE_NULL);
+            }
+            if (currentPassword == null || currentPassword.isBlank()) {
+                throw new CoreException(PASSWORD_MUST_NOT_BE_BLANK);
+            }
+            if (!newPassword.equals(newPasswordConfirm)) {
+                throw new CoreException(PASSWORD_CONFIRM_MISMATCH);
+            }
+        }
     }
 
     /**
-     * 더티체킹으로 엔티티 저장/수정 Command
+     * 사용자 변경 Command
      *
-     * @param user 사용자 엔티티
+     * @param user 사용자 도메인
      */
-    public record SavedUserCommand(
+    public record UpdateUserCommand(
             User user
     ) {
+        public UpdateUserCommand {
+            if (user == null) {
+                throw new CoreException(USER_MUST_NOT_BE_NULL);
+            }
+        }
     }
 }

@@ -1,6 +1,5 @@
 package com.backend.onharu.interfaces.api.controller;
 
-import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.dto.UserControllerDto.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @Tag(name = "User", description = "사용자 API")
 public interface IUserController {
@@ -32,15 +30,23 @@ public interface IUserController {
                             schema = @Schema(implementation = SignUpChildRequest.class),
                             examples = @ExampleObject(
                                     name = "아동 회원가입 예시",
-                                    value = "{\n" +
-                                            "  \"loginId\": \"child123@test.com\",\n" +
-                                            "  \"password\": \"password123!\",\n" +
-                                            "  \"passwordConfirm\": \"password123!\",\n" +
-                                            "  \"name\": \"홍길동\",\n" +
-                                            "  \"phone\": \"01012345678\",\n" +
-                                            "  \"nickname\": \"코끼리땃쥐\",\n" +
-                                            "  \"certificate\": \"/certificates/certificate.pdf\"\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "loginId": "child123@test.com",
+                                              "password": "password123!",
+                                              "passwordConfirm": "password123!",
+                                              "name": "홍길동",
+                                              "phone": "01012345678",
+                                              "nickname": "코끼리땃쥐",
+                                              "images": [
+                                                {
+                                                  "fileKey": "images/certificate.pdf",
+                                                  "filePath": "https://minio.example.com/bucket/images/certificate.pdf",
+                                                  "displayOrder": "0"
+                                                }
+                                              ]
+                                            }
+                                            """
                             )
                     )
             )
@@ -99,7 +105,7 @@ public interface IUserController {
      * PUT /api/users/profile/child
      */
     @Operation(summary = "프로필 수정(아동)", description = "사용자(아동)의 프로필을 수정합니다.")
-    ResponseEntity<ResponseDTO<Void>> updateChildProfile(
+    ResponseEntity<ResponseDTO<String>> updateChildProfile(
             @RequestBody(
                     description = "아동 프로필 수정 요청",
                     content = @Content(
@@ -125,7 +131,7 @@ public interface IUserController {
      * PUT /api/users/profile/owner
      */
     @Operation(summary = "프로필 수정(사업자)", description = "사용자(사업자)의 프로필을 수정합니다.")
-    ResponseEntity<ResponseDTO<Void>> updateOwnerProfile(
+    ResponseEntity<ResponseDTO<String>> updateOwnerProfile(
             @RequestBody(
                     description = "사업자 프로필 수정 요청",
                     content = @Content(
@@ -137,7 +143,6 @@ public interface IUserController {
                                             {
                                               "name": "홍길동",
                                               "phone": "01033337777",
-                                              "levelId": "1",
                                               "businessNumber": "1234567890"
                                             }
                                             """
@@ -153,7 +158,7 @@ public interface IUserController {
      * 사용자 계정상태를 삭제됨으로 변경합니다.
      */
     @Operation(summary = "사용자 회원 탈퇴", description = "사용자 회원 탈퇴를 진행 합니다.")
-    ResponseEntity<ResponseDTO<Void>> deleteUser(
+    ResponseEntity<ResponseDTO<String>> deleteUser(
     );
 
     /**
@@ -163,21 +168,32 @@ public interface IUserController {
      * 사용자의 아이디와 비밀번호로 로그인을 수행합니다.
      */
     @Operation(summary = "로컬 사용자 로그인", description = "아이디와 비밀번호로 로그인을 수행합니다.")
-    ResponseEntity<ResponseDTO<Void>> login(
+    ResponseEntity<ResponseDTO<String>> login(
             @RequestBody(
                     description = "사용자 로그인 요청",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = LoginUserRequest.class),
-                            examples = @ExampleObject(
-                                    name = "로그인 요청 예시",
-                                    value = """
-                                            {
-                                              "loginId": "child123@test.com",
-                                              "password": "password123!"
-                                            }
-                                            """
-                            )
+                            examples = {
+                                    @ExampleObject(
+                                            name = "로그인 요청 예시(아동)",
+                                            value = """
+                                                    {
+                                                      "loginId": "child123@test.com",
+                                                      "password": "password123!"
+                                                    }
+                                                    """
+                                    ),
+                                    @ExampleObject(
+                                            name = "로그인 요청 예시(사업자)",
+                                            value = """
+                                                    {
+                                                      "loginId": "owner123@test.com",
+                                                      "password": "password123!"
+                                                    }
+                                                    """
+                                    )
+                            }
                     )
             )
             LoginUserRequest request,
@@ -190,7 +206,7 @@ public interface IUserController {
      * POST /api/users/logout
      */
     @Operation(summary = "로컬 사용자 로그아웃", description = "사용자의 로그아웃을 수행 합니다.")
-    ResponseEntity<ResponseDTO<Void>> logout(
+    ResponseEntity<ResponseDTO<String>> logout(
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse
     );
@@ -202,7 +218,6 @@ public interface IUserController {
      */
     @Operation(summary = "아동 소셜 회원가입 마무리", description = "아동 소셜 회원가입을 마무리합니다. 전화번호, 닉네임, 증명서 파일을 함께 받습니다.")
     ResponseEntity<ResponseDTO<SignUpChildResponse>> finishSignUpChild(
-            @AuthenticationPrincipal User user,
             @RequestBody(
                     description = "아동 소셜 회원가입 마무리 요청",
                     content = @Content(
@@ -210,11 +225,19 @@ public interface IUserController {
                             schema = @Schema(implementation = finishSignUpChildRequest.class),
                             examples = @ExampleObject(
                                     name = "아동 소셜 회원가입 요청",
-                                    value = "{\n" +
-                                            "  \"phone\": \"01012345678\",\n" +
-                                            "  \"nickname\": \"코끼리땃쥐\",\n" +
-                                            "  \"certificate\": \"/certificates/certificate.pdf\"\n" +
-                                            "}"
+                                    value = """
+                                            {
+                                              "phone": "01012345678",
+                                              "nickname": "카카오아동닉네임",
+                                              "images": [
+                                                {
+                                                  "fileKey": "certificate/certificate.pdf",
+                                                  "filePath": "https://minio.example.com/bucket/images/certificate.pdf",
+                                                  "displayOrder": "0"
+                                                }
+                                              ]
+                                            }
+                                            """
                             )
                     )
             )
@@ -228,7 +251,6 @@ public interface IUserController {
      */
     @Operation(summary = "사업자 소셜 회원가입 마무리", description = "사업자 소셜 회원가입을 마무리합니다. ")
     ResponseEntity<ResponseDTO<SignUpChildResponse>> finishSignUpOwner(
-            @AuthenticationPrincipal User user,
             @RequestBody(
                     description = "사업자 소셜 회원가입 마무리 요청",
                     content = @Content(
