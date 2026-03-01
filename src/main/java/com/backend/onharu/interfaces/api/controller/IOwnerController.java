@@ -106,8 +106,14 @@ public interface IOwnerController {
             Long reservationId
     );
 
-    @Operation(summary = "예약 승인", description = "사업자가 예약을 승인합니다.")
+    @Operation(summary = "예약 확정(승인)", description = "사업자가 예약을 확정합니다. (WAITING → CONFIRMED)")
     ResponseEntity<ResponseDTO<Void>> approveBook(
+            @Schema(description = "예약 ID", example = "1")
+            Long reservationId
+    );
+
+    @Operation(summary = "예약 완료", description = "사업자가 예약을 완료 처리합니다. (CONFIRMED → COMPLETED)")
+    ResponseEntity<ResponseDTO<Void>> completeBook(
             @Schema(description = "예약 ID", example = "1")
             Long reservationId
     );

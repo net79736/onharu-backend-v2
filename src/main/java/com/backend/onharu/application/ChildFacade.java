@@ -1,13 +1,15 @@
 package com.backend.onharu.application;
 
+import static com.backend.onharu.domain.common.enums.NotificationHistoryType.RESERVATION_CANCELED;
+import static com.backend.onharu.domain.common.enums.NotificationHistoryType.RESERVATION_CREATED;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_EXCEEDS_MAX;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_MUST_NOT_BE_NULL;
 
-import java.util.List;
-
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
 import com.backend.onharu.domain.child.model.Child;
@@ -19,6 +21,7 @@ import com.backend.onharu.domain.favorite.dto.FavoriteQuery.GetFavoriteByIdQuery
 import com.backend.onharu.domain.favorite.model.Favorite;
 import com.backend.onharu.domain.favorite.service.FavoriteCommandService;
 import com.backend.onharu.domain.favorite.service.FavoriteQueryService;
+import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CreateReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdAndStatusFilterQuery;
@@ -35,7 +38,9 @@ import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.storeschedule.service.StoreScheduleQueryService;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
+import com.backend.onharu.event.model.ReservationEvent;
 import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
+import com.backend.onharu.utils.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -54,15 +59,20 @@ public class ChildFacade {
     private final FavoriteCommandService favoriteCommandService;
     private final FavoriteQueryService favoriteQueryService;
 
+    // 스프링 이벤트 발행기. 쿠폰 발급 완료 등 도메인 이벤트를 발행할 때 사용합니다.
+    private final ApplicationEventPublisher applicationEventPublisher;
+
     /**
      * 예약 하기
      */
+    @Transactional
     public void reserve(CreateReservationCommand command) {
         // 결식 아동 조회   
         Child child = childQueryService.getChildById(new GetChildByIdQuery(command.childId()));
         
         // 가게 일정 조회
         StoreSchedule storeSchedule = storeScheduleQueryService.getStoreScheduleById(new GetStoreScheduleByIdQuery(command.storeScheduleId()));
+        Owner owner = storeSchedule.getStore().getOwner();
 
         // 조회한 가게 일정이 이미 예약된 일정인지 체크 (테이블 조회해서 확인)
         Reservation reservation = reservationQueryService.getByStoreScheduleId(new GetByStoreScheduleIdQuery(command.storeScheduleId()));        
@@ -83,15 +93,25 @@ public class ChildFacade {
         }
 
         // 예약 생성
-        reservationCommandService.createReservation(command, storeSchedule, child);
+        Reservation createdReservation = reservationCommandService.createReservation(command, storeSchedule, child);
+
+        // 예약 생성 이벤트 발행
+        applicationEventPublisher.publishEvent(new ReservationEvent(
+            createdReservation.getId(),
+            owner.getId(),
+            SecurityUtils.getCurrentUserId(),
+            RESERVATION_CREATED
+        ));
     }
 
     /**
      * 예약 취소
      */
+    @Transactional
     public void cancelReservation(CancelReservationCommand command, Long childId) {
         // 예약 조회
         Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(command.reservationId()));
+        Owner owner = reservation.getStoreSchedule().getStore().getOwner();
 
         // 현재 로그인한 아동 정보 조회
         Child child = childQueryService.getChildById(new GetChildByIdQuery(childId));
@@ -104,6 +124,14 @@ public class ChildFacade {
 
         // 예약 취소
         reservationCommandService.cancelReservation(command);
+
+        // 예약 취소 이벤트 발행
+        applicationEventPublisher.publishEvent(new ReservationEvent(
+            command.reservationId(),
+            owner.getId(),
+            SecurityUtils.getCurrentUserId(),
+            RESERVATION_CANCELED
+        ));
     }
 
     /**

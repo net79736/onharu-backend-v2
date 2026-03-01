@@ -53,7 +53,15 @@ public class ReservationCommand {
     }
 
     /**
-     * 예약 완료 처리 커맨드
+     * 예약 확정 커맨드 (WAITING → CONFIRMED)
+     */
+    public record ConfirmReservationCommand(
+            Long reservationId
+    ) {
+    }
+
+    /**
+     * 예약 완료 처리 커맨드 (CONFIRMED → COMPLETED)
      */
     public record CompleteReservationCommand(
             Long reservationId

@@ -10,6 +10,7 @@ import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.ChangeReservationStatusCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CompleteReservationCommand;
+import com.backend.onharu.domain.reservation.dto.ReservationCommand.ConfirmReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CreateReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.RejectReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetReservationByIdParam;
@@ -63,7 +64,17 @@ public class ReservationCommandService {
     }
 
     /**
-     * 예약 완료 처리
+     * 예약 확정 (WAITING → CONFIRMED)
+     */
+    public void confirmReservation(ConfirmReservationCommand command) {
+        Reservation reservation = reservationRepository.getReservation(
+                new GetReservationByIdParam(command.reservationId()));
+
+        reservation.confirm(); // 예약 확정 처리
+    }
+
+    /**
+     * 예약 완료 처리 (CONFIRMED → COMPLETED)
      */
     public void completeReservation(CompleteReservationCommand command) {
         Reservation reservation = reservationRepository.getReservation(
