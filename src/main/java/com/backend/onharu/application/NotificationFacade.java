@@ -1,12 +1,17 @@
 package com.backend.onharu.application;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.notification.dto.NotificationCommand.CreateNotificationCommand;
 import com.backend.onharu.domain.notification.dto.NotificationQuery.GetNotificationByUserIdQuery;
 import com.backend.onharu.domain.notification.model.Notification;
+import com.backend.onharu.domain.notification.model.NotificationHistory;
 import com.backend.onharu.domain.notification.service.NotificationCommandService;
+import com.backend.onharu.domain.notification.service.NotificationHistoryCommandService;
+import com.backend.onharu.domain.notification.service.NotificationHistoryQueryService;
 import com.backend.onharu.domain.notification.service.NotificationQueryService;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
 import com.backend.onharu.domain.user.model.User;
@@ -21,6 +26,8 @@ public class NotificationFacade {
 
     private final NotificationQueryService notificationQueryService;
     private final NotificationCommandService notificationCommandService;
+    private final NotificationHistoryQueryService notificationHistoryQueryService;
+    private final NotificationHistoryCommandService notificationHistoryCommandService;
     private final UserQueryService userQueryService;
 
     /**
@@ -77,5 +84,29 @@ public class NotificationFacade {
         // 알림 수정
         notificationCommandService.updateNotification(notification, request.isSystemEnabled());
         return notification;
+    }
+
+    /**
+     * 사용자 ID로 알림 내역 목록 조회 (페이징)
+     * 로그인한 사용자(User)의 알림 내역을 조회합니다.
+     *
+     * @param userId   사용자 ID
+     * @param pageable 페이징·정렬 정보
+     * @return 알림 히스토리 페이지
+     */
+    public Page<NotificationHistory> getNotificationHistories(Long userId, Pageable pageable) {
+        return notificationHistoryQueryService.findPageByUserId(userId, pageable);
+    }
+
+    /**
+     * 알림 히스토리를 읽음 처리합니다.
+     *
+     * @param userId    요청한 사용자 ID
+     * @param historyId 알림 히스토리 ID
+     * @return 읽음 처리된 알림 히스토리
+     */
+    @Transactional
+    public NotificationHistory markNotificationHistoryAsRead(Long userId, Long historyId) {
+        return notificationHistoryCommandService.markAsRead(historyId, userId);
     }
 }

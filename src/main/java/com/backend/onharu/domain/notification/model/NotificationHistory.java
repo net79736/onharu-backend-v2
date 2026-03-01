@@ -80,4 +80,11 @@ public class NotificationHistory extends BaseEntity {
         this.relatedEntityId = relatedEntityId;
         this.isRead = isRead != null ? isRead : false;
     }
+
+    /**
+     * 알림을 읽음 처리합니다.
+     */
+    public void markAsRead() {
+        this.isRead = true;
+    }
 }

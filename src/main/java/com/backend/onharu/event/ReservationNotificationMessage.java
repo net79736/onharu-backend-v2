@@ -19,7 +19,7 @@ public enum ReservationNotificationMessage {
         null
     ),
     RESERVATION_CONFIRMED(
-        "예약이 확정되었습니다. 매장에서 만나요~",
+        "예약이 확정되었습니다. 매장에서 만나요.",
         null
     ),
     RESERVATION_CANCELED(
@@ -27,8 +27,8 @@ public enum ReservationNotificationMessage {
         "예약 취소가 잘 처리됐어요. 다음에 또 봐요!"
     ),
     RESERVATION_COMPLETED(
-        "예약이 완료됐어요! 매장에서 만나요",
-        "예약이 완료됐어요! 매장에서 만나요"
+        "예약이 완료됐어요! 매장에서 만나요.",
+        "예약이 완료됐어요! 매장에서 만나요."
     ),
     RESERVATION_REJECTED(
         "예약이 거절되었습니다.",
