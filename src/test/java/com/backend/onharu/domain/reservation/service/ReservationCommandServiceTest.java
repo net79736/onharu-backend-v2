@@ -306,7 +306,7 @@ class ReservationCommandServiceTest {
         @DisplayName("예약 확정 성공 - WAITING → CONFIRMED")
         public void shouldConfirmReservation() {
             // given
-            Child savedChild = createTestChild("test_confirm_child", "테스트 아동", "01011112222", "닉네임테스트", "/certificates/test.pdf", true);
+            Child savedChild = createTestChild("test_confirm_child", "테스트 아동", "01011112222", "닉네임테스트", true);
             Owner savedOwner = createTestOwner("test_confirm_owner", "테스트 사업자", "01033334444", "새싹", "3334567890");
             Category category = createTestCategory("식당");
             Store savedStore = createTestStore("테스트 가게", savedOwner, category);

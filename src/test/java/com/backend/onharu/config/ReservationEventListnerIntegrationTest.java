@@ -145,7 +145,6 @@ class ReservationEventListnerIntegrationTest {
                 Child.builder()
                         .user(user)
                         .nickname(loginId + "_닉네임")
-                        .certificate("/certificates/test.pdf")
                         .isVerified(true)
                         .build()
         );
