@@ -14,7 +14,6 @@ import com.backend.onharu.domain.reservation.dto.ReservationCommand.ChangeReserv
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CompleteReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.ConfirmReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CreateReservationCommand;
-import com.backend.onharu.domain.reservation.dto.ReservationCommand.RejectReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStatusAndScheduleDateBeforeThanParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetReservationByIdParam;
 import com.backend.onharu.domain.reservation.model.Reservation;
@@ -55,17 +54,7 @@ public class ReservationCommandService {
         Reservation reservation = reservationRepository.getReservation(
                 new GetReservationByIdParam(command.reservationId()));
         
-        reservation.cancel(command.cancelReason());
-    }
-
-    /**
-     * 예약 거절
-     */
-    public void rejectReservation(RejectReservationCommand command) {
-        Reservation reservation = reservationRepository.getReservation(
-                new GetReservationByIdParam(command.reservationId()));
-        
-        reservation.reject(command.rejectReason());
+        reservation.cancel(command.cancelRequestedBy(), command.cancelReason());
     }
 
     /**
