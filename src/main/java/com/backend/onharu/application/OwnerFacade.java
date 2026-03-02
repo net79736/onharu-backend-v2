@@ -340,7 +340,7 @@ public class OwnerFacade {
         // 예약 정보 조회
         Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(reservationId));
 
-        // 예약 거절
+        // 예약 취소
         reservationCommandService.cancelReservation(new CancelReservationCommand(reservation.getId(), UserType.OWNER, request.cancelReason()));
     }
 }
