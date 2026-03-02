@@ -7,6 +7,7 @@ import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.file.dto.FileCommand;
 import com.backend.onharu.domain.file.model.File;
 import com.backend.onharu.domain.file.service.FileQueryService;
+import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.user.dto.UserCommand.*;
 import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpChildUserOAuthCommand;
 import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpOwnerUserOAuthCommand;
@@ -191,6 +192,12 @@ public class UserControllerImpl implements IUserController {
 
         UserOwnerProfile ownerProfile = userFacade.getOwnerProfile(new GetOwnerProfileQuery(userId, ownerId)); // 프로필 조회
 
+        // 가게 목록 중 ID 추출
+        List<Store> stores = ownerProfile.stores();
+        List<Long> storeId = stores.stream()
+                .map(Store::getId)
+                .toList();
+
         // 응답 생성
         OwnerProfileResponse response = new OwnerProfileResponse(
                 ownerProfile.user().getLoginId(),
@@ -198,7 +205,8 @@ public class UserControllerImpl implements IUserController {
                 ownerProfile.user().getPhone(),
                 ownerProfile.user().getUserType(),
                 ownerProfile.level().getName(),
-                ownerProfile.owner().getBusinessNumber()
+                ownerProfile.owner().getBusinessNumber(),
+                storeId
         );
 
         return ResponseEntity.status(HttpStatus.OK)

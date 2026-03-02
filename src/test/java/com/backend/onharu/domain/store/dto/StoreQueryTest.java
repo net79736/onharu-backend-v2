@@ -1,5 +1,6 @@
 package com.backend.onharu.domain.store.dto;
 
+import static com.backend.onharu.domain.store.dto.StoreQuery.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.DisplayName;
@@ -66,6 +67,24 @@ class StoreQueryTest {
 
             // when
             FindWithCategoryAndFavoriteCountByOwnerIdQuery query = new FindWithCategoryAndFavoriteCountByOwnerIdQuery(ownerId);
+
+            // then
+            assertThat(query.ownerId()).isEqualTo(ownerId);
+        }
+    }
+
+    @Nested
+    @DisplayName("FindByOwnerIdQuery 테스트")
+    class FindByOwnerIdQueryTest {
+
+        @Test
+        @DisplayName("FindByOwnerIdQuery 생성 성공")
+        public void shouldCreateFindByOwnerIdQuery() {
+            // given
+            Long ownerId = 1L;
+
+            // when
+            FindByOwnerIdQuery query = new FindByOwnerIdQuery(ownerId);
 
             // then
             assertThat(query.ownerId()).isEqualTo(ownerId);
