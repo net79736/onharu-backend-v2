@@ -66,6 +66,7 @@ public class Reservation extends BaseEntity {
     @Column(name = "CANCEL_REASON", columnDefinition = "TEXT")
     private String cancelReason;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "CANCEL_REQUESTED_BY")
     private UserType cancelRequestedBy;
 
