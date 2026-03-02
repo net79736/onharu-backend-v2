@@ -143,6 +143,14 @@ public class Reservation extends BaseEntity {
     }
 
     /**
+     * 예약을 만료 처리합니다. (WAITING → CANCELED)
+     */
+    public void expire() {
+        this.status = ReservationType.CANCELED;
+        this.cancelReason = "예약 시간이 지나 시스템에서 자동 취소되었습니다.";
+    }
+
+    /**
      * 예약이 해당 아동에 속하는지 확인합니다.
      *
      * @param childId 아동 ID

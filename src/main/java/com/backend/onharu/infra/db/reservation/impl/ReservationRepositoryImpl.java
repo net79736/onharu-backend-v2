@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByStatusParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusFilterParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusParam;
+import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStatusAndScheduleDateBeforeThanParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdAndStatusFilterParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetByStoreScheduleIdParam;
@@ -81,5 +82,10 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     @Override
     public void delete(Reservation reservation) {
         reservationJpaRepository.delete(reservation);
+    }
+
+    @Override
+    public List<Reservation> findByStatusAndScheduleDateBeforeThan(FindByStatusAndScheduleDateBeforeThanParam param) {
+        return reservationJpaRepository.findByStatusAndScheduleDateBeforeThan(param.status(), param.date());
     }
 }

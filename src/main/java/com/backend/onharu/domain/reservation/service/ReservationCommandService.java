@@ -1,6 +1,8 @@
 package com.backend.onharu.domain.reservation.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,13 +15,16 @@ import com.backend.onharu.domain.reservation.dto.ReservationCommand.CompleteRese
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.ConfirmReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CreateReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.RejectReservationCommand;
+import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStatusAndScheduleDateBeforeThanParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetReservationByIdParam;
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.reservation.repository.ReservationRepository;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -91,5 +96,22 @@ public class ReservationCommandService {
                 new GetReservationByIdParam(command.reservationId()));
         
         reservation.changeStatus(command.status());
+    }
+
+    /**
+     * 만료된 예약을 처리합니다. (WAITING → CANCELED)
+     */
+    public void expireOverDueReservations() {
+        // 대기중 예약 중 예약 시간이 지난 예약을 조회
+        List<Reservation> reservations = reservationRepository.findByStatusAndScheduleDateBeforeThan(new FindByStatusAndScheduleDateBeforeThanParam(ReservationType.WAITING, LocalDate.now()));
+
+        // 대기중 예약 중 예약 시간이 지난 예약을 처리
+        for (Reservation reservation : reservations) {
+            log.info("만료된 예약 처리: " + reservation.getId());
+            log.info("예약 시간: " + reservation.getReservationAt());
+            log.info("현재 시간: " + LocalDateTime.now());
+            reservation.expire();
+            reservationRepository.save(reservation);
+        }
     }
 }
