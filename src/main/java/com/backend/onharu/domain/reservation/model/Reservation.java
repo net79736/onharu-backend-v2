@@ -69,9 +69,6 @@ public class Reservation extends BaseEntity {
     @Column(name = "CANCEL_REQUESTED_BY")
     private UserType cancelRequestedBy;
 
-    @Column(name = "REJECT_REASON", columnDefinition = "TEXT")
-    private String rejectReason;
-
     @Builder
     public Reservation(Child child, StoreSchedule storeSchedule, Integer people, 
                       LocalDateTime reservationAt, ReservationType status) {
@@ -87,9 +84,9 @@ public class Reservation extends BaseEntity {
      * 
      * @param cancelReason 취소 사유
      */
-    public void cancel(String cancelReason) {
+    public void cancel(UserType cancelRequestedBy, String cancelReason) {
         this.status = ReservationType.CANCELED;
-        this.cancelRequestedBy = UserType.CHILD;
+        this.cancelRequestedBy = cancelRequestedBy;
         ofNullable(cancelReason).ifPresent(v -> this.cancelReason = v);
     }
 
@@ -98,10 +95,10 @@ public class Reservation extends BaseEntity {
      * 
      * @param rejectReason 거절 사유
      */
-    public void reject(String rejectReason) {
+    public void reject(String cancelReason) {
         this.status = ReservationType.CANCELED;
         this.cancelRequestedBy = UserType.OWNER;
-        ofNullable(rejectReason).ifPresent(v -> this.rejectReason = v);
+        ofNullable(cancelReason).ifPresent(v -> this.cancelReason = v);
     }
 
     /**

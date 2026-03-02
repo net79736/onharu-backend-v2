@@ -34,6 +34,7 @@ import com.backend.onharu.domain.store.support.StoreSearchSortResolver;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.controller.IOwnerController;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CancelReservationRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetMyStoresRequest;
@@ -42,7 +43,6 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetOwnerResponse
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingDetailResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingListResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingsRequest;
-import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RejectBookRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.ReservationResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
@@ -356,11 +356,11 @@ public class OwnerControllerImpl implements IOwnerController {
     @PostMapping("/reservations/{reservationId}/reject")
     public ResponseEntity<ResponseDTO<Void>> rejectBook(
             @PathVariable("reservationId") Long reservationId,
-            @RequestBody RejectBookRequest request
+            @RequestBody CancelReservationRequest request
     ) {
         log.info("예약 거절 요청: reservationId={}, request={}", reservationId, request);
         
-        ownerFacade.rejectReservation(reservationId, request);
+        ownerFacade.cancelReservation(reservationId, request);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.backend.onharu.domain.common.enums.ReservationType;
+import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.ChangeReservationStatusCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CompleteReservationCommand;
@@ -51,10 +52,11 @@ class ReservationCommandTest {
             String cancelReason = "일정 변경";
 
             // when
-            CancelReservationCommand command = new CancelReservationCommand(id, cancelReason);
+            CancelReservationCommand command = new CancelReservationCommand(id, UserType.CHILD, cancelReason);
 
             // then
             assertThat(command.reservationId()).isEqualTo(id);
+            assertThat(command.cancelRequestedBy()).isEqualTo(UserType.CHILD);
             assertThat(command.cancelReason()).isEqualTo(cancelReason);
         }
     }

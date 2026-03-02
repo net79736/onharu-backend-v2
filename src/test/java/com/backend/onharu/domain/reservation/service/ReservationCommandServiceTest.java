@@ -282,7 +282,7 @@ class ReservationCommandServiceTest {
 
             // when
             reservationCommandService.cancelReservation(
-                    new CancelReservationCommand(savedReservation.getId(), cancelReason)
+                    new CancelReservationCommand(savedReservation.getId(), UserType.CHILD, cancelReason)
             );
 
             // then
@@ -291,6 +291,7 @@ class ReservationCommandServiceTest {
             );
             assertThat(reservation.getStatus()).isEqualTo(ReservationType.CANCELED);
             assertThat(reservation.getCancelReason()).isEqualTo(cancelReason);
+            assertThat(reservation.getCancelRequestedBy()).isEqualTo(UserType.CHILD);
 
             System.out.println("예약 취소 성공 - Reservation ID: " + reservation.getId());
             System.out.println("   - 상태: " + reservation.getStatus());

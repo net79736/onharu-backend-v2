@@ -367,6 +367,7 @@ class ChildFacadeTest {
             
             CancelReservationCommand command = new CancelReservationCommand(
                 reservation.getId(),
+                UserType.CHILD,
                 "일정 변경으로 인한 취소"
             );
 
@@ -379,6 +380,7 @@ class ChildFacadeTest {
             assertThat(canceledReservation).isNotNull();
             assertThat(canceledReservation.getStatus()).isEqualTo(ReservationType.CANCELED);
             assertThat(canceledReservation.getCancelReason()).isEqualTo("일정 변경으로 인한 취소");
+            assertThat(canceledReservation.getCancelRequestedBy()).isEqualTo(UserType.CHILD);
             
             System.out.println("✅ 예약 취소 성공 - Reservation ID: " + canceledReservation.getId());
             System.out.println("   - 상태: " + canceledReservation.getStatus());
@@ -407,8 +409,11 @@ class ChildFacadeTest {
             
             CancelReservationCommand command = new CancelReservationCommand(
                 reservation.getId(),
+                UserType.CHILD,
                 "일정 변경으로 인한 취소"
             );
+
+            assertThat(command.cancelRequestedBy()).isEqualTo(UserType.CHILD);
 
             // when & then
             CoreException exception = Assertions.assertThrows(

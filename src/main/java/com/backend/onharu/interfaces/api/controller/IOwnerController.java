@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CancelReservationRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetMyStoresRequest;
@@ -13,7 +14,6 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetOwnerResponse
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingDetailResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingListResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingsRequest;
-import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RejectBookRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateAvailableDatesRequest;
@@ -127,7 +127,7 @@ public interface IOwnerController {
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = RejectBookRequest.class),
+                            schema = @Schema(implementation = CancelReservationRequest.class),
                             examples = @ExampleObject(
                                     name = "예약 거절 예시",
                                     value = "{\n" +
@@ -136,7 +136,7 @@ public interface IOwnerController {
                             )
                     )
             )
-            RejectBookRequest request
+            CancelReservationRequest request
     );
 
     @Operation(summary = "예약 가능한 날짜 생성", description = "예약 가능한 날짜를 생성합니다.")
