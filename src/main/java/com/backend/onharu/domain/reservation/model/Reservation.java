@@ -16,6 +16,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.common.base.BaseEntity;
 import com.backend.onharu.domain.common.enums.ReservationType;
+import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.support.error.CoreException;
 
@@ -65,6 +66,9 @@ public class Reservation extends BaseEntity {
     @Column(name = "CANCEL_REASON", columnDefinition = "TEXT")
     private String cancelReason;
 
+    @Column(name = "CANCEL_REQUESTED_BY")
+    private UserType cancelRequestedBy;
+
     @Column(name = "REJECT_REASON", columnDefinition = "TEXT")
     private String rejectReason;
 
@@ -85,6 +89,7 @@ public class Reservation extends BaseEntity {
      */
     public void cancel(String cancelReason) {
         this.status = ReservationType.CANCELED;
+        this.cancelRequestedBy = UserType.CHILD;
         ofNullable(cancelReason).ifPresent(v -> this.cancelReason = v);
     }
 
@@ -94,7 +99,8 @@ public class Reservation extends BaseEntity {
      * @param rejectReason 거절 사유
      */
     public void reject(String rejectReason) {
-        this.status = ReservationType.REJECTED;
+        this.status = ReservationType.CANCELED;
+        this.cancelRequestedBy = UserType.OWNER;
         ofNullable(rejectReason).ifPresent(v -> this.rejectReason = v);
     }
 
@@ -207,7 +213,7 @@ public class Reservation extends BaseEntity {
      * @return 재예약 가능 여부 (CANCELED, REJECTED인 경우 true)
      */
     public boolean isRebookable() {
-        return this.status == ReservationType.CANCELED || this.status == ReservationType.REJECTED;
+        return this.status == ReservationType.CANCELED;
     }
 
     /**
