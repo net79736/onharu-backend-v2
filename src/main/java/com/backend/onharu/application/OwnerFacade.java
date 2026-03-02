@@ -1,5 +1,7 @@
 package com.backend.onharu.application;
 
+import static com.backend.onharu.utils.SecurityUtils.getCurrentUserId;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -339,8 +341,22 @@ public class OwnerFacade {
     public void cancelReservation(Long reservationId, CancelReservationRequest request) {
         // 예약 정보 조회
         Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(reservationId));
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(reservation.getStoreSchedule().getStore().getId()));
+
+        // Owner 조회
+        Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(getCurrentUserId()));
+
+        // 사업자가 가게의 주인인지 확인
+        store.belongsTo(owner);
 
         // 예약 취소
         reservationCommandService.cancelReservation(new CancelReservationCommand(reservation.getId(), UserType.OWNER, request.cancelReason()));
+
+        applicationEventPublisher.publishEvent(new ReservationEvent(
+            reservation.getId(),
+            owner.getId(),
+            reservation.getChild().getId(),
+            NotificationHistoryType.RESERVATION_REJECTED
+        ));
     }
 }
