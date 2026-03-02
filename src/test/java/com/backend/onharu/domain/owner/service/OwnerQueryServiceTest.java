@@ -17,11 +17,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByUserIdQuery;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Transactional
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayName("OwnerQueryServiceTest 테스트")
@@ -44,10 +46,10 @@ class OwnerQueryServiceTest {
 
     @BeforeEach
     void setUp() {
-        childJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-        levelJpaRepository.deleteAll();
+//        childJpaRepository.deleteAll();
+//        ownerJpaRepository.deleteAll();
+//        userJpaRepository.deleteAll();
+//        levelJpaRepository.deleteAll();
     }
 
     /**
@@ -99,7 +101,7 @@ class OwnerQueryServiceTest {
         @DisplayName("ownerId로 조회 성공")
         void shouldGetOwnerById() {
             // GIVEN
-            User user = createUser("owner1@test.com", "사업자1", "01011112222");
+            User user = createUser("owner1111111@test.com", "사업자1111111", "01011112222");
             Level level = createLevel("비기너");
             Owner owner = createOwner(user, level, "1234567890");
 
@@ -124,7 +126,7 @@ class OwnerQueryServiceTest {
         @DisplayName("userId로 조회 성공")
         void shouldGetOwnerByUserId() {
             // GIVEN
-            User user = createUser("owner2@test.com", "사업자2", "01033334444");
+            User user = createUser("owner2221@test.com", "사업자2221", "01033334444");
             Level level = createLevel("비기너");
             Owner owner = createOwner(user, level, "9876543210");
 

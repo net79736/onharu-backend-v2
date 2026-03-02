@@ -14,11 +14,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
 import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Transactional
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayName("ChildQueryServiceTest 테스트")
@@ -35,8 +37,8 @@ class ChildQueryServiceTest {
 
     @BeforeEach
     void setUp() {
-        childJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
+//        childJpaRepository.deleteAll();
+//        userJpaRepository.deleteAll();
     }
 
     /**
@@ -76,8 +78,8 @@ class ChildQueryServiceTest {
         @DisplayName("childId로 조회 성공")
         void shouldGetChildById() {
             // GIVEN
-            User user = createUser("test1@test.com", "이름테스트1", "01011112222");
-            Child child = createChild(user, "닉네임테스트1");
+            User user = createUser("test1555555@test.com", "이름테스트1", "01011112222");
+            Child child = createChild(user, "닉네임테스트1555555");
 
             GetChildByIdQuery query = new GetChildByIdQuery(child.getId());
 
@@ -86,7 +88,7 @@ class ChildQueryServiceTest {
 
             // THEN
             assertThat(result.getId()).isEqualTo(child.getId());
-            assertThat(result.getNickname()).isEqualTo("닉네임테스트1");
+            assertThat(result.getNickname()).isEqualTo("닉네임테스트1555555");
             assertThat(result.getUser().getId()).isEqualTo(user.getId());
         }
     }
@@ -99,8 +101,8 @@ class ChildQueryServiceTest {
         @DisplayName("userId로 조회 성공")
         void shouldGetChildByUserId() {
             // GIVEN
-            User user = createUser("test3@test.com", "이름3", "01033334444");
-            Child child = createChild(user, "닉네임3");
+            User user = createUser("test3333333@test.com", "이름3", "01033334444");
+            Child child = createChild(user, "닉네임3333333");
 
             GetChildByUserIdQuery query = new GetChildByUserIdQuery(user.getId());
 
@@ -110,7 +112,7 @@ class ChildQueryServiceTest {
             // THEN
             assertThat(result.getId()).isEqualTo(child.getId());
             assertThat(result.getUser().getId()).isEqualTo(user.getId());
-            assertThat(result.getNickname()).isEqualTo("닉네임3");
+            assertThat(result.getNickname()).isEqualTo("닉네임3333333");
         }
     }
 }

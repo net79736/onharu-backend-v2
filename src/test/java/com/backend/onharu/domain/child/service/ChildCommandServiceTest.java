@@ -14,10 +14,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.backend.onharu.domain.child.dto.ChildCommand.CreateChildCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Transactional
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayName("ChildCommandService 테스트")
@@ -63,9 +65,9 @@ class ChildCommandServiceTest {
         @DisplayName("아동 생성 성공")
         void shouldCreateChild() {
             // GIVEN
-            User user = createUser("test1234@test.com", "테스트이름", "01011112222");
+            User user = createUser("test1234444444@test.com", "테스트이름", "01011112222");
 
-            CreateChildCommand command = new CreateChildCommand(user, "테스트닉네임");
+            CreateChildCommand command = new CreateChildCommand(user, "테스트닉네임1234444444");
 
             // WHEN
             Child child = childCommandService.createChild(command);
@@ -73,7 +75,7 @@ class ChildCommandServiceTest {
             // THEN
             assertThat(child.getId()).isNotNull();
             assertThat(child.getUser().getId()).isEqualTo(user.getId());
-            assertThat(child.getNickname()).isEqualTo("테스트닉네임");
+            assertThat(child.getNickname()).isEqualTo("테스트닉네임1234444444");
             assertThat(child.getIsVerified()).isFalse();
 
             assertThat(childJpaRepository.findById(child.getId())).isPresent();

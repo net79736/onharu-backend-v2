@@ -17,10 +17,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.backend.onharu.domain.owner.dto.OwnerCommand.CreateOwnerCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Transactional
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayName("OwnerCommandService 테스트")
@@ -85,7 +87,7 @@ class OwnerCommandServiceTest {
         @DisplayName("사업자 생성 성공")
         void shouldCreateOwner() {
             // GIVEN
-            User user = createUser("owner99999@test.com", "사업자이름9", "01011112222");
+            User user = createUser("owner999999@test.com", "사업자이름99", "01011112222");
             Level level = createLevel("비기너");
 
             CreateOwnerCommand command = new CreateOwnerCommand(user, level, "1234567890");
