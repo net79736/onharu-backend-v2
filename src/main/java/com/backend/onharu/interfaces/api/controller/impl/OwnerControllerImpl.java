@@ -344,21 +344,21 @@ public class OwnerControllerImpl implements IOwnerController {
     }
 
     /**
-     * 예약 거절
+     * 예약 취소
      * 
-     * POST /api/owners/reservations/{reservationId}/reject
-     * 사업자가 예약을 거절합니다.
+     * POST /api/owners/reservations/{reservationId}/cancel
+     * 사업자가 예약을 취소합니다.
      *
      * @param reservationId 예약 ID
-     * @return 거절 결과
+     * @return 취소 결과
      */
     @Override
-    @PostMapping("/reservations/{reservationId}/reject")
-    public ResponseEntity<ResponseDTO<Void>> rejectBook(
+    @PostMapping("/reservations/{reservationId}/cancel")
+    public ResponseEntity<ResponseDTO<Void>> cancelBook(
             @PathVariable("reservationId") Long reservationId,
-            @RequestBody CancelReservationRequest request
+            @Valid @RequestBody CancelReservationRequest request
     ) {
-        log.info("예약 거절 요청: reservationId={}, request={}", reservationId, request);
+        log.info("예약 취소 요청: reservationId={}, request={}", reservationId, request);
         
         ownerFacade.cancelReservation(reservationId, request);
 
