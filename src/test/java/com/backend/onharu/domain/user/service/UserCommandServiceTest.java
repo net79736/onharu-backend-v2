@@ -22,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
+import java.util.List;
+
 import static com.backend.onharu.domain.support.error.ErrorType.User.USER_ID_ALREADY_EXISTS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -75,7 +77,7 @@ class UserCommandServiceTest {
                     "테스트 아동",
                     "01012345678",
                     "닉네임테스트",
-                    "/certificates/test.pdf"
+                    List.of() // 이미지 없음
             );
 
             // when
@@ -126,7 +128,7 @@ class UserCommandServiceTest {
                     "새로운 아동",
                     "01022222222",
                     "닉네임테스트",
-                    "/certificates/new.pdf"
+                    List.of() // 이미지 없음
             );
 
             // when
@@ -155,9 +157,7 @@ class UserCommandServiceTest {
                     "password123",
                     "테스트 사업자",
                     "01087654321",
-                    "테스트 가게",
-                    "1234567890",
-                    "1"
+                    "1234567890"
             );
 
             // when

@@ -21,9 +21,10 @@ import java.util.List;
 public class LocalUser implements UserDetails {
 
     /**
-     * 인증 성공후 SecurityContext 에서 꺼내서 사용 가능한 User 엔티티 입니다
+     * 인증 성공후 SecurityContext 에서 꺼내서 사용 가능한 User 엔티티, 아동/사업자 ID 입니다
      */
     private final User user;
+    private final Long domainId; // 사용자의 타입이 아동인 경우 childId, 사업자인 경우 ownerId 저장
 
     /**
      * 시큐리티가 사용하는 고유 식별자 반환

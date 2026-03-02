@@ -1,7 +1,10 @@
 package com.backend.onharu.domain.reservation.model;
 
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_CHILD_ID_MISMATCH;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_NOT_COMPLETED;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_CANCELED_ALREADY_CANCELED;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_CANNOT_COMPLETE;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_CANNOT_CONFIRM;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STATUS_COMPLETED_CANNOT_CANCEL;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STORE_ID_MISMATCH;
 import static java.util.Optional.ofNullable;
@@ -96,9 +99,28 @@ public class Reservation extends BaseEntity {
     }
 
     /**
-     * 예약을 완료 처리합니다.
+     * 예약을 확정합니다. (WAITING → CONFIRMED)
+     * 사업자가 예약을 승인할 때 사용
+     *
+     * @throws CoreException RESERVATION_STATUS_CANNOT_CONFIRM 대기 상태가 아닌 예약은 확정할 수 없음
+     */
+    public void confirm() {
+        if (this.status != ReservationType.WAITING) {
+            throw new CoreException(RESERVATION_STATUS_CANNOT_CONFIRM);
+        }
+        this.status = ReservationType.CONFIRMED;
+    }
+
+    /**
+     * 예약을 완료 처리합니다. (CONFIRMED → COMPLETED)
+     * 서비스 이용이 완료되었을 때 사업자가 호출
+     *
+     * @throws CoreException RESERVATION_STATUS_CANNOT_COMPLETE 확정된 예약만 완료 가능
      */
     public void complete() {
+        if (this.status != ReservationType.CONFIRMED) {
+            throw new CoreException(RESERVATION_STATUS_CANNOT_COMPLETE);
+        }
         this.status = ReservationType.COMPLETED;
     }
 
@@ -121,6 +143,14 @@ public class Reservation extends BaseEntity {
     }
 
     /**
+     * 예약을 만료 처리합니다. (WAITING → CANCELED)
+     */
+    public void expire() {
+        this.status = ReservationType.CANCELED;
+        this.cancelReason = "예약 시간이 지나 시스템에서 자동 취소되었습니다.";
+    }
+
+    /**
      * 예약이 해당 아동에 속하는지 확인합니다.
      *
      * @param childId 아동 ID
@@ -128,6 +158,19 @@ public class Reservation extends BaseEntity {
     public void belongsToChild(Long childId) {
         if (!this.child.getId().equals(childId)) {
             throw new CoreException(RESERVATION_CHILD_ID_MISMATCH);
+        }
+    }
+
+    /**
+     * 리뷰를 작성 가능한 예약인지 확인합니다.
+     *
+     * @param childId 아동 ID
+     */
+    public void verifyWriteable(Long childId) {
+        belongsToChild(childId); // 예약이 아동에 속하는지 확인
+
+        if (this.status != ReservationType.COMPLETED) { // 예약 상태가 완료 상태가 아닐 경우
+            throw new CoreException(RESERVATION_NOT_COMPLETED);
         }
     }
 

@@ -157,7 +157,7 @@ class StoreTagQueryServiceTest {
         public void shouldGetStoreTags() {
             // given
             String uniqueLoginId = "test_owner_query_" + System.currentTimeMillis();
-            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 조회", "01055556666", "새싹");
+            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 조회", "01055556666", "비기너");
             Category category = createTestCategory("식당");
             
             Store savedStore = storeJpaRepository.save(
@@ -248,8 +248,8 @@ class StoreTagQueryServiceTest {
         public void shouldGetStoreTagsFromMultipleStores() {
             // given
             long timestamp = System.currentTimeMillis();
-            Owner savedOwner1 = createTestOwner("test_owner_multi1_" + timestamp, "테스트 사업자 다중1", "01011111111", "새싹");
-            Owner savedOwner2 = createTestOwner("test_owner_multi2_" + timestamp, "테스트 사업자 다중2", "01022222222", "새싹");
+            Owner savedOwner1 = createTestOwner("test_owner_multi1_" + timestamp, "테스트 사업자 다중1", "01011111111", "새싹2");
+            Owner savedOwner2 = createTestOwner("test_owner_multi2_" + timestamp, "테스트 사업자 다중2", "01022222222", "새싹3");
             Category category = createTestCategory("식당");
             
             Tag sharedTag = createTestTag("공통태그");

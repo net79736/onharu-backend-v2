@@ -23,6 +23,7 @@ import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.ChangeReservationStatusCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CompleteReservationCommand;
+import com.backend.onharu.domain.reservation.dto.ReservationCommand.ConfirmReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CreateReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
 import com.backend.onharu.domain.reservation.model.Reservation;
@@ -34,6 +35,8 @@ import com.backend.onharu.infra.db.child.ChildJpaRepository;
 import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
 import com.backend.onharu.infra.db.file.FileJpaRepository;
 import com.backend.onharu.infra.db.level.LevelJpaRepository;
+import com.backend.onharu.infra.db.notification.NotificationHistoryJpaRepository;
+import com.backend.onharu.infra.db.notification.NotificationJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
@@ -85,9 +88,17 @@ class ReservationCommandServiceTest {
     @Autowired
     private TagJpaRepository tagJpaRepository;
 
+    @Autowired
+    private NotificationHistoryJpaRepository notificationHistoryJpaRepository;
+
+    @Autowired
+    private NotificationJpaRepository notificationJpaRepository;
+
     @BeforeEach
     public void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
+        notificationHistoryJpaRepository.deleteAll();
+        notificationJpaRepository.deleteAll();
         reservationJpaRepository.deleteAll(); // reservations는 store_schedules를 참조
         storeScheduleJpaRepository.deleteAll(); // store_schedules는 stores를 참조
         fileJpaRepository.deleteAll(); // files는 stores를 참조하므로 stores 삭제 전에 삭제
@@ -132,14 +143,13 @@ class ReservationCommandServiceTest {
     /**
      * 테스트용 Child 생성 헬퍼 메서드 (User와 함께 생성)
      */
-    private Child createTestChild(String loginId, String name, String phone, String nickname, String certificate, Boolean isVerified) {
+    private Child createTestChild(String loginId, String name, String phone, String nickname, Boolean isVerified) {
         User user = createTestUser(loginId, name, phone);
 
         return childJpaRepository.save(
                 Child.builder()
                         .user(user)
-                        .nickname(name + "닉네임") // nickname은 필수 필드이므로 추가
-                        .certificate(certificate)
+                        .nickname(nickname)
                         .isVerified(isVerified != null ? isVerified : true)
                         .build()
         );
@@ -149,7 +159,7 @@ class ReservationCommandServiceTest {
      * 테스트용 Child 생성 헬퍼 메서드 (기본값 사용)
      */
     private Child createTestChild(String loginId, String name, String phone) {
-        return createTestChild(loginId, name, phone, "닉네임테스트", "/certificates/test.pdf", true);
+        return createTestChild(loginId, name, phone, "닉네임테스트", true);
     }
 
     /**
@@ -252,7 +262,7 @@ class ReservationCommandServiceTest {
         @DisplayName("예약 취소 성공")        
         public void shouldCancelReservation() {
             // given
-            Child savedChild = createTestChild("test_child2", "테스트 아동2", "01087654321", "닉네임테스트","/certificates/test2.pdf", true);
+            Child savedChild = createTestChild("test_child2", "테스트 아동2", "01087654321", "닉네임테스트", true);
 
             Owner savedOwner = createTestOwner("test_owner2", "테스트 사업자2", "01022223333", "새싹", "2234567890");
             Category category = createTestCategory("식당");
@@ -289,14 +299,48 @@ class ReservationCommandServiceTest {
     }
 
     @Nested
+    @DisplayName("예약 확정 테스트")
+    class ConfirmReservationTest {
+
+        @Test
+        @DisplayName("예약 확정 성공 - WAITING → CONFIRMED")
+        public void shouldConfirmReservation() {
+            // given
+            Child savedChild = createTestChild("test_confirm_child", "테스트 아동", "01011112222", "닉네임테스트", true);
+            Owner savedOwner = createTestOwner("test_confirm_owner", "테스트 사업자", "01033334444", "새싹", "3334567890");
+            Category category = createTestCategory("식당");
+            Store savedStore = createTestStore("테스트 가게", savedOwner, category);
+            StoreSchedule storeSchedule = saveDummyStoreSchedules(savedStore, 10, 11);
+
+            Reservation savedReservation = reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(savedChild)
+                            .storeSchedule(storeSchedule)
+                            .people(3)
+                            .status(ReservationType.WAITING)
+                            .build()
+            );
+
+            // when
+            reservationCommandService.confirmReservation(new ConfirmReservationCommand(savedReservation.getId()));
+
+            // then
+            Reservation reservation = reservationQueryService.getReservation(
+                    new GetReservationByIdQuery(savedReservation.getId())
+            );
+            assertThat(reservation.getStatus()).isEqualTo(ReservationType.CONFIRMED);
+        }
+    }
+
+    @Nested
     @DisplayName("예약 완료 처리 테스트")
     class CompleteReservationTest {
 
         @Test
-        @DisplayName("예약 완료 처리 성공")        
+        @DisplayName("예약 완료 처리 성공 - CONFIRMED → COMPLETED")
         public void shouldCompleteReservation() {
             // given
-            Child savedChild = createTestChild("test_child3", "테스트 아동3", "01011112222","닉네임테스트", "/certificates/test3.pdf", true);
+            Child savedChild = createTestChild("test_child3", "테스트 아동3", "01011112222","닉네임테스트", true);
 
             Owner savedOwner = createTestOwner("test_owner3", "테스트 사업자3", "01033334444", "새싹", "3334567890");
             Category category = createTestCategory("식당");
@@ -308,7 +352,7 @@ class ReservationCommandServiceTest {
                             .child(savedChild) // 아동 설정
                             .storeSchedule(saveDummyStoreSchedules) // 가게 일정 ID 설정
                             .people(3) // 인원 수 설정
-                            .status(ReservationType.WAITING) // 예약 상태 설정
+                            .status(ReservationType.CONFIRMED) // 확정된 예약만 완료 가능
                             .build()
             );
 
@@ -336,7 +380,7 @@ class ReservationCommandServiceTest {
         @DisplayName("예약 상태 변경 성공")        
         public void shouldChangeReservationStatus() {
             // given
-            Child savedChild = createTestChild("test_child4", "테스트 아동4", "01033334444", "닉네임테스트","/certificates/test4.pdf", true);
+            Child savedChild = createTestChild("test_child4", "테스트 아동4", "01033334444", "닉네임테스트", true);
 
             Owner savedOwner = createTestOwner("test_owner4", "테스트 사업자4", "01044445555", "새싹", "4444567890");
             Category category = createTestCategory("식당");

@@ -160,7 +160,7 @@ class StoreTagCommandServiceTest {
         public void shouldAddStoreTag() {
             // given
             String uniqueLoginId = "test_owner_tag_" + System.currentTimeMillis();
-            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 태그", "01012345678", "새싹");
+            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 태그", "01012345678", "비기너");
             Category category = createTestCategory("식당");
             
             Store savedStore = storeJpaRepository.save(
@@ -262,7 +262,7 @@ class StoreTagCommandServiceTest {
         public void shouldDeleteStoreTagsWhenStoreIsDeleted() {
             // given
             String uniqueLoginId = "test_owner_orphan_" + System.currentTimeMillis();
-            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 고아", "01011112222", "새싹");
+            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 고아", "01011112222", "새싹4");
             Category category = createTestCategory("식당");
             
             Store savedStore = storeJpaRepository.save(
@@ -328,7 +328,7 @@ class StoreTagCommandServiceTest {
         public void shouldDeleteStoreTagsWhenListIsCleared() {
             // given
             String uniqueLoginId = "test_owner_clear_" + System.currentTimeMillis();
-            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 클리어", "01033334444", "새싹");
+            Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 클리어", "01033334444", "비기너");
             Category category = createTestCategory("식당");
             
             Store savedStore = storeJpaRepository.save(

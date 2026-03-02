@@ -1,16 +1,15 @@
 package com.backend.onharu.infra.db.owner.impl;
 
-import org.springframework.stereotype.Repository;
-
+import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam;
 import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByIdParam;
-import com.backend.onharu.domain.owner.dto.OwnerRepositoryParam.GetOwnerByLoginIdParam;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.repository.OwnerRepository;
 import com.backend.onharu.domain.support.error.CoreException;
-import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+import static com.backend.onharu.domain.support.error.ErrorType.Owner.OWNER_NOT_FOUND;
 
 /**
  * 사업자 Repository 구현체
@@ -27,14 +26,14 @@ public class OwnerRepositoryImpl implements OwnerRepository {
     }
 
     @Override
-    public Owner getOwnerById(GetOwnerByIdParam query) {
-        return ownerJpaRepository.findById(query.id())
-                .orElseThrow(() -> new CoreException(ErrorType.Owner.OWNER_NOT_FOUND));
+    public Owner getOwnerById(GetOwnerByIdParam param) {
+        return ownerJpaRepository.findById(param.id())
+                .orElseThrow(() -> new CoreException(OWNER_NOT_FOUND));
     }
 
     @Override
-    public Owner getOwnerByLoginId(GetOwnerByLoginIdParam query) {
-        return ownerJpaRepository.findByUser_LoginId(query.loginId())
-                .orElseThrow(() -> new CoreException(ErrorType.Owner.OWNER_NOT_FOUND));
+    public Owner getOwnerByUserId(OwnerRepositoryParam.GetOwnerByUserIdParam param) {
+        return ownerJpaRepository.findByUser_Id(param.userId())
+                .orElseThrow(() -> new CoreException(OWNER_NOT_FOUND));
     }
 }

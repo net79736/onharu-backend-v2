@@ -4,9 +4,7 @@ import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.support.error.CoreException;
-import com.backend.onharu.domain.user.dto.UserCommand.CreateUserCommand;
-import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
-import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.*;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByLoginIdParam;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.domain.user.repository.UserRepository;
@@ -16,8 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.backend.onharu.domain.support.error.ErrorType.User.USER_ID_ALREADY_EXISTS;
-import static com.backend.onharu.domain.user.dto.UserCommand.*;
-import static com.backend.onharu.domain.user.dto.UserRepositoryParam.*;
+import static com.backend.onharu.domain.user.dto.UserRepositoryParam.UpdateDeletedUserParam;
+import static com.backend.onharu.domain.user.dto.UserRepositoryParam.UpdateUserByIdAndPasswordParam;
 
 /**
  * 사용자 Command Service
@@ -113,11 +111,35 @@ public class UserCommandService {
      * @param command 비밀번호 초기화 Command
      */
     public void updateUserByIdAndPassword(UpdatePasswordCommand command) {
-        userRepository.UpdateUserByIdAndPassword(
+        userRepository.updateUserByIdAndPassword(
                 new UpdateUserByIdAndPasswordParam(
                         command.id(),
                         command.password()
                 )
         );
+    }
+
+    /**
+     * 사용자 계정을 비활성화 시킵니다.
+     *
+     * @param command 사용자 제거 Command (사용자 ID 포함)
+     */
+    public void updateDeletedUser(UpdateDeletedUserCommand command) {
+        userRepository.updateDeletedUser(
+                new UpdateDeletedUserParam(
+                        command.userId(),
+                        command.statusType()
+                )
+        );
+    }
+
+
+    /**
+     * 사용자 도메인의 수정사항을 DB 에 반영합니다.
+     *
+     * @param command 사용자 변경 Command (사용자 객체 포함)
+     */
+    public void updateUser(UpdateUserCommand command) {
+        userRepository.save(command.user());
     }
 }

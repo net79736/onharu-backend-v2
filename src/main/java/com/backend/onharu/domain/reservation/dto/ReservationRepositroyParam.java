@@ -1,5 +1,7 @@
 package com.backend.onharu.domain.reservation.dto;
 
+import java.time.LocalDate;
+
 import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
@@ -99,6 +101,20 @@ public class ReservationRepositroyParam {
             }
             if (status == null) {
                 throw new CoreException(ErrorType.Reservation.RESERVATION_STATUS_MUST_NOT_BE_NULL);
+            }
+        }
+    }
+
+    public record FindByStatusAndScheduleDateBeforeThanParam(
+            ReservationType status,
+            LocalDate date
+    ) {
+        public FindByStatusAndScheduleDateBeforeThanParam {
+            if (status == null) {
+                throw new CoreException(ErrorType.Reservation.RESERVATION_STATUS_MUST_NOT_BE_NULL);
+            }
+            if (date == null) {
+                throw new CoreException(ErrorType.Reservation.RESERVATION_DATE_MUST_NOT_BE_NULL);
             }
         }
     }

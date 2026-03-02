@@ -4,16 +4,24 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/**
+ * 등급 API 에 사용될 DTO 입니다.
+ */
 public class LevelControllerDto {
 
+    /**
+     * 등급 조회 DTO
+     *
+     * @param response 등급 ID, 등급명이 포함된 응답
+     */
     public record GetLevelResponse(
-            LevelResponse level
+            LevelResponse response
     ) {
     }
 
     public record LevelResponse(
             @Schema(description = "등급 ID", example = "1")
-            Long id,
+            Long levelId,
 
             @Schema(description = "등급명", example = "새싹")
             String name
@@ -36,7 +44,8 @@ public class LevelControllerDto {
      */
     public record CreateLevelResponse(
             @Schema(description = "등급 ID", example = "1")
-            Long id
+            Long levelId
     ) {
     }
+
 }

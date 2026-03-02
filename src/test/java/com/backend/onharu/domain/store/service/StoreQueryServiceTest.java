@@ -1,10 +1,12 @@
 package com.backend.onharu.domain.store.service;
 
+import static com.backend.onharu.domain.store.dto.StoreQuery.*;
 import static com.backend.onharu.domain.support.error.ErrorType.Store.STORE_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import com.backend.onharu.domain.store.dto.StoreQuery;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -224,7 +226,7 @@ class StoreQueryServiceTest {
         @Rollback(value = false)
         public void shouldGetStoresByCategoryId() {
             // given
-            Owner savedOwner1 = createTestOwner("test_owner_cat1", "테스트 사업자 카테고리1", "01011111111", "새싹", "1111111111");
+            Owner savedOwner1 = createTestOwner("test_owner_cat1", "테스트 사업자 카테고리1", "01011111111", "비기너", "1111111111");
             Owner savedOwner2 = createTestOwner("test_owner_cat2", "테스트 사업자 카테고리2", "01022222222", "새싹", "2222222222");
             Category category1 = createTestCategory("식당");
             Category category2 = createTestCategory("카페");
@@ -289,7 +291,7 @@ class StoreQueryServiceTest {
         @Rollback(value = false)
         public void shouldGetStoresByName() {
             // given
-            Owner savedOwner = createTestOwner("test_owner_search", "테스트 사업자 검색", "01033333333", "새싹", "3333333333");
+            Owner savedOwner = createTestOwner("test_owner_search", "테스트 사업자 검색", "01033333333", "비기너", "9999999990");
             Category category = createTestCategory("식당");
             
             // 기존 가게 생성
@@ -297,7 +299,7 @@ class StoreQueryServiceTest {
                 Store.builder()
                     .owner(savedOwner)
                     .category(category)
-                    .name("따뜻한 식당")
+                    .name("테스트 식당명1")
                     .address("서울시 강남구")
                     .phone("0212345678")
                     .isOpen(true)
@@ -341,6 +343,59 @@ class StoreQueryServiceTest {
                 System.out.println("     * 가게 ID: " + s.getId() + ", 가게명: " + s.getName());
             });
         }
+    }
+
+    @Nested
+    @DisplayName("사업자 ID 로 사업자가 등록한 가게 조회 테스트")
+    class FindByOwnerId {
+
+        @Test
+        @DisplayName("조회 성공 - 사업자 ID 가게 조회")
+        public void shouldGEtStoresByOwnerId() {
+            // given
+            Owner savedOwner = createTestOwner("testOwner1234@test.com", "사업자명1", "01022220001", "새싹", "3333333333");
+            Category category = createTestCategory("식당");
+
+            Store store1 = storeJpaRepository.save(
+                    Store.builder()
+                            .owner(savedOwner)
+                            .category(category)
+                            .name("따뜻한 식당1")
+                            .address("서울시 강남구")
+                            .phone("0212345678")
+                            .isOpen(true)
+                            .build()
+            );
+
+            Store store2 = storeJpaRepository.save(
+                    Store.builder()
+                            .owner(savedOwner)
+                            .category(category)
+                            .name("따뜻한 카페1")
+                            .address("서울시 서초구")
+                            .phone("0298765432")
+                            .isOpen(true)
+                            .build()
+            );
+
+            // when
+            List<Store> stores = storeQueryService.findByOwnerId(
+                    new FindByOwnerIdQuery(savedOwner.getId())
+            );
+
+            // then
+            assertThat(stores).isNotNull();
+            assertThat(stores).hasSize(2);
+
+            assertThat(stores)
+                    .extracting(Store::getName)
+                    .containsExactlyInAnyOrder("따뜻한 식당1", "따뜻한 카페1");
+
+            assertThat(stores)
+                    .extracting(store -> store.getOwner().getId())
+                    .containsOnly(savedOwner.getId());
+        }
+
     }
 
     // 더미 데이터 생성

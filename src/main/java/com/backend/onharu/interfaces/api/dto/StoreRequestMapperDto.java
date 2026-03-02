@@ -1,16 +1,16 @@
 package com.backend.onharu.interfaces.api.dto;
 
+import static com.backend.onharu.interfaces.api.common.dto.ImageMetadataRequest.toImageMetadataList;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.backend.onharu.domain.file.dto.FileCommand.ImageMetadata;
 import com.backend.onharu.domain.store.dto.StoreCommand.CreateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.UpdateStoreCommand;
 import com.backend.onharu.domain.store.model.BusinessHours;
 import com.backend.onharu.domain.store.model.StoreTag;
 import com.backend.onharu.domain.tag.model.Tag;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.BusinessHourResponse;
-import com.backend.onharu.interfaces.api.dto.StoreControllerDto.ImageMetadataRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
 
@@ -77,19 +77,6 @@ public final class StoreRequestMapperDto {
                     bh.getCloseTime()
                 ))
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * API 이미지 메타데이터 목록을 도메인 ImageMetadata 목록으로 변환.
-     * null 또는 빈 목록이면 null을 반환합니다.
-     */
-    public static List<ImageMetadata> toImageMetadataList(List<ImageMetadataRequest> images) {
-        if (images == null || images.isEmpty()) {
-            return null;
-        }
-        return images.stream()
-                .map(img -> new ImageMetadata(img.fileKey(), img.filePath(), img.displayOrder()))
-                .toList();
     }
 
     /**

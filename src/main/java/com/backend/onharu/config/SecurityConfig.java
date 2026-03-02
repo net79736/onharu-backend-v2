@@ -36,20 +36,22 @@ public class SecurityConfig {
             "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**",
             "/error", "/favicon.ico",
             "/api/users/login/**", "/api/users/signup/**",
-            "/api/users/logout/**", "/users/me/**",
+            "/api/users/logout/**", "/api/users/profile/**",
             "/api/levels/**", // 레벨 관련 API
             "/api/childrens/**", // 결식 아동 관련 API
             "/api/owners/**", // 사업자 관련 API
             "/api/admins/**", // 관리자 관련 API
             "/api/stores/**", // 가게 관련 API
             "/api/store-schedules/**", // 가게 스케줄 관련 API
+            "/api/reviews/**",
             "/api/upload/**", // S3 파일 업로드 관련 API
             "/api/auth/**", // 인증 관련 API
-            "/api/files/**" // 파일(첨부) 메타데이터 API
+            "/api/files/**", // 파일(첨부) 메타데이터 API
+            "/api/notifications/**", // 알림 관련 API
     };
 
     public static final String[] AUTHENTICATE_PATH = {
-            "/api/users/logout/**", "/api/users/me/**"
+            "/api/users/logout/**", "/api/users/me/**", "/api/users"
     };
 
     public static final String[] ROLE_CHILD_PATH = {
@@ -65,7 +67,9 @@ public class SecurityConfig {
     };
 
     private static final String PORT_FRONT_LOCAL = "http://localhost:5173";
+    private static final String PORT_FRONT_SERVER = "https://onharu-web.vercel.app/";
     private static final String PORT_BACK_LOCAL = "http://localhost:8080";
+    private static final String PORT_BACK_SERVER = "http://onharu-api.votex.co.kr:15080/";
 
     private final SocialUserService socialUserService;
 
@@ -78,7 +82,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(PORT_FRONT_LOCAL, PORT_BACK_LOCAL));
+        configuration.setAllowedOrigins(List.of(PORT_FRONT_LOCAL, PORT_BACK_LOCAL, PORT_FRONT_SERVER, PORT_BACK_SERVER));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

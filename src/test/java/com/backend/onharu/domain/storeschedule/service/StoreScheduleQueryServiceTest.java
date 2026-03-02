@@ -228,8 +228,8 @@ class StoreScheduleQueryServiceTest {
         @Rollback(value = false)
         public void shouldGetStoreSchedulesByBusinessDay() {
             // given
-            Owner savedOwner1 = createTestOwner("test_owner_date1", "테스트 사업자 날짜1", "01011111111", "새싹", "1111111111");
-            Owner savedOwner2 = createTestOwner("test_owner_date2", "테스트 사업자 날짜2", "01022222222", "새싹", "2222222222");
+            Owner savedOwner1 = createTestOwner("test_owner_date1", "테스트 사업자 날짜1", "01011111111", "비기너", "1111111111");
+            Owner savedOwner2 = createTestOwner("test_owner_date2", "테스트 사업자 날짜2", "01022222222", "새싹1", "2222222222");
             
             Category category = createTestCategory("식당");
             Store savedStore1 = createTestStore("날짜 테스트 가게 1", savedOwner1, category);

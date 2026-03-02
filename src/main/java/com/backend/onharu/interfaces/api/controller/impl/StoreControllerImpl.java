@@ -1,7 +1,6 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
 import static com.backend.onharu.interfaces.api.common.util.PageableUtil.getCurrentPage;
-import static com.backend.onharu.interfaces.api.dto.StoreRequestMapperDto.toImageMetadataList;
 
 import java.util.List;
 import java.util.Map;
@@ -32,9 +31,7 @@ import com.backend.onharu.domain.file.dto.FileQuery.ListByRefsQuery;
 import com.backend.onharu.domain.file.model.File;
 import com.backend.onharu.domain.file.service.FileQueryService;
 import com.backend.onharu.domain.store.dto.CategoryQuery.FindAllByNameQuery;
-import com.backend.onharu.domain.store.dto.StoreCommand.CreateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
-import com.backend.onharu.domain.store.dto.StoreCommand.UpdateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
@@ -45,6 +42,7 @@ import com.backend.onharu.domain.store.support.StoreSearchSortResolver;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.controller.IStoreController;
+import com.backend.onharu.interfaces.api.dto.StoreRequestMapperDto;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.CategoryResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.GetStoreDetailByIdRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.GetStoreDetailResponse;
@@ -217,20 +215,8 @@ public class StoreControllerImpl implements IStoreController {
         Long ownerId = SecurityUtils.getCurrentUserId();
         log.info("가게 정보 작성 요청: ownerId={}, request={}", ownerId, request);
 
-        Store store = storeFacade.createStore(new CreateStoreCommand(
-            ownerId,
-            request.categoryId(),
-            request.name(),
-            request.address(),
-            request.phone(),
-            request.lat(),
-            request.lng(), 
-            request.introduction(),
-            request.intro(),
-            request.tagNames(),
-            request.businessHours(),
-            toImageMetadataList(request.images())
-        ), ownerId);
+        Store store = storeFacade.createStore(
+                StoreRequestMapperDto.toCreateStoreCommand(request, ownerId), ownerId);
 
         OpenStoreResponse response = new OpenStoreResponse(store.getId());
 
@@ -280,21 +266,8 @@ public class StoreControllerImpl implements IStoreController {
         Long ownerId = SecurityUtils.getCurrentUserId();
         log.info("가게 정보 수정 요청: ownerId={}, storeId={}, request={}", ownerId, storeId, request);
 
-        storeFacade.updateStore(new UpdateStoreCommand(
-            storeId, 
-            request.categoryId(), 
-            request.phone(),
-            request.address(),
-            request.lat(),
-            request.lng(),
-            request.intro(),
-            request.introduction(),
-            request.isOpen(),
-            request.isSharing(),
-            request.tagNames(),
-            request.businessHours(),
-            toImageMetadataList(request.images())
-        ), ownerId);
+        storeFacade.updateStore(
+                StoreRequestMapperDto.toUpdateStoreCommand(storeId, request), ownerId);
         
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));

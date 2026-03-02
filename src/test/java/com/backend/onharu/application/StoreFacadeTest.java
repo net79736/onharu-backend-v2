@@ -244,7 +244,7 @@ class StoreFacadeTest {
         @DisplayName("가게가 없을 때 빈 목록 반환")
         public void shouldReturnEmptyListWhenNoStores() {
             // given
-            Owner owner = createTestOwner("test_owner_empty_stores", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_empty_stores", "테스트 사업자", "01012345678", "새싹2", "1234567890");
             Pageable pageable = Pageable.ofSize(10);
 
             // when
@@ -265,7 +265,7 @@ class StoreFacadeTest {
         @Transactional
         public void shouldSearchStoresWithLocation() {
             // given: 서울(37.5665, 126.9780) 근처에 가게 2개, 부산(35.1796, 129.0756)에 가게 1개
-            Owner owner = createTestOwner("test_owner_search_loc", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_search_loc", "테스트 사업자", "01012345678", "새싹2", "1234567890");
             Category category = createTestCategory("식당");
             Store store1 = createTestStore("강남 커피숍", owner, category, "37.5665", "126.9780");
             Store store2 = createTestStore("역삼 카페", owner, category, "37.5666", "126.9781");
@@ -293,7 +293,7 @@ class StoreFacadeTest {
         @Transactional
         public void shouldSearchStoresWithoutLocation() {
             // given
-            Owner owner = createTestOwner("test_owner_search_no_loc", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_search_no_loc", "테스트 사업자", "01012345678", "새싹3", "1234567890");
             Category category = createTestCategory("식당");
             Store store1 = createTestStore("테스트 가게1", owner, category, "37.5665", "126.9780");
             Store store2 = createTestStore("테스트 가게2", owner, category, "35.1796", "129.0756");
@@ -317,7 +317,7 @@ class StoreFacadeTest {
         @Transactional
         public void shouldSearchStoresByStoreName() {
             // given: 이름에 "스페셜커피"가 포함된 가게만 생성하여 키워드 검색 동작 검증
-            Owner owner = createTestOwner("test_owner_search_keyword", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_search_keyword", "테스트 사업자", "01012345678", "새싹4", "1234567890");
             Category category = createTestCategory("식당");
             Store coffeeStore = createTestStore("스페셜커피전문점", owner, category, "37.5665", "126.9780");
 
@@ -339,7 +339,7 @@ class StoreFacadeTest {
         @Transactional
         public void shouldSearchStoresByHashtag() {
             // given: 태그 "브런치스페셜"이 있는 가게만 생성하여 해시태그 검색 동작 검증
-            Owner owner = createTestOwner("test_owner_search_hashtag", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_search_hashtag", "테스트 사업자", "01012345678", "새싹5", "1234567890");
             Category category = createTestCategory("식당");
             Store storeWithTag = createTestStore("오늘의맛집", owner, category, "37.5665", "126.9780");
             addTagsToStore(storeWithTag, List.of("브런치스페셜", "조식"));
@@ -362,7 +362,7 @@ class StoreFacadeTest {
         @Transactional
         public void shouldSearchStoresWithoutKeyword() {
             // given
-            Owner owner = createTestOwner("test_owner_search_no_keyword", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_search_no_keyword", "테스트 사업자", "01012345678", "새싹6", "1234567890");
             Category category = createTestCategory("식당");
             Store store1 = createTestStore("가게A", owner, category, "37.5665", "126.9780");
             Store store2 = createTestStore("가게B", owner, category, "37.5666", "126.9781");
@@ -386,7 +386,7 @@ class StoreFacadeTest {
         @Transactional
         public void shouldSearchStoresWithLocationAndKeyword() {
             // given: 같은 반경 내에 "커피" 가게 1개, "식당" 가게 1개
-            Owner owner = createTestOwner("test_owner_search_both", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_search_both", "테스트 사업자", "01012345678", "새싹7", "1234567890");
             Category category = createTestCategory("식당");
             Store coffeeStore = createTestStore("강남 커피숍", owner, category, "37.5665", "126.9780");
             Store restaurantStore = createTestStore("강남 식당", owner, category, "37.5666", "126.9781");
@@ -414,7 +414,7 @@ class StoreFacadeTest {
         public void shouldCreateStore() {
             // given
             String uniqueLoginId = "test_owner_create_" + UUID.randomUUID().toString().substring(0, 8);
-            Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", "새싹8", "1234567890");
             Category category = createTestCategory("식당");
 
             CreateStoreCommand command = new CreateStoreCommand(
@@ -458,7 +458,7 @@ class StoreFacadeTest {
         public void shouldCreateStoreWithTags() {
             // given
             String uniqueLoginId = "test_owner_tags_" + UUID.randomUUID().toString().substring(0, 8);
-            Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", "새싹9", "1234567890");
             Category category = createTestCategory("식당");
 
             CreateStoreCommand command = new CreateStoreCommand(
@@ -514,7 +514,7 @@ class StoreFacadeTest {
         public void shouldCreateStoreWithExistingTags() {
             // given
             String uniqueLoginId = "test_owner_reuse_" + UUID.randomUUID().toString().substring(0, 8);
-            Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", "새싹10", "1234567890");
             Category category = createTestCategory("식당");
 
             // 기존 태그 생성
@@ -589,7 +589,7 @@ class StoreFacadeTest {
         public void shouldUpdateStore() {
             // given
             String uniqueLoginId = "owner_" + UUID.randomUUID().toString().substring(0, 8);
-            Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", "새싹11", "1234567890");
             Category category1 = createTestCategory("식당");
             Category category2 = createTestCategory("카페");
             Store store = createTestStore("테스트 가게", owner, category1);
@@ -597,8 +597,8 @@ class StoreFacadeTest {
             UpdateStoreCommand command = new UpdateStoreCommand(
                     store.getId(),
                     category2.getId(),
-                    "0298765432",
                     "서울시 서초구",
+                    "0298765432",
                     "37.4837",
                     "127.0324",
                     "업데이트된 가게 소개입니다.",
@@ -636,8 +636,8 @@ class StoreFacadeTest {
             // given
             String uniqueLoginId1 = "owner_" + UUID.randomUUID().toString().substring(0, 8);
             String uniqueLoginId2 = "owner_" + UUID.randomUUID().toString().substring(0, 8);
-            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹", "1234567890");
-            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹", "2234567890");
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹12", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹13", "2234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner1, category);
 
@@ -677,7 +677,7 @@ class StoreFacadeTest {
         public void shouldUpdateCategory() {
             // given
             String uniqueLoginId1 = "owner_" + UUID.randomUUID().toString().substring(0, 8);
-            Owner owner = createTestOwner(uniqueLoginId1, "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner(uniqueLoginId1, "테스트 사업자", "01012345678", "새싹14", "1234567890");
             Category category1 = createTestCategory("식당");
             Category category2 = createTestCategory("카페");
             Store store = createTestStore("테스트 가게", owner, category1);
@@ -703,8 +703,8 @@ class StoreFacadeTest {
             // given
             String uniqueLoginId1 = "owner_" + UUID.randomUUID().toString().substring(0, 8);
             String uniqueLoginId2 = "owner_" + UUID.randomUUID().toString().substring(0, 8);
-            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹", "1234567890");
-            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹", "2234567890");
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹15", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹16", "2234567890");
             Category category1 = createTestCategory("식당");
             Category category2 = createTestCategory("카페");
             Store store = createTestStore("테스트 가게", owner1, category1);
@@ -728,7 +728,7 @@ class StoreFacadeTest {
         @Rollback(value = false)
         public void shouldDeleteStore() {
             // given
-            Owner owner = createTestOwner("test_owner_delete_store", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_delete_store", "테스트 사업자", "01012345678", "새싹17", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
 
@@ -747,8 +747,8 @@ class StoreFacadeTest {
         @DisplayName("다른 사업자의 가게 삭제 시 예외 발생")
         public void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
             // given
-            Owner owner1 = createTestOwner("test_owner1_delete", "테스트 사업자1", "01012345678", "새싹", "1234567890");
-            Owner owner2 = createTestOwner("test_owner2_delete", "테스트 사업자2", "01087654321", "새싹", "2234567890");
+            Owner owner1 = createTestOwner("test_owner1_delete", "테스트 사업자1", "01012345678", "새싹18", "1234567890");
+            Owner owner2 = createTestOwner("test_owner2_delete", "테스트 사업자2", "01087654321", "새싹19", "2234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner1, category);
 
@@ -771,7 +771,7 @@ class StoreFacadeTest {
         @Rollback(value = false)
         public void shouldChangeOpenStatusToOpen() {
             // given
-            Owner owner = createTestOwner("test_owner_change_status", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_change_status", "테스트 사업자", "01012345678", "새싹20", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             // 초기 상태를 false로 설정
@@ -796,7 +796,7 @@ class StoreFacadeTest {
         @Rollback(value = false)
         public void shouldChangeOpenStatusToClosed() {
             // given
-            Owner owner = createTestOwner("test_owner_change_status_closed", "테스트 사업자", "01012345678", "새싹", "1234567890");
+            Owner owner = createTestOwner("test_owner_change_status_closed", "테스트 사업자", "01012345678", "새싹21", "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
             // 초기 상태를 true로 설정
@@ -820,8 +820,8 @@ class StoreFacadeTest {
         @DisplayName("다른 사업자의 가게 영업 상태 변경 시 예외 발생")
         public void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
             // given
-            Owner owner1 = createTestOwner("test_owner1_status", "테스트 사업자1", "01012345678", "새싹", "1234567890");
-            Owner owner2 = createTestOwner("test_owner2_status", "테스트 사업자2", "01087654321", "새싹", "2234567890");
+            Owner owner1 = createTestOwner("test_owner1_status", "테스트 사업자1", "01012345678", "새싹22", "1234567890");
+            Owner owner2 = createTestOwner("test_owner2_status", "테스트 사업자2", "01087654321", "새싹23", "2234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner1, category);
 

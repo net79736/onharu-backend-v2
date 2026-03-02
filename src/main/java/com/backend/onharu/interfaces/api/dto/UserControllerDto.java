@@ -1,8 +1,16 @@
 package com.backend.onharu.interfaces.api.dto;
 
+import com.backend.onharu.domain.common.enums.ProviderType;
+import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.interfaces.api.common.dto.ImageMetadataRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+import java.util.List;
 
 public class UserControllerDto {
 
@@ -24,13 +32,10 @@ public class UserControllerDto {
             @Schema(description = "사용자 ID", example = "1")
             Long id,
 
-            @Schema(description = "역할 ID", example = "1")
-            String roleId,
-
-            @Schema(description = "로그인 ID", example = "user123")
+            @Schema(description = "로그인 ID", example = "user123@naver.com")
             String loginId,
 
-            @Schema(description = "사용자 유형", example = "CHILD", allowableValues = {"CHILD", "OWNER", "ADMIN"})
+            @Schema(description = "사용자 유형", example = "CHILD", allowableValues = {"CHILD", "OWNER", "ADMIN", "NONE"})
             UserType userType,
 
             @Schema(description = "이름", example = "홍길동")
@@ -39,8 +44,8 @@ public class UserControllerDto {
             @Schema(description = "전화번호", example = "01012345678")
             String phone,
 
-            @Schema(description = "상태", example = "ACTIVE", allowableValues = {"ACTIVE", "DELETED", "BLOCKED"})
-            String status
+            @Schema(description = "상태", example = "ACTIVE", allowableValues = {"PENDING", "ACTIVE", "LOCKED", "DELETED", "BLOCKED"})
+            StatusType status
     ) {
     }
 
@@ -52,7 +57,7 @@ public class UserControllerDto {
             @NotBlank(message = "아이디는 필수 입력 값 입니다.")
             @Size(min = 8, max = 255, message = "아이디는 최소 8자 이상이어야 합니다.")
             @Email(message = "올바른 이메일 형식이 아닙니다.")
-            @Schema(description = "로그인 ID", example = "user123@naver.com")
+            @Schema(description = "로그인 아이디", example = "child123@naver.com")
             String loginId,
 
             @NotBlank(message = "비밀번호는 필수 입력 값 입니다.")
@@ -81,9 +86,9 @@ public class UserControllerDto {
             @Schema(description = "닉네임", example = "코끼리땃쥐")
             String nickname,
 
-            @NotBlank(message = "증명서 파일 경로는 필수입니다.")
-            @Schema(description = "아동 증명서 파일 경로", example = "/certificates/certificate.pdf")
-            String certificate
+            @Size(max = 10, message = "이미지는 최대 10개까지 등록할 수 있습니다.")
+            @Schema(description = "업로드된 이미지 목록 (Presigned URL 업로드 완료 후 fileKey, filePath)")
+            List<ImageMetadataRequest> images
     ) {
     }
 
@@ -91,23 +96,23 @@ public class UserControllerDto {
      * 아동 회원가입 응답 DTO
      */
     public record SignUpChildResponse(
-            @Schema(description = "ID", example = "1")
-            Long id,
+            @Schema(description = "사용자 ID", example = "1")
+            Long userId,
 
-            @Schema(description = "사용자 로그인 아이디", example = "child123@test.com")
+            @Schema(description = "사용자 로그인 아이디", example = "child123@naver.com")
             String loginId
     ) {
     }
 
     /**
-     * 매장 회원가입 요청 DTO
+     * 사업자 회원가입 요청 DTO
      * 사용자 정보, 사업자 정보, 사업자 등록 서류 파일을 함께 받습니다.
      */
     public record SignUpOwnerRequest(
             @NotBlank(message = "아이디는 필수 입력 값 입니다.")
             @Size(min = 8, max = 255, message = "아이디는 최소 8자 이상이어야 합니다.")
             @Email(message = "올바른 이메일 형식이 아닙니다.")
-            @Schema(description = "로그인 ID", example = "user123")
+            @Schema(description = "로그인 ID", example = "child123@naver.com")
             String loginId,
 
             @NotBlank(message = "비밀번호는 필수 입력 값 입니다.")
@@ -122,7 +127,7 @@ public class UserControllerDto {
 
             @NotBlank(message = "이름은 필수 입력 값 입니다.")
             @Size(max = 30, message = "이름은 30자 이내여야 합니다.")
-            @Schema(description = "이름", example = "홍길동")
+            @Schema(description = "이름", example = "따뜻한 식당")
             String name,
 
             @NotBlank(message = "전화번호는 필수 입력 값 입니다.")
@@ -130,28 +135,70 @@ public class UserControllerDto {
             @Schema(description = "전화번호", example = "01012345678")
             String phone,
 
-            @NotBlank(message = "매장명은 필수 입력 값 입니다.")
-            @Size(max = 30, message = "매장명은 30자 이내여야 합니다.")
-            @Schema(description = "매장명", example = "새마을 식당")
-            String storeName,
-
             @NotBlank(message = "사업자 번호는 필수 입력 값 입니다.")
             @Pattern(regexp = "^\\d{10}$", message = "사업자 번호는 숫자 10자리여야 합니다. (예: 1234567890)")
             @Schema(description = "사업자 번호", example = "1234567890")
-            String businessNumber,
-
-            @NotNull(message = "등급 정보는 필수 입력 값 입니다.")
-            @Schema(description = "레벨 ID", example = "1")
-            String levelId
+            String businessNumber
     ) {
     }
 
     /**
-     * 매장 회원가입 응답 DTO
+     * 사업자 회원가입 응답 DTO
      */
     public record SignUpOwnerResponse(
             @Schema(description = "사용자 ID", example = "1")
             Long userId
+    ) {
+    }
+
+    /**
+     * 사용자(아동) 프로필 조회 응답 DTO
+     */
+    public record ChildProfileResponse(
+            @Schema(description = "로그인 아이디", example = "child123@naver.com")
+            String loginId,
+
+            @Schema(description = "이름", example = "홍길동")
+            String name,
+
+            @Schema(description = "전화번호", example = "01099992222")
+            String phone,
+
+            @Schema(description = "사용자 유형", example = "CHILD")
+            UserType userType,
+
+            @Schema(description = "닉네임", example = "코끼리땃쥐")
+            String nickname,
+
+            @Schema(description = "첨부 파일 URL 목록", example = "https://minio.example.com/bucket/certificate/certificate.pdf")
+            List<String> images
+    ) {
+    }
+
+    /**
+     * 사용자(사업자) 프로필 조회 응답 DTO
+     */
+    public record OwnerProfileResponse(
+            @Schema(description = "로그인 아이디", example = "owner123@naver.com")
+            String loginId,
+
+            @Schema(description = "이름", example = "따뜻한 식당")
+            String name,
+
+            @Schema(description = "전화번호", example = "01099992222")
+            String phone,
+
+            @Schema(description = "사용자 유형", example = "OWNER")
+            UserType userType,
+
+            @Schema(description = "등급명", example = "새싹")
+            String levelName,
+
+            @Schema(description = "사업자 등록번호", example = "1234567890")
+            String businessNumber,
+
+            @Schema(description = "사업자가 등록한 가게 ID 목록", example = "[\"1\", \"20\", \"300\"]")
+            List<Long> stores
     ) {
     }
 
@@ -192,10 +239,6 @@ public class UserControllerDto {
             @Pattern(regexp = "^01(?:0|[1-9])(?:\\d{3}|\\d{4})\\d{4}$", message = "올바른 전화번호 형식이 아닙니다. (예: 01012345678)")
             @Schema(description = "전화번호", example = "01012345678")
             String phone,
-
-            @NotNull(message = "등급 정보는 필수 입력 값 입니다.")
-            @Schema(description = "레벨 ID", example = "1")
-            String levelId,
 
             @NotBlank(message = "사업자 번호는 필수 입력 값 입니다.")
             @Pattern(regexp = "^\\d{10}$", message = "사업자 번호는 숫자 10자리여야 합니다. (예: 1234567890)")
@@ -238,9 +281,9 @@ public class UserControllerDto {
             @Schema(description = "닉네임", example = "코끼리땃쥐")
             String nickname,
 
-            @NotBlank(message = "증명서 파일 경로는 필수입니다.")
-            @Schema(description = "아동 증명서 파일 경로", example = "/certificates/certificate.pdf")
-            String certificate
+            @Size(max = 10, message = "이미지는 최대 10개까지 등록할 수 있습니다.")
+            @Schema(description = "업로드 완료 된 이미지 목록 (Presigned URL 업로드 완료된 fileKey, filePath)")
+            List<ImageMetadataRequest> images
     ) {
     }
 
@@ -254,19 +297,39 @@ public class UserControllerDto {
             @Schema(description = "전화번호", example = "01012345678")
             String phone,
 
-            @NotBlank(message = "매장명은 필수 입력 값 입니다.")
-            @Size(max = 30, message = "매장명은 30자 이내여야 합니다.")
-            @Schema(description = "매장명", example = "새마을 식당")
-            String storeName,
+            @NotBlank(message = "이름은 필수 입력 값 입니다.")
+            @Size(max = 30, message = "이름은 30자 이내여야 합니다.")
+            @Schema(description = "이름", example = "따뜻한 식당")
+            String name,
 
             @NotBlank(message = "사업자 번호는 필수 입력 값 입니다.")
             @Pattern(regexp = "^\\d{10}$", message = "사업자 번호는 숫자 10자리여야 합니다. (예: 1234567890)")
             @Schema(description = "사업자 번호", example = "1234567890")
-            String businessNumber,
+            String businessNumber
+    ) {
+    }
 
-            @NotNull(message = "등급 정보는 필수 입력 값 입니다.")
-            @Schema(description = "레벨 ID", example = "1")
-            String levelId
+    /**
+     * 현재 로그인 여부 확인 응답 DTO
+     */
+    public record MeResponse(
+            @Schema(description = "사용자 ID", example = "1")
+            Long userId,
+
+            @Schema(description = "로그인 아이디", example = "child1234@test.com")
+            String loginId,
+
+            @Schema(description = "사용자 이름", example = "홍길동")
+            String name,
+
+            @Schema(description = "사용자 유형", example = "CHILD")
+            UserType userType,
+
+            @Schema(description = "계정 상태", example = "ACTIVE")
+            StatusType statusType,
+
+            @Schema(description = "계정 타입", example = "LOCAL")
+            ProviderType providerType
     ) {
     }
 }

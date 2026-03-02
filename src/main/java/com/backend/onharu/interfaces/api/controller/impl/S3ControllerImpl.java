@@ -75,7 +75,7 @@ public class S3ControllerImpl implements IS3Controller {
      */
     @Override
     @GetMapping("/download")
-    public ResponseEntity<ByteArrayResource> downloadFile(@RequestParam String fileName) {
+    public ResponseEntity<ByteArrayResource> downloadFile(@RequestParam("fileName") String fileName) {
         
         log.info("파일 다운로드 요청 - fileName: {}", fileName);
 

@@ -1,22 +1,26 @@
 package com.backend.onharu.application;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.List;
 import java.util.UUID;
 
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.infra.db.level.LevelJpaRepository;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
@@ -24,6 +28,7 @@ import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
 import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.infra.db.child.ChildJpaRepository;
+import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
@@ -31,6 +36,7 @@ import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
 
+@Transactional
 @SpringBootTest
 @DisplayName("UserFacade 단위 테스트")
 class UserFacadeTest {
@@ -93,27 +99,26 @@ class UserFacadeTest {
                 "테스트 아동",
                 "01012345678",
                 "테스트 닉네임",
-                "/certificates/test.pdf"
+                    List.of() // 이미지 없음
             );
 
             // when
             User user = userFacade.signUpChild(command);
 
             // then
-            Assertions.assertNotNull(user);
-            Assertions.assertNotNull(user.getId());
-            Assertions.assertEquals(user.getLoginId(), loginId);
-            Assertions.assertEquals(user.getName(), "테스트 아동");
-            Assertions.assertEquals(user.getPhone(), "01012345678");
-            Assertions.assertEquals(user.getUserType(), UserType.CHILD);
-            Assertions.assertEquals(user.getProviderType(), ProviderType.LOCAL);
-            Assertions.assertEquals(user.getStatusType(), StatusType.PENDING);
+            assertNotNull(user);
+            assertNotNull(user.getId());
+            assertEquals(user.getLoginId(), loginId);
+            assertEquals(user.getName(), "테스트 아동");
+            assertEquals(user.getPhone(), "01012345678");
+            assertEquals(user.getUserType(), UserType.CHILD);
+            assertEquals(user.getProviderType(), ProviderType.LOCAL);
+            assertEquals(user.getStatusType(), StatusType.PENDING);
 
             // Child 엔티티도 생성되었는지 확인
-            Child child = childJpaRepository.findByUser_LoginId(user.getLoginId()).orElse(null);
-            Assertions.assertNotNull(child);
-            Assertions.assertEquals(child.getUser().getId(), user.getId());
-            Assertions.assertEquals(child.getCertificate(), "/certificates/test.pdf");
+            Child child = childJpaRepository.findByUser_Id(user.getId()).orElse(null);
+            assertNotNull(child);
+            assertEquals(child.getUser().getId(), user.getId());
 
             System.out.println("✅ 아동 회원가입 성공 - User ID: " + user.getId());
             System.out.println("   - 로그인 ID: " + user.getLoginId());
@@ -146,16 +151,16 @@ class UserFacadeTest {
                 "새로운 아동",
                 "01022222222",
                     "테스트 닉네임",
-                "/certificates/new.pdf"
+                    List.of() // 이미지 없음
             );
 
             // when & then
-            CoreException exception = Assertions.assertThrows(
+            CoreException exception = assertThrows(
                 CoreException.class,
                 () -> userFacade.signUpChild(command)
             );
 
-            Assertions.assertEquals(exception.getErrorType(), ErrorType.User.USER_ID_ALREADY_EXISTS);
+            assertEquals(exception.getErrorType(), ErrorType.User.USER_ID_ALREADY_EXISTS);
         }
     }
 
@@ -163,48 +168,45 @@ class UserFacadeTest {
     @DisplayName("사업자 회원가입 테스트")
     class SignUpOwnerTest {
 
-        private String loginId = "test_owner" + "_" + UUID.randomUUID().toString();
-
         @Test
         @DisplayName("사업자 회원가입 성공")
-        @Rollback(value = false)
         public void shouldSignUpOwner() {
+            // given
+            // 기본 등급 저장
             Level level = levelJpaRepository.save(
                     Level.builder()
-                            .name("새싹")
+                            .name("비기너")
                             .build()
             );
-            // given
+
             SignUpOwnerCommand command = new SignUpOwnerCommand(
-                    loginId,
-                    "password123",
-                    "password123",
+                    "testOwner123@test.com",
+                    "password123!",
+                    "password123!",
                     "테스트 사업자",
                     "01087654321",
-                    "테스트 가게",
-                    "1234567890",
-                    String.valueOf(level.getId())
+                    "1234567890"
             );
 
             // when
             User user = userFacade.signUpOwner(command);
 
             // then
-            Assertions.assertNotNull(user);
-            Assertions.assertNotNull(user.getId());
-            Assertions.assertEquals(user.getLoginId(), loginId);
-            Assertions.assertEquals(user.getName(), "테스트 사업자");
-            Assertions.assertEquals(user.getPhone(), "01087654321");
-            Assertions.assertEquals(user.getUserType(), UserType.OWNER);
-            Assertions.assertEquals(user.getProviderType(), ProviderType.LOCAL);
-            Assertions.assertEquals(user.getStatusType(), StatusType.PENDING);
+            assertNotNull(user);
+            assertNotNull(user.getId());
+            assertEquals("testOwner123@test.com", user.getLoginId());
+            assertEquals("테스트 사업자", user.getName());
+            assertEquals("01087654321", user.getPhone());
+            assertEquals(UserType.OWNER, user.getUserType());
+            assertEquals(ProviderType.LOCAL, user.getProviderType());
+            assertEquals(StatusType.PENDING, user.getStatusType());
 
             // Owner 엔티티도 생성되었는지 확인
             Owner owner = ownerJpaRepository.findByUser_LoginId(user.getLoginId()).orElse(null);
-            Assertions.assertNotNull(owner);
-            Assertions.assertEquals(owner.getUser().getId(), user.getId());
-            Assertions.assertEquals(owner.getLevel().getId(), level.getId()); // 생성한 Level의 ID와 일치해야 함
-            Assertions.assertEquals(owner.getBusinessNumber(), "1234567890");
+            assertNotNull(owner);
+            assertEquals(user.getId(), owner.getUser().getId());
+            assertEquals("비기너", owner.getLevel().getName()); // 생성한 등급명과 일치
+            assertEquals("1234567890", owner.getBusinessNumber());
 
             System.out.println("✅ 사업자 회원가입 성공 - User ID: " + user.getId());
             System.out.println("   - 로그인 ID: " + user.getLoginId());
@@ -219,15 +221,16 @@ class UserFacadeTest {
         @DisplayName("사업자 회원가입 실패 - 로그인 ID 중복")
         public void shouldThrowExceptionWhenLoginIdAlreadyExists() {
             // given
+            // 기본 등급 저장
             Level level = levelJpaRepository.save(
                     Level.builder()
-                            .name("새싹")
+                            .name("비기너")
                             .build()
             );
 
             userJpaRepository.save(
                     User.builder()
-                            .loginId(loginId)
+                            .loginId("testOwner1234@test.com")
                             .password("password123")
                             .name("기존 사업자")
                             .phone("01011111111")
@@ -238,23 +241,21 @@ class UserFacadeTest {
             );
 
             SignUpOwnerCommand command = new SignUpOwnerCommand(
-                    loginId,
+                    "testOwner1234@test.com",
                     "password123",
                     "password123",
                     "새로운 사업자",
                     "01022222222",
-                    "새로운 가게",
-                    "2234567890",
-                    String.valueOf(level.getId())
+                    "2234567890"
             );
 
             // when & then
-            CoreException exception = Assertions.assertThrows(
+            CoreException exception = assertThrows(
                     CoreException.class,
                     () -> userFacade.signUpOwner(command)
             );
 
-            Assertions.assertEquals(exception.getErrorType(), ErrorType.User.USER_ID_ALREADY_EXISTS);
+            assertEquals(ErrorType.User.USER_ID_ALREADY_EXISTS, exception.getErrorType());
         }
     }
 }

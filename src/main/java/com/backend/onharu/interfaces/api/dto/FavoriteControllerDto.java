@@ -20,7 +20,19 @@ public class FavoriteControllerDto {
 
     public record GetMyFavoriteListResponse(
             @Schema(description = "찜하기 목록")
-            List<FavoriteResponse> favorites
+            List<FavoriteResponse> favorites,
+
+            @Schema(description = "전체 갯수")
+            Long totalCount,
+
+            @Schema(description = "현재 페이지 번호")
+            Integer currentPage,
+
+            @Schema(description = "전체 페이지 수")
+            Integer totalPages,
+
+            @Schema(description = "페이지당 항목 수")
+            Integer perPage
     ) {
     }
 

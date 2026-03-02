@@ -5,6 +5,7 @@ spring:
     import:
       - application-smtp.yaml
       - application-oauth.yaml
+      - application-nts.yaml
   application:
     name: onharu
 
@@ -37,7 +38,7 @@ minio:
 # 가게 검색 기본 반경 설정
 store:
   search:
-    default-radius-km: 20  # 기본 반경 0.1km
+    default-radius-km: 20  # 기본 반경 20km
 
 # 서버 설정
 server:

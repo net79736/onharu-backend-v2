@@ -11,6 +11,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -141,14 +144,13 @@ class FavoriteQueryServiceTest {
     /**
      * 테스트용 Child 생성
      */
-    private Child createTestChild(String loginId, String name, String phone, String nickname, String certificate, Boolean isVerified) {
+    private Child createTestChild(String loginId, String name, String phone, String nickname, Boolean isVerified) {
         User user = createTestUserForChild(loginId, name, phone);
 
         return childJpaRepository.save(
                 Child.builder()
                         .user(user)
                         .nickname(nickname)
-                        .certificate(certificate)
                         .isVerified(isVerified)
                         .build()
         );
@@ -193,7 +195,6 @@ class FavoriteQueryServiceTest {
                     "아동테스트",
                     "01022223333",
                     "닉네임테스트",
-                    "/certificate/1.pdf",
                     true
             );
             Level level = createTestLevel("줄기");
@@ -254,7 +255,6 @@ class FavoriteQueryServiceTest {
                     "아동테스트",
                     "01022223333",
                     "닉네임테스트",
-                    "/certificate/1.pdf",
                     true
             );
             Level level = createTestLevel("줄기");
@@ -299,12 +299,15 @@ class FavoriteQueryServiceTest {
             );
             FavoriteQuery.FindFavoritesByChildIdQuery query = new FavoriteQuery.FindFavoritesByChildIdQuery(child.getId());
 
+            Pageable pageable = PageRequest.of(0, 10);
+
             // WHEN
-            List<Favorite> favorites = favoriteQueryService.findFavoritesByChildId(query);
+            Page<Favorite> favorites = favoriteQueryService.findFavoritesByChildId(query, pageable);
 
             // THEN
-            assertThat(favorites).hasSize(2);
-            assertThat(favorites).allMatch(favorite -> favorite
+            assertThat(favorites.getTotalElements()).isEqualTo(2);
+            assertThat(favorites.getContent()).hasSize(2);
+            assertThat(favorites.getContent()).allMatch(favorite -> favorite
                     .getChild()
                     .getId()
                     .equals(child.getId()));
@@ -319,17 +322,19 @@ class FavoriteQueryServiceTest {
                     "아동테스트",
                     "01022223333",
                     "닉네임테스트",
-                    "/certificate/1.pdf",
                     true
             );
 
             FavoriteQuery.FindFavoritesByChildIdQuery query = new FavoriteQuery.FindFavoritesByChildIdQuery(child.getId());
 
+            Pageable pageable = PageRequest.of(0, 10);
+
             // WHEN
-            List<Favorite> favorites = favoriteQueryService.findFavoritesByChildId(query);
+            Page<Favorite> favorites = favoriteQueryService.findFavoritesByChildId(query, pageable);
 
             // THEN
-            assertThat(favorites).isEmpty();
+            assertThat(favorites.getTotalElements()).isZero();
+            assertThat(favorites.getContent()).isEmpty();
         }
     }
 }
