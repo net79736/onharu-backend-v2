@@ -47,6 +47,15 @@ public class StoreQuery {
     }
 
     /**
+     * 사업자 ID 로 가게(Store) 만 조회
+     * @param ownerId 사업자 ID
+     */
+    public record FindByOwnerIdQuery(
+            Long ownerId
+    ) {
+    }
+
+    /**
      * 카테고리 ID로 가게 목록 조회
      */
     public record FindByCategoryIdQuery(
