@@ -195,7 +195,10 @@ public class UserControllerDto {
             String levelName,
 
             @Schema(description = "사업자 등록번호", example = "1234567890")
-            String businessNumber
+            String businessNumber,
+
+            @Schema(description = "사업자가 등록한 가게 ID 목록", example = "[\"1\", \"20\", \"300\"]")
+            List<Long> stores
     ) {
     }
 
