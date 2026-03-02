@@ -15,6 +15,9 @@ import com.backend.onharu.domain.owner.dto.OwnerCommand.CreateOwnerCommand;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.service.OwnerCommandService;
 import com.backend.onharu.domain.owner.service.OwnerQueryService;
+import com.backend.onharu.domain.store.dto.StoreQuery;
+import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.store.service.StoreQueryService;
 import com.backend.onharu.domain.user.dto.UserCommand.*;
 import com.backend.onharu.domain.user.dto.UserOAuthCommand.CreateUserOAuth;
 import com.backend.onharu.domain.user.dto.UserOAuthCommand.LoginUserOAuthCommand;
@@ -36,13 +39,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
-import static com.backend.onharu.domain.child.dto.ChildCommand.*;
+import static com.backend.onharu.domain.child.dto.ChildCommand.UpdateChildCommand;
 import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
 import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
 import static com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByNameQuery;
-import static com.backend.onharu.domain.owner.dto.OwnerCommand.*;
+import static com.backend.onharu.domain.owner.dto.OwnerCommand.UpdateOwnerCommand;
 import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByUserIdQuery;
 import static com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
@@ -69,6 +73,7 @@ public class UserFacade {
     private final NotificationFacade notificationFacade;
     private final PasswordEncoder passwordEncoder;
     private final LevelCommandService levelCommandService;
+    private final StoreQueryService storeQueryService;
     private final FileFacade fileFacade;
 
     /**
@@ -380,7 +385,10 @@ public class UserFacade {
 
         Level level = owner.getLevel(); // 사업자에 연결된 등급 도메인 추출
 
-        return new UserOwnerProfile(user, level, owner);
+        // 가게 정보 조회
+        List<Store> stores = storeQueryService.findByOwnerId(new StoreQuery.FindByOwnerIdQuery(query.ownerId()));
+
+        return new UserOwnerProfile(user, level, owner, stores);
     }
 
     /**
