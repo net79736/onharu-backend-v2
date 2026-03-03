@@ -23,13 +23,23 @@ public class UserProfile {
     }
 
     /**
-     * 사용자(가게) 프로필 조회 결과 DTO
+     * 사용자(사업자) 프로필 조회 결과 DTO
      */
     public record UserOwnerProfile(
             User user,
             Level level,
             Owner owner,
-            List<Store> stores
+            List<Store> stores,
+            NextLevelInfo nextLevelInfo
+    ) {
+    }
+
+    /**
+     * 사업자의 프로필에 보낼 다음 등급 DTO
+     */
+    public record NextLevelInfo(
+            Level nextLevel,
+            int nextToConditionNumber
     ) {
     }
 }
