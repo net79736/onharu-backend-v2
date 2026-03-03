@@ -5,7 +5,9 @@ import com.backend.onharu.domain.level.dto.LevelRepositoryParam.GetLevelByNamePa
 import com.backend.onharu.domain.level.model.Level;
 
 import java.util.List;
+import java.util.Optional;
 
+import static com.backend.onharu.domain.level.dto.LevelRepositoryParam.FindFirstByConditionNumberParam;
 import static com.backend.onharu.domain.level.dto.LevelRepositoryParam.UpdateNameByIdParam;
 
 /**
@@ -50,4 +52,12 @@ public interface LevelRepository {
      * 등급 정보를 업데이트 합니다.
      */
     void updateNameById(UpdateNameByIdParam param);
+
+    /**
+     * 다음 등급을 조회합니다
+     *
+     * @param param 현재 등급의 등급 조건 횟수가 포함된 파라미터
+     * @return 조회된 등급 엔티티
+     */
+    Optional<Level> findFirstByConditionNumber(FindFirstByConditionNumberParam param);
 }
