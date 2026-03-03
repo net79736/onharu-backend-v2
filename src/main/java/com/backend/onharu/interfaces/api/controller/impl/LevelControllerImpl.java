@@ -130,7 +130,7 @@ public class LevelControllerImpl implements ILevelController {
      */
     @Override
     @PutMapping
-    public ResponseEntity<ResponseDTO<String>> updateLevel(UpdateLevelRequest request) {
+    public ResponseEntity<ResponseDTO<String>> updateLevel(@Valid @RequestBody UpdateLevelRequest request) {
         log.info("등급 정보 수정");
 
         // 등급 정보 수정
