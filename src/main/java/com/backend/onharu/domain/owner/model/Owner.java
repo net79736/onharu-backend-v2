@@ -22,6 +22,7 @@ import static com.backend.onharu.domain.support.error.ErrorType.Owner.*;
  * userId: 사용자 ID (FK to USERS)
  * levelId: 등급 ID (FK to LEVELS)
  * businessNumber: 사업자 번호
+ * distributionCount: 사업자가 나눔을 완료한 횟수
  */
 @Entity
 @Table(name = "owners")
@@ -41,11 +42,15 @@ public class Owner extends BaseEntity {
     @Column(name = "BUSINESS_NUMBER", nullable = false, length = 10)
     private String businessNumber;
 
+    @Column(name = "DISTRIBUTION_COUNT", nullable = false)
+    private int distributionCount;
+
     @Builder
-    public Owner(User user, Level level, String businessNumber) {
+    public Owner(User user, Level level, String businessNumber, int distributionCount) {
         this.user = user;
         this.level = level;
         this.businessNumber = businessNumber;
+        this.distributionCount = distributionCount;
     }
 
     /**
@@ -74,5 +79,12 @@ public class Owner extends BaseEntity {
         }
 
         this.level = level;
+    }
+
+    /**
+     * 사업자의 나눔 횟수를 증가 시킵니다.
+     */
+    public void increaseDistribution(int number) {
+        this.distributionCount += number;
     }
 }

@@ -1,8 +1,5 @@
 package com.backend.onharu.domain.level.dto;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotBlank;
-
 /**
  * 등급 관련 Query DTO
  *
@@ -15,7 +12,7 @@ public class LevelQuery {
      * 등급 ID로 조회하는 Query
      */
     public record GetLevelByIdQuery(
-            @NotBlank Long id
+            Long id
     ) {
     }
 
@@ -23,7 +20,16 @@ public class LevelQuery {
      * 등급명으로 조회하는 Query
      */
     public record GetLevelByNameQuery(
-            @NotBlank @Max(30) String name
+            String name
+    ) {
+    }
+
+    /**
+     * 등급 조건 횟수로 다음 등급을 조회하는 Query
+     * @param distributionCount 현재 사업자의 나눔 횟수 (Owner 의 distributionCount)
+     */
+    public record FindFirstByConditionNumberQuery(
+            int distributionCount
     ) {
     }
 }

@@ -12,6 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+
+import static com.backend.onharu.domain.level.dto.LevelQuery.FindFirstByConditionNumberQuery;
+import static com.backend.onharu.domain.level.dto.LevelRepositoryParam.FindFirstByConditionNumberParam;
 
 /**
  * 등급 Query Service
@@ -55,5 +59,15 @@ public class LevelQueryService {
      */
     public List<Level> getLevels() {
         return levelRepository.getLevels();
+    }
+
+    /**
+     * 현재 등급의 등급 조건 횟수로 다음 등급을 조회합니다.
+     *
+     * @param query 등급 조건 횟수를 포함한 Query
+     * @return 다음 등급 객체(Optional 로 감싸져 있음)
+     */
+    public Optional<Level> findFirstByConditionNumber(FindFirstByConditionNumberQuery query) {
+        return levelRepository.findFirstByConditionNumber(new FindFirstByConditionNumberParam(query.distributionCount()));
     }
 }
