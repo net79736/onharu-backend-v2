@@ -35,7 +35,10 @@ public class LevelControllerDto {
             @NotBlank(message = "등급명은 필수입니다.")
             @Size(max = 30, message = "등급명은 30자 이내여야 합니다.")
             @Schema(description = "등급명", example = "새싹", maxLength = 30)
-            String name
+            String name,
+
+            @Schema(description = "등급 조건 횟수", example = "1")
+            int conditionNumber
     ) {
     }
 
@@ -48,4 +51,18 @@ public class LevelControllerDto {
     ) {
     }
 
+    /**
+     * 등급 수정 요청 DTO
+     */
+    public record UpdateLevelRequest(
+            @Schema(description = "등급 ID", example = "1")
+            Long levelId,
+
+            @Schema(description = "등급명", example = "새싹2")
+            String levelName,
+
+            @Schema(description = "등급 조건 횟수", example = "1")
+            int conditionNumber
+    ) {
+    }
 }
