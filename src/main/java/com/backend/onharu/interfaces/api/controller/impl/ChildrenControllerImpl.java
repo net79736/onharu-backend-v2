@@ -1,5 +1,6 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
+import static com.backend.onharu.domain.common.enums.UserType.CHILD;
 import static com.backend.onharu.interfaces.api.common.util.PageableUtil.getCurrentPage;
 
 import java.util.List;
@@ -294,7 +295,7 @@ public class ChildrenControllerImpl implements IChildrenController {
 
         log.info("예약 취소 요청: childId={}, reservationId={}", childId, reservationId);
 
-        childFacade.cancelReservation(new CancelReservationCommand(reservationId, request.cancelReason()), childId);
+        childFacade.cancelReservation(new CancelReservationCommand(reservationId, CHILD, request.cancelReason()), childId);
         
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));

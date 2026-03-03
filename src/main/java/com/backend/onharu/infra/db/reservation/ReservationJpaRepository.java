@@ -1,5 +1,6 @@
 package com.backend.onharu.infra.db.reservation;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,4 +84,17 @@ public interface ReservationJpaRepository extends JpaRepository<Reservation, Lon
           )
         """)
     Page<Reservation> findLatestReservationsByStoreIdAndStatus(@Param("storeId") Long storeId, @Param("status") ReservationType status, Pageable pageable);
+
+
+    /**
+     * 기한이 경과한(만료 대상) 예약을 상태별로 조회합니다.
+     */
+    @Query("""
+    SELECT r 
+      FROM Reservation r
+      JOIN FETCH r.storeSchedule s
+     WHERE r.status = :status 
+       AND s.scheduleDate < :date
+    """)
+    List<Reservation> findByStatusAndScheduleDateBeforeThan(@Param("status") ReservationType status, @Param("date") LocalDate date);
 }

@@ -34,6 +34,7 @@ import com.backend.onharu.domain.store.support.StoreSearchSortResolver;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.controller.IOwnerController;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CancelReservationRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetMyStoresRequest;
@@ -42,7 +43,6 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetOwnerResponse
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingDetailResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingListResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingsRequest;
-import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RejectBookRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.ReservationResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
@@ -344,23 +344,23 @@ public class OwnerControllerImpl implements IOwnerController {
     }
 
     /**
-     * 예약 거절
+     * 예약 취소
      * 
-     * POST /api/owners/reservations/{reservationId}/reject
-     * 사업자가 예약을 거절합니다.
+     * POST /api/owners/reservations/{reservationId}/cancel
+     * 사업자가 예약을 취소합니다.
      *
      * @param reservationId 예약 ID
-     * @return 거절 결과
+     * @return 취소 결과
      */
     @Override
-    @PostMapping("/reservations/{reservationId}/reject")
-    public ResponseEntity<ResponseDTO<Void>> rejectBook(
+    @PostMapping("/reservations/{reservationId}/cancel")
+    public ResponseEntity<ResponseDTO<Void>> cancelBook(
             @PathVariable("reservationId") Long reservationId,
-            @RequestBody RejectBookRequest request
+            @Valid @RequestBody CancelReservationRequest request
     ) {
-        log.info("예약 거절 요청: reservationId={}, request={}", reservationId, request);
+        log.info("예약 취소 요청: reservationId={}, request={}", reservationId, request);
         
-        ownerFacade.rejectReservation(reservationId, request);
+        ownerFacade.cancelReservation(reservationId, request);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));

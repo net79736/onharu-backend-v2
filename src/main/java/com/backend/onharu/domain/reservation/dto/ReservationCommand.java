@@ -1,6 +1,7 @@
 package com.backend.onharu.domain.reservation.dto;
 
 import com.backend.onharu.domain.common.enums.ReservationType;
+import com.backend.onharu.domain.common.enums.UserType;
 
 public class ReservationCommand {
     /**
@@ -29,23 +30,10 @@ public class ReservationCommand {
      */
     public record CancelReservationCommand(
             Long reservationId,
+            UserType cancelRequestedBy,
             String cancelReason
     ) {
         public CancelReservationCommand {
-            // if (reservationId == null) {
-            //     throw new CoreException(BAD_REQUEST);
-            // }
-        }
-    }
-
-    /**
-     * 예약 거절 커맨드
-     */
-    public record RejectReservationCommand(
-            Long reservationId,
-            String rejectReason
-    ) {
-        public RejectReservationCommand {
             // if (reservationId == null) {
             //     throw new CoreException(BAD_REQUEST);
             // }

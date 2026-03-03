@@ -16,6 +16,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.common.base.BaseEntity;
 import com.backend.onharu.domain.common.enums.ReservationType;
+import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.support.error.CoreException;
 
@@ -65,8 +66,9 @@ public class Reservation extends BaseEntity {
     @Column(name = "CANCEL_REASON", columnDefinition = "TEXT")
     private String cancelReason;
 
-    @Column(name = "REJECT_REASON", columnDefinition = "TEXT")
-    private String rejectReason;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "CANCEL_REQUESTED_BY")
+    private UserType cancelRequestedBy;
 
     @Builder
     public Reservation(Child child, StoreSchedule storeSchedule, Integer people, 
@@ -83,8 +85,9 @@ public class Reservation extends BaseEntity {
      * 
      * @param cancelReason 취소 사유
      */
-    public void cancel(String cancelReason) {
+    public void cancel(UserType cancelRequestedBy, String cancelReason) {
         this.status = ReservationType.CANCELED;
+        this.cancelRequestedBy = cancelRequestedBy;
         ofNullable(cancelReason).ifPresent(v -> this.cancelReason = v);
     }
 
@@ -93,9 +96,10 @@ public class Reservation extends BaseEntity {
      * 
      * @param rejectReason 거절 사유
      */
-    public void reject(String rejectReason) {
-        this.status = ReservationType.REJECTED;
-        ofNullable(rejectReason).ifPresent(v -> this.rejectReason = v);
+    public void reject(String cancelReason) {
+        this.status = ReservationType.CANCELED;
+        this.cancelRequestedBy = UserType.OWNER;
+        ofNullable(cancelReason).ifPresent(v -> this.cancelReason = v);
     }
 
     /**
@@ -140,6 +144,14 @@ public class Reservation extends BaseEntity {
      */
     public void updateCancelReason(String cancelReason) {
         this.cancelReason = cancelReason;
+    }
+
+    /**
+     * 예약을 만료 처리합니다. (WAITING → CANCELED)
+     */
+    public void expire() {
+        this.status = ReservationType.CANCELED;
+        this.cancelReason = "예약 시간이 지나 시스템에서 자동 취소되었습니다.";
     }
 
     /**
@@ -199,7 +211,7 @@ public class Reservation extends BaseEntity {
      * @return 재예약 가능 여부 (CANCELED, REJECTED인 경우 true)
      */
     public boolean isRebookable() {
-        return this.status == ReservationType.CANCELED || this.status == ReservationType.REJECTED;
+        return this.status == ReservationType.CANCELED;
     }
 
     /**

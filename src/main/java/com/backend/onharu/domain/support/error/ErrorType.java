@@ -375,6 +375,7 @@ public enum ErrorType implements IErrorType {
         RESERVATION_STORE_SCHEDULE_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "가게 일정 ID는 필수입니다.", LogLevel.ERROR),
         RESERVATION_PEOPLE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "인원 수는 필수입니다.", LogLevel.ERROR),
         RESERVATION_STATUS_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "예약 상태는 필수입니다.", LogLevel.ERROR),
+        RESERVATION_DATE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "예약 날짜는 필수입니다.", LogLevel.ERROR),
         RESERVATION_CHILD_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 ID는 필수입니다.", LogLevel.ERROR),
         RESERVATION_CHILD_ID_MISMATCH(ErrorCode.BAD_REQUEST, "예약자와 현재 로그인한 아동 정보가 일치하지 않습니다.", LogLevel.ERROR),
         RESERVATION_STORE_ID_MISMATCH(ErrorCode.BAD_REQUEST, "해당 예약은 요청한 가게의 예약이 아닙니다.", LogLevel.ERROR),

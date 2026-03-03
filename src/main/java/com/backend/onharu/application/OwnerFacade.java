@@ -4,13 +4,31 @@ import com.backend.onharu.application.validator.StoreScheduleValidator;
 import com.backend.onharu.application.validator.StoreScheduleValidator.ScheduleTimeRange;
 import com.backend.onharu.domain.common.enums.NotificationHistoryType;
 import com.backend.onharu.domain.level.service.LevelQueryService;
+
+import static com.backend.onharu.utils.SecurityUtils.getCurrentUserId;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.backend.onharu.application.validator.StoreScheduleValidator;
+import com.backend.onharu.application.validator.StoreScheduleValidator.ScheduleTimeRange;
+import com.backend.onharu.domain.common.enums.NotificationHistoryType;
+import com.backend.onharu.domain.common.enums.UserType;
+
 import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.service.OwnerCommandService;
 import com.backend.onharu.domain.owner.service.OwnerQueryService;
+import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CompleteReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.ConfirmReservationCommand;
-import com.backend.onharu.domain.reservation.dto.ReservationCommand.RejectReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByStoreIdAndStatusFilterQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
 import com.backend.onharu.domain.reservation.model.Reservation;
@@ -30,7 +48,7 @@ import com.backend.onharu.domain.storeschedule.service.StoreScheduleQueryService
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.event.model.ReservationEvent;
-import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RejectBookRequest;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CancelReservationRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateAvailableDatesRequest;
@@ -356,15 +374,29 @@ public class OwnerFacade {
     }
 
     /**
-     * 예약 거절
+     * 예약 취소
      * 
      * @param reservationId 예약 ID
      */
-    public void rejectReservation(Long reservationId, RejectBookRequest request) {
+    public void cancelReservation(Long reservationId, CancelReservationRequest request) {
         // 예약 정보 조회
         Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(reservationId));
+        Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(reservation.getStoreSchedule().getStore().getId()));
 
-        // 예약 거절
-        reservationCommandService.rejectReservation(new RejectReservationCommand(reservation.getId(), request.rejectReason()));
+        // Owner 조회
+        Owner owner = ownerQueryService.getOwnerById(new GetOwnerByIdQuery(getCurrentUserId()));
+
+        // 사업자가 가게의 주인인지 확인
+        store.belongsTo(owner);
+
+        // 예약 취소
+        reservationCommandService.cancelReservation(new CancelReservationCommand(reservation.getId(), UserType.OWNER, request.cancelReason()));
+
+        applicationEventPublisher.publishEvent(new ReservationEvent(
+            reservation.getId(),
+            owner.getId(),
+            reservation.getChild().getId(),
+            NotificationHistoryType.RESERVATION_REJECTED
+        ));
     }
 }

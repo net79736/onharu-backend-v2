@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CancelReservationRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.CreateOwnerResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetMyStoresRequest;
@@ -13,7 +14,6 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetOwnerResponse
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingDetailResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingListResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingsRequest;
-import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RejectBookRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateAvailableDatesRequest;
@@ -118,25 +118,25 @@ public interface IOwnerController {
             Long reservationId
     );
 
-    @Operation(summary = "예약 거절", description = "사업자가 예약을 거절합니다.")
-    ResponseEntity<ResponseDTO<Void>> rejectBook(
+    @Operation(summary = "예약 취소", description = "사업자가 예약을 취소합니다.")
+    ResponseEntity<ResponseDTO<Void>> cancelBook(
             @Schema(description = "예약 ID", example = "1")
             Long reservationId,
             @RequestBody(
-                    description = "예약 거절 요청",
+                    description = "예약 취소 요청",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = RejectBookRequest.class),
+                            schema = @Schema(implementation = CancelReservationRequest.class),
                             examples = @ExampleObject(
-                                    name = "예약 거절 예시",
+                                    name = "예약 취소 예시",
                                     value = "{\n" +
-                                            "  \"rejectReason\": \"일정 변경으로 인한 거절\"\n" +
+                                            "  \"cancelReason\": \"일정 변경으로 인한 취소\"\n" +
                                             "}"
                             )
                     )
             )
-            RejectBookRequest request
+            CancelReservationRequest request
     );
 
     @Operation(summary = "예약 가능한 날짜 생성", description = "예약 가능한 날짜를 생성합니다.")

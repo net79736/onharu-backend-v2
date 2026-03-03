@@ -16,6 +16,7 @@ import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 public class OwnerControllerDto {
 
@@ -332,9 +333,11 @@ public class OwnerControllerDto {
     ) {
     }
 
-    public record RejectBookRequest(
-            @Schema(description = "거절 사유", example = "일정 변경으로 인한 거절")
-            String rejectReason
+    @Schema(description = "예약 취소 요청")
+    public record CancelReservationRequest(
+        @Size(max = 30, message = "예약 취소 사유는 30자 이하여야 합니다.")
+        @Schema(description = "예약 취소 사유", example = "일정 변경으로 인한 취소")
+        String cancelReason
     ) {
     }
 }
