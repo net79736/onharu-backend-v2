@@ -4,12 +4,14 @@ import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.dto.LevelControllerDto.CreateLevelRequest;
 import com.backend.onharu.interfaces.api.dto.LevelControllerDto.CreateLevelResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -89,7 +91,12 @@ public interface ILevelController {
      */
     @Operation(summary = "등급 조회", description = "등급 ID 로 등급을 조회합니다.")
     ResponseEntity<ResponseDTO<LevelResponse>> getLevel(
-            @Schema(name = "등급 ID", description = "조회할 등급 ID")
+            @PathVariable @Parameter(
+                    name = "levelId",
+                    description = "조회할 등급 ID",
+                    example = "1",
+                    required = true
+            )
             Long levelId
     );
 
@@ -122,7 +129,7 @@ public interface ILevelController {
                                             name = "등급 수정 예시",
                                             value = """
                                                     {
-                                                      "levelId": "1"
+                                                      "levelId": "1",
                                                       "levelName": "새싹",
                                                       "conditionNumber": "10"
                                                     }
