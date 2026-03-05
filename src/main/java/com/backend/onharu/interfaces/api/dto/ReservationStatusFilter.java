@@ -13,14 +13,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * - 그 외: 해당 예약 상태로 필터링
  * </p>
  */
-@Schema(description = "예약 상태 필터", allowableValues = {"ALL", "WAITING", "CONFIRMED", "CANCELED", "COMPLETED", "REJECTED"})
+@Schema(description = "예약 상태 필터", allowableValues = {"ALL", "WAITING", "CONFIRMED", "CANCELED", "COMPLETED"})
 public enum ReservationStatusFilter {
     ALL,
     WAITING,
     CONFIRMED,
     CANCELED,
-    COMPLETED,
-    REJECTED;
+    COMPLETED;
 
     /**
      * 도메인 ReservationType으로 변환.
