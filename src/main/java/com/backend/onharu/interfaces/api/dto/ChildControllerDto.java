@@ -111,7 +111,7 @@ public class ChildControllerDto {
             @Schema(description = "페이지당 항목 수", example = "10")
             Integer perPage,
 
-            @Schema(description = "예약 상태 필터 (ALL: 전체, 그 외: 해당 상태만)", example = "ALL", allowableValues = {"ALL", "WAITING", "CONFIRMED", "CANCELED", "COMPLETED", "REJECTED"})
+            @Schema(description = "예약 상태 필터 (ALL: 전체, 그 외: 해당 상태만)", example = "ALL", allowableValues = {"ALL", "WAITING", "CONFIRMED", "CANCELED", "COMPLETED"})
             ReservationStatusFilter statusFilter,
 
             @Schema(description = "정렬 기준", example = "id", allowableValues = {"id"})
