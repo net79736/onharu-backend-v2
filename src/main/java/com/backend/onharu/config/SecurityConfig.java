@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -48,6 +49,7 @@ public class SecurityConfig {
             "/api/auth/**", // 인증 관련 API
             "/api/files/**", // 파일(첨부) 메타데이터 API
             "/api/notifications/**", // 알림 관련 API
+            "/ws-chat", "/topic", "/app", // 웹소켓 관련 경로
     };
 
     public static final String[] AUTHENTICATE_PATH = {
@@ -72,6 +74,7 @@ public class SecurityConfig {
     private static final String PORT_BACK_SERVER = "http://onharu-api.votex.co.kr:15080/";
 
     private final SocialUserService socialUserService;
+    private final SessionConfig sessionConfig;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -124,6 +127,14 @@ public class SecurityConfig {
                 )
         ;
 
+        http
+                .sessionManagement(session -> session
+                        .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::changeSessionId)
+                        .maximumSessions(5) // 최대 세션 제한 (동시 로그인 5개 제한)
+                        .maxSessionsPreventsLogin(false) // 최대 세션 초과시, 가장 오래된 세션을 종료하고 새 세션 생성
+                        .sessionRegistry(sessionConfig.sessionRegistry())
+                )
+        ;
         return http.build();
     }
 }
