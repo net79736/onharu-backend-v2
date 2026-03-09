@@ -1,28 +1,14 @@
 package com.backend.onharu.domain.favorite.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
-import com.backend.onharu.domain.favorite.dto.FavoriteCommand;
 import com.backend.onharu.domain.favorite.model.Favorite;
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
-import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.infra.db.child.ChildJpaRepository;
 import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
@@ -31,6 +17,17 @@ import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
+import static com.backend.onharu.domain.favorite.dto.FavoriteCommand.CreateFavoriteCommand;
+import static com.backend.onharu.domain.favorite.dto.FavoriteCommand.DeleteFavoriteCommand;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * FavoriteCommandService 의 테스트 코드 입니다.
@@ -63,17 +60,6 @@ class FavoriteCommandServiceTest {
 
     @Autowired
     private LevelJpaRepository levelJpaRepository;
-
-    @BeforeEach
-    public void setUp() {
-        favoriteJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll();
-        categoryJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-        levelJpaRepository.deleteAll();
-        childJpaRepository.deleteAll();
-    }
 
     /**
      * 테스트용 Level 생성
@@ -185,30 +171,31 @@ class FavoriteCommandServiceTest {
         void createFavorite() {
             // GIVEN
             Child child = createTestChild(
-                    "child@test.com",
-                    "아동테스트",
-                    "01022223333",
-                    "닉네임테스트",
+                    "favoriteChild1@test.com",
+                    "찜하기아동테스트1",
+                    "01099990010",
+                    "찜하기아동닉네임1",
                     true
             );
-            Level level = createTestLevel("줄기");
+            Level level = createTestLevel("찜하기등급1");
             Owner owner = createTestOwner(
-                    "owner@test.com",
-                    "사업자테스트",
-                    "01099998888",
-                    "1234567890",
+                    "favoriteOwner1@test.com",
+                    "찜하기사업자테스트1",
+                    "01099990011",
+                    "9999999991",
                     level
             );
             Category category = createTestCategory("식당");
             Store store = createTestStore(
-                    "가게테스트",
+                    "찜하기가게테스트1",
                     owner,
                     category
             );
-            FavoriteCommand.CreateFavoriteCommand command = new FavoriteCommand.CreateFavoriteCommand(child.getId(), store.getId());
+
+            CreateFavoriteCommand command = new CreateFavoriteCommand(child, store);
 
             // WHEN
-            Favorite favorite = favoriteCommandService.createFavorite(command, child, store);
+            Favorite favorite = favoriteCommandService.createFavorite(command);
 
             // THEN
             assertThat(favorite.getChild().getId()).isEqualTo(child.getId());
@@ -218,30 +205,30 @@ class FavoriteCommandServiceTest {
 
     @Nested
     @DisplayName("찜하기 삭제 테스트")
-    class deleteFavorite {
+    class deleteFavoriteTest {
 
         @Test
         @DisplayName("찜하기 삭제 성공")
         public void deleteFavorite() {
             //GIVEN
             Child child = createTestChild(
-                    "child@test.com",
-                    "아동테스트",
-                    "01022223333",
-                    "닉네임테스트",
+                    "favoriteChild2@test.com",
+                    "찜하기아동테스트2",
+                    "01099990020",
+                    "찜하기아동닉네임2",
                     true
             );
-            Level level = createTestLevel("줄기");
+            Level level = createTestLevel("찜하기등급2");
             Owner owner = createTestOwner(
-                    "owner@test.com",
-                    "사업자테스트",
-                    "01099998888",
-                    "1234567890",
+                    "favoriteOwner2@test.com",
+                    "찜하기사업자테스트2",
+                    "01099990021",
+                    "9999999992",
                     level
             );
-            Category category = createTestCategory("식당");
+            Category category = createTestCategory("카페");
             Store store = createTestStore(
-                    "가게테스트",
+                    "찜하기가게테스트2",
                     owner,
                     category
             );
@@ -252,26 +239,14 @@ class FavoriteCommandServiceTest {
                             .store(store)
                             .build()
             );
-            FavoriteCommand.DeleteFavoriteCommand command = new FavoriteCommand.DeleteFavoriteCommand(child.getId(), favorite.getId());
+
+            DeleteFavoriteCommand command = new DeleteFavoriteCommand(favorite);
 
             // WHEN
             favoriteCommandService.deleteFavorite(command);
 
             // THEN
             assertThat(favoriteJpaRepository.findById(favorite.getId())).isEmpty();
-        }
-
-        @Test
-        @DisplayName("찜하기 삭제 실패 - 존재하지 않는 찜하기 ID 로 삭제시 예외 발생")
-        void deleteFavorite_fail_whenFavoriteNotFound() {
-            // GIVEN
-            Long favoriteId = 123456789L;
-
-            FavoriteCommand.DeleteFavoriteCommand command = new FavoriteCommand.DeleteFavoriteCommand(1L, favoriteId);
-
-            // WHEN
-            assertThatThrownBy(() -> favoriteCommandService.deleteFavorite(command))
-                    .isInstanceOf(CoreException.class);
         }
     }
 }
