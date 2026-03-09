@@ -178,9 +178,12 @@ public class ChildControllerDto {
             java.time.LocalDateTime reservationAt,
 
             @Schema(description = "취소 사유", example = "일정 변경으로 인한 취소")
-            String cancelReason
+            String cancelReason,
+
+            @Schema(description = "리뷰 작성 여부", example = "true")
+            boolean reviewed
     ) {
-        public ReservationResponse(Reservation reservation) {
+        public ReservationResponse(Reservation reservation, boolean reviewed) {
             this(
                 reservation.getId(),
                 reservation.getChild().getId(),
@@ -194,7 +197,8 @@ public class ChildControllerDto {
                 reservation.getPeople(),
                 reservation.getStatus().name(),
                 reservation.getReservationAt(),
-                reservation.getCancelReason()
+                reservation.getCancelReason(),
+                reviewed
             );
         }
     }

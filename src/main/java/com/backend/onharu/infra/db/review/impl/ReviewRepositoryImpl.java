@@ -65,6 +65,14 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
+    public List<Long> findReviewedReservationIdsByReservationIds(FindReviewedReservationIdsParam param) {
+        if (param.reservationIds() == null || param.reservationIds().isEmpty()) {
+            return List.of();
+        }
+        return reviewJpaRepository.findReviewedReservationIdsByReservationIds(param.reservationIds());
+    }
+
+    @Override
     public void updateReview(UpdateReviewParam param) {
         reviewJpaRepository.updateReview(param.reviewId(), param.content());
     }

@@ -1,17 +1,24 @@
 package com.backend.onharu.domain.review.service;
 
-import com.backend.onharu.domain.review.model.Review;
-import com.backend.onharu.domain.review.repository.ReviewRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.backend.onharu.domain.review.dto.ReviewQuery.FindAllByChildIdQuery;
+import com.backend.onharu.domain.review.dto.ReviewQuery.FindReviewedReservationIdsQuery;
+import com.backend.onharu.domain.review.dto.ReviewQuery.GetReviewByIdQuery;
+import com.backend.onharu.domain.review.dto.ReviewQuery.findAllByStoreIdQuery;
+import com.backend.onharu.domain.review.dto.ReviewRepositoryParam.FindAllByChildIdParam;
+import com.backend.onharu.domain.review.dto.ReviewRepositoryParam.FindAllByStoreIdParam;
+import com.backend.onharu.domain.review.dto.ReviewRepositoryParam.FindReviewedReservationIdsParam;
+import com.backend.onharu.domain.review.dto.ReviewRepositoryParam.GetReviewByIdParam;
+import com.backend.onharu.domain.review.model.Review;
+import com.backend.onharu.domain.review.repository.ReviewRepository;
 
-import static com.backend.onharu.domain.review.dto.ReviewQuery.*;
-import static com.backend.onharu.domain.review.dto.ReviewRepositoryParam.*;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
@@ -90,6 +97,18 @@ public class ReviewQueryService {
         return reviewRepository.findByStoreId(
                 new FindAllByStoreIdParam(query.storeId()),
                 pageable
+        );
+    }
+
+    /**
+     * 예약 ID 목록 중 리뷰가 작성된 예약 ID 목록 조회
+     *
+     * @param query 예약 ID 목록을 포함한 query
+     * @return 리뷰가 작성된 예약 ID 목록
+     */
+    public List<Long> findReviewedReservationIds(FindReviewedReservationIdsQuery query) {
+        return reviewRepository.findReviewedReservationIdsByReservationIds(
+                new FindReviewedReservationIdsParam(query.reservationIds())
         );
     }
 }

@@ -5,6 +5,8 @@ import static com.backend.onharu.domain.common.enums.NotificationHistoryType.RES
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_EXCEEDS_MAX;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_MUST_NOT_BE_NULL;
 
+import java.util.List;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +32,8 @@ import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservation
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.reservation.service.ReservationCommandService;
 import com.backend.onharu.domain.reservation.service.ReservationQueryService;
+import com.backend.onharu.domain.review.dto.ReviewQuery.FindReviewedReservationIdsQuery;
+import com.backend.onharu.domain.review.service.ReviewQueryService;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.service.StoreQueryService;
@@ -54,6 +58,7 @@ public class ChildFacade {
     private final ChildQueryService childQueryService;
     private final ReservationCommandService reservationCommandService;
     private final ReservationQueryService reservationQueryService;
+    private final ReviewQueryService reviewQueryService;
     private final StoreScheduleQueryService storeScheduleQueryService;
     private final StoreQueryService storeQueryService;
     private final FavoriteCommandService favoriteCommandService;
@@ -160,6 +165,16 @@ public class ChildFacade {
         reservation.belongsToChild(child.getId());
 
         return reservation;
+    }
+
+    /**
+     * 내 예약 ID 목록 중 리뷰 작성 완료된 예약 ID 목록 조회
+     *
+     * @param reservationIds 예약 ID 목록
+     * @return 리뷰 작성 완료된 예약 ID 목록
+     */
+    public List<Long> getMyReviewWrittenReservationIds(List<Long> reservationIds) {
+        return reviewQueryService.findReviewedReservationIds(new FindReviewedReservationIdsQuery(reservationIds));
     }
 
     /**

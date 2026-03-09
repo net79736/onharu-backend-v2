@@ -1,5 +1,7 @@
 package com.backend.onharu.domain.review.dto;
 
+import java.util.List;
+
 /**
  * 리뷰 Repository 에 사용될 파마리터 DTO 입니다.
  */
@@ -32,6 +34,16 @@ public class ReviewRepositoryParam {
      */
     public record FindAllByStoreIdParam(
             Long storeId
+    ) {
+    }
+
+    /**
+     * 예약 ID 목록 중 리뷰가 작성된 예약 ID 목록 조회 Param
+     *
+     * @param reservationIds 예약 ID 목록
+     */
+    public record FindReviewedReservationIdsParam(
+            List<Long> reservationIds
     ) {
     }
 
