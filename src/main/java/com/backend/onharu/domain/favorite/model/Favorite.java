@@ -16,7 +16,15 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  */
 @Getter
 @Entity
-@Table(name = "favorites")
+@Table(name = "favorites", uniqueConstraints = {
+        @UniqueConstraint(
+                name = "UK_FAVORITE_CHILD_STORE",
+                columnNames = {
+                        "CHILD_ID",
+                        "STORE_ID"
+                }
+        )
+})
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 public class Favorite extends BaseEntity {
