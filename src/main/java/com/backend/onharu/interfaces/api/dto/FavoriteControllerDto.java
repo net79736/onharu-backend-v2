@@ -1,8 +1,6 @@
 package com.backend.onharu.interfaces.api.dto;
 
-import com.backend.onharu.domain.favorite.model.Favorite;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -43,14 +41,19 @@ public class FavoriteControllerDto {
             Long childId,
 
             @Schema(description = "가게 ID", example = "200")
-            Long storeId
+            Long storeId,
+
+            @Schema(defaultValue = "가게명", example = "따뜻한 가게")
+            String storeName,
+
+            @Schema(defaultValue = "가게 대표 이미지")
+            List<String> image,
+
+            @Schema(defaultValue = "가게 주소", example = "서울시 강남구 테헤란로 123")
+            String address,
+
+            @Schema(defaultValue = "나눔 진행 여부", example = "true")
+            boolean isShare
     ) {
-        public FavoriteResponse(Favorite favorite) {
-            this(
-                    favorite.getId(),
-                    favorite.getChild().getId(),
-                    favorite.getStore().getId()
-            );
-        }
     }
 }
