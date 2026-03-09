@@ -86,7 +86,7 @@ public interface IOwnerController {
         parameters = {
             @Parameter(name = "pageNum", description = "페이지 번호 (1부터)", example = "1", schema = @Schema(type = "integer")),
             @Parameter(name = "perPage", description = "페이지당 항목 수", example = "10", schema = @Schema(type = "integer")),
-            @Parameter(name = "statusFilter", description = "예약 상태 필터", example = "ALL", schema = @Schema(type = "string", allowableValues = {"ALL", "WAITING", "CONFIRMED", "CANCELED", "COMPLETED", "REJECTED"})),
+            @Parameter(name = "statusFilter", description = "예약 상태 필터", example = "ALL", schema = @Schema(type = "string", allowableValues = {"ALL", "WAITING", "CONFIRMED", "CANCELED", "COMPLETED"})),
             @Parameter(name = "sortField", description = "정렬 기준", example = "id", schema = @Schema(type = "string")),
             @Parameter(name = "sortDirection", description = "정렬 방향", example = "desc", schema = @Schema(type = "string"))
         }

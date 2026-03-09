@@ -2,6 +2,7 @@ package com.backend.onharu.interfaces.api.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.dto.NotificationControllerDto.GetNotificationHistoriesRequest;
@@ -59,5 +60,12 @@ public interface INotificationController {
         ) 
         UpdateNotificationRequest request
     );
+
+    @Operation(
+        summary = "알림 읽음 처리(전체)",
+        description = "알림 히스토리 전체를 읽음(isRead=true)으로 처리합니다."
+    )
+    @PutMapping("/histories/read/all")
+    ResponseEntity<ResponseDTO<Void>> markAllNotificationAsRead();
     
 }

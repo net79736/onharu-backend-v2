@@ -111,7 +111,7 @@ public class ChildControllerDto {
             @Schema(description = "페이지당 항목 수", example = "10")
             Integer perPage,
 
-            @Schema(description = "예약 상태 필터 (ALL: 전체, 그 외: 해당 상태만)", example = "ALL", allowableValues = {"ALL", "WAITING", "CONFIRMED", "CANCELED", "COMPLETED", "REJECTED"})
+            @Schema(description = "예약 상태 필터 (ALL: 전체, 그 외: 해당 상태만)", example = "ALL", allowableValues = {"ALL", "WAITING", "CONFIRMED", "CANCELED", "COMPLETED"})
             ReservationStatusFilter statusFilter,
 
             @Schema(description = "정렬 기준", example = "id", allowableValues = {"id"})
@@ -178,9 +178,12 @@ public class ChildControllerDto {
             java.time.LocalDateTime reservationAt,
 
             @Schema(description = "취소 사유", example = "일정 변경으로 인한 취소")
-            String cancelReason
+            String cancelReason,
+
+            @Schema(description = "리뷰 작성 여부", example = "true")
+            boolean reviewed
     ) {
-        public ReservationResponse(Reservation reservation) {
+        public ReservationResponse(Reservation reservation, boolean reviewed) {
             this(
                 reservation.getId(),
                 reservation.getChild().getId(),
@@ -194,7 +197,8 @@ public class ChildControllerDto {
                 reservation.getPeople(),
                 reservation.getStatus().name(),
                 reservation.getReservationAt(),
-                reservation.getCancelReason()
+                reservation.getCancelReason(),
+                reviewed
             );
         }
     }
