@@ -1,9 +1,12 @@
 package com.backend.onharu.infra.db.notification.impl;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Repository;
 
 import com.backend.onharu.domain.notification.dto.NotificationHistoryRepositoryParam.FindByUserIdParam;
+import com.backend.onharu.domain.notification.dto.NotificationHistoryRepositoryParam.FindUnReadedNotificationHistoriesByUserIdParam;
 import com.backend.onharu.domain.notification.dto.NotificationHistoryRepositoryParam.GetNotificationHistoryByIdParam;
 import com.backend.onharu.domain.notification.model.NotificationHistory;
 import com.backend.onharu.domain.notification.repository.NotificationHistoryRepository;
@@ -36,5 +39,10 @@ public class NotificationHistoryRepositoryImpl implements NotificationHistoryRep
             param.userId(),
             param.pageable()
         );
+    }
+
+    @Override
+    public List<NotificationHistory> findUnReadedNotificationHistoriesByUserId(FindUnReadedNotificationHistoriesByUserIdParam param) {
+        return notificationHistoryJpaRepository.findUnReadedNotificationHistoriesByUserId(param.userId());
     }
 }
