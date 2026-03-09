@@ -3,6 +3,7 @@ package com.backend.onharu.domain.favorite.dto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import static com.backend.onharu.domain.favorite.dto.FavoriteQuery.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 /**
@@ -15,7 +16,7 @@ class FavoriteQueryTest {
     void getFavoriteByIdQuery() {
         Long favoriteId = 1L;
 
-        FavoriteQuery.GetFavoriteByIdQuery query = new FavoriteQuery.GetFavoriteByIdQuery(favoriteId);
+        GetFavoriteByIdQuery query = new GetFavoriteByIdQuery(favoriteId);
 
         assertThat(query.favoriteId()).isEqualTo(favoriteId);
     }
@@ -25,8 +26,20 @@ class FavoriteQueryTest {
     void findFavoritesByChildIdQuery() {
         Long childId = 20L;
 
-        FavoriteQuery.FindFavoritesByChildIdQuery query = new FavoriteQuery.FindFavoritesByChildIdQuery(childId);
+        FindFavoritesByChildIdQuery query = new FindFavoritesByChildIdQuery(childId);
 
         assertThat(query.childId()).isEqualTo(childId);
+    }
+
+    @Test
+    @DisplayName("찜하기 내역 조회 생성 테스트")
+    void findFavoriteByChild_IdAndStore_IdQuery() {
+        Long childId = 1L;
+        Long storeId = 10L;
+
+        FindFavoriteByChild_IdAndStore_IdQuery query = new FindFavoriteByChild_IdAndStore_IdQuery(childId, storeId);
+
+        assertThat(query.childId()).isEqualTo(childId);
+        assertThat(query.storeId()).isEqualTo(storeId);
     }
 }
