@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +57,15 @@ public interface ReviewJpaRepository extends JpaRepository<Review, Long> {
      * @return 페이징된 리뷰 목록
      */
     Page<Review> findByStore_Id(Long storeId, Pageable pageable);
+
+    /**
+     * 예약 ID 목록 중 리뷰가 작성된 예약 ID 목록 조회
+     *
+     * @param reservationIds 예약 ID 목록
+     * @return 리뷰가 작성된 예약 ID 목록
+     */
+    @Query("SELECT r.reservation.id FROM Review r WHERE r.reservation.id IN :reservationIds")
+    List<Long> findReviewedReservationIdsByReservationIds(@Param("reservationIds") List<Long> reservationIds);
 
     /**
      * 리뷰 수정

@@ -1,5 +1,7 @@
 package com.backend.onharu.domain.review.dto;
 
+import java.util.List;
+
 /**
  * 리뷰 조회 서비스에 사용될 Query DTO 입니다.
  */
@@ -29,6 +31,15 @@ public class ReviewQuery {
      */
     public record findAllByStoreIdQuery(
             Long storeId
+    ) {
+    }
+
+    /**
+     * 예약 ID 목록에 대해 리뷰 작성 여부 조회 query
+     * @param reservationIds 예약 ID 목록
+     */
+    public record FindReviewedReservationIdsQuery(
+            List<Long> reservationIds
     ) {
     }
 }

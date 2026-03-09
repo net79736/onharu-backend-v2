@@ -31,4 +31,15 @@ public class NotificationHistoryRepositoryParam {
             }
         }
     }
+
+    /**
+     * 사용자 ID로 읽지 않은 알림 히스토리 목록 조회용 파라미터
+     */
+    public record FindUnReadedNotificationHistoriesByUserIdParam(Long userId) {
+        public FindUnReadedNotificationHistoriesByUserIdParam {
+            if (userId == null) {
+                throw new CoreException(ErrorType.Notification.NOTIFICATION_HISTORY_USER_ID_MUST_NOT_BE_NULL);
+            }
+        }
+    }
 }

@@ -38,8 +38,11 @@ import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.infra.db.child.ChildJpaRepository;
 import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
 import com.backend.onharu.infra.db.level.LevelJpaRepository;
+import com.backend.onharu.infra.db.notification.NotificationHistoryJpaRepository;
+import com.backend.onharu.infra.db.notification.NotificationJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
+import com.backend.onharu.infra.db.review.ReviewJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
@@ -83,9 +86,21 @@ class OwnerFacadeTest {
     @Autowired
     private LevelJpaRepository levelJpaRepository;
 
+    @Autowired
+    private NotificationHistoryJpaRepository notificationHistoryJpaRepository;
+
+    @Autowired
+    private NotificationJpaRepository notificationJpaRepository;
+
+    @Autowired
+    private ReviewJpaRepository reviewJpaRepository;
+
     @BeforeEach
     public void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
+        notificationHistoryJpaRepository.deleteAll();
+        notificationJpaRepository.deleteAll();
+        reviewJpaRepository.deleteAll();
         favoriteJpaRepository.deleteAll();
         reservationJpaRepository.deleteAll();
         storeScheduleJpaRepository.deleteAll();

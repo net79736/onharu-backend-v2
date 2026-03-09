@@ -1,8 +1,11 @@
 package com.backend.onharu.domain.notification.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 
 import com.backend.onharu.domain.notification.dto.NotificationHistoryRepositoryParam.FindByUserIdParam;
+import com.backend.onharu.domain.notification.dto.NotificationHistoryRepositoryParam.FindUnReadedNotificationHistoriesByUserIdParam;
 import com.backend.onharu.domain.notification.dto.NotificationHistoryRepositoryParam.GetNotificationHistoryByIdParam;
 import com.backend.onharu.domain.notification.model.NotificationHistory;
 
@@ -36,4 +39,11 @@ public interface NotificationHistoryRepository {
      * @return 알림 히스토리 목록 (페이징)
      */
     Page<NotificationHistory> findByUserId(FindByUserIdParam param);
+
+    /**
+     * 사용자 ID로 읽지 않은 알림 히스토리 목록 조회
+     * @param param
+     * @return
+     */
+    List<NotificationHistory> findUnReadedNotificationHistoriesByUserId(FindUnReadedNotificationHistoriesByUserIdParam param);
 }
