@@ -11,10 +11,9 @@ import java.util.List;
  */
 public class FavoriteControllerDto {
 
-    public record CreateFavoriteResponse(
-            @NotNull(message = "찜하기 ID 는 필수 입력 값 입니다.")
-            @Schema(description = "찜하기 ID", example = "1")
-            Long favoriteId
+    public record FavoriteToggleResponse(
+            @Schema(name = "찜등록/찜취소 여부", description = "true: 찜등록, false: 찜취소")
+            boolean isFavorite
     ) {
     }
 
@@ -53,17 +52,5 @@ public class FavoriteControllerDto {
                     favorite.getStore().getId()
             );
         }
-    }
-
-    @Schema(description = "찜하기 취소(삭졔) 요청")
-    public record DeleteFavoriteRequest(
-            @NotNull(message = "찜하기 ID 는 필수 입력 값 입니다.")
-            @Schema(description = "찜하기 ID", example = "1")
-            Long id,
-
-            @NotNull(message = "아이 ID 는 필수 입력 값 입니다.")
-            @Schema(description = "아이 ID", example = "10")
-            Long childId
-    ) {
     }
 }

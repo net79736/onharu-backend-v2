@@ -2,8 +2,8 @@ package com.backend.onharu.domain.favorite.service;
 
 import com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoritesByChildIdQuery;
 import com.backend.onharu.domain.favorite.dto.FavoriteQuery.GetFavoriteByIdQuery;
-import com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam.GetFavoriteByIdParam;
 import com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam.FindFavoritesByChildIdParam;
+import com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam.GetFavoriteByIdParam;
 import com.backend.onharu.domain.favorite.model.Favorite;
 import com.backend.onharu.domain.favorite.repository.FavoriteRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Optional;
+
+import static com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoriteByChild_IdAndStore_IdQuery;
+import static com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam.FindFavoriteByChildIdAndStoreIdParam;
 
 /**
  * 찜하기 Query Service
@@ -46,6 +49,17 @@ public class FavoriteQueryService {
         return favoriteRepository.findByChildId(
                 new FindFavoritesByChildIdParam(query.childId()),
                 pageable
+        );
+    }
+
+    /**
+     * 찜하기 내역 조회
+     * @param query 아동 ID 와 가게 ID 를 포함한 Query
+     * @return Optional 로 감싸진 찜하기 엔티티
+     */
+    public Optional<Favorite> findFavoriteByChild_IdAndStore_Id(FindFavoriteByChild_IdAndStore_IdQuery query) {
+        return favoriteRepository.findFavoriteByChildIdAndStoreId(
+                new FindFavoriteByChildIdAndStoreIdParam(query.childId(), query.storeId())
         );
     }
 }

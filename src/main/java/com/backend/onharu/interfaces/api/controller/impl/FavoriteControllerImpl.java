@@ -1,10 +1,18 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.backend.onharu.application.ChildFacade;
+import com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoritesByChildIdQuery;
+import com.backend.onharu.domain.favorite.model.Favorite;
+import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
+import com.backend.onharu.interfaces.api.controller.IFavoriteController;
+import com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.FavoriteResponse;
+import com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.FavoriteToggleResponse;
+import com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.GetMyFavoriteListResponse;
 import com.backend.onharu.interfaces.api.dto.ReviewControllerDto;
+import com.backend.onharu.utils.SecurityUtils;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,20 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.backend.onharu.application.ChildFacade;
-import com.backend.onharu.domain.favorite.dto.FavoriteCommand.CreateFavoriteCommand;
-import com.backend.onharu.domain.favorite.dto.FavoriteCommand.DeleteFavoriteCommand;
-import com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoritesByChildIdQuery;
-import com.backend.onharu.domain.favorite.model.Favorite;
-import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
-import com.backend.onharu.interfaces.api.controller.IFavoriteController;
-import com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.CreateFavoriteResponse;
-import com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.FavoriteResponse;
-import com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.GetMyFavoriteListResponse;
-import com.backend.onharu.utils.SecurityUtils;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import static com.backend.onharu.domain.favorite.dto.FavoriteCommand.ToggleFavoriteCommand;
 
 @Slf4j
 @RestController
@@ -36,29 +31,30 @@ public class FavoriteControllerImpl implements IFavoriteController {
     private final ChildFacade childFacade;
 
     /**
-     * 찜등록
+     * 찜등록/찜취소 (토글)
      *
-     * POST /favorites/stores/{storeId}
-     * 특정 가게에 대한 찜을 등록합니다.
+     * POST /api/favorites/stores/{storeId}
+     * 특정 가게에 대한 찜을 등록/취소 합니다.
      *
-     * @param storeId 찜하기 ID
-     * @return 생성된 찜하기 정보
+     * @param storeId 가게 ID
      */
     @Override
     @PostMapping("/stores/{storeId}")
-    public ResponseEntity<ResponseDTO<CreateFavoriteResponse>> createFavorite(@PathVariable("storeId") Long storeId) {
+    public ResponseEntity<ResponseDTO<FavoriteToggleResponse>> createOrDeleteFavorite(
+            @PathVariable Long storeId
+    ) {
+        // 현재 세션에 저장된 아동 ID 추출
         Long childId = SecurityUtils.getCurrentUserId();
 
-        log.info("찜하기 등록 요청: childId={}, storeId={}", childId, storeId);
+        log.info("찜하기 요청(토글): childId={}, storeId={}", childId, storeId);
 
-
-        // 찜등록
-        Favorite favorite = childFacade.createFavorite(
-                new CreateFavoriteCommand(childId, storeId)
+        // 찜등록/찜취소 실행
+        boolean isFavorite = childFacade.toggleFavorite(
+                new ToggleFavoriteCommand(childId, storeId)
         );
 
         // 응답 생성
-        CreateFavoriteResponse response = new CreateFavoriteResponse(favorite.getId());
+        FavoriteToggleResponse response = new FavoriteToggleResponse(isFavorite);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseDTO.success(response));
@@ -110,28 +106,4 @@ public class FavoriteControllerImpl implements IFavoriteController {
                 .body(ResponseDTO.success(response));
     }
 
-    /**
-     * 내가 등록한 찜하기 취소
-     *
-     * DELETE /favorites/{favoriteId}
-     * 특정 찜하기를 삭제(취소)합니다.
-     *
-     * @param favoriteId 찜하기 ID
-     * @return 삭제 결과
-     */
-    @Override
-    @DeleteMapping("/{favoriteId}")
-    public ResponseEntity<ResponseDTO<Void>> deleteFavorite(@PathVariable("favoriteId") Long favoriteId) {
-        Long childId = SecurityUtils.getCurrentUserId();
-        
-        log.info("찜취소 요청: childId={}, favoriteId={}", childId, favoriteId);
-
-        // 찜하기 취소
-        childFacade.deleteFavorite(
-                new DeleteFavoriteCommand(childId, favoriteId)
-        );
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
-    }
 }
