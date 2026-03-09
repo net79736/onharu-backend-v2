@@ -140,7 +140,7 @@ public class ReviewControllerDto {
      * @param childId 아동 ID
      * @param storeId 가게 ID
      * @param reservationId  예약 ID
-     * @param name 리뷰대상 가게 이름
+     * @param nickname 리뷰 작성자 (아동) 닉네임
      * @param content 리뷰 내용
      * @param createAt 리뷰 작성 날짜
      */
@@ -157,8 +157,8 @@ public class ReviewControllerDto {
             @Schema(description = "예약 ID", example = "1")
             Long reservationId,
 
-            @Schema(description = "가게 이름", example = "따뜻한 식당")
-            String name,
+            @Schema(description = "닉네임", example = "코끼리 땃쥐")
+            String nickname,
 
             @Schema(description = "리뷰 내용", example = "정말 따뜻한 마음으로 식사를 제공해주셔서 감사합니다!")
             String content,

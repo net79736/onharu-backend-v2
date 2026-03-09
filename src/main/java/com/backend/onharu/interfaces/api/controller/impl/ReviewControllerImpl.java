@@ -129,7 +129,6 @@ public class ReviewControllerImpl implements IReviewController {
     @GetMapping("/stores/{storeId}")
     public ResponseEntity<ResponseDTO<GetReviewDetailResponse>> getStoreReviews(
             @PathVariable("storeId") Long storeId,
-            @ParameterObject
             @ModelAttribute GetReviewsRequest request
     ) {
         log.info("감사 리뷰 상세 조회 요청: storeId={}", storeId);
@@ -152,7 +151,7 @@ public class ReviewControllerImpl implements IReviewController {
                         review.getChild().getId(),
                         review.getStore().getId(),
                         review.getReservation().getId(),
-                        review.getStore().getName(),
+                        review.getChild().getNickname(), // 가게이름 대신, 리뷰를 작성하는 아동 닉네임 반환
                         review.getContent(),
                         review.getCreatedAt().toLocalDate()
                 )); // 응답을 담을 ReviewResponse 목록 생성
