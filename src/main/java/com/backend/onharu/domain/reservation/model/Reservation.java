@@ -208,7 +208,7 @@ public class Reservation extends BaseEntity {
      * 해당 슬롯이 예약 가능한지 확인합니다.
      * 취소/거절된 예약은 재예약 가능합니다.
      *
-     * @return 재예약 가능 여부 (CANCELED, REJECTED인 경우 true)
+     * @return 재예약 가능 여부 (CANCELED인 경우 true)
      */
     public boolean isRebookable() {
         return this.status == ReservationType.CANCELED;

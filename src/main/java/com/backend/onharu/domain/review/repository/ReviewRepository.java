@@ -54,6 +54,11 @@ public interface ReviewRepository {
     Page<Review> findByStoreId(FindAllByStoreIdParam param, Pageable pageable);
 
     /**
+     * 예약 ID 목록 중 리뷰가 작성된 예약 ID 목록 조회
+     */
+    List<Long> findReviewedReservationIdsByReservationIds(FindReviewedReservationIdsParam param);
+
+    /**
      * 리뷰 수정
      */
     void updateReview(UpdateReviewParam param);

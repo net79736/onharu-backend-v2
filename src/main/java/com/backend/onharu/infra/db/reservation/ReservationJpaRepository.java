@@ -93,7 +93,7 @@ public interface ReservationJpaRepository extends JpaRepository<Reservation, Lon
     SELECT r 
       FROM Reservation r
       JOIN FETCH r.storeSchedule s
-     WHERE r.status = :status 
+     WHERE (r.status = 'ALL' OR r.status = :status)
        AND s.scheduleDate < :date
     """)
     List<Reservation> findByStatusAndScheduleDateBeforeThan(@Param("status") ReservationType status, @Param("date") LocalDate date);

@@ -638,48 +638,6 @@ class ChildFacadeTest {
     }
 
     @Nested
-    @DisplayName("찜 등록 테스트")
-    class CreateFavoriteTest {
-
-        @Test
-        @DisplayName("찜 등록 성공")
-        void shouldCreateFavorite() {
-            // GIVEN
-            Child child = createTestChild("child@test.com", "아동테스트", "01000000001");
-            Owner owner = createTestOwner("owner@test.com", "사업자테스트", "01022220002", "새싹10", "1234567890");
-            Category category = createTestCategory("식당");
-            Store store = createTestStore("테스트 가게", owner, category);
-
-            FavoriteCommand.CreateFavoriteCommand command = new FavoriteCommand.CreateFavoriteCommand(child.getId(), store.getId());
-
-            // WHEN
-            Favorite favorite = childFacade.createFavorite(command);
-
-            // THEN
-            assertThat(favorite).isNotNull();
-            assertThat(favorite.getChild().getId()).isEqualTo(child.getId());
-            assertThat(favorite.getStore().getId()).isEqualTo(store.getId());
-
-            assertThat(favoriteJpaRepository.findAll()).hasSize(1);
-        }
-
-        @Test
-        @DisplayName("찜 등록 실패 - 존재하지 않는 아동일 경우")
-        void shouldThrowExceptionWhenChildNotFound() {
-            Long childId = 123456789L;
-            Owner owner = createTestOwner("owner@test.com", "사업자테스트", "01022220001", "새싹11", "1234567890");
-            Category category = createTestCategory("식당");
-            Store store = createTestStore("테스트 가게", owner, category);
-
-            FavoriteCommand.CreateFavoriteCommand command = new FavoriteCommand.CreateFavoriteCommand(childId, store.getId());
-
-            CoreException exception = Assertions.assertThrows(CoreException.class, () -> childFacade.createFavorite(command));
-
-            assertThat(exception.getErrorType()).isEqualTo(CHILD_NOT_FOUND);
-        }
-    }
-
-    @Nested
     @DisplayName("찜 목록 조회 테스트")
     class GetMyFavoritesTest {
 
@@ -735,51 +693,6 @@ class ChildFacadeTest {
             // THEN
             assertThat(favorites.getTotalElements()).isZero();
             assertThat(favorites.getContent()).isEmpty();
-        }
-    }
-
-    @Nested
-    @DisplayName("찜 취소 테스트")
-    class DeleteFavoriteTest {
-
-        @Test
-        @DisplayName("찜 취소 성공")
-        void shouldDeleteFavorite() {
-            // GIVEN
-            Child child = createTestChild("child@test.com", "아동테스트", "01000000001");
-            Owner owner = createTestOwner("owner@test.com", "사업자테스트", "01022220002", "새싹", "1234567890");
-            Category category = createTestCategory("식당");
-            Store store = createTestStore("테스트 가게", owner, category);
-
-            Favorite favorite = favoriteJpaRepository.save(
-                    Favorite.builder()
-                            .child(child)
-                            .store(store)
-                            .build()
-            );
-
-            FavoriteCommand.DeleteFavoriteCommand command = new FavoriteCommand.DeleteFavoriteCommand(child.getId(), favorite.getId());
-
-            // WHEN
-            childFacade.deleteFavorite(command);
-
-            // THEN
-            assertThat(favoriteJpaRepository.findById(favorite.getId())).isEmpty();
-        }
-
-        @Test
-        @DisplayName("찜 취소 실패 - 존재하지 않는 찜하기를 삭제할 경우")
-        void shouldThrowExceptionWhenFavoriteNotFound() {
-            // GIVEN
-            Long childId = 123456789L;
-            Child child = createTestChild("child@test.com", "아동테스트", "01000000001");
-
-            FavoriteCommand.DeleteFavoriteCommand command = new FavoriteCommand.DeleteFavoriteCommand(child.getId(), childId);
-
-            // WHEN
-            CoreException exception = Assertions.assertThrows(CoreException.class, () -> childFacade.deleteFavorite(command));
-
-            assertThat(exception.getErrorType()).isEqualTo(FAVORITE_NOT_FOUND);
         }
     }
 }

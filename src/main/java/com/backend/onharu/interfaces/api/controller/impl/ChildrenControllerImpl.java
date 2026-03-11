@@ -4,6 +4,7 @@ import static com.backend.onharu.domain.common.enums.UserType.CHILD;
 import static com.backend.onharu.interfaces.api.common.util.PageableUtil.getCurrentPage;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -326,8 +327,16 @@ public class ChildrenControllerImpl implements IChildrenController {
         );
 
         Page<Reservation> reservations = childFacade.getMyBookings(childId, request.effectiveStatusFilter(), pageable); // 내 예약 목록 조회
+        // 리뷰가 작성된 예약 ID 목록 조회
+        Set<Long> reviewedReservationIds = childFacade.getMyReviewWrittenReservationIds(
+                reservations.getContent().stream().map(Reservation::getId).toList()
+        ).stream().collect(Collectors.toSet());
+        
         List<ReservationResponse> reservationResponses = reservations.getContent().stream()
-                .map(ReservationResponse::new)
+                .map(reservation -> new ReservationResponse(
+                        reservation,
+                        reviewedReservationIds.contains(reservation.getId()) // 리뷰가 작성된 예약 ID 목록에 포함되어 있는지 여부
+                ))
                 .collect(Collectors.toList());
 
         GetMyBookingListResponse response = new GetMyBookingListResponse(
@@ -361,7 +370,11 @@ public class ChildrenControllerImpl implements IChildrenController {
         log.info("예약 신청 상세 조회 요청: childId={}, reservationId={}", childId, reservationId);
 
         Reservation reservation = childFacade.getMyBooking(reservationId, childId);
-        ReservationResponse reservationResponse = new ReservationResponse(reservation);
+        // 리뷰가 작성된 예약 ID 목록에 포함되어 있는지 여부
+        boolean reviewed = childFacade.getMyReviewWrittenReservationIds(List.of(reservationId))
+                .contains(reservationId);
+        
+        ReservationResponse reservationResponse = new ReservationResponse(reservation, reviewed);
 
         GetMyBookingDetailResponse response = new GetMyBookingDetailResponse(reservationResponse);
 

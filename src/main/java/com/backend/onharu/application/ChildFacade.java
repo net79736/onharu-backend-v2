@@ -5,6 +5,8 @@ import static com.backend.onharu.domain.common.enums.NotificationHistoryType.RES
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_EXCEEDS_MAX;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_MUST_NOT_BE_NULL;
 
+import java.util.List;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +19,6 @@ import com.backend.onharu.domain.child.service.ChildQueryService;
 import com.backend.onharu.domain.favorite.dto.FavoriteCommand.CreateFavoriteCommand;
 import com.backend.onharu.domain.favorite.dto.FavoriteCommand.DeleteFavoriteCommand;
 import com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoritesByChildIdQuery;
-import com.backend.onharu.domain.favorite.dto.FavoriteQuery.GetFavoriteByIdQuery;
 import com.backend.onharu.domain.favorite.model.Favorite;
 import com.backend.onharu.domain.favorite.service.FavoriteCommandService;
 import com.backend.onharu.domain.favorite.service.FavoriteQueryService;
@@ -30,6 +31,8 @@ import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservation
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.reservation.service.ReservationCommandService;
 import com.backend.onharu.domain.reservation.service.ReservationQueryService;
+import com.backend.onharu.domain.review.dto.ReviewQuery.FindReviewedReservationIdsQuery;
+import com.backend.onharu.domain.review.service.ReviewQueryService;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.service.StoreQueryService;
@@ -41,8 +44,21 @@ import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.event.model.ReservationEvent;
 import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 import com.backend.onharu.utils.SecurityUtils;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+
+import static com.backend.onharu.domain.common.enums.NotificationHistoryType.RESERVATION_CANCELED;
+import static com.backend.onharu.domain.common.enums.NotificationHistoryType.RESERVATION_CREATED;
+import static com.backend.onharu.domain.favorite.dto.FavoriteCommand.ToggleFavoriteCommand;
+import static com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoriteByChild_IdAndStore_IdQuery;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_EXCEEDS_MAX;
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_MUST_NOT_BE_NULL;
 
 /**
  * 결식 아동 Facade
@@ -54,6 +70,7 @@ public class ChildFacade {
     private final ChildQueryService childQueryService;
     private final ReservationCommandService reservationCommandService;
     private final ReservationQueryService reservationQueryService;
+    private final ReviewQueryService reviewQueryService;
     private final StoreScheduleQueryService storeScheduleQueryService;
     private final StoreQueryService storeQueryService;
     private final FavoriteCommandService favoriteCommandService;
@@ -69,13 +86,13 @@ public class ChildFacade {
     public void reserve(CreateReservationCommand command) {
         // 결식 아동 조회   
         Child child = childQueryService.getChildById(new GetChildByIdQuery(command.childId()));
-        
+
         // 가게 일정 조회
         StoreSchedule storeSchedule = storeScheduleQueryService.getStoreScheduleById(new GetStoreScheduleByIdQuery(command.storeScheduleId()));
         Owner owner = storeSchedule.getStore().getOwner();
 
         // 조회한 가게 일정이 이미 예약된 일정인지 체크 (테이블 조회해서 확인)
-        Reservation reservation = reservationQueryService.getByStoreScheduleId(new GetByStoreScheduleIdQuery(command.storeScheduleId()));        
+        Reservation reservation = reservationQueryService.getByStoreScheduleId(new GetByStoreScheduleIdQuery(command.storeScheduleId()));
         // 예약 가능 여부 확인
         boolean isUnavailable = reservation != null && !reservation.isAvailable();
         if (isUnavailable) {
@@ -97,10 +114,10 @@ public class ChildFacade {
 
         // 예약 생성 이벤트 발행
         applicationEventPublisher.publishEvent(new ReservationEvent(
-            createdReservation.getId(),
-            owner.getId(),
-            SecurityUtils.getCurrentUserId(),
-            RESERVATION_CREATED
+                createdReservation.getId(),
+                owner.getId(),
+                SecurityUtils.getCurrentUserId(),
+                RESERVATION_CREATED
         ));
     }
 
@@ -127,10 +144,10 @@ public class ChildFacade {
 
         // 예약 취소 이벤트 발행
         applicationEventPublisher.publishEvent(new ReservationEvent(
-            command.reservationId(),
-            owner.getId(),
-            SecurityUtils.getCurrentUserId(),
-            RESERVATION_CANCELED
+                command.reservationId(),
+                owner.getId(),
+                SecurityUtils.getCurrentUserId(),
+                RESERVATION_CANCELED
         ));
     }
 
@@ -146,6 +163,7 @@ public class ChildFacade {
 
     /**
      * 내가 신청한 특정 예약의 상세 정보를 조회
+     *
      * @param reservationId 예약 ID
      * @return 내가 신청한 특정 예약의 상세 정보
      */
@@ -163,27 +181,18 @@ public class ChildFacade {
     }
 
     /**
-     * (아동)내가 특정한 가게에 찜 등록
-     * @param command 아동 ID, 가게 ID 가 포함된 CreateFavoriteCommand
-     * @return 찜하기 엔티티 정보
+     * 내 예약 ID 목록 중 리뷰 작성 완료된 예약 ID 목록 조회
+     *
+     * @param reservationIds 예약 ID 목록
+     * @return 리뷰 작성 완료된 예약 ID 목록
      */
-    public Favorite createFavorite(CreateFavoriteCommand command) {
-        // 현재 로그인한 아동 정보 조회
-        Child child = childQueryService.getChildById(
-                new GetChildByIdQuery(command.childId())
-        );
-
-        // 가게 정보 조회
-        Store store = storeQueryService.getStoreById(
-                new GetStoreByIdQuery(command.storeId())
-        );
-
-        // 찜하기 생성
-        return favoriteCommandService.createFavorite(command, child, store);
+    public List<Long> getMyReviewWrittenReservationIds(List<Long> reservationIds) {
+        return reviewQueryService.findReviewedReservationIds(new FindReviewedReservationIdsQuery(reservationIds));
     }
 
     /**
      * (아동)내가 등록한 찜하기 목록 조회(페이징)
+     *
      * @param query
      * @return
      */
@@ -193,21 +202,42 @@ public class ChildFacade {
     }
 
     /**
-     * (아동)내가 찜하기 취소(삭제)
-     * @param command
+     * 찜하기 토글
+     *
+     * @param command 아동 ID 와 가게 ID 를 포함한 Command
+     * @return true: 찜등록, false: 찜취소
      */
-    public void deleteFavorite(DeleteFavoriteCommand command) {
-        // 현재 로그인한 아동 정보 조회
-        childQueryService.getChildById(
-                new GetChildByIdQuery(command.childId())
+    public boolean toggleFavorite(ToggleFavoriteCommand command) {
+        Long childId = command.childId();
+        Long storeId = command.storeId();
+
+        // 찜하기 조회
+        Optional<Favorite> favorite = favoriteQueryService.findFavoriteByChild_IdAndStore_Id(
+                new FindFavoriteByChild_IdAndStore_IdQuery(childId, storeId)
         );
 
-        // 삭제할 찜 조회
-        favoriteQueryService.getFavorite(
-                new GetFavoriteByIdQuery(command.favoriteId())
+        // 찜하기 내역이 존재하다면 찜취소
+        if (favorite.isPresent()) {
+            favoriteCommandService.deleteFavorite(
+                    new DeleteFavoriteCommand(favorite.get())
+            );
+
+            return false; // false: 찜취소
+        }
+
+        // 아동 조회
+        Child child = childQueryService.getChildById(new GetChildByIdQuery(childId));
+
+        // 가게 조회
+        Store store = storeQueryService.getStoreById(
+                new GetStoreByIdQuery(storeId)
         );
 
-        // 찜하기 취소(삭제)
-        favoriteCommandService.deleteFavorite(command);
+        // 찜하기 내역이 없는 경우 찜등록
+        favoriteCommandService.createFavorite(
+                new CreateFavoriteCommand(child, store)
+        );
+
+        return true; // true: 찜등록
     }
 }

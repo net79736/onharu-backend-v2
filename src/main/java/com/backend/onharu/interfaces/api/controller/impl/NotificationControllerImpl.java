@@ -111,4 +111,15 @@ public class NotificationControllerImpl implements INotificationController {
 
         return ResponseEntity.ok(ResponseDTO.success(response));
     }
+
+    @Override
+    @PutMapping("/histories/read/all")
+    public ResponseEntity<ResponseDTO<Void>> markAllNotificationAsRead() {
+        Long userId = SecurityUtils.getUserId();
+        log.info("markAllNotificationAsRead userId: {}", userId);
+
+        notificationFacade.markAllNotificationAsRead(userId); // 알림 읽음 처리
+
+        return ResponseEntity.ok(ResponseDTO.success(null));
+    }
 }

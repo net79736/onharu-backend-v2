@@ -1,12 +1,13 @@
 package com.backend.onharu.domain.favorite.repository;
 
+import com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam.FindFavoriteByChildIdAndStoreIdParam;
 import com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam.FindFavoritesByChildIdParam;
 import com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam.GetFavoriteByIdParam;
 import com.backend.onharu.domain.favorite.model.Favorite;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+import java.util.Optional;
 
 /**
  * 찜하기 Repository 인터페이스
@@ -32,4 +33,9 @@ public interface FavoriteRepository {
      * 찜하기 삭제(취소)
      */
     void delete(Favorite favorite);
+
+    /**
+     * 내가 찜한 가게 조회
+     */
+    Optional<Favorite> findFavoriteByChildIdAndStoreId(FindFavoriteByChildIdAndStoreIdParam param);
 }

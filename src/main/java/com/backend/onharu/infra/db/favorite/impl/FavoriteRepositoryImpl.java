@@ -1,6 +1,5 @@
 package com.backend.onharu.infra.db.favorite.impl;
 
-import com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam;
 import com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam.FindFavoritesByChildIdParam;
 import com.backend.onharu.domain.favorite.model.Favorite;
 import com.backend.onharu.domain.favorite.repository.FavoriteRepository;
@@ -11,8 +10,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Optional;
 
+import static com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam.FindFavoriteByChildIdAndStoreIdParam;
+import static com.backend.onharu.domain.favorite.dto.FavoriteRepositoryParam.GetFavoriteByIdParam;
 import static com.backend.onharu.domain.support.error.ErrorType.Favorite.FAVORITE_NOT_FOUND;
 
 
@@ -31,7 +32,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepository {
     }
 
     @Override
-    public Favorite getFavorite(FavoriteRepositoryParam.GetFavoriteByIdParam favorite) {
+    public Favorite getFavorite(GetFavoriteByIdParam favorite) {
         return favoriteJpaRepository.findById(favorite.favoriteId())
                 .orElseThrow(() -> new CoreException(FAVORITE_NOT_FOUND));
     }
@@ -44,5 +45,10 @@ public class FavoriteRepositoryImpl implements FavoriteRepository {
     @Override
     public void delete(Favorite favorite) {
         favoriteJpaRepository.delete(favorite);
+    }
+
+    @Override
+    public Optional<Favorite> findFavoriteByChildIdAndStoreId(FindFavoriteByChildIdAndStoreIdParam param) {
+        return favoriteJpaRepository.findFavoriteByChild_IdAndStore_Id(param.childId(), param.storeId());
     }
 }

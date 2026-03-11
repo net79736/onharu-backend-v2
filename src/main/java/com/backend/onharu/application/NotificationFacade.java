@@ -109,4 +109,16 @@ public class NotificationFacade {
     public NotificationHistory markNotificationHistoryAsRead(Long userId, Long historyId) {
         return notificationHistoryCommandService.markAsRead(historyId, userId);
     }
+
+    /**
+     * 사용자 ID로 알림 히스토리 전체를 읽음 처리합니다.
+     *
+     * @param userId 사용자 ID
+     */
+    @Transactional
+    public void markAllNotificationAsRead(Long userId) {
+        notificationHistoryQueryService.findUnReadedNotificationHistoriesByUserId(userId).forEach(history -> {
+            history.markAsRead();
+        });
+    }
 }
