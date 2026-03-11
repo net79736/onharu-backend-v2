@@ -527,5 +527,35 @@ public enum ErrorType implements IErrorType {
         public LogLevel getLogLevel() {
             return logLevel;
         }
-    }   
+    }
+
+    /**
+     * 채팅 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Chat implements IErrorType {
+        CHAT_ROOM_NOT_FOUND(ErrorCode.NOT_FOUND, "채팅방 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        CHAT_PARTICIPANTS_NOT_FOUND(ErrorCode.NOT_FOUND, "채팅참여자 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        CHAT_MESSAGE_NOT_FOUND(ErrorCode.NOT_FOUND, "채팅메시지 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
 }

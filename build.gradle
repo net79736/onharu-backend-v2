@@ -37,7 +37,7 @@ dependencies {
 	
 	// Swagger
 	implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.1.0'
-	
+
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	// P6Spy
@@ -72,6 +72,9 @@ dependencies {
 
 	// SMTP 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+	// WebSocket(STOMP)
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {
