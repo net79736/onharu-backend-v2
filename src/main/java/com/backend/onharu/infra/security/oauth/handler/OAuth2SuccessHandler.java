@@ -30,6 +30,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
+    private static final String PORT_FRONT_SERVER = "https://onharu-web.vercel.app/";
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         log.info("소셜 로그인 성공");
@@ -48,7 +50,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 소셜 로그인 계정이 없을 경우, 결식 아동/사업자인지 확인하고 해당 회원별 추가정보를 프론트엔드로부터 입력을 받도록 리다이렉트 만약 소셜 로그인 계정이 있다면 메인 페이지로 리다이렉트
         if (user.getUserType().equals(UserType.NONE)) {
             log.info("추가 정보 페이지 호출");
-            response.sendRedirect("/signup?oauth=" + user.getProviderType().name().toLowerCase());
+            response.sendRedirect(PORT_FRONT_SERVER + "/signup?oauth=" + user.getProviderType().name().toLowerCase());
         } else {
             log.info("소셜 회원가입 완료");
             // TODO: 메인 페이지(프론트엔드) 경로를 합의해서 변경하기
