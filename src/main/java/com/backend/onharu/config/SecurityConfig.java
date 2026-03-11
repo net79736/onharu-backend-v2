@@ -48,6 +48,7 @@ public class SecurityConfig {
             "/api/auth/**", // 인증 관련 API
             "/api/files/**", // 파일(첨부) 메타데이터 API
             "/api/notifications/**", // 알림 관련 API
+            "/api/chats/**", "/chat/send/**", "/topic/chat/**", "/ws-chat/**" // 채팅 관련
     };
 
     public static final String[] AUTHENTICATE_PATH = {
