@@ -21,3 +21,9 @@ logging:
     org.springframework.web: INFO
     org.hibernate.SQL: false
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# URL 환경변수
+app:
+  url:
+    front: ${SERVER_FRONT_URL}
+    back: ${SERVER_BACK_URL}

@@ -1,5 +1,6 @@
 package com.backend.onharu.infra.security.oauth.handler;
 
+import com.backend.onharu.config.ServerUrlProperties;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.infra.security.oauth.SocialUser;
@@ -30,7 +31,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private static final String PORT_FRONT_SERVER = "https://onharu-web.vercel.app/";
+    private final ServerUrlProperties serverUrlProperties;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -47,14 +48,21 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         SecurityContextHolder.getContext()
                 .setAuthentication(usernamePasswordAuthenticationToken); // 인증 객체를 SecurityContext 저장 (세션 업데이트)
 
+        // 프론트엔드 요청에서 "redirect" 라는 이름의 쿼리파마리터 추출
+        String redirect = request.getParameter("redirect");
+
+        if (redirect == null || redirect.isBlank()) {
+            redirect = serverUrlProperties.getFront();
+        }
+
+
         // 소셜 로그인 계정이 없을 경우, 결식 아동/사업자인지 확인하고 해당 회원별 추가정보를 프론트엔드로부터 입력을 받도록 리다이렉트 만약 소셜 로그인 계정이 있다면 메인 페이지로 리다이렉트
         if (user.getUserType().equals(UserType.NONE)) {
             log.info("추가 정보 페이지 호출");
-            response.sendRedirect(PORT_FRONT_SERVER + "/signup?oauth=" + user.getProviderType().name().toLowerCase());
+            response.sendRedirect(redirect + "/signup?oauth=" + user.getProviderType().name().toLowerCase());
         } else {
             log.info("소셜 회원가입 완료");
-            // TODO: 메인 페이지(프론트엔드) 경로를 합의해서 변경하기
-            response.sendRedirect("/");
+            response.sendRedirect(redirect + "/");
         }
     }
 }
