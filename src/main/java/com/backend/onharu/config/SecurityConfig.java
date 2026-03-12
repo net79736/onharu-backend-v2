@@ -71,12 +71,11 @@ public class SecurityConfig {
     };
 
     private static final String PORT_FRONT_LOCAL = "http://localhost:5173";
-    private static final String PORT_FRONT_SERVER = "https://onharu-web.vercel.app/";
     private static final String PORT_BACK_LOCAL = "http://localhost:8080";
-    private static final String PORT_BACK_SERVER = "http://onharu-api.votex.co.kr:15080/";
 
     private final SocialUserService socialUserService;
     private final SessionConfig sessionConfig;
+    private final ServerUrlProperties serverUrlProperties;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -87,7 +86,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(PORT_FRONT_LOCAL, PORT_BACK_LOCAL, PORT_FRONT_SERVER, PORT_BACK_SERVER));
+        configuration.setAllowedOrigins(List.of(PORT_FRONT_LOCAL, PORT_BACK_LOCAL, serverUrlProperties.getFront(), serverUrlProperties.getBack()));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
