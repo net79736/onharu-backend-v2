@@ -1,20 +1,26 @@
 package com.backend.onharu.application;
 
+import static com.backend.onharu.application.dto.StoreBookingSummaryResult.UPCOMING_LIMIT;
 import static com.backend.onharu.utils.SecurityUtils.getCurrentUserId;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.backend.onharu.application.dto.StoreBookingSummaryResult;
 import com.backend.onharu.application.validator.StoreScheduleValidator;
 import com.backend.onharu.application.validator.StoreScheduleValidator.ScheduleTimeRange;
 import com.backend.onharu.domain.common.enums.NotificationHistoryType;
+import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import com.backend.onharu.domain.owner.model.Owner;
@@ -23,6 +29,7 @@ import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReserv
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CompleteReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.ConfirmReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByStoreIdAndStatusFilterQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindUpcomingByOwnerIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.reservation.service.ReservationCommandService;
@@ -122,7 +129,7 @@ public class OwnerFacade {
         store.belongsTo(owner);
         // 예약 목록 조회
         return reservationQueryService.findByStoreIdAndStatusFilter(
-                new FindByStoreIdAndStatusFilterQuery(storeId, statusFilter), pageable);
+                new FindByStoreIdAndStatusFilterQuery(storeId, statusFilter.toReservationType()), pageable);
     }
 
     /**
@@ -358,5 +365,28 @@ public class OwnerFacade {
             reservation.getChild().getId(),
             NotificationHistoryType.RESERVATION_REJECTED
         ));
+    }
+
+    /**
+     * 요약된 예약 목록 조회
+     * 
+     * @param ownerId 사업자 ID
+     * @return 요약된 예약 목록
+     */
+    public StoreBookingSummaryResult getStoreBookingsSummary(Long ownerId) {
+        // 사업자 정보 조회
+        ownerQueryService.getOwnerById(new GetOwnerByIdQuery(ownerId));
+
+        // 다가오는 방문 예정 예약 (WAITING) - 오늘 이후, scheduleDate 오름차순
+        List<Reservation> upcomingReservations = reservationQueryService.findUpcomingByOwnerId(
+            new FindUpcomingByOwnerIdQuery(
+                ownerId,
+                List.of(ReservationType.WAITING),
+                LocalDate.now()
+            ),
+            PageRequest.of(0, UPCOMING_LIMIT, Sort.by(Sort.Direction.ASC, "storeSchedule.scheduleDate"))
+        );
+
+        return new StoreBookingSummaryResult(upcomingReservations);
     }
 }

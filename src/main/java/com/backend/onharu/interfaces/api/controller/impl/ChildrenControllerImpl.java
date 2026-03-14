@@ -24,9 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.onharu.application.ChildFacade;
+import com.backend.onharu.application.dto.MyBookingSummaryResult;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CreateReservationCommand;
 import com.backend.onharu.domain.reservation.model.Reservation;
+import com.backend.onharu.domain.reservation.support.ReservationSearchSortResolver;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.controller.IChildrenController;
@@ -37,6 +39,7 @@ import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCardResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCertificateResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingDetailResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingListResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingSummaryResponse;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingsRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardRequest;
 import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardResponse;
@@ -319,14 +322,17 @@ public class ChildrenControllerImpl implements IChildrenController {
 
         log.info("예약 신청 목록 조회 요청: childId={}, request={}", childId, request);
 
+        // 정렬 기준 변환
+        String sortField = ReservationSearchSortResolver.resolve(request.sortField());
+
         Pageable pageable = PageableUtil.ofOneBased(
             request.pageNum(),
             request.perPage(),
-            request.sortField(),
+            sortField,
             request.sortDirection()
         );
 
-        Page<Reservation> reservations = childFacade.getMyBookings(childId, request.effectiveStatusFilter(), pageable); // 내 예약 목록 조회
+        Page<Reservation> reservations = childFacade.getMyBookings(childId, List.of(request.statusFilter()), pageable); // 내 예약 목록 조회
         // 리뷰가 작성된 예약 ID 목록 조회
         Set<Long> reviewedReservationIds = childFacade.getMyReviewWrittenReservationIds(
                 reservations.getContent().stream().map(Reservation::getId).toList()
@@ -377,6 +383,34 @@ public class ChildrenControllerImpl implements IChildrenController {
         ReservationResponse reservationResponse = new ReservationResponse(reservation, reviewed);
 
         GetMyBookingDetailResponse response = new GetMyBookingDetailResponse(reservationResponse);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
+    }
+
+    @Override
+    @GetMapping("/reservations/summary")
+    public ResponseEntity<ResponseDTO<GetMyBookingSummaryResponse>> getMyBookingSummary() {
+        Long childId = SecurityUtils.getCurrentUserId();
+
+        log.info("요약된 예약 목록 조회 요청: childId={}", childId);
+
+        // Facade 에서 엔티티 레벨 결과 조회 (다가오는 예약 + 리뷰 대상 예약)
+        MyBookingSummaryResult summaryResult = childFacade.getMyBookingSummary(childId);
+
+        // 엔티티 → 응답 DTO 변환        
+        List<ReservationResponse> upcomingResponses = summaryResult.upcomingReservations().stream()
+                .map(reservation -> new ReservationResponse(reservation, false))
+                .toList();
+
+        List<ReservationResponse> reviewTargetResponses = summaryResult.reviewTargetReservations().stream()
+                .map(reservation -> new ReservationResponse(reservation, false))
+                .toList();
+
+        GetMyBookingSummaryResponse response = new GetMyBookingSummaryResponse(
+                upcomingResponses,
+                reviewTargetResponses
+        );
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(response));

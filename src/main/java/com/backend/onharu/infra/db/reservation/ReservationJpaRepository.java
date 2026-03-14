@@ -97,4 +97,100 @@ public interface ReservationJpaRepository extends JpaRepository<Reservation, Lon
        AND s.scheduleDate < :date
     """)
     List<Reservation> findByStatusAndScheduleDateBeforeThan(@Param("status") ReservationType status, @Param("date") LocalDate date);
+
+    /**
+     * 아동 ID와 상태 여러 개로 예약 목록 조회 (페이징 - COUNT 쿼리 포함)
+     */
+    @Query("""
+        SELECT r
+        FROM Reservation r
+        WHERE r.status IN :statuses
+          AND r.child.id = :childId
+        """)
+    Page<Reservation> findByChildIdAndStatusIn(
+        @Param("childId") Long childId,
+        @Param("statuses") List<ReservationType> statuses,
+        Pageable pageable
+    );
+
+    /**
+     * 아동 ID와 상태 여러 개로 예약 목록 조회 (List 반환 - COUNT 쿼리 없음)
+     */
+    @Query("""
+        SELECT r
+        FROM Reservation r
+        WHERE r.status IN :statuses
+          AND r.child.id = :childId
+        """)
+    List<Reservation> findByChildIdAndStatusInAsList(
+        @Param("childId") Long childId,
+        @Param("statuses") List<ReservationType> statuses,
+        Pageable pageable
+    );
+
+
+    /**
+     * 사업자 ID와 상태 필터로 예약 목록 조회
+     */
+    @Query("""
+        SELECT r
+          FROM Reservation r
+         WHERE r.status IN :statuses
+           AND r.storeSchedule.store.owner.id = :ownerId
+        """)
+    List<Reservation> findByOwnerIdAndStatusIn(
+            @Param("ownerId") Long ownerId,
+            @Param("statuses") List<ReservationType> statuses,
+            Pageable pageable);
+
+    /**
+     * 아동 ID 기준으로 리뷰가 없는 COMPLETED 예약 목록 조회
+     */
+    @Query("""
+        SELECT r
+        FROM Reservation r
+        WHERE r.child.id = :childId
+          AND r.status = 'COMPLETED'
+          AND NOT EXISTS (
+              SELECT rv FROM Review rv WHERE rv.reservation.id = r.id
+          )
+        """)
+    List<Reservation> findCompletedWithoutReviewByChildId(
+        @Param("childId") Long childId,
+        Pageable pageable
+    );
+
+    /**
+     * 아동 ID 기준 다가오는 예약 조회 (scheduleDate >= fromDate)
+     */
+    @Query("""
+        SELECT r
+        FROM Reservation r
+        WHERE r.status IN :statuses
+          AND r.child.id = :childId
+          AND r.storeSchedule.scheduleDate >= :fromDate
+        """)
+    List<Reservation> findUpcomingByChildId(
+        @Param("childId") Long childId,
+        @Param("statuses") List<ReservationType> statuses,
+        @Param("fromDate") LocalDate fromDate,
+        Pageable pageable
+    );
+
+    /**
+     * 사업자 ID 기준 다가오는 예약 조회 (scheduleDate >= fromDate)
+     */
+    @Query("""
+        SELECT r
+        FROM Reservation r
+        WHERE r.status IN :statuses
+          AND r.storeSchedule.store.owner.id = :ownerId
+          AND r.storeSchedule.scheduleDate >= :fromDate
+        """)
+    List<Reservation> findUpcomingByOwnerId(
+        @Param("ownerId") Long ownerId,
+        @Param("statuses") List<ReservationType> statuses,
+        @Param("fromDate") LocalDate fromDate,
+        Pageable pageable
+    );
 }

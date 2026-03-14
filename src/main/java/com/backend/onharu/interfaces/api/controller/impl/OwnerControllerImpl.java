@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.onharu.application.OwnerFacade;
+import com.backend.onharu.application.dto.StoreBookingSummaryResult;
 import com.backend.onharu.domain.common.enums.AttachmentType;
 import com.backend.onharu.domain.file.dto.FileQuery.ListByRefsQuery;
 import com.backend.onharu.domain.file.model.File;
@@ -42,6 +43,7 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetMyStoresRespo
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetOwnerResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingDetailResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingListResponse;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingSummaryResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingsRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.ReservationResponse;
@@ -443,4 +445,33 @@ public class OwnerControllerImpl implements IOwnerController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));
     }
+
+    /**
+     * 요약된 예약 목록 조회
+     * 
+     * GET /api/owners/reservations/summary
+     * 사업자의 요약된 예약 목록을 조회합니다.
+     *
+     * @return 요약된 예약 목록
+     */
+    @Override
+    @GetMapping("/reservations/summary")
+    public ResponseEntity<ResponseDTO<GetStoreBookingSummaryResponse>> getStoreBookingsSummary() {
+        Long ownerId = SecurityUtils.getCurrentUserId();
+        
+        log.info("요약된 예약 목록 조회 요청: ownerId={}", ownerId);
+
+        StoreBookingSummaryResult summaryResult = ownerFacade.getStoreBookingsSummary(ownerId);
+
+        // 엔티티 → 응답 DTO 변환
+        List<ReservationResponse> upcomingResponses = summaryResult.upcomingReservations().stream()
+                .map(ReservationResponse::new)
+                .toList();
+
+        GetStoreBookingSummaryResponse response = new GetStoreBookingSummaryResponse(upcomingResponses);
+        
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
+    }
+
 }

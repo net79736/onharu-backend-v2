@@ -179,6 +179,7 @@ public class OwnerControllerDto {
     ) {
     }
 
+    @Schema(name = "OwnerReservationResponse", description = "사업자 예약 응답")
     public record ReservationResponse(
             @Schema(description = "예약 ID", example = "1")
             Long id,
@@ -343,6 +344,12 @@ public class OwnerControllerDto {
         @Size(max = 30, message = "예약 취소 사유는 30자 이하여야 합니다.")
         @Schema(description = "예약 취소 사유", example = "일정 변경으로 인한 취소")
         String cancelReason
+    ) {
+    }
+
+    public record GetStoreBookingSummaryResponse(
+        @Schema(description = "다가오는 방문 예정 예약 목록")
+        List<ReservationResponse> ongoingReservations
     ) {
     }
 }
