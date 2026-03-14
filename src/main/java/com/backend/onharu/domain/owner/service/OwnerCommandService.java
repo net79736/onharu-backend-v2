@@ -1,6 +1,5 @@
 package com.backend.onharu.domain.owner.service;
 
-import com.backend.onharu.domain.owner.dto.OwnerCommand;
 import com.backend.onharu.domain.owner.dto.OwnerCommand.CreateOwnerCommand;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.repository.OwnerRepository;
@@ -8,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.backend.onharu.domain.owner.dto.OwnerCommand.*;
+import static com.backend.onharu.domain.owner.dto.OwnerCommand.UpdateOwnerCommand;
 
 /**
  * 사업자 Command Service
@@ -33,6 +32,7 @@ public class OwnerCommandService {
                 .user(command.user())
                 .level(command.level())
                 .businessNumber(command.businessNumber())
+                .distributionCount(0) // 사업자의 나눔횟수의 기본값은 0
                 .build();
 
         return ownerRepository.save(owner);

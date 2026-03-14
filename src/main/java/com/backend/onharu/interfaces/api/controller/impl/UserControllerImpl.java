@@ -206,6 +206,9 @@ public class UserControllerImpl implements IUserController {
                 ownerProfile.user().getUserType(),
                 ownerProfile.level().getName(),
                 ownerProfile.owner().getBusinessNumber(),
+                ownerProfile.owner().getDistributionCount(),
+                ownerProfile.nextLevelInfo().nextLevel().getName(),
+                ownerProfile.nextLevelInfo().nextToConditionNumber(),
                 storeId
         );
 

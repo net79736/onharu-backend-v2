@@ -1,27 +1,10 @@
 package com.backend.onharu.domain.favorite.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
-import com.backend.onharu.domain.favorite.dto.FavoriteQuery;
+import com.backend.onharu.domain.favorite.dto.FavoriteQuery.GetFavoriteByIdQuery;
 import com.backend.onharu.domain.favorite.model.Favorite;
 import com.backend.onharu.domain.favorite.repository.FavoriteRepository;
 import com.backend.onharu.domain.level.model.Level;
@@ -37,6 +20,23 @@ import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+
+import static com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoriteByChild_IdAndStore_IdQuery;
+import static com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoritesByChildIdQuery;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Transactional
 @SpringBootTest
@@ -69,17 +69,6 @@ class FavoriteQueryServiceTest {
 
     @Autowired
     private LevelJpaRepository levelJpaRepository;
-
-    @BeforeEach
-    void setUp() {
-        favoriteJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll();
-        categoryJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-        levelJpaRepository.deleteAll();
-        childJpaRepository.deleteAll();
-    }
 
     /**
      * 테스트용 Level 생성
@@ -191,23 +180,23 @@ class FavoriteQueryServiceTest {
         void getFavorite() {
             // GIVEN
             Child child = createTestChild(
-                    "child@test.com",
-                    "아동테스트",
-                    "01022223333",
-                    "닉네임테스트",
+                    "favoriteChild3@test.com",
+                    "찜하기아동테스트3",
+                    "01099990030",
+                    "찜하기아동닉네임3",
                     true
             );
-            Level level = createTestLevel("줄기");
+            Level level = createTestLevel("찜하기등급3");
             Owner owner = createTestOwner(
-                    "owner@test.com",
-                    "사업자테스트",
-                    "01099998888",
-                    "1234567890",
+                    "favoriteOwner3@test.com",
+                    "찜하기사업자테스트3",
+                    "01099990031",
+                    "9999999993",
                     level
             );
-            Category category = createTestCategory("식당");
+            Category category = createTestCategory("식당3");
             Store store = createTestStore(
-                    "가게테스트",
+                    "찜하기가게테스트3",
                     owner,
                     category
             );
@@ -219,7 +208,7 @@ class FavoriteQueryServiceTest {
                             .build()
             );
 
-            FavoriteQuery.GetFavoriteByIdQuery query = new FavoriteQuery.GetFavoriteByIdQuery(savedFavorite.getId());
+            GetFavoriteByIdQuery query = new GetFavoriteByIdQuery(savedFavorite.getId());
 
             // WHEN
             Favorite favorite = favoriteQueryService.getFavorite(query);
@@ -235,10 +224,11 @@ class FavoriteQueryServiceTest {
         void getFavorite_fail_whenFavoriteNotFound() {
             // GIVEN
             Long favoriteId = 123456789L;
-            FavoriteQuery.GetFavoriteByIdQuery query = new FavoriteQuery.GetFavoriteByIdQuery(favoriteId);
+            GetFavoriteByIdQuery query = new GetFavoriteByIdQuery(favoriteId);
 
             // WHEN
-            assertThatThrownBy(() -> favoriteQueryService.getFavorite(query)).isInstanceOf(CoreException.class);
+            assertThatThrownBy(() -> favoriteQueryService.getFavorite(query))
+                    .isInstanceOf(CoreException.class);
         }
     }
 
@@ -251,35 +241,35 @@ class FavoriteQueryServiceTest {
         void findFavoritesByChildId() {
             // GIVEN
             Child child = createTestChild(
-                    "child@test.com",
-                    "아동테스트",
-                    "01022223333",
-                    "닉네임테스트",
+                    "favoriteChild4@test.com",
+                    "찜하기아동테스트4",
+                    "01099990040",
+                    "찜하기아동닉네임4",
                     true
             );
-            Level level = createTestLevel("줄기");
+            Level level = createTestLevel("찜하기등급4");
             Owner owner1 = createTestOwner(
-                    "owner1@test.com",
-                    "사업자테스트1",
-                    "01000000001",
-                    "0000000001",
+                    "favoriteOwner4@test.com",
+                    "찜하기사업자테스트4",
+                    "01099990041",
+                    "9999999941",
                     level
             );
             Owner owner2 = createTestOwner(
-                    "owner2@test.com",
-                    "사업자테스트2",
-                    "01000000002",
-                    "0000000002",
+                    "favoriteOwner5@test.com",
+                    "찜하기사업자테스트5",
+                    "01099990052",
+                    "9999999952",
                     level
             );
-            Category category = createTestCategory("식당");
+            Category category = createTestCategory("식당4");
             Store store1 = createTestStore(
-                    "가게테스트1",
+                    "찜하기가게테스트4",
                     owner1,
                     category
             );
             Store store2 = createTestStore(
-                    "가게테스트2",
+                    "찜하기가게테스트5",
                     owner2,
                     category
             );
@@ -297,7 +287,7 @@ class FavoriteQueryServiceTest {
                             .store(store2)
                             .build()
             );
-            FavoriteQuery.FindFavoritesByChildIdQuery query = new FavoriteQuery.FindFavoritesByChildIdQuery(child.getId());
+            FindFavoritesByChildIdQuery query = new FindFavoritesByChildIdQuery(child.getId());
 
             Pageable pageable = PageRequest.of(0, 10);
 
@@ -318,14 +308,14 @@ class FavoriteQueryServiceTest {
         void findFavoritesByChildId_fail_emptyResult() {
             // GIVEN
             Child child = createTestChild(
-                    "child@test.com",
-                    "아동테스트",
-                    "01022223333",
-                    "닉네임테스트",
+                    "favoriteChild5@test.com",
+                    "찜하기아동테스트5",
+                    "01099990050",
+                    "찜하기아동닉네임5",
                     true
             );
 
-            FavoriteQuery.FindFavoritesByChildIdQuery query = new FavoriteQuery.FindFavoritesByChildIdQuery(child.getId());
+            FindFavoritesByChildIdQuery query = new FindFavoritesByChildIdQuery(child.getId());
 
             Pageable pageable = PageRequest.of(0, 10);
 
@@ -335,6 +325,57 @@ class FavoriteQueryServiceTest {
             // THEN
             assertThat(favorites.getTotalElements()).isZero();
             assertThat(favorites.getContent()).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("찜하기 내역 조회 테스트")
+    class FindFavoriteByChild_IdAndStore_Id {
+
+        @Test
+        @DisplayName("찜하기 내역 조회 테스트 성공")
+        void findFavoriteByChild_IdAndStore_IdTest() {
+            // GIVEN
+            Child child = createTestChild(
+                    "favoriteChild3@test.com",
+                    "찜하기아동테스트3",
+                    "01099990030",
+                    "찜하기아동닉네임3",
+                    true
+            );
+            Level level = createTestLevel("찜하기등급3");
+            Owner owner = createTestOwner(
+                    "favoriteOwner3@test.com",
+                    "찜하기사업자테스트3",
+                    "01099990031",
+                    "9999999993",
+                    level
+            );
+            Category category = createTestCategory("식당3");
+            Store store = createTestStore(
+                    "찜하기가게테스트3",
+                    owner,
+                    category
+            );
+
+            Favorite savedFavorite = favoriteJpaRepository.save(
+                    Favorite.builder()
+                            .child(child)
+                            .store(store)
+                            .build()
+            );
+
+            Long childId = child.getId();
+            Long storeId = store.getId();
+
+            // WHEN
+            Optional<Favorite> favorite = favoriteQueryService.findFavoriteByChild_IdAndStore_Id(
+                    new FindFavoriteByChild_IdAndStore_IdQuery(childId, storeId)
+            );
+
+            // THEN
+            assertThat(favorite).isPresent();
+            assertThat(favorite.get().getId()).isEqualTo(savedFavorite.getId());
         }
     }
 }

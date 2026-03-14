@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static com.backend.onharu.domain.level.dto.LevelQuery.*;
+import static com.backend.onharu.domain.level.dto.LevelCommand.UpdateNameByIdCommand;
+import static com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByIdQuery;
 
 /**
  * 등급 Facade
@@ -50,4 +51,12 @@ public class LevelFacade {
         return levelQueryService.getLevels();
     }
 
+    /**
+     * 등급 정보 수정
+     *
+     * @param command 수정할 등급 ID, 이름, 등급 조건 횟수가 포함된 Command
+     */
+    public void updateLevel(UpdateNameByIdCommand command) {
+        levelCommandService.updateNameById(command);
+    }
 }

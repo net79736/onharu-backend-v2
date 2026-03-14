@@ -1,8 +1,6 @@
 package com.backend.onharu.interfaces.api.dto;
 
-import com.backend.onharu.domain.favorite.model.Favorite;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -11,10 +9,9 @@ import java.util.List;
  */
 public class FavoriteControllerDto {
 
-    public record CreateFavoriteResponse(
-            @NotNull(message = "찜하기 ID 는 필수 입력 값 입니다.")
-            @Schema(description = "찜하기 ID", example = "1")
-            Long favoriteId
+    public record FavoriteToggleResponse(
+            @Schema(name = "찜등록/찜취소 여부", description = "true: 찜등록, false: 찜취소")
+            boolean isFavorite
     ) {
     }
 
@@ -44,26 +41,19 @@ public class FavoriteControllerDto {
             Long childId,
 
             @Schema(description = "가게 ID", example = "200")
-            Long storeId
-    ) {
-        public FavoriteResponse(Favorite favorite) {
-            this(
-                    favorite.getId(),
-                    favorite.getChild().getId(),
-                    favorite.getStore().getId()
-            );
-        }
-    }
+            Long storeId,
 
-    @Schema(description = "찜하기 취소(삭졔) 요청")
-    public record DeleteFavoriteRequest(
-            @NotNull(message = "찜하기 ID 는 필수 입력 값 입니다.")
-            @Schema(description = "찜하기 ID", example = "1")
-            Long id,
+            @Schema(defaultValue = "가게명", example = "따뜻한 가게")
+            String storeName,
 
-            @NotNull(message = "아이 ID 는 필수 입력 값 입니다.")
-            @Schema(description = "아이 ID", example = "10")
-            Long childId
+            @Schema(defaultValue = "가게 대표 이미지")
+            List<String> image,
+
+            @Schema(defaultValue = "가게 주소", example = "서울시 강남구 테헤란로 123")
+            String address,
+
+            @Schema(defaultValue = "나눔 진행 여부", example = "true")
+            boolean isShare
     ) {
     }
 }

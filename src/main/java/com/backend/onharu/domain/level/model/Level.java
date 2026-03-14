@@ -28,8 +28,12 @@ public class Level extends BaseEntity {
     @Column(name = "NAME", nullable = false, length = 30, unique = true)
     private String name;
 
+    @Column(name = "CONDITION_NUMBER", nullable = false)
+    private int conditionNumber;
+
     @Builder
-    public Level(String name) {
+    public Level(String name, int conditionNumber) {
         this.name = name;
+        this.conditionNumber = conditionNumber;
     }
 }

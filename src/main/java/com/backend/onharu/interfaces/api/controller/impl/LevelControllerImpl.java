@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.backend.onharu.domain.level.dto.LevelCommand.UpdateNameByIdCommand;
 import static com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByIdQuery;
 import static com.backend.onharu.interfaces.api.dto.LevelControllerDto.LevelResponse;
+import static com.backend.onharu.interfaces.api.dto.LevelControllerDto.UpdateLevelRequest;
 
 /**
  * 등급 관련 API 를 제거하는 컨트롤러 구현체 입니다.
@@ -49,7 +51,8 @@ public class LevelControllerImpl implements ILevelController {
 
         // Command 생성
         CreateLevelCommand command = new CreateLevelCommand(
-                request.name()
+                request.name(),
+                request.conditionNumber()
         );
 
         Level level = levelFacade.createLevel(command);
@@ -114,6 +117,33 @@ public class LevelControllerImpl implements ILevelController {
                                 level.getName()
                         )
                 ).toList();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
+    }
+
+    /**
+     * 등급 정보 수정
+     * PUT /api/levels
+     * <p>
+     * 등급 ID 를 기준으로 등급명과 등급 조건 횟수를 수정합니다.
+     */
+    @Override
+    @PutMapping
+    public ResponseEntity<ResponseDTO<String>> updateLevel(@Valid @RequestBody UpdateLevelRequest request) {
+        log.info("등급 정보 수정");
+
+        // 등급 정보 수정
+        levelFacade.updateLevel(
+                new UpdateNameByIdCommand(
+                        request.levelId(),
+                        request.levelName(),
+                        request.conditionNumber()
+                )
+        );
+
+        // 응답 생성
+        String response = "등급 수정 성공";
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(response));

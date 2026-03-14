@@ -1,6 +1,7 @@
 package com.backend.onharu.application;
 
 import static com.backend.onharu.application.dto.StoreBookingSummaryResult.UPCOMING_LIMIT;
+import com.backend.onharu.domain.level.service.LevelQueryService;
 import static com.backend.onharu.utils.SecurityUtils.getCurrentUserId;
 
 import java.time.LocalDate;
@@ -22,8 +23,10 @@ import com.backend.onharu.application.validator.StoreScheduleValidator.ScheduleT
 import com.backend.onharu.domain.common.enums.NotificationHistoryType;
 import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.common.enums.UserType;
+
 import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import com.backend.onharu.domain.owner.model.Owner;
+import com.backend.onharu.domain.owner.service.OwnerCommandService;
 import com.backend.onharu.domain.owner.service.OwnerQueryService;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CompleteReservationCommand;
@@ -53,8 +56,19 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableD
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.backend.onharu.domain.level.dto.LevelQuery.FindFirstByConditionNumberQuery;
+import static com.backend.onharu.domain.owner.dto.OwnerCommand.UpdateOwnerCommand;
 
 /**
  * 사업자 Facade
@@ -71,6 +85,8 @@ public class OwnerFacade {
     private final StoreScheduleCommandService storeScheduleCommandService;
     private final StoreScheduleValidator storeScheduleValidator;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final OwnerCommandService ownerCommandService;
+    private final LevelQueryService levelQueryService;
 
     /**
      * 사업자의 가게 목록 조회
@@ -319,6 +335,7 @@ public class OwnerFacade {
      * @param reservationId 예약 ID
      * @param ownerId 사업자 ID
      */
+    @Transactional
     public void completeReservation(Long reservationId, Long ownerId) {
         Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(reservationId));
         Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(reservation.getStoreSchedule().getStore().getId()));
@@ -338,6 +355,25 @@ public class OwnerFacade {
                 reservation.getChild().getId(),
                 NotificationHistoryType.RESERVATION_COMPLETED
         ));
+
+        // 사업자(Owner) 의 나눔횟수 증가
+        owner.increaseDistribution(1);
+
+        // 현재 사업자의 나눔 횟수를 기준으로 등급 조회
+        levelQueryService.findFirstByConditionNumber(
+                new FindFirstByConditionNumberQuery(owner.getDistributionCount())
+        ).ifPresent(nextLevel -> {
+            // 사업자의 현재 등급과 조회된 등급이 다를 경우
+            if (!owner.getLevel().equals(nextLevel)) {
+                // 사업자의 등급을 교체
+                owner.changeLevel(nextLevel);
+            }
+        });
+
+        // 사업자(Owner) 변경사항 저장(더티체킹)
+        ownerCommandService.updateOwner(
+                new UpdateOwnerCommand(owner)
+        );
     }
 
     /**

@@ -31,12 +31,24 @@ public class LevelRepositoryParam {
     /**
      * 등급 수정 파라미터
      *
-     * @param name 등급명
      * @param id   등급 ID
+     * @param name 등급명
+     * @param conditionNumber 등급 조건 횟수
      */
     public record UpdateNameByIdParam(
+            Long id,
             String name,
-            Long id
+            int conditionNumber
+    ) {
+    }
+
+    /**
+     * 다음 등급 조회 파라미터
+     *
+     * @param conditionNumber (현재 등급의) 등급 조건 횟수
+     */
+    public record FindFirstByConditionNumberParam(
+            int conditionNumber
     ) {
     }
 }
