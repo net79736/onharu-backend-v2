@@ -2,6 +2,8 @@ package com.backend.onharu.domain.reservation.dto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,7 +16,6 @@ import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdA
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByStoreIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetByStoreScheduleIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
-import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 
 @DisplayName("ReservationQuery 단위 테스트")
 class ReservationQueryTest {
@@ -48,7 +49,7 @@ class ReservationQueryTest {
             Long childId = 855L;
 
             // when
-            FindByChildIdAndStatusFilterQuery query = new FindByChildIdAndStatusFilterQuery(childId, ReservationStatusFilter.ALL);
+            FindByChildIdAndStatusFilterQuery query = new FindByChildIdAndStatusFilterQuery(childId, List.of());
 
             // then
             assertThat(query.childId()).isEqualTo(childId);

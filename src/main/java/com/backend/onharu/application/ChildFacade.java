@@ -5,17 +5,22 @@ import static com.backend.onharu.domain.common.enums.NotificationHistoryType.RES
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_EXCEEDS_MAX;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_MUST_NOT_BE_NULL;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.backend.onharu.application.dto.MyBookingSummaryResult;
 import com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.child.service.ChildQueryService;
+import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.favorite.dto.FavoriteCommand.CreateFavoriteCommand;
 import com.backend.onharu.domain.favorite.dto.FavoriteCommand.DeleteFavoriteCommand;
 import com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoritesByChildIdQuery;
@@ -26,6 +31,8 @@ import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationCommand.CreateReservationCommand;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByChildIdAndStatusFilterQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindCompletedWithoutReviewByChildIdQuery;
+import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindUpcomingByChildIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetByStoreScheduleIdQuery;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.GetReservationByIdQuery;
 import com.backend.onharu.domain.reservation.model.Reservation;
@@ -156,9 +163,43 @@ public class ChildFacade {
      *
      * @return 내가 신청한 예약 목록
      */
-    public Page<Reservation> getMyBookings(Long childId, ReservationStatusFilter statusFilter, Pageable pageable) {
+    public Page<Reservation> getMyBookings(Long childId, List<ReservationStatusFilter> statusFilters, Pageable pageable) {
         Child child = childQueryService.getChildById(new GetChildByIdQuery(childId));
-        return reservationQueryService.findByChildIdAndStatusFilter(new FindByChildIdAndStatusFilterQuery(child.getId(), statusFilter), pageable);
+        List<ReservationType> domainFilters = ReservationStatusFilter.toReservationTypes(statusFilters);
+        return reservationQueryService.findByChildIdAndStatusFilter(new FindByChildIdAndStatusFilterQuery(child.getId(), domainFilters), pageable);
+    }
+
+    /**
+     * 요약된 예약 목록 조회
+     *
+     * - 다가오는 방문 예정 예약 목록 (WAITING/CONFIRMED, scheduleDate 오름차순, 최대 2건)
+     * - 리뷰 작성 대상 예약 목록 (COMPLETED 중 미리뷰, scheduleDate 내림차순, 최대 2건)
+     *
+     * @param childId 아동 ID
+     * @return 요약 결과 (다가오는 예약 목록, 리뷰 대상 예약 목록)
+     */
+    public MyBookingSummaryResult getMyBookingSummary(Long childId) {
+        childQueryService.getChildById(new GetChildByIdQuery(childId));
+
+        // 1. 다가오는 방문 예정 예약 (WAITING, CONFIRMED) - 오늘 이후, scheduleDate 오름차순
+        List<Reservation> upcomingReservations = reservationQueryService.findUpcomingByChildId(
+                new FindUpcomingByChildIdQuery(
+                        childId,
+                        List.of(ReservationType.WAITING, ReservationType.CONFIRMED),
+                        LocalDate.now()
+                ),
+                PageRequest.of(0, MyBookingSummaryResult.UPCOMING_LIMIT,
+                        Sort.by(Sort.Direction.ASC, "storeSchedule.scheduleDate"))
+        );
+
+        // 2. 리뷰 작성 대상 예약 (COMPLETED 중 리뷰 미작성) - scheduleDate 내림차순
+        List<Reservation> reviewTargetReservations = reservationQueryService.findCompletedWithoutReviewByChildId(
+                new FindCompletedWithoutReviewByChildIdQuery(childId),
+                PageRequest.of(0, MyBookingSummaryResult.REVIEW_TARGET_LIMIT,
+                        Sort.by(Sort.Direction.DESC, "storeSchedule.scheduleDate"))
+        );
+
+        return new MyBookingSummaryResult(upcomingReservations, reviewTargetReservations);
     }
 
     /**

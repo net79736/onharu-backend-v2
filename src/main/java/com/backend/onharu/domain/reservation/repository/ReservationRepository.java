@@ -8,9 +8,12 @@ import org.springframework.data.domain.Pageable;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindAllByStatusParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusFilterParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByChildIdAndStatusParam;
+import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByOwnerIdAndStatusInParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStatusAndScheduleDateBeforeThanParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdAndStatusFilterParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdParam;
+import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindUpcomingByChildIdParam;
+import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindUpcomingByOwnerIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetByStoreScheduleIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetReservationByIdParam;
 import com.backend.onharu.domain.reservation.model.Reservation;
@@ -31,6 +34,16 @@ public interface ReservationRepository {
      * 아동 ID로 예약 목록 조회
      */
     Page<Reservation> findByChildIdAndStatusFilter(FindByChildIdAndStatusFilterParam param, Pageable pageable);
+
+    /**
+     * 아동 ID로 예약 목록 조회 (List 반환 - COUNT 쿼리 없음)
+     */
+    List<Reservation> findByChildIdAndStatusFilterAsList(FindByChildIdAndStatusFilterParam param, Pageable pageable);
+
+    /**
+     * 아동 ID 기준으로 리뷰가 없는 COMPLETED 예약 목록 조회
+     */
+    List<Reservation> findCompletedWithoutReviewByChildId(Long childId, Pageable pageable);
 
     /**
      * 가게 일정 ID로 예약 단건 조회
@@ -67,4 +80,19 @@ public interface ReservationRepository {
      * 예약 상태와 일정 날짜 전 예약 목록 조회
      */
     List<Reservation> findByStatusAndScheduleDateBeforeThan(FindByStatusAndScheduleDateBeforeThanParam param);
+
+    /**
+     * 사업자 ID와 상태 필터로 예약 목록 조회
+     */
+    List<Reservation> findByOwnerIdAndStatusIn(FindByOwnerIdAndStatusInParam findByOwnerIdAndStatusFilterParam, Pageable pageable);
+
+    /**
+     * 아동 ID 기준 다가오는 예약 조회 (scheduleDate >= fromDate)
+     */
+    List<Reservation> findUpcomingByChildId(FindUpcomingByChildIdParam param, Pageable pageable);
+
+    /**
+     * 사업자 ID 기준 다가오는 예약 조회 (scheduleDate >= fromDate)
+     */
+    List<Reservation> findUpcomingByOwnerId(FindUpcomingByOwnerIdParam param, Pageable pageable);
 }

@@ -13,6 +13,7 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetMyStoresRespo
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetOwnerResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingDetailResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingListResponse;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingSummaryResponse;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.GetStoreBookingsRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
@@ -229,4 +230,7 @@ public interface IOwnerController {
             )
             RemoveAvailableDatesRequest request
     );
+
+    @Operation(summary = "요약된 예약 목록 조회", description = "요약된 예약 목록을 조회합니다.")
+    ResponseEntity<ResponseDTO<GetStoreBookingSummaryResponse>> getStoreBookingsSummary();
 }

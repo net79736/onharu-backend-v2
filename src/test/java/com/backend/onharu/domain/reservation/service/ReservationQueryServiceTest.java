@@ -48,7 +48,6 @@ import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
-import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 
 @SpringBootTest
 @DisplayName("ReservationQueryService 단위 테스트")
@@ -286,7 +285,9 @@ class ReservationQueryServiceTest {
 
             // when
             Page<Reservation> reservations = reservationQueryService.findByChildIdAndStatusFilter(
-                    new FindByChildIdAndStatusFilterQuery(savedChild.getId(), ReservationStatusFilter.ALL),
+                    new FindByChildIdAndStatusFilterQuery(savedChild.getId(),
+                            List.of(ReservationType.WAITING, ReservationType.CONFIRMED,
+                                    ReservationType.CANCELED, ReservationType.COMPLETED)),
                     pageable
             ); // 아동 ID로 예약 목록 조회
 

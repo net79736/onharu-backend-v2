@@ -1,5 +1,8 @@
 package com.backend.onharu.interfaces.api.dto;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import com.backend.onharu.domain.common.enums.StatusType;
@@ -114,7 +117,7 @@ public class ChildControllerDto {
             @Schema(description = "예약 상태 필터 (ALL: 전체, 그 외: 해당 상태만)", example = "ALL", allowableValues = {"ALL", "WAITING", "CONFIRMED", "CANCELED", "COMPLETED"})
             ReservationStatusFilter statusFilter,
 
-            @Schema(description = "정렬 기준", example = "id", allowableValues = {"id"})
+            @Schema(description = "정렬 기준", example = "id", allowableValues = {"id", "reservationAt", "scheduleDate"})
             String sortField,
 
             @Schema(description = "정렬 방향", example = "desc", allowableValues = {"asc", "desc"})
@@ -130,16 +133,10 @@ public class ChildControllerDto {
         public Integer perPage() {
             return perPage != null && perPage > 0 ? perPage : 10;
         }
-
-        /**
-         * statusFilter가 null이면 ALL로 간주
-         */
-        public ReservationStatusFilter effectiveStatusFilter() {
-            return statusFilter != null ? statusFilter : ReservationStatusFilter.ALL;
-        }
     }
-
+    
     // 예약 관련 DTO
+    @Schema(name = "ChildReservationResponse", description = "아동 예약 응답")
     public record ReservationResponse(
             @Schema(description = "예약 ID", example = "1")
             Long id,
@@ -160,13 +157,13 @@ public class ChildControllerDto {
             String storeAddress,
 
             @Schema(description = "예약 일정 날짜", example = "2024-12-31")
-            java.time.LocalDate scheduleDate,
+            LocalDate scheduleDate,
 
             @Schema(description = "예약 시작 시간", example = "14:00")
-            java.time.LocalTime startTime,
+            LocalTime startTime,
 
             @Schema(description = "예약 종료 시간", example = "15:00")
-            java.time.LocalTime endTime,
+            LocalTime endTime,
 
             @Schema(description = "인원 수", example = "1")
             Integer people,
@@ -175,7 +172,7 @@ public class ChildControllerDto {
             String status,
 
             @Schema(description = "예약 시간", example = "2024-12-31T14:00:00")
-            java.time.LocalDateTime reservationAt,
+            LocalDateTime reservationAt,
 
             @Schema(description = "취소 사유", example = "일정 변경으로 인한 취소")
             String cancelReason,
@@ -241,12 +238,21 @@ public class ChildControllerDto {
             
             @Schema(description = "페이지당 항목 수")
             Integer perPage
-
     ) {
     }
 
     public record GetMyBookingDetailResponse(
-            ReservationResponse reservation
+        @Schema(description = "예약 목록")
+        ReservationResponse reservation
+    ) {
+    }
+
+    public record GetMyBookingSummaryResponse(
+        @Schema(description = "다가오는 방문 예정 예약 목록 (최대 2건)")
+        List<ReservationResponse> upcomingReservations,
+
+        @Schema(description = "리뷰 작성 대상 예약 목록 (최대 2건, 리뷰 미작성 건만 포함)")
+        List<ReservationResponse> reviewTargetReservations
     ) {
     }
 }

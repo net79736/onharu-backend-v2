@@ -1,6 +1,9 @@
 package com.backend.onharu.interfaces.api.dto;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.backend.onharu.domain.common.enums.ReservationType;
 
@@ -13,7 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * - 그 외: 해당 예약 상태로 필터링
  * </p>
  */
-@Schema(description = "예약 상태 필터", allowableValues = {"ALL", "WAITING", "CONFIRMED", "CANCELED", "COMPLETED"})
+@Schema(description = "예약 상태 필터")
 public enum ReservationStatusFilter {
     ALL,
     WAITING,
@@ -30,4 +33,16 @@ public enum ReservationStatusFilter {
                 ? Optional.empty()
                 : Optional.of(ReservationType.valueOf(this.name()));
     }
+
+    /**
+     * ReservationStatusFilter 목록을 ReservationType 목록으로 변환
+     */
+    public static List<ReservationType> toReservationTypes(List<ReservationStatusFilter> filters) {
+        if (filters.isEmpty() || filters.contains(ReservationStatusFilter.ALL)) {
+            return Arrays.asList(ReservationType.values());
+        }
+        return filters.stream()
+                .flatMap(f -> f.toReservationType().stream())
+                .collect(Collectors.toList());
+    }    
 }
