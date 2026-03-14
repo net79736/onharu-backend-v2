@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "알림", description = "알림 API")
+@Tag(name = "Notification", description = "알림 API")
 public interface INotificationController {
 
     @Operation(summary = "알림 조회", description = "알림 설정을 조회합니다.")
