@@ -51,4 +51,9 @@ public class ChatParticipantRepositoryImpl implements ChatParticipantRepository 
     public List<ChatRoom> findSortedChatRooms(FindSortedChatRoomsParam param) {
         return chatParticipantJpaRepository.findSortedChatRooms(param.userId());
     }
+
+    @Override
+    public List<ChatParticipant> findChatParticipantByChatRoomId(FindChatParticipantByChatRoomIdParam param) {
+        return chatParticipantJpaRepository.findParticipantsByRoomIds(param.chatRoomIds());
+    }
 }

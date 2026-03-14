@@ -36,6 +36,7 @@ public interface ChatParticipantJpaRepository extends JpaRepository<ChatParticip
 
     /**
      * 정렬된 채팅방 목록 조회
+     *
      * @param userId 사용자 ID
      * @return 특정 사용자의 채팅방 목록을 마지막 메시지 ID 를 기준으로 정렬
      */
@@ -46,4 +47,18 @@ public interface ChatParticipantJpaRepository extends JpaRepository<ChatParticip
             ORDER BY cm.createdAt DESC
             """)
     List<ChatRoom> findSortedChatRooms(@Param("userId") Long userId);
+
+    /**
+     * 특정 채팅방의 채팅 참가자 목록 조회
+     *
+     * @param chatRoomIds 채팅방 ID 목록
+     * @return 채팅참가자 목록
+     */
+    @Query("""
+            SELECT cp
+            FROM ChatParticipant cp
+            JOIN FETCH cp.user
+            WHERE cp.chatRoom.id IN :chatRoomIds
+            """)
+    List<ChatParticipant> findParticipantsByRoomIds(@Param("chatRoomIds") List<Long> chatRoomIds);
 }

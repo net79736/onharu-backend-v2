@@ -1,5 +1,7 @@
 package com.backend.onharu.domain.chat.dto;
 
+import java.util.List;
+
 /**
  * 채팅참여자 Repository DTO 입니다.
  */
@@ -40,6 +42,15 @@ public class ChatParticipantRepositoryParam {
      */
     public record FindSortedChatRoomsParam(
             Long userId
+    ) {
+    }
+
+    /**
+     * 특정 채팅방의 채팅 참가자 목록 조회
+     * @param chatRoomIds 채팅방 ID 목록
+     */
+    public record FindChatParticipantByChatRoomIdParam(
+            List<Long> chatRoomIds
     ) {
     }
 }

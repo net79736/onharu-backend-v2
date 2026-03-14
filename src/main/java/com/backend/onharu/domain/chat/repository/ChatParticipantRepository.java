@@ -1,15 +1,11 @@
 package com.backend.onharu.domain.chat.repository;
 
-import com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.FindSortedChatRoomsParam;
-import com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.GetChatRoomSummaryParam;
+import com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.*;
 import com.backend.onharu.domain.chat.model.ChatParticipant;
 import com.backend.onharu.domain.chat.model.ChatRoom;
 import com.backend.onharu.infra.db.chat.ChatRoomSummary;
 
 import java.util.List;
-
-import static com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.FindByChatRoomIdAndUserIdParam;
-import static com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.FindChatParticipantByIdParam;
 
 /**
  * 채팅참여자 도메인
@@ -62,4 +58,10 @@ public interface ChatParticipantRepository {
      */
     List<ChatRoom> findSortedChatRooms(FindSortedChatRoomsParam param);
 
+    /**
+     * 특정 채팅방의 채팅참가자 목록 조회
+     * @param param 채팅방 ID
+     * @return 채팅 참가자 목록
+     */
+    List<ChatParticipant> findChatParticipantByChatRoomId(FindChatParticipantByChatRoomIdParam param);
 }
