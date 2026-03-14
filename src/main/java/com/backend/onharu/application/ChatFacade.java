@@ -21,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.backend.onharu.domain.chat.dto.ChatMessageCommand.CreateChatMessageCommand;
 import static com.backend.onharu.domain.chat.dto.ChatMessageCommand.ReadMessageCommand;
@@ -29,8 +31,7 @@ import static com.backend.onharu.domain.chat.dto.ChatMessageQuery.CountUnreadMes
 import static com.backend.onharu.domain.chat.dto.ChatMessageQuery.FindChatMessageQuery;
 import static com.backend.onharu.domain.chat.dto.ChatParticipantCommand.CreateChatParticipantCommand;
 import static com.backend.onharu.domain.chat.dto.ChatParticipantCommand.updateChatParticipantCommand;
-import static com.backend.onharu.domain.chat.dto.ChatParticipantQuery.GetChatParticipantQuery;
-import static com.backend.onharu.domain.chat.dto.ChatParticipantQuery.GetChatRoomSummaryQuery;
+import static com.backend.onharu.domain.chat.dto.ChatParticipantQuery.*;
 import static com.backend.onharu.domain.chat.dto.ChatRoomCommand.CreateChatRoomCommand;
 import static com.backend.onharu.domain.chat.dto.ChatRoomCommand.InviteChatRoomCommand;
 import static com.backend.onharu.domain.chat.dto.ChatRoomQuery.FindChatRoomByIdQuery;
@@ -159,6 +160,18 @@ public class ChatFacade {
         // 참여 채팅방 목록 조회
         List<ChatRoomSummary> chatRoomSummaries = chatParticipantQueryService.getChatRoomSummary(query);
 
+        // 채팅방 ID 목록 추출
+        List<Long> chatRoomIds = chatRoomSummaries.stream().map(ChatRoomSummary::getId).toList();
+
+        // 채팅 참가자 조회
+        List<ChatParticipant> chatParticipants = chatParticipantQueryService.getParticipants(
+                new GetChatParticipantsQuery(chatRoomIds)
+        );
+
+        // 채팅방을 기준으로 Map 생성
+        Map<Long, List<ChatParticipant>> chatRoomMap = chatParticipants.stream()
+                .collect(Collectors.groupingBy(chatParticipant -> chatParticipant.getChatRoom().getId()));
+
         // 각 채팅방 마다 적용
         return chatRoomSummaries.stream()
                 .map(chatRoomSummary -> {
@@ -167,12 +180,20 @@ public class ChatFacade {
                             new CountUnreadMessageQuery(chatRoomSummary.getId(), chatRoomSummary.getLastReadMessageId())
                     );
 
+                    // 채팅방 참가자 이름 조회
+                    List<String> chatParticipantsNames = chatRoomMap.getOrDefault(chatRoomSummary.getId(), List.of()) // 채팅방 조회
+                            .stream()
+                            .filter(chatParticipant -> !chatParticipant.getUser().getId().equals(query.userId())) // 채팅방 중 사용자 자신을 제외한 참가자 필터링
+                            .map(chatParticipant -> chatParticipant.getUser().getName()) // 채팅 참가자의 이름을 추출
+                            .toList();
+
                     // 반환값 생성
                     return new ChatRoomResponse(
                             chatRoomSummary.getId(),
                             chatRoomSummary.getContent(),
                             chatRoomSummary.getCreatedAt(),
-                            unreadMessage
+                            unreadMessage,
+                            chatParticipantsNames
                     );
                 })
                 .toList();

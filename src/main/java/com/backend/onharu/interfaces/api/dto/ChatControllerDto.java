@@ -21,7 +21,8 @@ public class ChatControllerDto {
             Long chatRoomId,
             String lastMessage,
             LocalDateTime lastMessageTime,
-            long unreadMessageCount
+            long unreadMessageCount,
+            List<String> chatParticipants
     ) {
     }
 

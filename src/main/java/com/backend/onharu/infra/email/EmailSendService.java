@@ -35,7 +35,7 @@ public class EmailSendService {
                 <h2>임시 비밀번호 안내</h2>
                 <p>요청하신 임시 비밀번호가 발급되었습니다.</p>
                 <p>임시 비밀번호로 로그인 후, 비밀번호를 변경해 주세요.</p>
-                <p><code>임시 비밀번호:</strong> %s</p>
+                <p><strong>임시 비밀번호:</strong> <code>%s</code></p>
                 """.formatted(tempPassword);
 
         emailSender.send(email, subject, content);

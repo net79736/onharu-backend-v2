@@ -19,6 +19,7 @@ import com.backend.onharu.infra.nts.NtsBusinessNumber;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ public class AuthFacade {
     /**
      * 이메일 인증 코드 생성/재인증 메서드
      */
+    @Transactional
     public void createEmailAuthentication(CreateEmailAuthenticationCommand command) {
         EmailAuthentication emailAuthentication = emailAuthenticationCommandService.create(command); // 이메일 인증 생성
 
@@ -65,6 +67,7 @@ public class AuthFacade {
     /**
      * 이메일 인증 완료 메서드
      */
+    @Transactional
     public void completeEmailAuthentication(CompleteEmailAuthenticationCommand command) {
         emailAuthenticationCommandService.verify(command);
     }
@@ -95,6 +98,7 @@ public class AuthFacade {
     /**
      * 비밀번호 찾기
      */
+    @Transactional
     public void resetPassword(ResetPasswordUserCommand command) { // 파라미터로 필요한거 이메일(로그인 아이디), 이름, 전화번호
         String loginId = command.loginId();
         String name = command.name();

@@ -140,6 +140,7 @@ public class ChatControllerImpl implements IChatController {
     public ResponseEntity<ResponseDTO<ChatRoomsResponse>> getChatRoomSummary() {
         log.info("참여 채팅방 목록 조회");
 
+        // 세션에서 사용자 ID 추출
         Long userId = SecurityUtils.getUserId();
 
         // 내가 참여한 채팅방 목록 조회
