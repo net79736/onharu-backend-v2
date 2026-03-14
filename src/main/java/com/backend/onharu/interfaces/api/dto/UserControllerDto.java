@@ -197,6 +197,15 @@ public class UserControllerDto {
             @Schema(description = "사업자 등록번호", example = "1234567890")
             String businessNumber,
 
+            @Schema(description = "사업자 나눔 횟수", example = "10")
+            int distributionCount,
+
+            @Schema(description = "다음 등급명", example = "새싹2")
+            String nextLevelName,
+
+            @Schema(description = "다음 등급까지 남은 나눔 횟수", example = "5")
+            int nextToConditionNumber,
+
             @Schema(description = "사업자가 등록한 가게 ID 목록", example = "[\"1\", \"20\", \"300\"]")
             List<Long> stores
     ) {

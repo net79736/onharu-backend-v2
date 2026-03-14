@@ -20,4 +20,15 @@ public class FavoriteQuery {
             Long childId
     ) {
     }
+
+    /**
+     * 찜하기 내역 조회
+     * @param childId 아동 ID
+     * @param storeId 가게 ID
+     */
+    public record FindFavoriteByChild_IdAndStore_IdQuery(
+            Long childId,
+            Long storeId
+    ) {
+    }
 }

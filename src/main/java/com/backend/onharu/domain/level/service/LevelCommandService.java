@@ -31,6 +31,7 @@ public class LevelCommandService {
     public Level createLevel(CreateLevelCommand command) {
         Level level = Level.builder()
                 .name(command.name())
+                .conditionNumber(command.conditionNumber())
                 .build();
 
         return levelRepository.save(level);
@@ -44,9 +45,18 @@ public class LevelCommandService {
     public void updateNameById(UpdateNameByIdCommand command) {
         levelRepository.updateNameById(
                 new UpdateNameByIdParam(
+                        command.id(),
                         command.name(),
-                        command.id()
+                        command.conditionNumber()
                 )
         );
+    }
+
+    /**
+     * 변경된 등급의 정보를 DB 에 반영합니다.
+     * @param level 등급 엔티티
+     */
+    public void updateLevel(Level level) {
+        levelRepository.save(level);
     }
 }

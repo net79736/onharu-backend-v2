@@ -45,10 +45,12 @@ import java.util.UUID;
 import static com.backend.onharu.domain.child.dto.ChildCommand.UpdateChildCommand;
 import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
 import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
+import static com.backend.onharu.domain.level.dto.LevelQuery.FindFirstByConditionNumberQuery;
 import static com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByNameQuery;
 import static com.backend.onharu.domain.owner.dto.OwnerCommand.UpdateOwnerCommand;
 import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByUserIdQuery;
+import static com.backend.onharu.domain.user.dto.UserProfile.NextLevelInfo;
 import static com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
 import static com.backend.onharu.domain.user.dto.UserQuery.GetChildProfileQuery;
 import static com.backend.onharu.domain.user.dto.UserQuery.GetOwnerProfileQuery;
@@ -383,12 +385,20 @@ public class UserFacade {
                 new GetOwnerByIdQuery(query.ownerId())
         );
 
-        Level level = owner.getLevel(); // 사업자에 연결된 등급 도메인 추출
+        Level currentLevel = owner.getLevel(); // 사업자에 연결된 등급 도메인 추출
+        int distributionCount = owner.getDistributionCount(); // 사업자의 나눔 횟수
+
+        // 다음 등급 조회
+        NextLevelInfo nextLevelInfo = levelQueryService.findFirstByConditionNumber(
+                new FindFirstByConditionNumberQuery(owner.getDistributionCount())
+        ).map(level ->
+                new NextLevelInfo(level, Math.max(level.getConditionNumber() - distributionCount, 0))
+        ).orElse(new NextLevelInfo(currentLevel, 0)); // 다음 등급 없는 경우, 현재 등급과 남은 횟수를 0 반환
 
         // 가게 정보 조회
         List<Store> stores = storeQueryService.findByOwnerId(new StoreQuery.FindByOwnerIdQuery(query.ownerId()));
 
-        return new UserOwnerProfile(user, level, owner, stores);
+        return new UserOwnerProfile(user, currentLevel, owner, stores, nextLevelInfo);
     }
 
     /**

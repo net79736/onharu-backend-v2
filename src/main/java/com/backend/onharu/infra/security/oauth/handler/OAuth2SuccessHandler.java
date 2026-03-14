@@ -1,5 +1,6 @@
 package com.backend.onharu.infra.security.oauth.handler;
 
+import com.backend.onharu.config.ServerUrlProperties;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.infra.security.oauth.SocialUser;
@@ -29,6 +30,10 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+    // TODO: 프론트 로컬 작업을 위해 만든 하드코딩 변수 -> 작업이 끝난 후 변수 제거 및 로직 수정 필요
+    private static final String FRONT_LOCAL_SERVER = "http://localhost:3000/";
+
+    private final ServerUrlProperties serverUrlProperties;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -45,14 +50,23 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         SecurityContextHolder.getContext()
                 .setAuthentication(usernamePasswordAuthenticationToken); // 인증 객체를 SecurityContext 저장 (세션 업데이트)
 
+        // 프론트 환경 변수 대입
+        String redirect = serverUrlProperties.getFront();
+
+        // HTTP 요청 헤더 Referer 확인 후 3000 이 포함되어있는 경우 리다이렉트 주소 변경
+        String referer = request.getHeader("Referer");
+
+        if (referer != null && referer.contains("3000")) {
+            redirect = FRONT_LOCAL_SERVER;
+        }
+
         // 소셜 로그인 계정이 없을 경우, 결식 아동/사업자인지 확인하고 해당 회원별 추가정보를 프론트엔드로부터 입력을 받도록 리다이렉트 만약 소셜 로그인 계정이 있다면 메인 페이지로 리다이렉트
         if (user.getUserType().equals(UserType.NONE)) {
             log.info("추가 정보 페이지 호출");
-            response.sendRedirect("/signup?oauth=" + user.getProviderType().name().toLowerCase());
+            response.sendRedirect(redirect + "/signup?oauth=" + user.getProviderType().name().toLowerCase());
         } else {
             log.info("소셜 회원가입 완료");
-            // TODO: 메인 페이지(프론트엔드) 경로를 합의해서 변경하기
-            response.sendRedirect("/");
+            response.sendRedirect(redirect + "/");
         }
     }
 }

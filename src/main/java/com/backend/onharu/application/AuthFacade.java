@@ -118,7 +118,7 @@ public class AuthFacade {
         String english = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         String number = "0123456789";
         String special = "!@#$%^&*()_+";
-        String all = english + number + special; // 비밀번호에 사용가능한 모든 문자ㅏ
+        String all = english + number + special; // 비밀번호에 사용가능한 모든 문자
 
         SecureRandom random = new SecureRandom();
         char eng = english.charAt(random.nextInt(english.length())); // 랜덤 영문자 1개

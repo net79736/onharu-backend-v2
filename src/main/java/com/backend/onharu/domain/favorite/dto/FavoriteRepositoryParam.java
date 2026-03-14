@@ -20,4 +20,15 @@ public class FavoriteRepositoryParam {
             Long childId
     ) {
     }
+
+    /**
+     * 아동 ID 와 가게 ID 로 찜하기 조회
+     * @param childId 아동 ID
+     * @param storeId 가게 ID
+     */
+    public record FindFavoriteByChildIdAndStoreIdParam(
+            Long childId,
+            Long storeId
+    ) {
+    }
 }
