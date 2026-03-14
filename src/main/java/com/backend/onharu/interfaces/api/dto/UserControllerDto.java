@@ -279,11 +279,6 @@ public class UserControllerDto {
      * 전화번호, 닉네임, 증명서 파일을 받습니다.
      */
     public record finishSignUpChildRequest(
-            @NotBlank(message = "전화번호는 필수 입력 값 입니다.")
-            @Pattern(regexp = "^01(?:0|[1-9])(?:\\d{3}|\\d{4})\\d{4}$", message = "올바른 전화번호 형식이 아닙니다. (예: 01012345678)")
-            @Schema(description = "전화번호", example = "01012345678")
-            String phone,
-
             @NotBlank(message = "닉네임은 필수 입력 값 입니다.")
             @Size(max = 100, message = "닉네임은 최대 100자를 넘을 수 없습니다.")
             @Pattern(regexp = "^[a-zA-Z0-9가-힣]*$", message = "닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.")
@@ -301,11 +296,6 @@ public class UserControllerDto {
      * 전화번호, 매장명, 사업자 등록번호, 등급 정보를 받습니다.
      */
     public record finishSignUpOwnerRequest(
-            @NotBlank(message = "전화번호는 필수 입력 값 입니다.")
-            @Pattern(regexp = "^01(?:0|[1-9])(?:\\d{3}|\\d{4})\\d{4}$", message = "올바른 전화번호 형식이 아닙니다. (예: 01012345678)")
-            @Schema(description = "전화번호", example = "01012345678")
-            String phone,
-
             @NotBlank(message = "이름은 필수 입력 값 입니다.")
             @Size(max = 30, message = "이름은 30자 이내여야 합니다.")
             @Schema(description = "이름", example = "따뜻한 식당")

@@ -227,7 +227,6 @@ public interface IUserController {
                                     name = "아동 소셜 회원가입 요청",
                                     value = """
                                             {
-                                              "phone": "01012345678",
                                               "nickname": "카카오아동닉네임",
                                               "images": [
                                                 {
@@ -260,7 +259,6 @@ public interface IUserController {
                                     name = "사업자 회원가입 예시",
                                     value = """
                                             {
-                                              "phone": "01012345678",
                                               "name": "따뜻한 식당",
                                               "businessNumber": "1234567890"
                                             }
