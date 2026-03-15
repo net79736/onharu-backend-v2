@@ -2,6 +2,7 @@ package com.backend.onharu.interfaces.api.controller.impl;
 
 import static com.backend.onharu.interfaces.api.common.util.PageableUtil.getCurrentPage;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.backend.onharu.application.StoreExcelFacade;
 import com.backend.onharu.application.StoreFacade;
 import com.backend.onharu.application.StoreScheduleFacade;
-import com.backend.onharu.application.dto.StoreScheduleWithAvailability;
 import com.backend.onharu.domain.common.enums.AttachmentType;
 import com.backend.onharu.domain.file.dto.FileQuery.ListByRefQuery;
 import com.backend.onharu.domain.file.dto.FileQuery.ListByRefsQuery;
@@ -47,9 +47,10 @@ import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresRequ
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UploadStoresByExcelResponse;
+import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.DailyScheduleDetail;
 import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.GetStoreSchedulesRequest;
 import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.GetStoreSchedulesResponse;
-import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.StoreScheduleResponse;
+import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.MonthlySchedule;
 import com.backend.onharu.utils.NumberUtils;
 import com.backend.onharu.utils.SecurityUtils;
 
@@ -199,7 +200,8 @@ public class StoreControllerImpl implements IStoreController {
      * 가게 스케줄 조회
      *
      * GET /api/stores/{storeId}/schedules
-     * 가게의 예약 가능한 스케줄을 조회합니다. (공개 API - 아동 포함 누구나 조회 가능)
+     * - year, month 만 전달: 해당 월의 날짜별 예약 가능 슬롯 수 반환
+     * - year, month, day 모두 전달: 해당 날짜의 시간대별 스케줄 상세 반환
      */
     @Override
     @GetMapping("/{storeId}/schedules")
@@ -207,19 +209,19 @@ public class StoreControllerImpl implements IStoreController {
             @PathVariable("storeId") Long storeId,
             @ModelAttribute GetStoreSchedulesRequest request
     ) {
-        log.info("가게 스케줄 조회 요청: storeId={}, availableDate={}", storeId, request.availableDate());
+        log.info("가게 스케줄 조회 요청: storeId={}, year={}, month={}, day={}", storeId, request.year(), request.month(), request.day());
 
-        StoreScheduleWithAvailability result = storeScheduleFacade.getAllStoreSchedulesWithAvailability(storeId, request);
+        if (request.day() == null) {
+            List<MonthlySchedule> summaries = storeScheduleFacade.getMonthlySchedules(
+                    storeId, request.year(), request.month());
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(ResponseDTO.success(GetStoreSchedulesResponse.ofMonthly(summaries)));
+        }
 
-        List<StoreScheduleResponse> storeScheduleResponses = result.allSchedules().stream()
-                .map(schedule -> new StoreScheduleResponse(
-                        schedule,
-                        result.availableScheduleIds().contains(schedule.getId())
-                ))
-                .collect(Collectors.toList());
-
+        LocalDate scheduleDate = LocalDate.of(request.year(), request.month(), request.day());
+        List<DailyScheduleDetail> details = storeScheduleFacade.getDailyScheduleDetails(storeId, scheduleDate);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(new GetStoreSchedulesResponse(storeScheduleResponses)));
+                .body(ResponseDTO.success(GetStoreSchedulesResponse.ofDaily(details)));
     }
 
     /**

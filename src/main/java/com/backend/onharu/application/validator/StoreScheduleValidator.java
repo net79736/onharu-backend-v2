@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindByStoreIdAndBusinessDayQuery;
+import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdAndScheduleDateQuery;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.storeschedule.service.StoreScheduleQueryService;
 import com.backend.onharu.domain.support.error.CoreException;
@@ -119,8 +119,8 @@ public class StoreScheduleValidator {
         
         for (ScheduleTimeRange timeRange : timeRanges) {
             // 같은 날짜의 기존 일정 조회
-            List<StoreSchedule> existingSchedules = storeScheduleQueryService.findByStoreIdAndBusinessDay(
-                    new FindByStoreIdAndBusinessDayQuery(storeId, timeRange.scheduleDate()));
+            List<StoreSchedule> existingSchedules = storeScheduleQueryService.findAllByStoreIdAndScheduleDate(
+                    new FindAllByStoreIdAndScheduleDateQuery(storeId, timeRange.scheduleDate()));
 
             // 기존 일정과 시간 범위가 겹치는지 확인
             existingSchedules.stream()
