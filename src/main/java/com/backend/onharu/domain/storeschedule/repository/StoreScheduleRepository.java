@@ -2,11 +2,9 @@ package com.backend.onharu.domain.storeschedule.repository;
 
 import java.util.List;
 
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByScheduleDateParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdAndScheduleDateParam;
+import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdAndYearMonthParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdParam;
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndDateParam;
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndScheduleDateParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndTimeRangeOverlapParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.GetStoreScheduleByIdParam;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
@@ -44,19 +42,9 @@ public interface StoreScheduleRepository {
     List<StoreSchedule> findAllByStoreIdAndScheduleDate(FindAllByStoreIdAndScheduleDateParam param);
 
     /**
-     * 영업일로 가게 일정 목록 조회
+     * 가게 ID와 연/월로 가게 일정 목록 조회
      */
-    List<StoreSchedule> findAllByScheduleDate(FindAllByScheduleDateParam param);
-
-    /**
-     * 가게 ID와 영업일로 가게 일정 조회
-     */
-    List<StoreSchedule> findByStoreIdAndScheduleDate(FindByStoreIdAndScheduleDateParam param);
-
-    /**
-     * 특정 날짜에 해당하는 가게 일정 조회
-     */
-    List<StoreSchedule> findByStoreIdAndDate(FindByStoreIdAndDateParam param);
+    List<StoreSchedule> findAllByStoreIdAndYearMonth(FindAllByStoreIdAndYearMonthParam param);
 
     /**
      * 특정 시간 범위와 겹치는 가게 일정 조회

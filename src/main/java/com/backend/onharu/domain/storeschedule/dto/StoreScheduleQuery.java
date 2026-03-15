@@ -37,22 +37,12 @@ public class StoreScheduleQuery {
     }
 
     /**
-     * 가게 ID와 영업일로 가게 일정 조회
+     * 가게 ID와 연/월로 가게 일정 목록 조회
      */
-    public record FindByStoreIdAndBusinessDayQuery(
+    public record FindAllByStoreIdAndYearMonthQuery(
             Long storeId,
-            LocalDate scheduleDate
+            int year,
+            int month
     ) {
     }
-
-    /**
-     * 특정 날짜에 해당하는 요일의 가게 일정 조회
-     * 가게 ID는 옵셔널 (null이면 모든 가게)
-     */
-    public record FindByStoreIdAndDateQuery(
-            Long storeId,
-            LocalDate scheduleDate
-    ) {
-    }
-
 }

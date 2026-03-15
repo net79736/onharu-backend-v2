@@ -2,16 +2,15 @@ package com.backend.onharu.infra.db.storeschedule.impl;
 
 import static com.backend.onharu.domain.support.error.ErrorType.StoreSchedule.STORE_SCHEDULE_NOT_FOUND;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByScheduleDateParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdAndScheduleDateParam;
+import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdAndYearMonthParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdParam;
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndDateParam;
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndScheduleDateParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndTimeRangeOverlapParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.GetStoreScheduleByIdParam;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
@@ -53,26 +52,7 @@ public class StoreScheduleRepositoryImpl implements StoreScheduleRepository {
 
     @Override
     public List<StoreSchedule> findAllByStoreIdAndScheduleDate(FindAllByStoreIdAndScheduleDateParam param) {
-        return storeScheduleJpaRepository.findByStoreIdAndScheduleDate(param.storeId(), param.scheduleDate());
-    }
-
-    @Override
-    public List<StoreSchedule> findAllByScheduleDate(FindAllByScheduleDateParam param) {
-        return storeScheduleJpaRepository.findAllByScheduleDate(param.scheduleDate());
-    }
-
-    @Override
-    public List<StoreSchedule> findByStoreIdAndScheduleDate(FindByStoreIdAndScheduleDateParam param) {
-        return storeScheduleJpaRepository.findByStoreIdAndScheduleDate(param.storeId(), param.scheduleDate());
-    }
-
-    @Override
-    public List<StoreSchedule> findByStoreIdAndDate(FindByStoreIdAndDateParam param) {
-        if (param.storeId() != null) {
-            return storeScheduleJpaRepository.findByStoreIdAndScheduleDate(param.storeId(), param.date());
-        } else {
-            return storeScheduleJpaRepository.findAllByScheduleDate(param.date());
-        }
+        return storeScheduleJpaRepository.findAllByStoreIdAndScheduleDate(param.storeId(), param.scheduleDate());
     }
 
     @Override
@@ -93,6 +73,13 @@ public class StoreScheduleRepositoryImpl implements StoreScheduleRepository {
                         schedule.getStartTime(),
                         schedule.getEndTime()))
                 .toList();
+    }
+
+    @Override
+    public List<StoreSchedule> findAllByStoreIdAndYearMonth(FindAllByStoreIdAndYearMonthParam param) {
+        LocalDate startDate = LocalDate.of(param.year(), param.month(), 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        return storeScheduleJpaRepository.findAllByStoreIdAndScheduleDateBetween(param.storeId(), startDate, endDate);
     }
 
     @Override

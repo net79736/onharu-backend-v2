@@ -22,7 +22,7 @@ import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByBusinessDayQuery;
+import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdAndScheduleDateQuery;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdQuery;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.GetStoreScheduleByIdQuery;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
@@ -241,8 +241,8 @@ class StoreScheduleQueryServiceTest {
             saveDummyStoreSchedules(savedStore2); // 테스트용 가게 일정 생성
             
             // when
-            List<StoreSchedule> schedules = storeScheduleQueryService.findAllByBusinessDay(
-                new FindAllByBusinessDayQuery(targetDate)
+            List<StoreSchedule> schedules = storeScheduleQueryService.findAllByStoreIdAndScheduleDate(
+                new FindAllByStoreIdAndScheduleDateQuery(savedStore1.getId(), targetDate)
             ); // 영업일로 가게 일정 목록 조회
 
             // then

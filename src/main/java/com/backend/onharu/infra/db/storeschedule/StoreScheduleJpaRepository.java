@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
 
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 
@@ -18,12 +19,16 @@ public interface StoreScheduleJpaRepository extends JpaRepository<StoreSchedule,
     List<StoreSchedule> findByStoreId(Long storeId);
 
     /**
-     * 일정 날짜로 가게 일정 목록 조회
-     */
-    List<StoreSchedule> findAllByScheduleDate(LocalDate scheduleDate);
-
-    /**
      * 가게 ID와 일정 날짜로 가게 일정 조회
      */
-    List<StoreSchedule> findByStoreIdAndScheduleDate(Long storeId, LocalDate scheduleDate);
+    List<StoreSchedule> findAllByStoreIdAndScheduleDate(Long storeId, LocalDate scheduleDate);
+
+    /**
+     * 가게 ID와 연/월로 가게 일정 목록 조회
+     */
+    List<StoreSchedule> findAllByStoreIdAndScheduleDateBetween(
+            @Param("storeId") Long storeId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }

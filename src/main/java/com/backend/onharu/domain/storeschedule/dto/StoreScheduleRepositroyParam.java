@@ -51,48 +51,16 @@ public class StoreScheduleRepositroyParam {
     }
 
     /**
-     * 영업일로 가게 일정 목록 조회용 파라미터
+     * 가게 ID와 연/월로 가게 일정 목록 조회용 파라미터
      */
-    public record FindAllByScheduleDateParam(
-            LocalDate scheduleDate
-    ) {
-        public FindAllByScheduleDateParam {
-            if (scheduleDate == null) {
-                throw new CoreException(ErrorType.StoreSchedule.STORE_SCHEDULE_SCHEDULE_DATE_MUST_NOT_BE_NULL);
-            }
-        }
-    }
-
-    /**
-     * 가게 ID와 영업일로 가게 일정 조회용 파라미터
-     */
-    public record FindByStoreIdAndScheduleDateParam(
+    public record FindAllByStoreIdAndYearMonthParam(
             Long storeId,
-            LocalDate scheduleDate
+            int year,
+            int month
     ) {
-        public FindByStoreIdAndScheduleDateParam {
+        public FindAllByStoreIdAndYearMonthParam {
             if (storeId == null) {
                 throw new CoreException(ErrorType.Store.STORE_ID_MUST_NOT_BE_NULL);
-            }
-            if (scheduleDate == null) {
-                throw new CoreException(ErrorType.StoreSchedule.STORE_SCHEDULE_SCHEDULE_DATE_MUST_NOT_BE_NULL);
-            }
-        }
-    }
-
-    /**
-     * 특정 날짜에 해당하는 요일의 가게 일정 조회용 파라미터
-     */
-    public record FindByStoreIdAndDateParam(
-            Long storeId,
-            LocalDate date
-    ) {
-        public FindByStoreIdAndDateParam {
-            if (storeId != null) {
-                throw new CoreException(ErrorType.Store.STORE_ID_MUST_NOT_BE_NULL);
-            }
-            if (date == null) {
-                throw new CoreException(ErrorType.StoreSchedule.STORE_SCHEDULE_SCHEDULE_DATE_MUST_NOT_BE_NULL);
             }
         }
     }

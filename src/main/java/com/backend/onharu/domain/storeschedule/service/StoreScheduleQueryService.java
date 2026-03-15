@@ -5,17 +5,13 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByBusinessDayQuery;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdAndScheduleDateQuery;
+import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdAndYearMonthQuery;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdQuery;
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindByStoreIdAndBusinessDayQuery;
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindByStoreIdAndDateQuery;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.GetStoreScheduleByIdQuery;
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByScheduleDateParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdAndScheduleDateParam;
+import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdAndYearMonthParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdParam;
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndDateParam;
-import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindByStoreIdAndScheduleDateParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.GetStoreScheduleByIdParam;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.storeschedule.repository.StoreScheduleRepository;
@@ -62,35 +58,13 @@ public class StoreScheduleQueryService {
     }
 
     /**
-     * 영업일로 가게 일정 목록 조회
+     * 가게 ID와 연/월로 가게 일정 목록 조회
      * 
-     * @param query 영업일
-     * @return 영업일이 일치하는 가게 일정 리스트
+     * @param query 가게 ID, 연도, 월
+     * @return 해당 연/월의 가게 일정 리스트
      */
-    public List<StoreSchedule> findAllByBusinessDay(FindAllByBusinessDayQuery query) {
-        return storeScheduleRepository.findAllByScheduleDate(
-                new FindAllByScheduleDateParam(query.scheduleDate()));
-    }
-
-    /**
-     * 가게 ID와 영업일로 가게 일정 조회
-     * 
-     * @param query 가게 ID와 영업일
-     * @return 가게 ID와 영업일이 일치하는 가게 일정
-     */
-    public List<StoreSchedule> findByStoreIdAndBusinessDay(FindByStoreIdAndBusinessDayQuery query) {
-        return storeScheduleRepository.findByStoreIdAndScheduleDate(
-                new FindByStoreIdAndScheduleDateParam(query.storeId(), query.scheduleDate()));
-    }
-
-    /**
-     * 특정 날짜에 해당하는 요일의 가게 일정 조회
-     * 
-     * @param query 가게 ID와 날짜
-     * @return 날짜에 해당하는 요일의 가게 일정 리스트
-     */
-    public List<StoreSchedule> findByStoreIdAndDate(FindByStoreIdAndDateQuery query) {
-        return storeScheduleRepository.findByStoreIdAndDate(
-                new FindByStoreIdAndDateParam(query.storeId(), query.scheduleDate()));
+    public List<StoreSchedule> findAllByStoreIdAndYearMonth(FindAllByStoreIdAndYearMonthQuery query) {
+        return storeScheduleRepository.findAllByStoreIdAndYearMonth(
+                new FindAllByStoreIdAndYearMonthParam(query.storeId(), query.year(), query.month()));
     }
 }
