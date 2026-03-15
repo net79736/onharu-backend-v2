@@ -23,12 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.onharu.application.OwnerFacade;
+import com.backend.onharu.application.StoreFacade;
 import com.backend.onharu.application.dto.StoreBookingSummaryResult;
 import com.backend.onharu.domain.common.enums.AttachmentType;
 import com.backend.onharu.domain.file.dto.FileQuery.ListByRefsQuery;
 import com.backend.onharu.domain.file.model.File;
 import com.backend.onharu.domain.file.service.FileQueryService;
 import com.backend.onharu.domain.reservation.model.Reservation;
+import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.support.StoreSearchSortResolver;
@@ -50,7 +52,11 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.ReservationRespo
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateOwnerRequest;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreRequest;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
+import com.backend.onharu.interfaces.api.dto.StoreRequestMapperDto;
 import com.backend.onharu.utils.NumberUtils;
 import com.backend.onharu.utils.SecurityUtils;
 
@@ -70,6 +76,8 @@ import lombok.extern.slf4j.Slf4j;
 public class OwnerControllerImpl implements IOwnerController {
 
     private final OwnerFacade ownerFacade;
+
+    private final StoreFacade storeFacade;
 
     private final FileQueryService fileQueryService;
 
@@ -156,6 +164,69 @@ public class OwnerControllerImpl implements IOwnerController {
     ) {
         log.info("사업자 정보 조회 요청: ownerId={}", ownerId);
         
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 가게 정보 작성
+     *
+     * POST /api/owners/stores
+     * 사업자가 신규 가게 정보를 생성합니다.
+     */
+    @Override
+    @PostMapping("/stores")
+    public ResponseEntity<ResponseDTO<OpenStoreResponse>> openStore(
+            @Valid @RequestBody OpenStoreRequest request
+    ) {
+        Long ownerId = SecurityUtils.getCurrentUserId();
+        log.info("가게 정보 작성 요청: ownerId={}, request={}", ownerId, request);
+
+        Store store = storeFacade.createStore(
+                StoreRequestMapperDto.toCreateStoreCommand(request, ownerId), ownerId);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseDTO.success(new OpenStoreResponse(store.getId())));
+    }
+
+    /**
+     * 가게 정보 수정
+     *
+     * PUT /api/owners/stores/{storeId}
+     * 사업자가 자신의 가게 정보를 수정합니다.
+     */
+    @Override
+    @PutMapping("/stores/{storeId}")
+    public ResponseEntity<ResponseDTO<Void>> updateMyStore(
+            @PathVariable("storeId") Long storeId,
+            @RequestBody UpdateStoreRequest request
+    ) {
+        Long ownerId = SecurityUtils.getCurrentUserId();
+        log.info("가게 정보 수정 요청: ownerId={}, storeId={}, request={}", ownerId, storeId, request);
+
+        storeFacade.updateStore(
+                StoreRequestMapperDto.toUpdateStoreCommand(storeId, request), ownerId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 가게 정보 삭제
+     *
+     * DELETE /api/owners/stores/{storeId}
+     * 사업자가 자신의 가게 정보를 삭제합니다.
+     */
+    @Override
+    @DeleteMapping("/stores/{storeId}")
+    public ResponseEntity<ResponseDTO<Void>> closeStore(
+            @PathVariable("storeId") Long storeId
+    ) {
+        Long ownerId = SecurityUtils.getCurrentUserId();
+        log.info("가게 정보 삭제 요청: ownerId={}, storeId={}", ownerId, storeId);
+
+        storeFacade.deleteStore(new DeleteStoreCommand(storeId), ownerId);
+
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(null));
     }
@@ -369,17 +440,13 @@ public class OwnerControllerImpl implements IOwnerController {
     }
 
     /**
-     * 예약 가능한 날짜 생성
+     * 가게 스케줄 생성
      * 
-     * POST /api/owners/stores/{storeId}/available-dates
-     * 예약 가능한 날짜를 생성합니다.
-     *
-     * @param storeId 가게 ID
-     * @param request 예약 가능한 날짜 생성 요청
-     * @return 생성 결과
+     * POST /api/owners/stores/{storeId}/schedules
+     * 사업자가 가게의 예약 가능한 스케줄을 생성합니다.
      */
     @Override
-    @PostMapping("/stores/{storeId}/available-dates")
+    @PostMapping("/stores/{storeId}/schedules")
     public ResponseEntity<ResponseDTO<Void>> setAvailableDates(
             @PathVariable("storeId") Long storeId,
             @Valid @RequestBody SetAvailableDatesRequest request
@@ -395,17 +462,13 @@ public class OwnerControllerImpl implements IOwnerController {
     }
 
     /**
-     * 예약 가능한 날짜 수정
+     * 가게 스케줄 수정
      * 
-     * PUT /api/owners/stores/{storeId}/available-dates
-     * 예약 가능한 날짜를 수정합니다.
-     *
-     * @param storeId 가게 ID
-     * @param request 예약 가능한 날짜 수정 요청
-     * @return 수정 결과
+     * PUT /api/owners/stores/{storeId}/schedules
+     * 사업자가 가게의 예약 가능한 스케줄을 수정합니다.
      */
     @Override
-    @PutMapping("/stores/{storeId}/available-dates")
+    @PutMapping("/stores/{storeId}/schedules")
     public ResponseEntity<ResponseDTO<Void>> updateAvailableDates(
             @PathVariable("storeId") Long storeId,
             @Valid @RequestBody UpdateAvailableDatesRequest request
@@ -421,17 +484,13 @@ public class OwnerControllerImpl implements IOwnerController {
     }
 
     /**
-     * 예약 가능한 날짜 삭제
+     * 가게 스케줄 삭제
      * 
-     * DELETE /api/owners/stores/{storeId}/available-dates
-     * 예약 가능한 날짜를 삭제합니다.
-     *
-     * @param storeId 가게 ID
-     * @param request 예약 가능한 날짜 삭제 요청
-     * @return 삭제 결과
+     * DELETE /api/owners/stores/{storeId}/schedules
+     * 사업자가 가게의 예약 가능한 스케줄을 삭제합니다.
      */
     @Override
-    @DeleteMapping("/stores/{storeId}/available-dates")
+    @DeleteMapping("/stores/{storeId}/schedules")
     public ResponseEntity<ResponseDTO<Void>> removeAvailableDates(
             @PathVariable("storeId") Long storeId,
             @RequestBody RemoveAvailableDatesRequest request
@@ -451,8 +510,6 @@ public class OwnerControllerImpl implements IOwnerController {
      * 
      * GET /api/owners/reservations/summary
      * 사업자의 요약된 예약 목록을 조회합니다.
-     *
-     * @return 요약된 예약 목록
      */
     @Override
     @GetMapping("/reservations/summary")

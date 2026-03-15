@@ -15,7 +15,7 @@ import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByS
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdQuery;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.storeschedule.service.StoreScheduleQueryService;
-import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.GetAvailableDatesRequest;
+import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.GetStoreSchedulesRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -80,7 +80,7 @@ public class StoreScheduleFacade {
      * @param storeId 가게 ID
      * @return 모든 일정 목록과 예약 가능한 일정 ID Set을 포함한 DTO
      */
-    public StoreScheduleWithAvailability getAllStoreSchedulesWithAvailability(Long storeId, GetAvailableDatesRequest request) {
+    public StoreScheduleWithAvailability getAllStoreSchedulesWithAvailability(Long storeId, GetStoreSchedulesRequest request) {
         // 1. 가게의 모든 일정 조회
         List<StoreSchedule> allSchedules = storeScheduleQueryService.findAllByStoreIdAndScheduleDate(
                 new FindAllByStoreIdAndScheduleDateQuery(storeId, request.availableDate()));

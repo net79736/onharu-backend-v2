@@ -56,7 +56,7 @@ public class StoreScheduleControllerDto {
         }
     }
 
-    public record GetAvailableDatesRequest(
+    public record GetStoreSchedulesRequest(
             @NotNull(message = "예약 가능한 날짜는 필수입니다.")
             @FutureOrPresent(message = "예약 가능한 날짜는 오늘 이후여야 합니다.")
             @Schema(description = "예약 가능한 날짜", example = "2024-12-31")
@@ -64,7 +64,7 @@ public class StoreScheduleControllerDto {
     ) {
     }
 
-    public record GetAvailableDatesResponse(
+    public record GetStoreSchedulesResponse(
             @Schema(description = "예약 가능한 일정 목록")
             List<StoreScheduleResponse> storeSchedules
     ) {

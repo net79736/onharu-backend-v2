@@ -19,6 +19,9 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableD
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateAvailableDatesRequest;
 import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.UpdateOwnerRequest;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreRequest;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreResponse;
+import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
@@ -64,6 +67,102 @@ public interface IOwnerController {
     ResponseEntity<ResponseDTO<GetOwnerResponse>> getMyBusiness(
             @Schema(description = "사업자 ID", example = "1")
             Long ownerId
+    );
+
+    @Operation(summary = "가게 정보 작성", description = "사업자가 신규 가게 정보를 생성합니다.")
+    ResponseEntity<ResponseDTO<OpenStoreResponse>> openStore(
+            @RequestBody(
+                    description = "가게 정보 생성 요청",
+                    required = true,
+                    content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = OpenStoreRequest.class),
+                        examples = @ExampleObject(
+                                name = "가게 정보 작성 예시",
+                                value = "{\n" +
+                                        "  \"categoryId\": 1,\n" +
+                                        "  \"name\": \"따뜻한 식당\",\n" +
+                                        "  \"address\": \"서울시 강남구 테헤란로 123\",\n" +
+                                        "  \"phone\": \"0212345678\",\n" +
+                                        "  \"lat\": \"37.5665\",\n" +
+                                        "  \"lng\": \"126.9780\",\n" +
+                                        "  \"introduction\": \"따뜻한 마음으로 환영합니다!\",\n" +
+                                        "  \"intro\": \"따뜻한 한 끼 식사\",\n" +
+                                        "  \"tagNames\": [\"한식\", \"점심식사\", \"따뜻한\"],\n" +
+                                        "  \"businessHours\": [\n" +
+                                        "    {\n" +
+                                        "      \"businessDay\": \"MON | TUE | WED | THU | FRI | SAT | SUN\",\n" +
+                                        "      \"openTime\": \"09:00\",\n" +
+                                        "      \"closeTime\": \"22:00\"\n" +
+                                        "    }\n" +
+                                        "  ],\n" +
+                                        "  \"images\": [\n" +
+                                        "    {\n" +
+                                        "      \"fileKey\": \"image/uuid-photo.jpg\",\n" +
+                                        "      \"filePath\": \"https://minio.example.com/bucket/image/uuid-photo.jpg\",\n" +
+                                        "      \"displayOrder\": 0\n" +
+                                        "    }\n" +
+                                        "  ]\n" +
+                                        "}"
+                        )
+                )
+            )
+            OpenStoreRequest request
+    );
+
+    @Operation(summary = "가게 정보 수정", description = "사업자가 자신의 가게 정보를 수정합니다.")
+    ResponseEntity<ResponseDTO<Void>> updateMyStore(
+            @Schema(description = "가게 ID", example = "1")
+            Long storeId,
+            @RequestBody(
+                    description = "가게 정보 수정 요청",
+                    required = true,
+                    content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = UpdateStoreRequest.class),
+                        examples = @ExampleObject(
+                                name = "가게 정보 수정 예시",
+                                value = "{\n" +
+                                        "  \"categoryId\": 1,\n" +
+                                        "  \"address\": \"서울시 강남구 테헤란로 123\",\n" +
+                                        "  \"phone\": \"0212345678\",\n" +
+                                        "  \"lat\": \"37.5665\",\n" +
+                                        "  \"lng\": \"126.9780\",\n" +
+                                        "  \"introduction\": \"따뜻한 한 끼 식사\",\n" +
+                                        "  \"intro\": \"따뜻한 마음으로 환영합니다!\",\n" +
+                                        "  \"isOpen\": true,\n" +
+                                        "  \"isSharing\": true,\n" +
+                                        "  \"tagNames\": [\"한식\", \"점심식사\", \"따뜻한\"],\n" +
+                                        "  \"businessHours\": [\n" +
+                                        "    {\n" +
+                                        "      \"businessDay\": \"MON | TUE | WED | THU | FRI | SAT | SUN\",\n" +
+                                        "      \"openTime\": \"09:00\",\n" +
+                                        "      \"closeTime\": \"22:00\"\n" +
+                                        "    },\n" +
+                                        "    {\n" +
+                                        "      \"businessDay\": \"MON | TUE | WED | THU | FRI | SAT | SUN\",\n" +
+                                        "      \"openTime\": \"10:00\",\n" +
+                                        "      \"closeTime\": \"21:00\"\n" +
+                                        "    }\n" +
+                                        "  ],\n" +
+                                        "  \"images\": [\n" +
+                                        "    {\n" +
+                                        "      \"fileKey\": \"image/uuid-photo.jpg\",\n" +
+                                        "      \"filePath\": \"https://minio.example.com/bucket/image/uuid-photo.jpg\",\n" +
+                                        "      \"displayOrder\": 0\n" +
+                                        "    }\n" +
+                                        "  ]\n" +
+                                        "}"
+                        )
+                )
+            )
+            UpdateStoreRequest request
+    );
+
+    @Operation(summary = "가게 정보 삭제", description = "사업자가 자신의 가게 정보를 삭제합니다.")
+    ResponseEntity<ResponseDTO<Void>> closeStore(
+            @Schema(description = "가게 ID", example = "1")
+            Long storeId
     );
 
     @Operation(
@@ -140,18 +239,18 @@ public interface IOwnerController {
             CancelReservationRequest request
     );
 
-    @Operation(summary = "예약 가능한 날짜 생성", description = "예약 가능한 날짜를 생성합니다.")
+    @Operation(summary = "가게 스케줄 생성", description = "사업자가 가게의 예약 가능한 스케줄을 생성합니다.")
     ResponseEntity<ResponseDTO<Void>> setAvailableDates(
             @Schema(description = "가게 ID", example = "1")
             Long storeId,
             @RequestBody(
-                    description = "예약 가능한 날짜 생성 요청",
+                    description = "스케줄 생성 요청",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = SetAvailableDatesRequest.class),
                             examples = @ExampleObject(
-                                    name = "예약 가능한 날짜 생성 예시",
+                                    name = "스케줄 생성 예시",
                                     value = "{\n" +
                                             "  \"storeSchedules\": [\n" +
                                             "    {\n" +
@@ -174,18 +273,18 @@ public interface IOwnerController {
             SetAvailableDatesRequest request
     );
 
-    @Operation(summary = "예약 가능한 날짜 수정", description = "예약 가능한 날짜를 수정합니다.")
+    @Operation(summary = "가게 스케줄 수정", description = "사업자가 가게의 예약 가능한 스케줄을 수정합니다.")
     ResponseEntity<ResponseDTO<Void>> updateAvailableDates(
             @Schema(description = "가게 ID", example = "1")
             Long storeId,
             @RequestBody(
-                    description = "예약 가능한 날짜 수정 요청",
+                    description = "스케줄 수정 요청",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = UpdateAvailableDatesRequest.class),
                             examples = @ExampleObject(
-                                    name = "예약 가능한 날짜 수정 예시",
+                                    name = "스케줄 수정 예시",
                                     value = "{\n" +
                                             "  \"storeSchedules\": [\n" +
                                             "    {\n" +
@@ -210,18 +309,18 @@ public interface IOwnerController {
             UpdateAvailableDatesRequest request
     );
     
-    @Operation(summary = "예약 가능한 날짜 삭제", description = "예약 가능한 날짜를 삭제합니다.")
+    @Operation(summary = "가게 스케줄 삭제", description = "사업자가 가게의 예약 가능한 스케줄을 삭제합니다.")
     ResponseEntity<ResponseDTO<Void>> removeAvailableDates(
             @Schema(description = "가게 ID", example = "1")
             Long storeId,
             @RequestBody(
-                    description = "예약 가능한 날짜 삭제 요청",
+                    description = "스케줄 삭제 요청",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = RemoveAvailableDatesRequest.class),
                             examples = @ExampleObject(
-                                    name = "예약 가능한 날짜 삭제 예시",
+                                    name = "스케줄 삭제 예시",
                                     value = "{\n" +
                                             "  \"storeScheduleIds\": [1, 2, 3]\n" +
                                             "}"

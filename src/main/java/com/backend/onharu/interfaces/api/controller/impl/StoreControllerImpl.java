@@ -11,13 +11,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,13 +22,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.onharu.application.StoreExcelFacade;
 import com.backend.onharu.application.StoreFacade;
+import com.backend.onharu.application.StoreScheduleFacade;
+import com.backend.onharu.application.dto.StoreScheduleWithAvailability;
 import com.backend.onharu.domain.common.enums.AttachmentType;
 import com.backend.onharu.domain.file.dto.FileQuery.ListByRefQuery;
 import com.backend.onharu.domain.file.dto.FileQuery.ListByRefsQuery;
 import com.backend.onharu.domain.file.model.File;
 import com.backend.onharu.domain.file.service.FileQueryService;
 import com.backend.onharu.domain.store.dto.CategoryQuery.FindAllByNameQuery;
-import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
@@ -42,21 +40,19 @@ import com.backend.onharu.domain.store.support.StoreSearchSortResolver;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.controller.IStoreController;
-import com.backend.onharu.interfaces.api.dto.StoreRequestMapperDto;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.CategoryResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.GetStoreDetailByIdRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.GetStoreDetailResponse;
-import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreRequest;
-import com.backend.onharu.interfaces.api.dto.StoreControllerDto.OpenStoreResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
-import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UpdateStoreRequest;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UploadStoresByExcelResponse;
+import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.GetStoreSchedulesRequest;
+import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.GetStoreSchedulesResponse;
+import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.StoreScheduleResponse;
 import com.backend.onharu.utils.NumberUtils;
 import com.backend.onharu.utils.SecurityUtils;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -74,6 +70,7 @@ public class StoreControllerImpl implements IStoreController {
     private final CategoryRepository categoryRepository;
     private final StoreFacade storeFacade;
     private final StoreExcelFacade storeExcelFacade;
+    private final StoreScheduleFacade storeScheduleFacade;
     private final FileQueryService fileQueryService;
 
     /**
@@ -199,78 +196,30 @@ public class StoreControllerImpl implements IStoreController {
     }
 
     /**
-     * 가게 정보 작성
-     * 
-     * POST /api/stores
-     * 신규 가게 정보를 생성합니다.
+     * 가게 스케줄 조회
      *
-     * @param request 가게 정보 생성 요청
-     * @return 생성된 가게 정보
+     * GET /api/stores/{storeId}/schedules
+     * 가게의 예약 가능한 스케줄을 조회합니다. (공개 API - 아동 포함 누구나 조회 가능)
      */
     @Override
-    @PostMapping
-    public ResponseEntity<ResponseDTO<OpenStoreResponse>> openStore(
-            @Valid @RequestBody OpenStoreRequest request
-    ) {
-        Long ownerId = SecurityUtils.getCurrentUserId();
-        log.info("가게 정보 작성 요청: ownerId={}, request={}", ownerId, request);
-
-        Store store = storeFacade.createStore(
-                StoreRequestMapperDto.toCreateStoreCommand(request, ownerId), ownerId);
-
-        OpenStoreResponse response = new OpenStoreResponse(store.getId());
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseDTO.success(response));
-    }
-
-    /**
-     * 가게 정보 삭제
-     * 
-     * DELETE /api/stores/{storeId}
-     * 특정 가게 정보를 삭제합니다.
-     *
-     * @param storeId 가게 ID
-     * @return 삭제 결과
-     */
-    @Override
-    @DeleteMapping("/{storeId}")
-    public ResponseEntity<ResponseDTO<Void>> closeStore(
-            @PathVariable("storeId") Long storeId
-    ) {        
-        Long ownerId = SecurityUtils.getCurrentUserId();
-        log.info("가게 정보 삭제 요청: ownerId={}, storeId={}", ownerId, storeId);
-
-        storeFacade.deleteStore(new DeleteStoreCommand(storeId), ownerId);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
-    }
-
-    /**
-     * 가게 정보 수정
-     * 
-     * PUT /api/stores/{storeId}
-     * 특정 가게 정보를 수정합니다.
-     *
-     * @param storeId 가게 ID
-     * @param request 가게 정보 수정 요청
-     * @return 수정 결과
-     */
-    @Override
-    @PutMapping("/{storeId}")
-    public ResponseEntity<ResponseDTO<Void>> updateMyStore(
+    @GetMapping("/{storeId}/schedules")
+    public ResponseEntity<ResponseDTO<GetStoreSchedulesResponse>> getStoreSchedules(
             @PathVariable("storeId") Long storeId,
-            @RequestBody UpdateStoreRequest request
+            @ModelAttribute GetStoreSchedulesRequest request
     ) {
-        Long ownerId = SecurityUtils.getCurrentUserId();
-        log.info("가게 정보 수정 요청: ownerId={}, storeId={}, request={}", ownerId, storeId, request);
+        log.info("가게 스케줄 조회 요청: storeId={}, availableDate={}", storeId, request.availableDate());
 
-        storeFacade.updateStore(
-                StoreRequestMapperDto.toUpdateStoreCommand(storeId, request), ownerId);
-        
+        StoreScheduleWithAvailability result = storeScheduleFacade.getAllStoreSchedulesWithAvailability(storeId, request);
+
+        List<StoreScheduleResponse> storeScheduleResponses = result.allSchedules().stream()
+                .map(schedule -> new StoreScheduleResponse(
+                        schedule,
+                        result.availableScheduleIds().contains(schedule.getId())
+                ))
+                .collect(Collectors.toList());
+
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(null));
+                .body(ResponseDTO.success(new GetStoreSchedulesResponse(storeScheduleResponses)));
     }
 
     /**
