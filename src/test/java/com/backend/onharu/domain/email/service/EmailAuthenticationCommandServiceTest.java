@@ -68,7 +68,7 @@ class EmailAuthenticationCommandServiceTest {
                             .build()
             );
 
-            savedEmailAuthentication.verify(LocalDateTime.now()); // 인증 처리 완료
+            savedEmailAuthentication.verify(savedEmailAuthentication.getToken(), LocalDateTime.now()); // 인증 검증
             emailAuthenticationJpaRepository.save(savedEmailAuthentication);
 
             CreateEmailAuthenticationCommand command = new CreateEmailAuthenticationCommand(email, expiredAt);
