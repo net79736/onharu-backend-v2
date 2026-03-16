@@ -134,9 +134,10 @@ public class AuthControllerImpl implements IAuthController {
     ) {
         log.info("이메일 인증 코드 발송 요청: {}", request);
 
+        // 이메일 인증 생성
         authFacade.createEmailAuthentication(new CreateEmailAuthenticationCommand(
                 request.email(),
-                LocalDateTime.now().plusMinutes(5))
+                LocalDateTime.now().plusMinutes(3)) // 이메일 인증 유효시간 3분
         );
 
         return ResponseEntity.status(HttpStatus.OK)
