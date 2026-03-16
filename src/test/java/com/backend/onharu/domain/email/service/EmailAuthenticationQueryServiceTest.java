@@ -202,7 +202,9 @@ class EmailAuthenticationQueryServiceTest {
                             .build()
             );
 
-            saved.verify(LocalDateTime.now()); // 인증 완료
+            String token = saved.getToken();
+
+            saved.verify(token, LocalDateTime.now()); // 이메일 검증
             emailAuthenticationJpaRepository.save(saved);
 
             ExistsVerifiedByEmailQuery query = new ExistsVerifiedByEmailQuery(email, true);

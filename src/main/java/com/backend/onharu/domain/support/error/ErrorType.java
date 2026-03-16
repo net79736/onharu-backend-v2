@@ -65,6 +65,7 @@ public enum ErrorType implements IErrorType {
         EMAIL_AUTHENTICATION_NOT_FOUND(ErrorCode.BAD_REQUEST, "이메일 인증을 찾을 수 없습니다.", LogLevel.ERROR),
         EMAIL_ALREADY_VERIFIED(ErrorCode.BAD_REQUEST, "이미 인증이 완료된 이메일 입니다.", LogLevel.ERROR),
         EMAIL_TOKEN_EXPIRED(ErrorCode.FORBIDDEN, "이메일 인증 토큰이 만료되었습니다.", LogLevel.ERROR),
+        EMAIL_TOKEN_MISMATCH(ErrorCode.BAD_REQUEST, "이메일 인증 토큰이 일치하지 않습니다.", LogLevel.ERROR),
         EMAIL_NOT_VERIFIED(ErrorCode.FORBIDDEN, "이메일 인증 되지 않았습니다.", LogLevel.ERROR),
         ;
 

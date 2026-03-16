@@ -56,8 +56,10 @@ public class EmailAuthenticationCommandService {
         EmailAuthentication emailAuthentication = emailAuthenticationRepository.findEmailAuthenticationByEmailAndToken(
                 new FindByEmailAndTokenParam(command.email(), command.token())
         );
-        // 이메일 인증 검증 및 처리
-        emailAuthentication.verify(command.now());
+
+        // 이메일 인증 검증
+        emailAuthentication.verify(command.token(), command.now());
+
         // isVerified = true 로 변경한 이메일 인증 엔티티 저장
         emailAuthenticationRepository.save(emailAuthentication);
     }

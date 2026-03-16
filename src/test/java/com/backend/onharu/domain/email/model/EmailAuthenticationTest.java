@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
-import static com.backend.onharu.domain.support.error.ErrorType.EmailAuthentication.EMAIL_ALREADY_VERIFIED;
-import static com.backend.onharu.domain.support.error.ErrorType.EmailAuthentication.EMAIL_TOKEN_EXPIRED;
+import static com.backend.onharu.domain.support.error.ErrorType.EmailAuthentication.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -85,8 +84,10 @@ class EmailAuthenticationTest {
                     .expiredAt(expiredAt)
                     .build();
 
+            String token = emailAuthentication.getToken();
+
             // WHEN
-            emailAuthentication.verify(now);
+            emailAuthentication.verify(token, now);
 
             // THEN
             assertThat(emailAuthentication.isVerified()).isTrue();
@@ -104,10 +105,11 @@ class EmailAuthenticationTest {
                     .expiredAt(expiredAt)
                     .build();
 
-            emailAuthentication.verify(now); // 1차 인증
+            String token = emailAuthentication.getToken();
+            emailAuthentication.verify(token, now); // 1차 인증
 
             // WHEN
-            assertThatThrownBy(() -> emailAuthentication.verify(now)) // 2차 인증
+            assertThatThrownBy(() -> emailAuthentication.verify(token, now)) // 2차 인증
                     .isInstanceOf(CoreException.class)
                     .extracting(e -> ((CoreException) e).getErrorType())
                     .isEqualTo(EMAIL_ALREADY_VERIFIED);
@@ -125,11 +127,34 @@ class EmailAuthenticationTest {
                     .expiredAt(expiredAt)
                     .build();
 
+            String token = emailAuthentication.getToken();
+
             // WHEN
-            assertThatThrownBy(() -> emailAuthentication.verify(now))
+            assertThatThrownBy(() -> emailAuthentication.verify(token, now))
                     .isInstanceOf(CoreException.class)
                     .extracting(e -> ((CoreException) e).getErrorType())
                     .isEqualTo(EMAIL_TOKEN_EXPIRED);
+        }
+
+        @Test
+        @DisplayName("인증 토큰이 일치하지 않는 경우 예외 발생")
+        void shouldThrowExceptionWhenTokenMismatch() {
+            // GIVEN
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime expiredAt = now.plusDays(5);
+
+            EmailAuthentication emailAuthentication = EmailAuthentication.builder()
+                    .email("test1234@test.com")
+                    .expiredAt(expiredAt)
+                    .build();
+
+            String invalidToken = "999999";
+
+            // WHEN & THEN
+            assertThatThrownBy(() -> emailAuthentication.verify(invalidToken, now))
+                    .isInstanceOf(CoreException.class)
+                    .extracting(e -> ((CoreException) e).getErrorType())
+                    .isEqualTo(EMAIL_TOKEN_MISMATCH);
         }
     }
 }
