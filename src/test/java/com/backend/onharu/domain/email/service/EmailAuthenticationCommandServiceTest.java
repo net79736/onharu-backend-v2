@@ -55,26 +55,58 @@ class EmailAuthenticationCommandServiceTest {
         }
 
         @Test
-        @DisplayName("이미 인증 완료된 경우 예외 발생")
-        void shouldCreateEmailAuthenticationWhenAlreadyComplete() {
+        @DisplayName("재요청시 기존 미인증 토큰은 만료")
+        void shouldExpirePreviousTokenWhenReissue() {
             // GIVEN
             String email = "test2222@test.com";
-            LocalDateTime expiredAt = LocalDateTime.now().plusDays(1);
 
-            EmailAuthentication savedEmailAuthentication = emailAuthenticationJpaRepository.save(
+            EmailAuthentication emailAuthentication = emailAuthenticationJpaRepository.save(
                     EmailAuthentication.builder()
                             .email(email)
-                            .expiredAt(expiredAt)
+                            .expiredAt(LocalDateTime.now().plusMinutes(5))
                             .build()
             );
 
-            savedEmailAuthentication.verify(savedEmailAuthentication.getToken(), LocalDateTime.now()); // 인증 검증
-            emailAuthenticationJpaRepository.save(savedEmailAuthentication);
+            CreateEmailAuthenticationCommand command = new CreateEmailAuthenticationCommand(
+                    email,
+                    LocalDateTime.now().plusMinutes(5)
+            );
 
-            CreateEmailAuthenticationCommand command = new CreateEmailAuthenticationCommand(email, expiredAt);
+            // WHEN
+            EmailAuthentication result = emailAuthenticationCommandService.create(command);
+
+            // THEN
+            EmailAuthentication expiredAuth = emailAuthenticationJpaRepository.findById(emailAuthentication.getId()).orElseThrow();
+
+            assertThat(expiredAuth.getExpiredAt()).isBeforeOrEqualTo(LocalDateTime.now());
+            assertThat(result.getEmail()).isEqualTo(email);
+            assertThat(result.isVerified()).isFalse();
+        }
+
+        @Test
+        @DisplayName("1분 내 10번 이상 요청 시 예외 발생")
+        void shouldThrowExceptionWhenTooManyRequests() {
+            // GIVEN
+            String email = "test3333@test.com";
+
+            for (int i = 0; i < 10; i++) {
+                emailAuthenticationJpaRepository.save(
+                        EmailAuthentication.builder()
+                                .email(email)
+                                .expiredAt(LocalDateTime.now().plusMinutes(5))
+                                .build()
+                );
+            }
+
+            CreateEmailAuthenticationCommand command = new CreateEmailAuthenticationCommand(
+                            email,
+                            LocalDateTime.now().plusMinutes(5)
+                    );
+
             // WHEN
             assertThatThrownBy(() -> emailAuthenticationCommandService.create(command))
-                    .isInstanceOf(CoreException.class);
+                    .isInstanceOf(CoreException.class)
+                    .hasMessageContaining("짧은 시간 내 많은 이메일 인증 요청입니다.");
         }
     }
 
