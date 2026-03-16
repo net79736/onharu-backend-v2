@@ -2,6 +2,10 @@ spring:
   config:
     activate:
       on-profile: prod
+    import:
+      - application-smtp.yaml
+      - application-oauth.yaml
+      - application-nts.yaml
   application:
     name: onharu
   
@@ -20,18 +24,28 @@ spring:
   
   # JPA 설정
   jpa:
-    show-sql: false
+    show-sql: ${JPA_SHOW_SQL:false}
     hibernate:
-      ddl-auto: validate                # 프로덕션에서는 validate 사용
+      ddl-auto: ${JPA_DDL_AUTO:validate}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
-        format_sql: false
-        highlight_sql: false
-        jdbc:
-          batch_size: 30
-        order_inserts: true
-        order_updates: true
+        format_sql: ${JPA_FORMAT_SQL:false}
+        highlight_sql: ${JPA_HIGHLIGHT_SQL:false}
+
+# AWS S3 설정 (운영 환경)
+aws:
+  s3:
+    url: ${AWS_S3_URL}
+    access-key: ${AWS_S3_ACCESS_KEY}
+    secret-key: ${AWS_S3_SECRET_KEY}
+    region: ${AWS_S3_REGION}
+    bucket: ${AWS_S3_BUCKET}
+
+# 가게 검색 기본 반경 설정
+store:
+  search:
+    default-radius-km: 20  # 기본 반경 20km
 
 # 서버 설정
 server:

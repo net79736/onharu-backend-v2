@@ -29,30 +29,30 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
 /**
- * MinIO 파일 저장소 서비스
+ * S3 파일 저장소 서비스
  * 
- * MinIO를 사용하여 파일을 저장하고 관리합니다.
- * 개발/테스트 환경(dev, test 프로파일)에서 사용됩니다.
+ * S3를 사용하여 파일을 저장하고 관리합니다.
+ * 운영 환경(prod 프로파일)에서 사용됩니다.
  * 
  * 주요 기능:
- * 1. Presigned URL 생성: 클라이언트가 직접 MinIO에 업로드
- * 2. 파일 삭제: MinIO 객체 삭제
+ * 1. Presigned URL 생성: 클라이언트가 직접 S3에 업로드
+ * 2. 파일 삭제: S3 객체 삭제
  * 3. MIME 타입 검증: 허용된 파일 형식만 업로드
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Profile({"dev", "test"})
-public class MinioService implements StorageService {
+@Profile({"prod"})
+public class S3Service implements StorageService {
 
-    private final S3Client minioClient;
-    private final S3Presigner minioS3Presigner;
+    private final S3Client awsS3Client;
+    private final S3Presigner awsS3Presigner;
     
-    @Value("${minio.bucket}")
+    @Value("${aws.s3.bucket}")
     private String bucket;
     
-    @Value("${minio.url}")
-    private String minioUrl;  // 백엔드가 MinIO에 연결할 때 사용하는 내부 주소
+    @Value("${aws.s3.url}")
+    private String awsS3Url;  // 백엔드가 AWS S3에 연결할 때 사용하는 AWS S3 URL 주소
     
     /**
      * Presigned URL 생성
@@ -83,27 +83,27 @@ public class MinioService implements StorageService {
             Duration expiration = Duration.ofMinutes(5);
 
             // PresignedPutObjectRequest 생성
-            PresignedPutObjectRequest presignedPutObjectRequest = minioS3Presigner.presignPutObject(
+            PresignedPutObjectRequest presignedPutObjectRequest = awsS3Presigner.presignPutObject(
                     presignRequest -> presignRequest
                             .putObjectRequest(putObjectRequest)
                             .signatureDuration(expiration)
             );
 
-            String downloadUrl = minioUrl + "/" + bucket + "/" + uniqueFileName;
+            String downloadUrl = awsS3Url + "/" + bucket + "/" + uniqueFileName;
 
-            log.info("MinioService downloadUrl: {}", downloadUrl);
+            log.info("S3Service downloadUrl: {}", downloadUrl);
 
             S3FileUploadResponse response = new S3FileUploadResponse(
                     presignedPutObjectRequest.url().toString(),
                     downloadUrl
             );
 
-            log.info("MinIO Presigned URL 생성 완료 - fileName: {}, uniqueFileName: {}", fileName, uniqueFileName);
+            log.info("S3 Presigned URL 생성 완료 - fileName: {}, uniqueFileName: {}", fileName, uniqueFileName);
             
             return response;
 
         } catch (Exception e) {
-            log.error("MinIO Presigned URL 생성 실패: {}", e.getMessage(), e);
+            log.error("S3 Presigned URL 생성 실패: {}", e.getMessage(), e);
             throw new CoreException(ErrorType.FileOperation.FILE_UPLOAD_ERROR);
         }
     }
@@ -127,11 +127,11 @@ public class MinioService implements StorageService {
                     .key(fileName)
                     .build();
 
-            minioClient.deleteObject(deleteObjectRequest);
-            log.info("MinIO 파일 삭제 성공 - fileName: {}", fileName);
+            awsS3Client.deleteObject(deleteObjectRequest);
+            log.info("S3 파일 삭제 성공 - fileName: {}", fileName);
             return true;
         } catch (S3Exception e) {
-            log.error("MinIO 파일 삭제 실패: {}", e.awsErrorDetails().errorMessage(), e);
+            log.error("S3 파일 삭제 실패: {}", e.awsErrorDetails().errorMessage(), e);
             throw new CoreException(ErrorType.FileOperation.FILE_DELETE_ERROR);
         }
     }
@@ -150,26 +150,26 @@ public class MinioService implements StorageService {
         }
 
         try {
-            log.info("MinioService downloadFile: fileName={}", fileName);
-            log.info("MinioService downloadFile: bucket={}", bucket);
+            log.info("S3Service downloadFile: fileName={}", fileName);
+            log.info("S3Service downloadFile: bucket={}", bucket);
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(bucket)
                     .key(fileName)
                     .build();
 
-            ResponseBytes<GetObjectResponse> responseBytes = minioClient.getObjectAsBytes(getObjectRequest);
+            ResponseBytes<GetObjectResponse> responseBytes = awsS3Client.getObjectAsBytes(getObjectRequest);
             byte[] fileBytes = responseBytes.asByteArray();
             
-            log.info("MinIO 파일 다운로드 성공 - fileName: {}, size: {} bytes", fileName, fileBytes.length);
+            log.info("S3 파일 다운로드 성공 - fileName: {}, size: {} bytes", fileName, fileBytes.length);
             return fileBytes;
         } catch (S3Exception e) {
-            log.error("MinIO 파일 다운로드 실패: {}", e.awsErrorDetails().errorMessage(), e);
+            log.error("S3 파일 다운로드 실패: {}", e.awsErrorDetails().errorMessage(), e);
             if (e.statusCode() == 404) {
                 throw new CoreException(ErrorType.FileOperation.FILE_NOT_FOUND);
             }
             throw new CoreException(ErrorType.FileOperation.FILE_DOWNLOAD_ERROR);
         } catch (Exception e) {
-            log.error("MinIO 파일 다운로드 중 예외 발생: {}", e.getMessage(), e);
+            log.error("S3 파일 다운로드 중 예외 발생: {}", e.getMessage(), e);
             throw new CoreException(ErrorType.FileOperation.FILE_DOWNLOAD_ERROR);
         }
     }
@@ -177,7 +177,7 @@ public class MinioService implements StorageService {
     /**
      * 파일의 Content-Type 조회
      * 
-     * MinIO에 저장된 파일의 MIME 타입을 조회합니다.
+     * S3에 저장된 파일의 MIME 타입을 조회합니다.
      * 파일이 존재하지 않으면 기본값으로 "application/octet-stream"을 반환합니다.
      * 
      * @param fileName 조회할 파일의 전체 경로 (예: "image/uuid-photo.jpg")
@@ -196,7 +196,7 @@ public class MinioService implements StorageService {
                     .key(fileName)
                     .build();
 
-            HeadObjectResponse headObjectResponse = minioClient.headObject(headObjectRequest);
+            HeadObjectResponse headObjectResponse = awsS3Client.headObject(headObjectRequest);
             String contentType = headObjectResponse.contentType();
             
             // Content-Type이 없으면 기본값 반환
@@ -204,10 +204,10 @@ public class MinioService implements StorageService {
                 contentType = "application/octet-stream";
             }
             
-            log.debug("MinIO 파일 Content-Type 조회 - fileName: {}, contentType: {}", fileName, contentType);
+            log.debug("S3 파일 Content-Type 조회 - fileName: {}, contentType: {}", fileName, contentType);
             return contentType;
         } catch (S3Exception e) {
-            log.warn("MinIO 파일 Content-Type 조회 실패: {}, 기본값 반환", e.awsErrorDetails().errorMessage());
+            log.warn("S3 파일 Content-Type 조회 실패: {}, 기본값 반환", e.awsErrorDetails().errorMessage());
             // 파일이 존재하지 않거나 조회 실패 시 기본값 반환
             return "application/octet-stream";
         } catch (Exception e) {

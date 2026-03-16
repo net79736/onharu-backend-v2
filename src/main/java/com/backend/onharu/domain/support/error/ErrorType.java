@@ -34,6 +34,7 @@ public enum ErrorType implements IErrorType {
         FILE_UPLOAD_INVALID_MIME_TYPE_ERROR(ErrorCode.BAD_REQUEST, "유효하지 않은 MIME 타입 또는 확장자입니다.", LogLevel.ERROR),
         FILE_DELETE_ERROR(ErrorCode.BAD_REQUEST, "파일 삭제 중 오류가 발생했습니다.", LogLevel.ERROR),
         MINIO_CLIENT_ERROR(ErrorCode.BAD_REQUEST, "MinIO 클라이언트 오류가 발생했습니다.", LogLevel.ERROR),
+        AWS_S3_CLIENT_ERROR(ErrorCode.BAD_REQUEST, "AWS S3 클라이언트 오류가 발생했습니다.", LogLevel.ERROR),
         CSV_PROCESSING_ERROR(ErrorCode.BAD_REQUEST, "CSV 파일을 처리하는 중 오류가 발생했습니다.", LogLevel.ERROR),
         ;
 
