@@ -53,4 +53,20 @@ public class EmailAuthenticationRepositoryImpl implements EmailAuthenticationRep
     public boolean existsByEmailAndIsVerifiedTrue(ExistsVerifiedByEmailParam param) {
         return emailAuthenticationJpaRepository.existsByEmailAndIsVerifiedTrue(param.email());
     }
+
+    @Override
+    public EmailAuthentication findTopByEmailOrderByCreatedAtDesc(FindByEmailParam param) {
+        return emailAuthenticationJpaRepository.findTopByEmailOrderByCreatedAtDesc(param.email())
+                .orElseThrow(() -> new CoreException(EMAIL_AUTHENTICATION_NOT_FOUND));
+    }
+
+    @Override
+    public void expireTokens(ExpireTokensParam param) {
+        emailAuthenticationJpaRepository.expireTokens(param.email(), param.now());
+    }
+
+    @Override
+    public long countEmailAuthentication(CountEmailAuthenticationParam param) {
+        return emailAuthenticationJpaRepository.countEmailAuthentication(param.email(), param.now());
+    }
 }
