@@ -40,4 +40,19 @@ public interface EmailAuthenticationRepository {
      * 이메일 인증 완료 여부를 확인합니다.
      */
     boolean existsByEmailAndIsVerifiedTrue(ExistsVerifiedByEmailParam param);
+
+    /**
+     * 이메일로 마지막에 생성된 이메일 인증 엔티티 조회
+     */
+    EmailAuthentication findTopByEmailOrderByCreatedAtDesc(FindByEmailParam param);
+
+    /**
+     * 현재 시간을 기준으로 미인증 토큰을 만료처리합니다.
+     */
+    void expireTokens(ExpireTokensParam param);
+
+    /**
+     * 현재 시간을 기준으로 이메일 인증이 호출된 횟수를 계산합니다.
+     */
+    long countEmailAuthentication(CountEmailAuthenticationParam param);
 }

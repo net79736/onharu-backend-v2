@@ -47,4 +47,22 @@ public class EmailAuthenticationRepositoryParam {
             String email
     ) {
     }
+
+    /**
+     * 현재 시간을 기준으로 미인증 토큰을 만료처리합니다.
+     */
+    public record ExpireTokensParam(
+            String email,
+            LocalDateTime now
+    ) {
+    }
+
+    /**
+     * 현재 시각을 기준으로 이메일 인증 호출 횟수를 셉니다.
+     */
+    public record CountEmailAuthenticationParam(
+            String email,
+            LocalDateTime now
+    ) {
+    }
 }

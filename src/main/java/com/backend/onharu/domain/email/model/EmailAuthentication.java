@@ -31,7 +31,7 @@ import static com.backend.onharu.domain.support.error.ErrorType.EmailAuthenticat
 @NoArgsConstructor
 public class EmailAuthentication extends BaseEntity {
 
-    @Column(name = "EMAIL", nullable = false, unique = true)
+    @Column(name = "EMAIL", nullable = false)
     private String email; // 인증 이메일
 
     @Column(name = "TOKEN", nullable = false, length = 36)

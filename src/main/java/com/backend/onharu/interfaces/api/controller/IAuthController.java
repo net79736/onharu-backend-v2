@@ -115,7 +115,7 @@ public interface IAuthController {
      * POST /api/auth/email/verify-code
      * 발송된 인증코드를 검증합니다. 이메일과 인증코드를 받습니다.
      */
-    @Operation(summary = "이메일 인증 코드 검증", description = "발송된 이메일 인증 코드를 검증합니다.")
+    @Operation(summary = "이메일 인증 코드 검증", description = "발송된 이메일 인증 코드(랜덤 숫자 6자리)를 검증합니다.")
     ResponseEntity<ResponseDTO<Void>> verifyEmailCode(
             @RequestBody(
                     description = "이메일 인증 코드 검증",
@@ -127,7 +127,7 @@ public interface IAuthController {
                                     value = """
                                             {
                                               "email": "skhrnt2945@naver.com",
-                                              "code": "f0bb2780-14b9-4c15-9161-c533f8b5b398"
+                                              "code": "123456"
                                             }
                                             """
                             )

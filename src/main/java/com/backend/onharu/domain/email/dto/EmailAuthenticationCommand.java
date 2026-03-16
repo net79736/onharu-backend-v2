@@ -25,4 +25,22 @@ public class EmailAuthenticationCommand {
             LocalDateTime now
     ) {
     }
+
+    /**
+     * 미인증 토큰을 만료처리 Command
+     */
+    public record ExpireTokensCommand(
+            String email,
+            LocalDateTime now
+    ) {
+    }
+
+    /**
+     * 이메일 인증 횟수 카운트 Command
+     */
+    public record CountEmailAuthenticationCommand(
+            String email,
+            LocalDateTime now
+    ) {
+    }
 }
