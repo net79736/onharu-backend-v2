@@ -42,8 +42,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         SocialUser socialUser = (SocialUser) authentication.getPrincipal(); // 인증된 유저 객체를 꺼내옵니다.
         User user = socialUser.getUser();
 
+        // 인증 갱신
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                user, // 인증된 사용자(SocialUser) 객체
+                socialUser, // 인증된 사용자(SocialUser) 객체
                 null, // 소셜 로그인은 인증 객체 내부에 비밀번호가 필요 없으므로 null
                 socialUser.getAuthorities()); // 사용자 권한 목록
 
