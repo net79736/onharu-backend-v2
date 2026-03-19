@@ -2,6 +2,8 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.4'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id "org.sonarqube" version "4.4.1.3373"
+	id 'jacoco' // Jacoco 플러그인 추가
 }
 
 group = 'com.backend'
@@ -77,7 +79,47 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
+// 2. Jacoco 설정
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+// 3. 테스트 리포트 설정 (소나큐브가 읽을 수 있도록 XML 형태 생성)
+jacocoTestReport {
+    reports {
+        xml.required = true
+        csv.required = false
+        html.required = true
+    }
+}
+
+/**
+ * SonarQube 설정
+ */
+sonarqube {
+    properties {
+        property "sonar.projectKey", "onharu-backend"
+        property "sonar.projectName", "OnHaru-Backend"
+        
+        // 실행 환경에 따른 호스트 URL 설정 (시스템 환경변수 우선)
+        property "sonar.host.url", System.getenv("SONAR_HOST_URL") ?: "http://localhost:9002"
+        
+        property "sonar.language", "java"
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.sources", "src/main/java"
+        property "sonar.tests", "src/test/java"
+
+		// 시스템 환경 변수 'SONAR_TOKEN'이 있으면 그걸 쓰고, 없으면 무시 (명령어로 넘길 때 사용)
+        property "sonar.token", System.getenv("SONAR_TOKEN") ?: ""
+
+		property "sonar.gradle.skipCompile", "true" // 분석 전 중복 컴파일 방지 (성능 최적화 및 경고 제거)
+		// Jacoco 커버리지 리포트 경로 설정. buildDir: 빌드 결과물이 저장되는 디렉토리 경로(build/reports/jacoco/test/jacocoTestReport.xml)
+		property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+    }
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 	systemProperty "spring.profiles.active", "test"
+	finalizedBy jacocoTestReport
 }
