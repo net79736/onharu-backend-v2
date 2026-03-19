@@ -4,9 +4,8 @@ import com.backend.onharu.domain.user.dto.UserRepositoryParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByIdParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByLoginIdParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByNameAndPhoneParam;
+import com.backend.onharu.domain.user.dto.UserRepositoryParam.UpdateUserByIdAndPasswordParam;
 import com.backend.onharu.domain.user.model.User;
-
-import static com.backend.onharu.domain.user.dto.UserRepositoryParam.UpdateUserByIdAndPasswordParam;
 
 /**
  * 사용자 Repository 인터페이스

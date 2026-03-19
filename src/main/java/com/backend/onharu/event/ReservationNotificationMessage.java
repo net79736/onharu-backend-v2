@@ -36,7 +36,7 @@ public enum ReservationNotificationMessage {
     );
 
     private final String ownerMessageTemplate;
-    private final String childMessage;
+    private final String childMessageTemplate;
 
     /**
      * NotificationHistoryType에서 대응하는 메시지 enum 반환
@@ -48,17 +48,17 @@ public enum ReservationNotificationMessage {
     /**
      * 가게 사장용 메시지 반환
      */
-    public String getOwnerMessage(Long reservationId) {
+    public String getOwnerMessageTemplate(String storeName, Long reservationId) {
         if (ownerMessageTemplate != null && ownerMessageTemplate.contains("%d")) {
             return String.format(ownerMessageTemplate, reservationId != null ? reservationId : 0L);
         }
-        return ownerMessageTemplate;
+        return "[" + storeName + "] " + ownerMessageTemplate;
     }
 
     /**
      * 아동용 메시지를 반환합니다.
      */
-    public String getChildMessage() {
-        return childMessage;
+    public String getChildMessageTemplate(String storeName) {
+        return "[" + storeName + "] " + childMessageTemplate;
     }
 }

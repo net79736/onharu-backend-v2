@@ -92,7 +92,7 @@ class ReservationNotificationMessageTest {
             ReservationNotificationMessage message = ReservationNotificationMessage.RESERVATION_CREATED;
 
             // when
-            String ownerMessage = message.getOwnerMessage(reservationId);
+            String ownerMessage = message.getOwnerMessageTemplate(reservationId);
 
             // then
             assertThat(ownerMessage).isEqualTo("새로운 예약이 확정되었습니다. 예약 번호: 12345");
@@ -105,7 +105,7 @@ class ReservationNotificationMessageTest {
             ReservationNotificationMessage message = ReservationNotificationMessage.RESERVATION_CREATED;
 
             // when
-            String ownerMessage = message.getOwnerMessage(null);
+            String ownerMessage = message.getOwnerMessageTemplate(null);
 
             // then
             assertThat(ownerMessage).isEqualTo("새로운 예약이 확정되었습니다. 예약 번호: 0");
@@ -118,7 +118,7 @@ class ReservationNotificationMessageTest {
             ReservationNotificationMessage message = ReservationNotificationMessage.RESERVATION_CONFIRMED;
 
             // when
-            String ownerMessage = message.getOwnerMessage(1L);
+            String ownerMessage = message.getOwnerMessageTemplate(1L);
 
             // then
             assertThat(ownerMessage).isEqualTo("예약이 확정되었습니다. 매장에서 만나요.");
@@ -131,7 +131,7 @@ class ReservationNotificationMessageTest {
             ReservationNotificationMessage message = ReservationNotificationMessage.RESERVATION_CANCELED;
 
             // when
-            String ownerMessage = message.getOwnerMessage(1L);
+            String ownerMessage = message.getOwnerMessageTemplate(1L);
 
             // then
             assertThat(ownerMessage).isEqualTo("예약이 취소되었습니다.");
@@ -144,7 +144,7 @@ class ReservationNotificationMessageTest {
             ReservationNotificationMessage message = ReservationNotificationMessage.RESERVATION_COMPLETED;
 
             // when
-            String ownerMessage = message.getOwnerMessage(1L);
+            String ownerMessage = message.getOwnerMessageTemplate(1L);
 
             // then
             assertThat(ownerMessage).isEqualTo("예약이 완료됐어요! 매장에서 만나요.");
@@ -157,7 +157,7 @@ class ReservationNotificationMessageTest {
             ReservationNotificationMessage message = ReservationNotificationMessage.RESERVATION_REJECTED;
 
             // when
-            String ownerMessage = message.getOwnerMessage(1L);
+            String ownerMessage = message.getOwnerMessageTemplate(1L);
 
             // then
             assertThat(ownerMessage).isEqualTo("예약이 거절되었습니다.");
@@ -175,7 +175,7 @@ class ReservationNotificationMessageTest {
             ReservationNotificationMessage message = ReservationNotificationMessage.RESERVATION_CREATED;
 
             // when
-            String childMessage = message.getChildMessage();
+            String childMessage = message.getChildMessageTemplate();
 
             // then
             assertThat(childMessage).isNull();
@@ -188,7 +188,7 @@ class ReservationNotificationMessageTest {
             ReservationNotificationMessage message = ReservationNotificationMessage.RESERVATION_CONFIRMED;
 
             // when
-            String childMessage = message.getChildMessage();
+            String childMessage = message.getChildMessageTemplate();
 
             // then
             assertThat(childMessage).isNull();
@@ -201,7 +201,7 @@ class ReservationNotificationMessageTest {
             ReservationNotificationMessage message = ReservationNotificationMessage.RESERVATION_CANCELED;
 
             // when
-            String childMessage = message.getChildMessage();
+            String childMessage = message.getChildMessageTemplate();
 
             // then
             assertThat(childMessage).isEqualTo("예약 취소가 잘 처리됐어요. 다음에 또 봐요!");
@@ -214,7 +214,7 @@ class ReservationNotificationMessageTest {
             ReservationNotificationMessage message = ReservationNotificationMessage.RESERVATION_COMPLETED;
 
             // when
-            String childMessage = message.getChildMessage();
+            String childMessage = message.getChildMessageTemplate();
 
             // then
             assertThat(childMessage).isEqualTo("예약이 완료됐어요! 매장에서 만나요.");
@@ -227,7 +227,7 @@ class ReservationNotificationMessageTest {
             ReservationNotificationMessage message = ReservationNotificationMessage.RESERVATION_REJECTED;
 
             // when
-            String childMessage = message.getChildMessage();
+            String childMessage = message.getChildMessageTemplate();
 
             // then
             assertThat(childMessage).isEqualTo("미안해요, 이번 예약은 사정상 어려워졌어요.");
@@ -247,8 +247,8 @@ class ReservationNotificationMessageTest {
 
             // when
             ReservationNotificationMessage message = ReservationNotificationMessage.from(type);
-            String ownerMessage = message.getOwnerMessage(reservationId);
-            String childMessage = message.getChildMessage();
+            String ownerMessage = message.getOwnerMessageTemplate(reservationId);
+            String childMessage = message.getChildMessageTemplate();
 
             // then
             assertThat(ownerMessage).isEqualTo("새로운 예약이 확정되었습니다. 예약 번호: 100");
@@ -263,8 +263,8 @@ class ReservationNotificationMessageTest {
 
             // when
             ReservationNotificationMessage message = ReservationNotificationMessage.from(type);
-            String ownerMessage = message.getOwnerMessage(1L);
-            String childMessage = message.getChildMessage();
+            String ownerMessage = message.getOwnerMessageTemplate(1L);
+            String childMessage = message.getChildMessageTemplate();
 
             // then
             assertThat(ownerMessage).isEqualTo("예약이 취소되었습니다.");
@@ -280,8 +280,8 @@ class ReservationNotificationMessageTest {
 
             // when
             ReservationNotificationMessage message = ReservationNotificationMessage.from(type);
-            String ownerMessage = message.getOwnerMessage(1L);
-            String childMessage = message.getChildMessage();
+            String ownerMessage = message.getOwnerMessageTemplate(1L);
+            String childMessage = message.getChildMessageTemplate();
 
             // then
             assertThat(ownerMessage).isEqualTo("예약이 거절되었습니다.");
@@ -297,8 +297,8 @@ class ReservationNotificationMessageTest {
 
             // when
             ReservationNotificationMessage message = ReservationNotificationMessage.from(type);
-            String ownerMessage = message.getOwnerMessage(1L);
-            String childMessage = message.getChildMessage();
+            String ownerMessage = message.getOwnerMessageTemplate(1L);
+            String childMessage = message.getChildMessageTemplate();
 
             // then
             assertThat(ownerMessage).isEqualTo("예약이 완료됐어요! 매장에서 만나요.");

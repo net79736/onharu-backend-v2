@@ -15,5 +15,14 @@ public enum NotificationHistoryType {
     RESERVATION_CONFIRMED,
     RESERVATION_CANCELED,
     RESERVATION_COMPLETED,
-    RESERVATION_REJECTED,
+    RESERVATION_REJECTED;
+
+    /**
+     * 취소 사유 필요 여부
+     * 
+     * @return 취소 사유 필요 여부
+     */
+    public boolean requiresCancelReason() {
+        return this == RESERVATION_CANCELED || this == RESERVATION_REJECTED;
+    }
 }

@@ -43,7 +43,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 @Service
 @RequiredArgsConstructor
 @Profile({"dev", "test"})
-public class MinioService implements StorageService {
+public class LocalS3Service implements StorageService {
 
     private final S3Client minioClient;
     private final S3Presigner minioS3Presigner;
@@ -214,6 +214,16 @@ public class MinioService implements StorageService {
             log.warn("Content-Type 조회 중 예외 발생: {}, 기본값 반환", e.getMessage());
             return "application/octet-stream";
         }
+    }
+
+    /**
+     * Presigned GET URL 생성
+     * @return 서명된 GET URL (3분 유효)
+     */
+    @Override
+    public String generatePresignedGetUrl(String fileKey) {
+        // TODO: 구현 필요
+        return null;
     }
 
     /**
