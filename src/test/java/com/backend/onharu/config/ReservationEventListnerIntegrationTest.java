@@ -2,6 +2,9 @@ package com.backend.onharu.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -16,11 +19,16 @@ import org.springframework.test.context.ActiveProfiles;
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.common.enums.NotificationHistoryType;
 import com.backend.onharu.domain.common.enums.ProviderType;
+import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.notification.model.NotificationHistory;
 import com.backend.onharu.domain.owner.model.Owner;
+import com.backend.onharu.domain.reservation.model.Reservation;
+import com.backend.onharu.domain.store.model.Category;
+import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.event.listener.ReservationEventListner;
 import com.backend.onharu.event.model.ReservationEvent;
@@ -49,78 +57,50 @@ import com.backend.onharu.infra.db.user.UserJpaRepository;
 @DisplayName("ReservationEventListner DB 저장 통합 테스트")
 class ReservationEventListnerIntegrationTest {
 
-    @Autowired
-    private ReservationJpaRepository reservationJpaRepository;
+    private static final String TEST_STORE_NAME = "테스트 가게";
 
-    @Autowired
-    private ChildJpaRepository childJpaRepository;
-
-    @Autowired
-    private UserJpaRepository userJpaRepository;
-
-    @Autowired
-    private StoreScheduleJpaRepository storeScheduleJpaRepository;
-
-    @Autowired
-    private StoreJpaRepository storeJpaRepository;
-
-    @Autowired
-    private OwnerJpaRepository ownerJpaRepository;
-
-    @Autowired
-    private CategoryJpaRepository categoryJpaRepository;
-
-    @Autowired
-    private LevelJpaRepository levelJpaRepository;
-    
-    @Autowired
-    private FileJpaRepository fileJpaRepository;
-    
-    @Autowired
-    private FavoriteJpaRepository favoriteJpaRepository;
-    
-    @Autowired
-    private TagJpaRepository tagJpaRepository;
-
-    @Autowired
-    private NotificationHistoryJpaRepository notificationHistoryJpaRepository;
-
-    @Autowired
-    private NotificationJpaRepository notificationJpaRepository;
-
-    @Autowired
-    private ReservationEventListner reservationEventListner;
+    @Autowired private ReservationJpaRepository reservationJpaRepository;
+    @Autowired private ChildJpaRepository childJpaRepository;
+    @Autowired private UserJpaRepository userJpaRepository;
+    @Autowired private StoreScheduleJpaRepository storeScheduleJpaRepository;
+    @Autowired private StoreJpaRepository storeJpaRepository;
+    @Autowired private OwnerJpaRepository ownerJpaRepository;
+    @Autowired private CategoryJpaRepository categoryJpaRepository;
+    @Autowired private LevelJpaRepository levelJpaRepository;
+    @Autowired private FileJpaRepository fileJpaRepository;
+    @Autowired private FavoriteJpaRepository favoriteJpaRepository;
+    @Autowired private TagJpaRepository tagJpaRepository;
+    @Autowired private NotificationHistoryJpaRepository notificationHistoryJpaRepository;
+    @Autowired private NotificationJpaRepository notificationJpaRepository;
+    @Autowired private ReservationEventListner reservationEventListner;
 
     @BeforeEach
     public void setUp() {
-        // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
         notificationHistoryJpaRepository.deleteAll();
         notificationJpaRepository.deleteAll();
-        reservationJpaRepository.deleteAll(); // reservations는 store_schedules를 참조
-        storeScheduleJpaRepository.deleteAll(); // store_schedules는 stores를 참조
-        fileJpaRepository.deleteAll(); // files는 stores를 참조하므로 stores 삭제 전에 삭제
-        favoriteJpaRepository.deleteAll(); // favorites는 stores를 참조하므로 stores 삭제 전에 삭제
-        storeJpaRepository.deleteAll(); // stores 삭제
-        tagJpaRepository.deleteAll(); // tags는 store_tags가 삭제된 후에 삭제 가능
+        reservationJpaRepository.deleteAll();
+        storeScheduleJpaRepository.deleteAll();
+        fileJpaRepository.deleteAll();
+        favoriteJpaRepository.deleteAll();
+        storeJpaRepository.deleteAll();
+        tagJpaRepository.deleteAll();
         categoryJpaRepository.deleteAll();
         childJpaRepository.deleteAll();
         ownerJpaRepository.deleteAll();
         userJpaRepository.deleteAll();
-        levelJpaRepository.deleteAll(); // levels는 owners를 참조하므로 owners 삭제 후에 삭제
+        levelJpaRepository.deleteAll();
     }
 
     private User createTestUser(String loginId, String name, String phone, UserType userType) {
-        return userJpaRepository.save(
-                User.builder()
-                        .loginId(loginId)
-                        .password("password123")
-                        .name(name)
-                        .phone(phone)
-                        .providerType(ProviderType.LOCAL)
-                        .userType(userType)
-                        .statusType(StatusType.ACTIVE)
-                        .build()
-        );
+        return userJpaRepository.save(User.builder()
+                .loginId(loginId)
+                .password("password123")
+                .name(name)
+                .phone(phone)
+                .providerType(ProviderType.LOCAL)
+                .userType(userType)
+                .statusType(StatusType.ACTIVE)
+                .build());
     }
 
     private Level createTestLevel(String name) {
@@ -130,24 +110,56 @@ class ReservationEventListnerIntegrationTest {
     private Owner createTestOwner(String loginId, String name, String phone) {
         User user = createTestUser(loginId, name, phone, UserType.OWNER);
         Level level = createTestLevel("새싹");
-        return ownerJpaRepository.save(
-                Owner.builder()
-                        .user(user)
-                        .level(level)
-                        .businessNumber("1234567890")
-                        .build()
-        );
+        return ownerJpaRepository.save(Owner.builder()
+                .user(user)
+                .level(level)
+                .businessNumber("1234567890")
+                .build());
     }
 
     private Child createTestChild(String loginId, String name, String phone) {
         User user = createTestUser(loginId, name, phone, UserType.CHILD);
-        return childJpaRepository.save(
-                Child.builder()
-                        .user(user)
-                        .nickname(loginId + "_닉네임")
-                        .isVerified(true)
-                        .build()
-        );
+        return childJpaRepository.save(Child.builder()
+                .user(user)
+                .nickname(loginId + "_닉네임")
+                .isVerified(true)
+                .build());
+    }
+
+    private Category createTestCategory() {
+        return categoryJpaRepository.save(Category.builder().name("음식점").build());
+    }
+
+    private Store createTestStore(Owner owner, Category category) {
+        return storeJpaRepository.save(Store.builder()
+                .owner(owner)
+                .category(category)
+                .name(TEST_STORE_NAME)
+                .address("서울시 강남구 테헤란로 1")
+                .phone("0212345678")
+                .isOpen(true)
+                .isSharing(true)
+                .build());
+    }
+
+    private StoreSchedule createTestStoreSchedule(Store store) {
+        return storeScheduleJpaRepository.save(StoreSchedule.builder()
+                .store(store)
+                .scheduleDate(LocalDate.now())
+                .startTime(LocalTime.of(12, 0))
+                .endTime(LocalTime.of(14, 0))
+                .maxPeople(10)
+                .build());
+    }
+
+    private Reservation createTestReservation(Child child, StoreSchedule storeSchedule) {
+        return reservationJpaRepository.save(Reservation.builder()
+                .child(child)
+                .storeSchedule(storeSchedule)
+                .people(2)
+                .reservationAt(LocalDateTime.now())
+                .status(ReservationType.WAITING)
+                .build());
     }
 
     @Nested
@@ -160,10 +172,13 @@ class ReservationEventListnerIntegrationTest {
             // given
             Owner owner = createTestOwner("owner_created@test.com", "사장", "01011111111");
             Child child = createTestChild("child_created@test.com", "아동", "01022222222");
-            Long reservationId = 999L;
+            Category category = createTestCategory();
+            Store store = createTestStore(owner, category);
+            StoreSchedule schedule = createTestStoreSchedule(store);
+            Reservation reservation = createTestReservation(child, schedule);
 
             ReservationEvent event = new ReservationEvent(
-                    reservationId,
+                    reservation.getId(),
                     owner.getId(),
                     child.getId(),
                     NotificationHistoryType.RESERVATION_CREATED
@@ -172,13 +187,14 @@ class ReservationEventListnerIntegrationTest {
             // when
             reservationEventListner.handleReservationEvent(event);
 
-            // then - DB에서 사장용 알림 조회
+            // then
             List<NotificationHistory> ownerNotifications = notificationHistoryJpaRepository
                     .findByUser_IdOrderByCreatedAtDesc(owner.getUser().getId(), PageRequest.of(0, 10))
                     .getContent();
 
             assertThat(ownerNotifications).hasSize(1);
-            assertThat(ownerNotifications.get(0).getMessage()).isEqualTo("새로운 예약이 확정되었습니다. 예약 번호: 999");
+            assertThat(ownerNotifications.get(0).getMessage())
+                    .isEqualTo("새로운 예약이 확정되었습니다. 예약 번호: " + reservation.getId());
             assertThat(ownerNotifications.get(0).getTitle()).isEqualTo("매장 관리 알림");
             assertThat(ownerNotifications.get(0).getType()).isEqualTo(NotificationHistoryType.RESERVATION_CREATED);
         }
@@ -189,9 +205,13 @@ class ReservationEventListnerIntegrationTest {
             // given
             Owner owner = createTestOwner("owner_cancel@test.com", "사장", "01033333333");
             Child child = createTestChild("child_cancel@test.com", "아동", "01044444444");
+            Category category = createTestCategory();
+            Store store = createTestStore(owner, category);
+            StoreSchedule schedule = createTestStoreSchedule(store);
+            Reservation reservation = createTestReservation(child, schedule);
 
             ReservationEvent event = new ReservationEvent(
-                    1L,
+                    reservation.getId(),
                     owner.getId(),
                     child.getId(),
                     NotificationHistoryType.RESERVATION_CANCELED
@@ -206,7 +226,8 @@ class ReservationEventListnerIntegrationTest {
                     .getContent();
 
             assertThat(ownerNotifications).hasSize(1);
-            assertThat(ownerNotifications.get(0).getMessage()).isEqualTo("예약이 취소되었습니다.");
+            assertThat(ownerNotifications.get(0).getMessage())
+                    .isEqualTo("[" + TEST_STORE_NAME + "] 예약이 취소되었습니다.");
             assertThat(ownerNotifications.get(0).getTitle()).isEqualTo("매장 관리 알림");
         }
     }
@@ -221,9 +242,13 @@ class ReservationEventListnerIntegrationTest {
             // given
             Owner owner = createTestOwner("owner_cancel2@test.com", "사장", "01055555555");
             Child child = createTestChild("child_cancel2@test.com", "아동", "01066666666");
+            Category category = createTestCategory();
+            Store store = createTestStore(owner, category);
+            StoreSchedule schedule = createTestStoreSchedule(store);
+            Reservation reservation = createTestReservation(child, schedule);
 
             ReservationEvent event = new ReservationEvent(
-                    1L,
+                    reservation.getId(),
                     owner.getId(),
                     child.getId(),
                     NotificationHistoryType.RESERVATION_CANCELED
@@ -232,13 +257,14 @@ class ReservationEventListnerIntegrationTest {
             // when
             reservationEventListner.handleReservationEvent(event);
 
-            // then - DB에서 아동용 알림 조회
+            // then
             List<NotificationHistory> childNotifications = notificationHistoryJpaRepository
                     .findByUser_IdOrderByCreatedAtDesc(child.getUser().getId(), PageRequest.of(0, 10))
                     .getContent();
 
             assertThat(childNotifications).hasSize(1);
-            assertThat(childNotifications.get(0).getMessage()).isEqualTo("예약 취소가 잘 처리됐어요. 다음에 또 봐요!");
+            assertThat(childNotifications.get(0).getMessage())
+                    .isEqualTo("[" + TEST_STORE_NAME + "] 예약 취소가 잘 처리됐어요. 다음에 또 봐요!");
             assertThat(childNotifications.get(0).getTitle()).isEqualTo("예약 안내 소식");
             assertThat(childNotifications.get(0).getType()).isEqualTo(NotificationHistoryType.RESERVATION_CANCELED);
         }
@@ -249,9 +275,13 @@ class ReservationEventListnerIntegrationTest {
             // given
             Owner owner = createTestOwner("owner_complete@test.com", "사장", "01077777777");
             Child child = createTestChild("child_complete@test.com", "아동", "01088888888");
+            Category category = createTestCategory();
+            Store store = createTestStore(owner, category);
+            StoreSchedule schedule = createTestStoreSchedule(store);
+            Reservation reservation = createTestReservation(child, schedule);
 
             ReservationEvent event = new ReservationEvent(
-                    1L,
+                    reservation.getId(),
                     owner.getId(),
                     child.getId(),
                     NotificationHistoryType.RESERVATION_COMPLETED
@@ -266,7 +296,8 @@ class ReservationEventListnerIntegrationTest {
                     .getContent();
 
             assertThat(childNotifications).hasSize(1);
-            assertThat(childNotifications.get(0).getMessage()).isEqualTo("예약이 완료됐어요! 매장에서 만나요.");
+            assertThat(childNotifications.get(0).getMessage())
+                    .isEqualTo("[" + TEST_STORE_NAME + "] 예약이 완료됐어요! 매장에서 만나요.");
             assertThat(childNotifications.get(0).getTitle()).isEqualTo("예약 안내 소식");
         }
     }
@@ -281,9 +312,13 @@ class ReservationEventListnerIntegrationTest {
             // given
             Owner owner = createTestOwner("owner_both@test.com", "사장", "01099991111");
             Child child = createTestChild("child_both@test.com", "아동", "01099992222");
+            Category category = createTestCategory();
+            Store store = createTestStore(owner, category);
+            StoreSchedule schedule = createTestStoreSchedule(store);
+            Reservation reservation = createTestReservation(child, schedule);
 
             ReservationEvent event = new ReservationEvent(
-                    123L,
+                    reservation.getId(),
                     owner.getId(),
                     child.getId(),
                     NotificationHistoryType.RESERVATION_CANCELED
@@ -297,14 +332,16 @@ class ReservationEventListnerIntegrationTest {
                     .findByUser_IdOrderByCreatedAtDesc(owner.getUser().getId(), PageRequest.of(0, 10))
                     .getContent();
             assertThat(ownerNotifications).hasSize(1);
-            assertThat(ownerNotifications.get(0).getMessage()).isEqualTo("예약이 취소되었습니다.");
+            assertThat(ownerNotifications.get(0).getMessage())
+                    .isEqualTo("[" + TEST_STORE_NAME + "] 예약이 취소되었습니다.");
 
             // then - 아동용
             List<NotificationHistory> childNotifications = notificationHistoryJpaRepository
                     .findByUser_IdOrderByCreatedAtDesc(child.getUser().getId(), PageRequest.of(0, 10))
                     .getContent();
             assertThat(childNotifications).hasSize(1);
-            assertThat(childNotifications.get(0).getMessage()).isEqualTo("예약 취소가 잘 처리됐어요. 다음에 또 봐요!");
+            assertThat(childNotifications.get(0).getMessage())
+                    .isEqualTo("[" + TEST_STORE_NAME + "] 예약 취소가 잘 처리됐어요. 다음에 또 봐요!");
 
             // 전체 알림 2건 확인
             assertThat(notificationHistoryJpaRepository.count()).isEqualTo(2);
@@ -316,9 +353,13 @@ class ReservationEventListnerIntegrationTest {
             // given - RESERVATION_CREATED는 아동 메시지가 null
             Owner owner = createTestOwner("owner_only@test.com", "사장", "01099993333");
             Child child = createTestChild("child_only@test.com", "아동", "01099994444");
+            Category category = createTestCategory();
+            Store store = createTestStore(owner, category);
+            StoreSchedule schedule = createTestStoreSchedule(store);
+            Reservation reservation = createTestReservation(child, schedule);
 
             ReservationEvent event = new ReservationEvent(
-                    777L,
+                    reservation.getId(),
                     owner.getId(),
                     child.getId(),
                     NotificationHistoryType.RESERVATION_CREATED
@@ -327,13 +368,14 @@ class ReservationEventListnerIntegrationTest {
             // when
             reservationEventListner.handleReservationEvent(event);
 
-            // then - 사장용만 1건
+            // then - 사장용만 1건 (RESERVATION_CREATED는 아동 메시지 없음)
             assertThat(notificationHistoryJpaRepository.count()).isEqualTo(1);
 
             List<NotificationHistory> ownerNotifications = notificationHistoryJpaRepository
                     .findByUser_IdOrderByCreatedAtDesc(owner.getUser().getId(), PageRequest.of(0, 10))
                     .getContent();
-            assertThat(ownerNotifications.get(0).getMessage()).isEqualTo("새로운 예약이 확정되었습니다. 예약 번호: 777");
+            assertThat(ownerNotifications.get(0).getMessage())
+                    .isEqualTo("새로운 예약이 확정되었습니다. 예약 번호: " + reservation.getId());
 
             // 아동용 알림은 없음
             List<NotificationHistory> childNotifications = notificationHistoryJpaRepository

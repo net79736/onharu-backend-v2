@@ -7,6 +7,7 @@ import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESE
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,8 @@ import com.backend.onharu.domain.child.service.ChildQueryService;
 import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.favorite.dto.FavoriteCommand.CreateFavoriteCommand;
 import com.backend.onharu.domain.favorite.dto.FavoriteCommand.DeleteFavoriteCommand;
+import com.backend.onharu.domain.favorite.dto.FavoriteCommand.ToggleFavoriteCommand;
+import com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoriteByChild_IdAndStore_IdQuery;
 import com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoritesByChildIdQuery;
 import com.backend.onharu.domain.favorite.model.Favorite;
 import com.backend.onharu.domain.favorite.service.FavoriteCommandService;
@@ -51,21 +54,8 @@ import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.event.model.ReservationEvent;
 import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 import com.backend.onharu.utils.SecurityUtils;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
-
-import static com.backend.onharu.domain.common.enums.NotificationHistoryType.RESERVATION_CANCELED;
-import static com.backend.onharu.domain.common.enums.NotificationHistoryType.RESERVATION_CREATED;
-import static com.backend.onharu.domain.favorite.dto.FavoriteCommand.ToggleFavoriteCommand;
-import static com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoriteByChild_IdAndStore_IdQuery;
-import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_EXCEEDS_MAX;
-import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_MUST_NOT_BE_NULL;
 
 /**
  * 결식 아동 Facade
