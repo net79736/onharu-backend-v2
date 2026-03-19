@@ -47,10 +47,10 @@ import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresRequ
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.SearchStoresResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.StoreResponse;
 import com.backend.onharu.interfaces.api.dto.StoreControllerDto.UploadStoresByExcelResponse;
-import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.DailyScheduleDetail;
+import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.DateSummary;
 import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.GetStoreSchedulesRequest;
 import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.GetStoreSchedulesResponse;
-import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.MonthlySchedule;
+import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.ScheduleSlot;
 import com.backend.onharu.utils.NumberUtils;
 import com.backend.onharu.utils.SecurityUtils;
 
@@ -212,16 +212,16 @@ public class StoreControllerImpl implements IStoreController {
         log.info("가게 스케줄 조회 요청: storeId={}, year={}, month={}, day={}", storeId, request.year(), request.month(), request.day());
 
         if (request.day() == null) {
-            List<MonthlySchedule> summaries = storeScheduleFacade.getMonthlySchedules(
+            List<DateSummary> summaries = storeScheduleFacade.getMonthlySchedules(
                     storeId, request.year(), request.month());
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(ResponseDTO.success(GetStoreSchedulesResponse.ofMonthly(summaries)));
+                    .body(ResponseDTO.success(GetStoreSchedulesResponse.ofDateSummaries(summaries)));
         }
 
         LocalDate scheduleDate = LocalDate.of(request.year(), request.month(), request.day());
-        List<DailyScheduleDetail> details = storeScheduleFacade.getDailyScheduleDetails(storeId, scheduleDate);
+        List<ScheduleSlot> slots = storeScheduleFacade.getDailyScheduleDetails(storeId, scheduleDate);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseDTO.success(GetStoreSchedulesResponse.ofDaily(details)));
+                .body(ResponseDTO.success(GetStoreSchedulesResponse.ofScheduleSlots(slots)));
     }
 
     /**

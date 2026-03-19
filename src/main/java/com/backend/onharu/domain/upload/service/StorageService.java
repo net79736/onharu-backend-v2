@@ -55,5 +55,16 @@ public interface StorageService {
      * @return 파일의 MIME 타입 (예: "image/jpeg")
      */
     String getContentType(String fileName);
+
+    /**
+     * Presigned GET URL 생성 (다운로드용)
+     *
+     * 프라이빗 버킷의 파일에 임시 접근할 수 있는 서명된 GET URL을 생성합니다.
+     * URL은 지정된 시간(기본 60분) 동안 유효합니다.
+     *
+     * @param fileKey 파일 키 (예: "image/uuid-photo.jpg")
+     * @return 서명된 GET URL
+     */
+    String generatePresignedGetUrl(String fileKey);
 }
 

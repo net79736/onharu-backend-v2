@@ -37,30 +37,30 @@ public class StoreScheduleControllerDto {
     }
 
     /**
-     * 월별 예약 가능 날짜 요약 (day 없이 year+month 조회 시 사용)
-     * 날짜별로 예약 가능한 슬롯 수를 반환합니다.
+     * 월별 조회 시 날짜 하나의 요약 정보 (day 없이 year+month 조회 시 사용)
+     * 날짜별로 예약 가능한 슬롯 수와 해당 날짜의 시간대 슬롯 목록을 반환합니다.
      */
-    public record MonthlySchedule(
+    public record DateSummary(
             @Schema(description = "날짜", example = "2026-03-15")
             LocalDate date,
 
             @Schema(description = "예약 가능한 슬롯 수", example = "3")
             int availableSlots,
 
-            @Schema(description = "일별 시간대 스케줄 상세 목록")
-            List<DailyScheduleDetail> dailyScheduleDetails
+            @Schema(description = "해당 날짜의 시간대 슬롯 목록")
+            List<ScheduleSlot> scheduleSlots
     ) {
-        public MonthlySchedule(LocalDate date, int availableSlots, List<DailyScheduleDetail> dailyScheduleDetails) {
+        public DateSummary(LocalDate date, int availableSlots, List<ScheduleSlot> scheduleSlots) {
             this.date = date;
             this.availableSlots = availableSlots;
-            this.dailyScheduleDetails = dailyScheduleDetails;
+            this.scheduleSlots = scheduleSlots;
         }
     }
 
     /**
-     * 특정 날짜의 시간대별 스케줄 상세 (day 포함 조회 시 사용)
+     * 시간대 단위 스케줄 슬롯 (특정 날짜의 특정 시간대 예약 단위)
      */
-    public record DailyScheduleDetail(
+    public record ScheduleSlot(
             @Schema(description = "일정 ID", example = "1")
             Long id,
 
@@ -82,7 +82,7 @@ public class StoreScheduleControllerDto {
             @Schema(description = "예약 가능 여부", example = "true")
             Boolean isAvailable
     ) {
-        public DailyScheduleDetail(StoreSchedule storeSchedule, Boolean isAvailable) {
+        public ScheduleSlot(StoreSchedule storeSchedule, Boolean isAvailable) {
             this(
                     storeSchedule.getId(),
                     storeSchedule.getStore().getId(),
@@ -97,22 +97,22 @@ public class StoreScheduleControllerDto {
 
     /**
      * 가게 스케줄 조회 응답
-     * - day 없이 조회: monthlySummaries 채워짐, dailyDetails = null
-     * - day 포함 조회: dailyDetails 채워짐, monthlySummaries = null
+     * - day 없이 조회: dateSummaries 채워짐, scheduleSlots = null
+     * - day 포함 조회: scheduleSlots 채워짐, dateSummaries = null
      */
     public record GetStoreSchedulesResponse(
-            @Schema(description = "월별 예약 가능 날짜 요약 목록 (년/월 조회 시)")
-            List<MonthlySchedule> monthlySummaries,
+            @Schema(description = "월별 날짜 요약 목록 (년/월 조회 시)")
+            List<DateSummary> dateSummaries,
 
-            @Schema(description = "일별 시간대 스케줄 상세 목록 (년/월/일 조회 시)")
-            List<DailyScheduleDetail> dailyDetails
+            @Schema(description = "시간대 슬롯 목록 (년/월/일 조회 시)")
+            List<ScheduleSlot> scheduleSlots
     ) {
-        public static GetStoreSchedulesResponse ofMonthly(List<MonthlySchedule> summaries) {
+        public static GetStoreSchedulesResponse ofDateSummaries(List<DateSummary> summaries) {
             return new GetStoreSchedulesResponse(summaries, null);
         }
 
-        public static GetStoreSchedulesResponse ofDaily(List<DailyScheduleDetail> details) {
-            return new GetStoreSchedulesResponse(null, details);
+        public static GetStoreSchedulesResponse ofScheduleSlots(List<ScheduleSlot> slots) {
+            return new GetStoreSchedulesResponse(null, slots);
         }
     }
 }

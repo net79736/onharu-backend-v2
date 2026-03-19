@@ -42,8 +42,8 @@ public interface IStoreController {
     @Operation(
         summary = "가게 스케줄 조회",
         description = "가게의 스케줄을 조회합니다.\n\n" +
-                      "- year, month 만 전달: 해당 월의 날짜별 예약 가능 슬롯 수 반환 (monthlySummaries)\n" +
-                      "- year, month, day 모두 전달: 해당 날짜의 시간대별 스케줄 상세 반환 (dailyDetails)"
+                      "- year, month 만 전달: 해당 월의 날짜별 예약 가능 슬롯 수 반환 (dateSummaries)\n" +
+                      "- year, month, day 모두 전달: 해당 날짜의 시간대 슬롯 목록 반환 (scheduleSlots)"
     )
     ResponseEntity<ResponseDTO<GetStoreSchedulesResponse>> getStoreSchedules(
             @Schema(description = "가게 ID", example = "1")

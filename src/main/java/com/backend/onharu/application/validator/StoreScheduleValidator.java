@@ -136,6 +136,21 @@ public class StoreScheduleValidator {
     }
 
     /**
+     * 슬롯 예약 가능 여부를 판단합니다.
+     * 아래 두 조건을 모두 만족해야 예약 가능합니다.
+     * 1. 스케줄 날짜가 오늘 이후 (과거 날짜는 예약 불가)
+     * 2. 아직 예약되지 않은 슬롯 (WAITING, CONFIRMED, COMPLETED 상태 예약 없음)
+     *
+     * @param schedule 검사할 스케줄 슬롯
+     * @param reservedScheduleIds 이미 예약된 스케줄 ID Set
+     * @return 예약 가능하면 true
+     */
+    public boolean isAvailable(StoreSchedule schedule, Set<Long> reservedScheduleIds) {
+        return !schedule.getScheduleDate().isBefore(LocalDate.now())
+                && !reservedScheduleIds.contains(schedule.getId());
+    }
+
+    /**
      * 시간 범위가 겹치는지 확인
      * 두 시간 범위가 겹치는지 확인합니다.
      * 
