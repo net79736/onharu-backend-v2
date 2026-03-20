@@ -25,8 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.backend.onharu.domain.chat.dto.ChatMessageCommand.CreateChatMessageCommand;
-import static com.backend.onharu.domain.chat.dto.ChatMessageCommand.ReadMessageCommand;
+import static com.backend.onharu.domain.chat.dto.ChatMessageCommand.*;
 import static com.backend.onharu.domain.chat.dto.ChatMessageQuery.CountUnreadMessageQuery;
 import static com.backend.onharu.domain.chat.dto.ChatMessageQuery.FindChatMessageQuery;
 import static com.backend.onharu.domain.chat.dto.ChatParticipantCommand.CreateChatParticipantCommand;
@@ -134,9 +133,9 @@ public class ChatFacade {
 
         // 채팅메시지 생성 및 저장
         ChatMessage chatMessage = chatMessageCommandService.createChatMessage(
-                new CreateChatMessageCommand(
-                        chatRoom.getId(),
-                        sender.getId(),
+                new CreateMessageCommand(
+                        chatRoom,
+                        sender,
                         command.content())
         );
 
