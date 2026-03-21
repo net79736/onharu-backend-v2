@@ -38,7 +38,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 768M
+          memory: 1024M
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
@@ -99,7 +99,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1024M
+          memory: 2048M
 
   # ----------------------------------------
   # Jenkins CI (컨트롤러 Java 17 — jenkins/jenkins:lts-jdk17)
@@ -116,7 +116,7 @@ services:
     networks:
       - onharu-network
     environment:
-      JAVA_OPTS: "-Xmx768m -Xms256m"
+      JAVA_OPTS: "-Xmx1536m -Xms512m"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/login"]
       interval: 30s
@@ -126,7 +126,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1536M
+          memory: 2048M
 
   onharu:
     build:
@@ -138,6 +138,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+      JAVA_TOOL_OPTIONS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Dfile.encoding=UTF-8"
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
       SERVER_PORT: ${SERVER_PORT:-8080}
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
@@ -176,7 +177,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1536M
+          memory: 2048M
     networks:
       - onharu-network
 
