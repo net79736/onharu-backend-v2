@@ -1,7 +1,7 @@
 # 1단계: 빌드 스테이지
 FROM gradle:7.6-jdk17 AS builder
 
-WORKDIR /build
+WORKDIR /app
 
 COPY . .
 
@@ -14,7 +14,7 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /onharu
 
 # 1단계에서 만든 JAR만 쏙 빼오기
-COPY --from=builder /build/libs/onharu-0.0.1-SNAPSHOT.jar ./onharu.jar
+COPY --from=builder /app/build/libs/onharu-0.0.1-SNAPSHOT.jar ./onharu.jar
 
 EXPOSE 8080
 
