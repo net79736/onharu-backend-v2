@@ -21,7 +21,7 @@ public interface IChatController {
      * 채팅방 생성
      * POST /api/chats
      */
-    @Operation(summary = "채팅방 생성", description = "새로운 채팅방을 생성합니다.")
+    @Operation(summary = "채팅방 생성", description = "새로운 일대일 채팅방을 생성합니다.")
     ResponseEntity<ResponseDTO<CreateChatRoomResponse>> createChatRoom(
 
             @RequestBody(
@@ -35,7 +35,7 @@ public interface IChatController {
                                             {
                                               "name": "우리 동네 채팅방",
                                               "roomType": "ONE_TO_ONE",
-                                              "chatParticipantIds": [2]
+                                              "targetId": 2
                                             }
                                             """
                             )
@@ -119,7 +119,7 @@ public interface IChatController {
                                     name = "채팅 읽음 처리 요청 예시",
                                     value = """
                                             {
-                                              "messageId": 10
+                                              "messageId": 1
                                             }
                                             """
                             )
@@ -157,6 +157,16 @@ public interface IChatController {
     @Operation(summary = "채팅방 탈퇴", description = "채팅방에서 탈퇴합니다.")
     ResponseEntity<ResponseDTO<String>> leaveChatRoom(
 
+            @Parameter(description = "채팅방 ID", example = "1", required = true)
+            @PathVariable Long chatRoomId
+    );
+
+    /**
+     * 채팅방 입장(메시지 읽음 처리)
+     * POST /api/chats/{chatRoomId}
+     */
+    @Operation(summary = "채팅방 입장", description = "채팅방에 입장할때 메시지를 읽음 처리를 합니다.")
+    ResponseEntity<ResponseDTO<String>> enterChatRoom(
             @Parameter(description = "채팅방 ID", example = "1", required = true)
             @PathVariable Long chatRoomId
     );

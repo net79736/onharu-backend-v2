@@ -2,6 +2,7 @@ package com.backend.onharu.interfaces.api.controller.impl;
 
 import com.backend.onharu.application.ChatFacade;
 import com.backend.onharu.domain.chat.model.ChatRoom;
+import com.backend.onharu.domain.common.enums.RoomType;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.controller.IChatController;
 import com.backend.onharu.utils.SecurityUtils;
@@ -29,7 +30,7 @@ public class ChatControllerImpl implements IChatController {
     private final ChatFacade chatFacade;
 
     /**
-     * 채팅방 생성
+     * 채팅방 생성 (일대일, 상대방까지 채팅방에 초대)
      * POST /api/chats
      */
     @PostMapping
@@ -45,8 +46,9 @@ public class ChatControllerImpl implements IChatController {
         ChatRoom chatRoom = chatFacade.createChatRoom(
                 new CreateChatRoomCommand(
                         request.name(),
-                        userId,
-                        request.chatParticipantIds()
+                        RoomType.ONE_TO_ONE,
+                        request.targetId(),
+                        userId
                 )
         );
 
@@ -82,8 +84,9 @@ public class ChatControllerImpl implements IChatController {
     /**
      * 채팅방 수정
      * Patch /api/chats/{chatRoomId}
+     *
      * @param chatRoomId 채팅방 ID
-     * @param request 변경할 채팅방 이름이 포함된 요청
+     * @param request    변경할 채팅방 이름이 포함된 요청
      */
     @PatchMapping("/{chatRoomId}")
     public ResponseEntity<ResponseDTO<String>> updateChatRoom(
@@ -155,6 +158,7 @@ public class ChatControllerImpl implements IChatController {
                 .body(ResponseDTO.success(response));
     }
 
+
     /**
      * 특정 채팅방의 채팅 메시지 조회
      * <p>
@@ -164,12 +168,15 @@ public class ChatControllerImpl implements IChatController {
     public ResponseEntity<ResponseDTO<ChatRoomMessagesResponse>> findChatMessage(@PathVariable Long chatRoomId, @RequestParam(required = false) Long cursorId) {
         log.info("채팅방 채팅메시지 조회");
 
+        // 세션에 로그인된 사용자 ID 추출
+        Long userId = SecurityUtils.getUserId();
+
         // Limit 역할을 하는 Pageable 생성
         Pageable pageable = Pageable.ofSize(20);
 
         // 채팅방의 채팅 메시지 조회
         List<ChatRoomMessageResponse> chatRoomMessageResponses = chatFacade.findChatMessage(
-                new FindChatMessageQuery(chatRoomId, cursorId, pageable)
+                new FindChatMessageQuery(chatRoomId, cursorId, pageable, userId)
         );
 
         // 응답 생성
@@ -180,7 +187,7 @@ public class ChatControllerImpl implements IChatController {
     }
 
     /**
-     * 채팅방 탈퇴
+     * 채팅방 탈퇴(채팅방에 참가한 유저만 제거)
      * DELETE /api/chats/{chatRoomId}
      */
     @DeleteMapping("/{chatRoomId}")
@@ -188,6 +195,7 @@ public class ChatControllerImpl implements IChatController {
             @PathVariable Long chatRoomId
     ) {
         log.info("채팅방 탈퇴");
+
         // 세션에 저장된 userId 추출
         Long userId = SecurityUtils.getUserId();
 
@@ -203,5 +211,28 @@ public class ChatControllerImpl implements IChatController {
                 .body(ResponseDTO.success(response));
     }
 
+    /**
+     * 채팅방 입장(메시지 읽음 처리)
+     * POST /api/chats/{chatRoomId}
+     */
+    @PostMapping("/{chatRoomId}")
+    public ResponseEntity<ResponseDTO<String>> enterChatRoom(
+            @PathVariable Long chatRoomId
+    ) {
+        log.info("채팅방 입장");
 
+        // 세션에 로그인된 사용자 ID 추출
+        Long userId = SecurityUtils.getUserId();
+
+        // 채팅방 입장
+        chatFacade.enterChatRoom(
+                new EnterChatRoomCommand(chatRoomId, userId)
+        );
+
+        // 응답 생성
+        String response = "채팅방 입장 성공";
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
+    }
 }
