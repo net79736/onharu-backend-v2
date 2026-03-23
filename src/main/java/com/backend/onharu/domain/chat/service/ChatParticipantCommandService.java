@@ -1,13 +1,16 @@
 package com.backend.onharu.domain.chat.service;
 
+import com.backend.onharu.domain.chat.dto.ChatParticipantCommand.CreateChatParticipantCommand;
+import com.backend.onharu.domain.chat.dto.ChatParticipantCommand.DeleteChatParticipantCommand;
+import com.backend.onharu.domain.chat.dto.ChatParticipantCommand.UpdateLastReadMessageCommand;
+import com.backend.onharu.domain.chat.dto.ChatParticipantCommand.updateChatParticipantCommand;
 import com.backend.onharu.domain.chat.model.ChatParticipant;
 import com.backend.onharu.domain.chat.repository.ChatParticipantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.backend.onharu.domain.chat.dto.ChatParticipantCommand.CreateChatParticipantCommand;
-import static com.backend.onharu.domain.chat.dto.ChatParticipantCommand.updateChatParticipantCommand;
+import static com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.FindByChatRoomIdAndUserIdParam;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +36,35 @@ public class ChatParticipantCommandService {
         return chatParticipantRepository.save(chatParticipant);
     }
 
+    /**
+     * 채팅참가자 수정사항 DB 반영
+     */
     public void updateChatParticipant(updateChatParticipantCommand command) {
         chatParticipantRepository.save(command.chatParticipant());
+    }
+
+    /**
+     * 채팅참여자가 마지막으로 읽은 메시지 업데이트
+     */
+    @Transactional
+    public void updateLastReadMessage(UpdateLastReadMessageCommand command) {
+        // 특정 채팅방에 참가하는 사용자 조회
+        ChatParticipant chatParticipant = chatParticipantRepository.findByChatRoomIdAndUserId(
+                new FindByChatRoomIdAndUserIdParam(command.chatRoomId(), command.userId())
+        );
+
+        // 마지막으로 읽은 메시지가 없거나 최신 메시지인 경우에만 업데이트 실행
+        if (chatParticipant.getLastReadMessageId() == null || chatParticipant.getLastReadMessageId() < command.lastMessageId()) {
+            chatParticipant.updateLastReadMessageId(command.lastMessageId());
+        }
+
+        chatParticipantRepository.save(chatParticipant);
+    }
+
+    /**
+     * 채팅참여자가 채팅방 탈퇴
+     */
+    public void deleteChatParticipant(DeleteChatParticipantCommand command) {
+        chatParticipantRepository.delete(command.chatParticipant());
     }
 }
