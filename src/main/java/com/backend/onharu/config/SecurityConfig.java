@@ -70,7 +70,7 @@ public class SecurityConfig {
             "/api/admins/**"
     };
 
-    private static final String PORT_FRONT_LOCAL = "http://localhost:5173";
+    private static final String PORT_FRONT_LOCAL = "http://localhost:3000";
     private static final String PORT_BACK_LOCAL = "http://localhost:8080";
 
     private final SocialUserService socialUserService;
