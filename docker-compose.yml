@@ -57,6 +57,9 @@ services:
       MINIO_BROWSER_REDIRECT_URL: https://onharu-api-v2.votex.co.kr/minio-console
       # 실제 파일 업로드/다운로드 및 URL 생성용 (9000 포트 대응)
       MINIO_SERVER_URL: https://onharu-api-v2.votex.co.kr/minio
+      # 기본 값은 파일 참조 기능이 활성화되어 있어 참조 OFF
+      MINIO_ROOT_USER_FILE: ""
+      MINIO_ROOT_PASSWORD_FILE: ""
     ports:
       - "9000:9000"
       - "9001:9001"
