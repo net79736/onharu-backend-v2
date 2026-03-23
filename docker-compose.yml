@@ -51,8 +51,8 @@ services:
     restart: unless-stopped
     environment:
       # MinIO 관리자 계정 설정
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: Password123
       # 브라우저 관리도구 접속용 (9001 포트 대응)
       MINIO_BROWSER_REDIRECT_URL: https://onharu-api-v2.votex.co.kr/minio-console
       # 실제 파일 업로드/다운로드 및 URL 생성용 (9000 포트 대응)
