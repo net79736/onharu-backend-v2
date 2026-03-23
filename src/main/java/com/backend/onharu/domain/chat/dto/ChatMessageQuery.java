@@ -23,11 +23,13 @@ public class ChatMessageQuery {
      * @param chatRoomId 채팅방 ID
      * @param lastReadMessageId 마지막으로 읽은 메시지 ID
      * @param pageable 페이징 정보
+     * @param userId 채팅 메시지를 읽은 유저
      */
     public record FindChatMessageQuery(
             Long chatRoomId,
             Long lastReadMessageId,
-            Pageable pageable
+            Pageable pageable,
+            Long userId
     ) {
     }
 }

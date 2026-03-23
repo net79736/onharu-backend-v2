@@ -114,6 +114,7 @@ public enum ErrorType implements IErrorType {
         USER_STATUS_BLOCKED(ErrorCode.FORBIDDEN, "계정이 차단 상태입니다.", LogLevel.ERROR),
         USER_STATUS_DELETED(ErrorCode.FORBIDDEN, "계정이 삭제 상태입니다.", LogLevel.ERROR),
         USER_TYPE_NOT_CHANGE(ErrorCode.FORBIDDEN, "배정받지 않는 사용자만 전환이 가능합니다", LogLevel.ERROR),
+        USER_TYPE_MUST_BE_CHILD_OR_OWNER(ErrorCode.BAD_REQUEST, "사용자 타입이 아동 또는 사업자이어야 합니다.", LogLevel.ERROR),
         ;
 
         private final ErrorCode code;
@@ -537,6 +538,7 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum Chat implements IErrorType {
         CHAT_ROOM_NOT_FOUND(ErrorCode.NOT_FOUND, "채팅방 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        CAN_NOT_CHAT_WITH_ONESELF(ErrorCode.NOT_FOUND, "자기 자신과 채팅할 수 없습니다.", LogLevel.ERROR),
         CHAT_PARTICIPANTS_NOT_FOUND(ErrorCode.NOT_FOUND, "채팅참여자 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         CHAT_MESSAGE_NOT_FOUND(ErrorCode.NOT_FOUND, "채팅메시지 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         ;
