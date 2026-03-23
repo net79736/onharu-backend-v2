@@ -110,6 +110,7 @@ public class StoreControllerDto {
                 store.getCategory().getName(),
                 store.getIsOpen(),
                 store.getIsSharing(),
+                store.getOwner().getUser().getId(),
                 distance,
                 StoreRequestMapperDto.toBusinessHourResponses(store.getBusinessHours()),
                 StoreRequestMapperDto.toTagNames(store.getStoreTags()),
@@ -156,6 +157,9 @@ public class StoreControllerDto {
             @Schema(description = "공유중 여부", example = "true")
             Boolean isSharing,
 
+            @Schema(description = "가게 주인의 사용자 ID", example = "10")
+            Long userId,
+
             @Schema(description = "태그 목록", example = "[\"커피\", \"디저트\", \"브런치\"]")
             List<String> tagNames,
 
@@ -185,6 +189,7 @@ public class StoreControllerDto {
                 store.getCategory().getName(),
                 store.getIsOpen(),
                 store.getIsSharing(),
+                store.getOwner().getUser().getId(),
                 StoreRequestMapperDto.toTagNames(store.getStoreTags()),
                 distance,
                 resolveImages(images),
@@ -229,6 +234,9 @@ public class StoreControllerDto {
 
             @Schema(description = "공유중 여부", example = "true")
             Boolean isSharing,
+
+            @Schema(description = "가게 주인의 사용자 ID", example = "10")
+            Long userId,
 
             @Schema(description = "거리(km)", example = "1.5")
             Double distance,
