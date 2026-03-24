@@ -64,7 +64,10 @@ services:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - minio_data:/data
+      - /mnt/data:/data
+      - /etc/letsencrypt/live/onharu-api-v2.votex.co.kr/fullchain.pem:/root/.minio/certs/public.crt:ro
+      - /etc/letsencrypt/live/onharu-api-v2.votex.co.kr/privkey.pem:/root/.minio/certs/private.key:ro
+
     command: server /data --address ":9000" --console-address ":9001"
     networks:
       - onharu-network
