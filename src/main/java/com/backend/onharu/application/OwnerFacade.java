@@ -299,6 +299,7 @@ public class OwnerFacade {
      * @param reservationId 예약 ID
      * @param ownerId 사업자 ID
      */
+    @Transactional
     public void confirmReservation(Long reservationId, Long ownerId) {
         Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(reservationId));
         Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(reservation.getStoreSchedule().getStore().getId()));
@@ -371,6 +372,7 @@ public class OwnerFacade {
      * 
      * @param reservationId 예약 ID
      */
+    @Transactional
     public void cancelReservation(Long reservationId, CancelReservationRequest request) {
         // 예약 정보 조회
         Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(reservationId));
