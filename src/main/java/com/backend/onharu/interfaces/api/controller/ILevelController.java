@@ -140,4 +140,16 @@ public interface ILevelController {
             )
             UpdateLevelRequest request
     );
+
+    @Operation(summary = "등급 삭제", description = "등급을 삭제합니다.")
+    ResponseEntity<ResponseDTO<String>> deleteLevel(
+            @PathVariable
+            @Parameter(
+                    name = "levelId",
+                    description = "삭제할 등급 ID",
+                    example = "1",
+                    required = true
+            )
+            Long levelId
+    );
 }

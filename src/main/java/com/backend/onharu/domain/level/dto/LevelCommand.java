@@ -27,4 +27,13 @@ public class LevelCommand {
             int conditionNumber
     ) {
     }
+
+    /**
+     * 등급 삭제 Command
+     * @param levelId 삭제할 등급 ID
+     */
+    public record DeleteLevelCommand(
+            Long levelId
+    ) {
+    }
 }
