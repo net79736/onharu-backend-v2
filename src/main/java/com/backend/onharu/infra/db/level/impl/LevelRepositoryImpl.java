@@ -53,4 +53,9 @@ public class LevelRepositoryImpl implements LevelRepository {
     public Optional<Level> findFirstByConditionNumber(FindFirstByConditionNumberParam param) {
         return levelJpaRepository.findFirstByConditionNumberGreaterThanOrderByConditionNumberAsc(param.conditionNumber());
     }
+
+    @Override
+    public void deleteLevel(Level level) {
+        levelJpaRepository.delete(level);
+    }
 }

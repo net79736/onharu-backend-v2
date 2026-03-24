@@ -59,4 +59,11 @@ public class LevelCommandService {
     public void updateLevel(Level level) {
         levelRepository.save(level);
     }
+
+    /**
+     * 등급 엔티티를 제거합니다.
+     */
+    public void deleteLevel(Level level) {
+        levelRepository.deleteLevel(level);
+    }
 }

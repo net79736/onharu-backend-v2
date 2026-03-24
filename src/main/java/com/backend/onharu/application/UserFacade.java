@@ -386,11 +386,12 @@ public class UserFacade {
         );
 
         Level currentLevel = owner.getLevel(); // 사업자에 연결된 등급 도메인 추출
+        int currentLevelConditionNumber = currentLevel.getConditionNumber();// 현재 등급의 나눔 횟수 추출
         int distributionCount = owner.getDistributionCount(); // 사업자의 나눔 횟수
 
         // 다음 등급 조회
         NextLevelInfo nextLevelInfo = levelQueryService.findFirstByConditionNumber(
-                new FindFirstByConditionNumberQuery(owner.getDistributionCount())
+                new FindFirstByConditionNumberQuery(currentLevelConditionNumber)
         ).map(level ->
                 new NextLevelInfo(level, Math.max(level.getConditionNumber() - distributionCount, 0))
         ).orElse(new NextLevelInfo(currentLevel, 0)); // 다음 등급 없는 경우, 현재 등급과 남은 횟수를 0 반환

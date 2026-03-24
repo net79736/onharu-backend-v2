@@ -60,4 +60,10 @@ public interface LevelRepository {
      * @return 조회된 등급 엔티티
      */
     Optional<Level> findFirstByConditionNumber(FindFirstByConditionNumberParam param);
+
+    /**
+     * 등급을 삭제합니다.
+     * @param level 삭제할 등급 엔티티
+     */
+    void deleteLevel(Level level);
 }
