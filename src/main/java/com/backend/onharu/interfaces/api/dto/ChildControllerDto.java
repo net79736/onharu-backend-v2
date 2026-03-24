@@ -199,7 +199,7 @@ public class ChildControllerDto {
                 reservation.getReservationAt(),
                 reservation.getCancelReason(),
                 reviewed,
-                reservation.getStoreSchedule().getStore().getOwner().getId()
+                reservation.getStoreSchedule().getStore().getOwner().getUser().getId()
             );
         }
     }
