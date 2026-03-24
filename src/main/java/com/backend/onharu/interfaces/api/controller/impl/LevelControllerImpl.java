@@ -1,6 +1,7 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
 import com.backend.onharu.application.LevelFacade;
+import com.backend.onharu.domain.level.dto.LevelCommand;
 import com.backend.onharu.domain.level.dto.LevelCommand.CreateLevelCommand;
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
@@ -146,6 +147,29 @@ public class LevelControllerImpl implements ILevelController {
         String response = "등급 수정 성공";
 
         return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
+    }
+
+    /**
+     * 등급 삭제
+     * DELETE /api/levels/{levelId}
+     */
+    @Override
+    @DeleteMapping("/{levelId}")
+    public ResponseEntity<ResponseDTO<String>> deleteLevel(
+            @PathVariable Long levelId
+    ) {
+        log.info("등급 삭제");
+
+        // 등급 삭제
+        levelFacade.deleteLevel(
+                new LevelCommand.DeleteLevelCommand(levelId)
+        );
+
+        // 응답 생성
+        String response = "등급 삭제 성공";
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(ResponseDTO.success(response));
     }
 }

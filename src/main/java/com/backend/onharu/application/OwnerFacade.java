@@ -352,10 +352,10 @@ public class OwnerFacade {
 
         // 현재 사업자의 나눔 횟수를 기준으로 등급 조회
         levelQueryService.findFirstByConditionNumber(
-                new FindFirstByConditionNumberQuery(owner.getDistributionCount())
+                new FindFirstByConditionNumberQuery(owner.getLevel().getConditionNumber())
         ).ifPresent(nextLevel -> {
-            // 사업자의 현재 등급과 조회된 등급이 다를 경우
-            if (!owner.getLevel().equals(nextLevel)) {
+            // 사업자의 현재 등급에서 승급 조건을 만족한 경우
+            if (owner.getDistributionCount() >= nextLevel.getConditionNumber()) {
                 // 사업자의 등급을 교체
                 owner.changeLevel(nextLevel);
             }

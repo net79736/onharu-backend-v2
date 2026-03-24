@@ -178,7 +178,10 @@ public class ChildControllerDto {
             String cancelReason,
 
             @Schema(description = "리뷰 작성 여부", example = "true")
-            boolean reviewed
+            boolean reviewed,
+
+            @Schema(description = "가게 주인의 사용자 ID", example = "10")
+            Long userId
     ) {
         public ReservationResponse(Reservation reservation, boolean reviewed) {
             this(
@@ -195,7 +198,8 @@ public class ChildControllerDto {
                 reservation.getStatus().name(),
                 reservation.getReservationAt(),
                 reservation.getCancelReason(),
-                reviewed
+                reviewed,
+                reservation.getStoreSchedule().getStore().getOwner().getUser().getId()
             );
         }
     }

@@ -1,6 +1,7 @@
 package com.backend.onharu.application;
 
 import com.backend.onharu.domain.level.dto.LevelCommand.CreateLevelCommand;
+import com.backend.onharu.domain.level.dto.LevelCommand.DeleteLevelCommand;
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.level.service.LevelCommandService;
 import com.backend.onharu.domain.level.service.LevelQueryService;
@@ -58,5 +59,18 @@ public class LevelFacade {
      */
     public void updateLevel(UpdateNameByIdCommand command) {
         levelCommandService.updateNameById(command);
+    }
+
+    /**
+     * 등급 삭제
+     */
+    public void deleteLevel(DeleteLevelCommand command) {
+        // 삭제할 등급 조회
+        Level level = levelQueryService.getLevel(
+                new GetLevelByIdQuery(command.levelId())
+        );
+
+        // 등급 삭제
+        levelCommandService.deleteLevel(level);
     }
 }
