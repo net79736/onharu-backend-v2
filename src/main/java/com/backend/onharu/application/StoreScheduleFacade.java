@@ -9,13 +9,13 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 import com.backend.onharu.application.validator.StoreScheduleValidator;
-import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.reservation.dto.ReservationQuery.FindByStoreIdQuery;
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.reservation.service.ReservationQueryService;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdAndScheduleDateQuery;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleQuery.FindAllByStoreIdAndYearMonthQuery;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
+import com.backend.onharu.domain.storeschedule.policy.StoreScheduleDeletionPolicy;
 import com.backend.onharu.domain.storeschedule.service.StoreScheduleQueryService;
 import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.DateSummary;
 import com.backend.onharu.interfaces.api.dto.StoreScheduleControllerDto.ScheduleSlot;
@@ -109,12 +109,7 @@ public class StoreScheduleFacade {
                 new FindByStoreIdQuery(storeId));
 
         return reservations.stream()
-                .filter(reservation -> {
-                    ReservationType status = reservation.getStatus();
-                    return status == ReservationType.WAITING
-                            || status == ReservationType.CONFIRMED
-                            || status == ReservationType.COMPLETED;
-                })
+                .filter(reservation -> StoreScheduleDeletionPolicy.isBlockingStatus(reservation.getStatus()))
                 .map(reservation -> reservation.getStoreSchedule().getId())
                 .collect(Collectors.toSet());
     }

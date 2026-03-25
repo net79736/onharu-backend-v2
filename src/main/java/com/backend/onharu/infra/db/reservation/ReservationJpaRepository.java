@@ -1,6 +1,7 @@
 package com.backend.onharu.infra.db.reservation;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +34,16 @@ public interface ReservationJpaRepository extends JpaRepository<Reservation, Lon
               AND r.id = (SELECT MAX(r2.id) FROM Reservation r2 WHERE r2.storeSchedule.id = :storeScheduleId)
             """)
     Optional<Reservation> getLatestByStoreScheduleId(@Param("storeScheduleId") Long storeScheduleId);
+
+    /**
+     * 해당 가게 일정에 {@code statuses}에 포함된 상태의 예약이 하나라도 있으면 true
+     */
+    boolean existsByStoreSchedule_IdAndStatusIn(Long storeScheduleId, Collection<ReservationType> statuses);
+
+    /**
+     * 해당 가게 일정에 연결된 예약 행을 모두 삭제 (스케줄 삭제 전 FK 해소. 활성 예약 없음이 검증된 뒤에만 호출)
+     */
+    void deleteByStoreSchedule_Id(Long storeScheduleId);
 
     /**
      * 예약 상태로 예약 목록 조회

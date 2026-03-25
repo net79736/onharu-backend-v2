@@ -1,5 +1,6 @@
 package com.backend.onharu.domain.reservation.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.Find
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindByStoreIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindUpcomingByChildIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.FindUpcomingByOwnerIdParam;
+import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetByStoreScheduleIdParam;
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetReservationByIdParam;
 import com.backend.onharu.domain.reservation.model.Reservation;
@@ -49,6 +51,16 @@ public interface ReservationRepository {
      * 가게 일정 ID로 예약 단건 조회
      */
     Reservation getLatestByStoreScheduleId(GetByStoreScheduleIdParam param);
+
+    /**
+     * 해당 가게 일정에 {@code statuses}에 포함된 상태의 예약이 하나라도 있으면 true
+     */
+    boolean existsByStoreScheduleIdAndStatusIn(Long storeScheduleId, Collection<ReservationType> statuses);
+
+    /**
+     * 해당 가게 일정에 연결된 예약 행을 모두 삭제 (스케줄 삭제 전 FK 해소. 활성 예약 없음이 검증된 뒤에만 호출)
+     */
+    void deleteAllByStoreScheduleId(Long storeScheduleId);
 
     /**
      * 가게 ID로 예약 목록 조회

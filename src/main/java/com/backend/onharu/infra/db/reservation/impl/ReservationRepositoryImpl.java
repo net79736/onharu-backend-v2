@@ -3,6 +3,7 @@ package com.backend.onharu.infra.db.reservation.impl;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_NOT_FOUND;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -68,6 +69,16 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     @Override
     public Reservation getLatestByStoreScheduleId(GetByStoreScheduleIdParam param) {
         return reservationJpaRepository.getLatestByStoreScheduleId(param.storeScheduleId()).orElse(null);
+    }
+
+    @Override
+    public boolean existsByStoreScheduleIdAndStatusIn(Long storeScheduleId, Collection<ReservationType> statuses) {
+        return reservationJpaRepository.existsByStoreSchedule_IdAndStatusIn(storeScheduleId, statuses);
+    }
+
+    @Override
+    public void deleteAllByStoreScheduleId(Long storeScheduleId) {
+        reservationJpaRepository.deleteByStoreSchedule_Id(storeScheduleId);
     }
 
     @Override
