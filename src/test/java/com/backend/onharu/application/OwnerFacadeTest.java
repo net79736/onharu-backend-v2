@@ -2,6 +2,7 @@ package com.backend.onharu.application;
 
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STORE_ID_MISMATCH;
 import static com.backend.onharu.domain.support.error.ErrorType.Store.STORE_OWNER_MISMATCH;
+import static com.backend.onharu.domain.support.error.ErrorType.StoreSchedule.STORE_SCHEDULE_CANNOT_DELETE_HAS_RESERVATIONS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.child.model.Child;
@@ -35,6 +37,9 @@ import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.infra.db.chat.ChatMessageJpaRepository;
+import com.backend.onharu.infra.db.chat.ChatParticipantJpaRepository;
+import com.backend.onharu.infra.db.chat.ChatRoomJpaRepository;
 import com.backend.onharu.infra.db.child.ChildJpaRepository;
 import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
 import com.backend.onharu.infra.db.level.LevelJpaRepository;
@@ -53,6 +58,7 @@ import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.StoreScheduleReq
 import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @DisplayName("OwnerFacade 단위 테스트")
 class OwnerFacadeTest {
 
@@ -95,9 +101,21 @@ class OwnerFacadeTest {
     @Autowired
     private ReviewJpaRepository reviewJpaRepository;
 
+    @Autowired
+    private ChatMessageJpaRepository chatMessageJpaRepository;
+
+    @Autowired
+    private ChatRoomJpaRepository chatRoomJpaRepository;
+
+    @Autowired
+    private ChatParticipantJpaRepository chatParticipantJpaRepository;
+
     @BeforeEach
     public void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
+        chatMessageJpaRepository.deleteAll();
+        chatParticipantJpaRepository.deleteAll();
+        chatRoomJpaRepository.deleteAll();
         notificationHistoryJpaRepository.deleteAll();
         notificationJpaRepository.deleteAll();
         reviewJpaRepository.deleteAll();
@@ -663,6 +681,79 @@ class OwnerFacadeTest {
             );
 
             assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
+        }
+
+        @Test
+        @DisplayName("아동이 예약한 일정은 사업자가 삭제할 수 없음")
+        public void shouldThrowWhenRemovingScheduleWithActiveChildReservation() {
+            Owner owner = createTestOwner("test_owner_remove_blocked", "테스트 사업자", "01044445555", "새싹19", "4444555566");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("예약 걸린 가게", owner, category);
+            StoreSchedule schedule = createTestStoreSchedule(store, 10, 11);
+            Child child = createTestChild("test_child_schedule_delete", "예약 아동", "01077776666");
+
+            reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(child)
+                            .storeSchedule(schedule)
+                            .people(2)
+                            .status(ReservationType.WAITING)
+                            .build()
+            );
+
+            RemoveAvailableDatesRequest request = new RemoveAvailableDatesRequest(List.of(schedule.getId()));
+
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> ownerFacade.removeAvailableDates(store.getId(), owner.getId(), request)
+            );
+
+            assertThat(exception.getErrorType()).isEqualTo(STORE_SCHEDULE_CANNOT_DELETE_HAS_RESERVATIONS);
+            assertThat(storeScheduleJpaRepository.findById(schedule.getId())).isPresent();
+        }
+
+        @Test
+        @DisplayName("예약 건이 없는 일정은 사업자가 삭제할 수 있음")
+        @Rollback(value = false)
+        public void shouldRemoveScheduleWhenNoReservations() {
+            Owner owner = createTestOwner("test_owner_remove_empty", "테스트 사업자", "01055556666", "새싹20", "5555666677");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("예약 없는 가게", owner, category);
+            StoreSchedule schedule = createTestStoreSchedule(store, 10, 11);
+
+            RemoveAvailableDatesRequest request = new RemoveAvailableDatesRequest(List.of(schedule.getId()));
+
+            ownerFacade.removeAvailableDates(store.getId(), owner.getId(), request);
+
+            assertThat(storeScheduleJpaRepository.findByStoreId(store.getId())).isEmpty();
+            assertThat(storeScheduleJpaRepository.findById(schedule.getId())).isEmpty();
+        }
+
+        @Test
+        @DisplayName("취소된 예약만 남은 일정은 사업자가 삭제할 수 있음")
+        @Rollback(value = false)
+        public void shouldRemoveScheduleWhenOnlyCanceledReservation() {
+            Owner owner = createTestOwner("test_owner_remove_canceled_only", "테스트 사업자", "01066667777", "새싹21", "6666777788");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("취소만 있는 가게", owner, category);
+            StoreSchedule schedule = createTestStoreSchedule(store, 10, 11);
+            Child child = createTestChild("test_child_canceled_only_slot", "취소 아동", "01088889999");
+
+            reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(child)
+                            .storeSchedule(schedule)
+                            .people(2)
+                            .status(ReservationType.CANCELED)
+                            .build()
+            );
+
+            RemoveAvailableDatesRequest request = new RemoveAvailableDatesRequest(List.of(schedule.getId()));
+
+            ownerFacade.removeAvailableDates(store.getId(), owner.getId(), request);
+
+            assertThat(storeScheduleJpaRepository.findByStoreId(store.getId())).isEmpty();
+            assertThat(storeScheduleJpaRepository.findById(schedule.getId())).isEmpty();
         }
     }
 }
