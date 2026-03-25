@@ -14,6 +14,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  * - chatRoom: 채팅방 엔티티
  * - user: 사용자 엔티티
  * - lastReadMessageId: 마지막으로 읽은 메시지
+ * - isActive: 채팅방 참가 여부
+ *
  * UK_CHAT_ROOM_USER: 사용자의 채팅방 중복 생성 방지 {chatRoomId, userId}
  * IDX_PARTICIPANT_USER: 특정 사용자가 들어가 있는 채팅방 목록을 조회 {userId}
  */
@@ -51,10 +53,14 @@ public class ChatParticipant extends BaseEntity {
     @Column(name = "LAST_READ_MESSAGE_ID", nullable = true)
     private Long lastReadMessageId;
 
+    @Column(name = "IS_ACTIVE", nullable = false)
+    private boolean isActive;
+
     @Builder
     public ChatParticipant(ChatRoom chatRoom, User user) {
         this.chatRoom = chatRoom;
         this.user = user;
+        this.isActive = true;
     }
 
     /**
@@ -63,5 +69,19 @@ public class ChatParticipant extends BaseEntity {
      */
     public void updateLastReadMessageId(Long messageId) {
         this.lastReadMessageId = messageId;
+    }
+
+    /**
+     * 채팅 참여자가 채팅방을 떠난 경우
+     */
+    public void leaveChatRoom() {
+        this.isActive = false;
+    }
+
+    /**
+     * 채팅 참여자가 채팅방에 입장하는 경우
+     */
+    public void enterChatRoom() {
+        this.isActive = true;
     }
 }
