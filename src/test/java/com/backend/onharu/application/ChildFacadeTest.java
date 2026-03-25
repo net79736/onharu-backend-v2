@@ -1,7 +1,5 @@
 package com.backend.onharu.application;
 
-import static com.backend.onharu.domain.support.error.ErrorType.Child.CHILD_NOT_FOUND;
-import static com.backend.onharu.domain.support.error.ErrorType.Favorite.FAVORITE_NOT_FOUND;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_ALREADY_EXISTS;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_CHILD_ID_MISMATCH;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,7 +26,6 @@ import com.backend.onharu.domain.common.enums.ProviderType;
 import com.backend.onharu.domain.common.enums.ReservationType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
-import com.backend.onharu.domain.favorite.dto.FavoriteCommand;
 import com.backend.onharu.domain.favorite.dto.FavoriteQuery;
 import com.backend.onharu.domain.favorite.model.Favorite;
 import com.backend.onharu.domain.level.model.Level;
@@ -338,6 +335,41 @@ class ChildFacadeTest {
             );
 
             assertThat(exception.getErrorType()).isEqualTo(ErrorType.Reservation.RESERVATION_PEOPLE_EXCEEDS_MAX);
+        }
+
+        @Test
+        @DisplayName("예약 생성 실패 - 이미 시간이 지난 일정")
+        public void shouldThrowExceptionWhenScheduleTimeExpired() {
+            // given
+            Child child = createTestChild("test_child_expired", "테스트 아동", "01012345678");
+            Owner owner = createTestOwner("test_owner_expired", "테스트 사업자", "01011112222", "새싹_expired", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category);
+
+            StoreSchedule expiredSchedule = storeScheduleJpaRepository.save(
+                    StoreSchedule.builder()
+                            .store(store)
+                            .scheduleDate(LocalDate.now())
+                            // 테스트 시각 기준으로 항상 과거가 되도록 자정(00:00) 사용
+                            .startTime(LocalTime.of(0, 0))
+                            .endTime(LocalTime.of(1, 0))
+                            .maxPeople(10)
+                            .build()
+            );
+
+            CreateReservationCommand command = new CreateReservationCommand(
+                    child.getId(),
+                    expiredSchedule.getId(),
+                    2
+            );
+
+            // when & then
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> childFacade.reserve(command)
+            );
+
+            assertThat(exception.getErrorType()).isEqualTo(ErrorType.Reservation.RESERVATION_SCHEDULE_TIME_EXPIRED);
         }
     }
 
