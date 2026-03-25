@@ -6,6 +6,7 @@ import com.backend.onharu.domain.chat.model.ChatRoom;
 import com.backend.onharu.infra.db.chat.ChatRoomSummary;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 채팅참여자 도메인
@@ -41,6 +42,11 @@ public interface ChatParticipantRepository {
      * @return 특정 채팅방의 채팅참여자
      */
     ChatParticipant findByChatRoomIdAndUserId(FindByChatRoomIdAndUserIdParam param);
+
+    /**
+     * 채팅참여자 중 특정 채팅방의 사용자 조회(Optional)
+     */
+    Optional<ChatParticipant> getChatParticipantByChatRoomIdAndUserId(FindByChatRoomIdAndUserIdParam param);
 
     /**
      * 내가 참여한 채팅방 목록 조회
