@@ -2,6 +2,7 @@ package com.backend.onharu.domain.storeschedule.model;
 
 import static java.util.Optional.ofNullable;
 
+import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -69,5 +70,27 @@ public class StoreSchedule extends BaseEntity {
         ofNullable(startTime).ifPresent(v -> this.startTime = v);
         ofNullable(endTime).ifPresent(v -> this.endTime = v);
         ofNullable(maxPeople).ifPresent(v -> this.maxPeople = v);
+    }
+
+    /**
+     * 주어진 시각에 이 일정이 "예약 가능"인지 판정합니다.
+     * <p>
+     * 규칙:
+     * - 일정 날짜가 과거이면 예약 불가
+     * - 일정 날짜가 오늘이면, 현재 시각이 {@code startTime} 이전일 때만 예약 가능
+     * </p>
+     */
+    public boolean isBookableAt(LocalDateTime now) {
+        LocalDate today = now.toLocalDate();
+        if (scheduleDate.isBefore(today)) {
+            return false;
+        }
+
+        if (scheduleDate.isAfter(today)) {
+            return true;
+        }
+
+        // scheduleDate == today
+        return now.toLocalTime().isBefore(startTime);
     }
 }

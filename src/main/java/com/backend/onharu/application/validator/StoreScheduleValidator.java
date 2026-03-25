@@ -1,6 +1,7 @@
 package com.backend.onharu.application.validator;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
@@ -146,8 +147,11 @@ public class StoreScheduleValidator {
      * @return 예약 가능하면 true
      */
     public boolean isAvailable(StoreSchedule schedule, Set<Long> reservedScheduleIds) {
-        return !schedule.getScheduleDate().isBefore(LocalDate.now())
-                && !reservedScheduleIds.contains(schedule.getId());
+        // 일정 날짜/시간이 이미 지나갔으면 예약 불가
+        boolean isBookableByTime = schedule.isBookableAt(LocalDateTime.now());
+
+        // 이미 예약된 슬롯이면 예약 불가
+        return isBookableByTime && !reservedScheduleIds.contains(schedule.getId());
     }
 
     /**

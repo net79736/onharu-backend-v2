@@ -6,6 +6,7 @@ import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESE
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_PEOPLE_MUST_NOT_BE_NULL;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,6 +88,11 @@ public class ChildFacade {
         // 가게 일정 조회
         StoreSchedule storeSchedule = storeScheduleQueryService.getStoreScheduleById(new GetStoreScheduleByIdQuery(command.storeScheduleId()));
         Owner owner = storeSchedule.getStore().getOwner();
+
+        // 이미 지난 시간의 일정이면 예약 불가
+        if (!storeSchedule.isBookableAt(LocalDateTime.now())) {
+            throw new CoreException(ErrorType.Reservation.RESERVATION_SCHEDULE_TIME_EXPIRED);
+        }
 
         // 조회한 가게 일정이 이미 예약된 일정인지 체크 (테이블 조회해서 확인)
         Reservation reservation = reservationQueryService.getByStoreScheduleId(new GetByStoreScheduleIdQuery(command.storeScheduleId()));
