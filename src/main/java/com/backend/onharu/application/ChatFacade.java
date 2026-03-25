@@ -213,10 +213,6 @@ public class ChatFacade {
                             .stream()
                             .filter(chatParticipant -> !chatParticipant.getUser().getId().equals(query.userId())) // 채팅방 중 사용자 자신을 제외한 참가자 필터링
                             .map(chatParticipant -> {
-                                // 채팅방에 참여하고 있지 않는 경우
-                                if (!chatParticipant.isActive()){
-                                    return "(채팅방 탈퇴자)";
-                                }
                                 return displayName(chatParticipant.getUser());
                             }) // 응답값으로 반환할 이름 적용
                             .toList();
