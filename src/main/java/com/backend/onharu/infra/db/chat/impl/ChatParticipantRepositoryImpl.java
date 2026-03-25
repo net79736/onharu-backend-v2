@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.*;
 import static com.backend.onharu.domain.support.error.ErrorType.Chat.CHAT_PARTICIPANTS_NOT_FOUND;
@@ -40,6 +41,11 @@ public class ChatParticipantRepositoryImpl implements ChatParticipantRepository 
     public ChatParticipant findByChatRoomIdAndUserId(FindByChatRoomIdAndUserIdParam param) {
         return chatParticipantJpaRepository.findByChatRoom_IdAndUser_Id(param.chatRoomId(), param.userId())
                 .orElseThrow(() -> new CoreException(CHAT_PARTICIPANTS_NOT_FOUND));
+    }
+
+    @Override
+    public Optional<ChatParticipant> getChatParticipantByChatRoomIdAndUserId(FindByChatRoomIdAndUserIdParam param) {
+        return chatParticipantJpaRepository.findByChatRoom_IdAndUser_Id(param.chatRoomId(), param.userId());
     }
 
     @Override

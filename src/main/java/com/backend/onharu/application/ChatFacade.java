@@ -212,7 +212,9 @@ public class ChatFacade {
                     List<String> chatParticipantsNames = chatRoomMap.getOrDefault(chatRoomSummary.getId(), List.of()) // 채팅방 조회
                             .stream()
                             .filter(chatParticipant -> !chatParticipant.getUser().getId().equals(query.userId())) // 채팅방 중 사용자 자신을 제외한 참가자 필터링
-                            .map(chatParticipant -> displayName(chatParticipant.getUser())) // 응답값으로 반환할 이름 적용
+                            .map(chatParticipant -> {
+                                return displayName(chatParticipant.getUser());
+                            }) // 응답값으로 반환할 이름 적용
                             .toList();
 
                     // 각 채팅방 마다 안 읽은 메세지 갯수 계산
@@ -311,12 +313,10 @@ public class ChatFacade {
                 new GetChatParticipantQuery(command.chatRoomId(), command.userId())
         );
 
-        // 해당 채팅방에서 탈퇴
-        chatParticipantCommandService.deleteChatParticipant(
-                new DeleteChatParticipantCommand(chatParticipant)
-        );
+        // 채팅참여자 채팅방 탈퇴
+        chatParticipant.leaveChatRoom();
 
-        // todo: 채팅방 삭제 스케줄러로 추가 및 메시지 제거 스케줄러 추가 필요
+        // todo: 제거 스케줄러(채팅방, 메시지, 채팅 참여자) 필요
     }
 
     /**

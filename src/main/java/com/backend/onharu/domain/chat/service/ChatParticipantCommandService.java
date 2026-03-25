@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 import static com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.FindByChatRoomIdAndUserIdParam;
 
 @Service
@@ -22,10 +24,24 @@ public class ChatParticipantCommandService {
      * 채팅참여자 생성
      *
      * @param command 채팅방 엔티티와 사용자 엔티티를 포함한 Command
-     * @return 생성한 채팅참여자 엔티티
      */
     @Transactional
-    public ChatParticipant createChatParticipant(CreateChatParticipantCommand command) {
+    public void createChatParticipant(CreateChatParticipantCommand command) {
+        // 기존 채팅방에 참여했는지 조회
+        Optional<ChatParticipant> existChatParticipant = chatParticipantRepository.getChatParticipantByChatRoomIdAndUserId(
+                new FindByChatRoomIdAndUserIdParam(
+                        command.chatRoom().getId(),
+                        command.user().getId()
+                )
+        );
+
+        // 만약 기존에 참여하던 채팅방에 재입장인 경우
+        if (existChatParticipant.isPresent()) {
+            ChatParticipant exist = existChatParticipant.get();
+            exist.enterChatRoom();
+            return;
+        }
+
         // 채팅참여자 객체 생성
         ChatParticipant chatParticipant = ChatParticipant.builder()
                 .chatRoom(command.chatRoom())
@@ -33,7 +49,7 @@ public class ChatParticipantCommandService {
                 .build();
 
         // 채팅참여자 DB 저장
-        return chatParticipantRepository.save(chatParticipant);
+        chatParticipantRepository.save(chatParticipant);
     }
 
     /**
