@@ -29,7 +29,7 @@ public interface ChatParticipantJpaRepository extends JpaRepository<ChatParticip
     @Query("""
             SELECT cr.id as id, cm.content as content, cm.createdAt as createdAt, cp.lastReadMessageId as lastReadMessageId
             FROM ChatParticipant cp JOIN cp.chatRoom cr LEFT JOIN ChatMessage cm ON cm.id = cr.lastMessageId
-            WHERE cp.user.id = :userId
+            WHERE cp.user.id = :userId AND cp.isActive = true
             ORDER BY cm.createdAt desc
             """)
     List<ChatRoomSummary> getChatRoomSummary(@Param("userId") Long userId);
