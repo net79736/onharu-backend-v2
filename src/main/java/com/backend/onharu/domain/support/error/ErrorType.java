@@ -316,6 +316,7 @@ public enum ErrorType implements IErrorType {
         STORE_SCHEDULE_NOT_FOUND(ErrorCode.NOT_FOUND, "가게 일정 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         STORE_SCHEDULE_DUPLICATE(ErrorCode.BAD_REQUEST, "중복된 일정이 존재합니다. 같은 날짜와 시간에 일정을 등록할 수 없습니다.", LogLevel.WARN),
         STORE_SCHEDULE_CANNOT_DELETE_HAS_RESERVATIONS(ErrorCode.CONFLICT, "예약 이력이 있는 일정은 삭제할 수 없습니다.", LogLevel.WARN),
+        STORE_SCHEDULE_TIME_EXPIRED(ErrorCode.BAD_REQUEST, "이미 시간이 지난 일정은 등록할 수 없습니다.", LogLevel.WARN),
         ;
 
         private final ErrorCode code;

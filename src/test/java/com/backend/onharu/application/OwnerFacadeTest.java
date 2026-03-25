@@ -3,6 +3,7 @@ package com.backend.onharu.application;
 import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STORE_ID_MISMATCH;
 import static com.backend.onharu.domain.support.error.ErrorType.Store.STORE_OWNER_MISMATCH;
 import static com.backend.onharu.domain.support.error.ErrorType.StoreSchedule.STORE_SCHEDULE_CANNOT_DELETE_HAS_RESERVATIONS;
+import static com.backend.onharu.domain.support.error.ErrorType.StoreSchedule.STORE_SCHEDULE_TIME_EXPIRED;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
@@ -591,6 +592,34 @@ class OwnerFacadeTest {
             System.out.println("✅ 예약 가능한 날짜 생성 성공");
             System.out.println("   - 가게 ID: " + store.getId());
             System.out.println("   - 일정 개수: " + schedules.size());
+        }
+
+        @Test
+        @DisplayName("예약 가능한 날짜 생성 실패 - 오늘의 시작 시간이 지남")
+        public void shouldThrowExceptionWhenSetAvailableDatesTimeExpiredToday() {
+            // given
+            Owner owner = createTestOwner("test_owner_set_dates_expired", "테스트 사업자", "01012345678", "새싹13", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category);
+
+            List<StoreScheduleRequest> scheduleRequests = List.of(
+                    new StoreScheduleRequest(
+                            LocalDate.now(),
+                            LocalTime.of(0, 0),
+                            LocalTime.of(1, 0),
+                            10
+                    )
+            );
+
+            SetAvailableDatesRequest request = new SetAvailableDatesRequest(scheduleRequests);
+
+            // when & then
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> ownerFacade.setAvailableDates(store.getId(), owner.getId(), request)
+            );
+
+            assertThat(exception.getErrorType()).isEqualTo(STORE_SCHEDULE_TIME_EXPIRED);
         }
 
         @Test

@@ -4,6 +4,7 @@ import static com.backend.onharu.application.dto.StoreBookingSummaryResult.UPCOM
 import static com.backend.onharu.utils.SecurityUtils.getCurrentUserId;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -192,6 +193,9 @@ public class OwnerFacade {
                 .toList();
         storeScheduleValidator.validateNoDuplicates(storeId, timeRanges, null);
 
+        // 현재 시간
+        LocalDateTime now = LocalDateTime.now();
+
         // 요청 데이터를 리스트로 변환
         List<StoreSchedule> schedules = request.storeSchedules().stream()
         .map(req -> StoreSchedule.builder()
@@ -202,6 +206,13 @@ public class OwnerFacade {
                 .maxPeople(req.maxPeople())
                 .build())
         .toList();
+
+        // 일정 날짜/시간이 이미 지났으면 등록 불가
+        for (StoreSchedule schedule : schedules) {
+            if (!schedule.isBookableAt(now)) {
+                throw new CoreException(ErrorType.StoreSchedule.STORE_SCHEDULE_TIME_EXPIRED);
+            }
+        }
 
         // 저장
         storeScheduleCommandService.createStoreSchedules(schedules);
@@ -240,6 +251,9 @@ public class OwnerFacade {
         // 일정 중복 검증
         storeScheduleValidator.validateNoDuplicates(storeId, timeRanges, updatingScheduleIds);
 
+        // 현재 시간
+        LocalDateTime now = LocalDateTime.now();
+
         // 각 스케줄이 해당 가게에 속하는지 검증하고 업데이트
         request.storeSchedules().forEach(req -> {
             // 스케줄 조회 및 가게 소유권 검증
@@ -250,6 +264,18 @@ public class OwnerFacade {
             if (!schedule.getStore().getId().equals(storeId)) {
                 throw new CoreException(
                         ErrorType.Store.STORE_OWNER_MISMATCH);
+            }
+
+            // 일정 날짜/시간이 이미 지났으면 수정 불가
+            StoreSchedule updatedSchedule = StoreSchedule.builder()
+                    .store(store)
+                    .scheduleDate(req.scheduleDate())
+                    .startTime(req.startTime())
+                    .endTime(req.endTime())
+                    .maxPeople(req.maxPeople())
+                    .build();
+            if (!updatedSchedule.isBookableAt(now)) {
+                throw new CoreException(ErrorType.StoreSchedule.STORE_SCHEDULE_TIME_EXPIRED);
             }
 
             // 스케줄 업데이트
