@@ -59,11 +59,12 @@ public class PageableUtil {
 
     private static Sort createSort(String field, Sort.Direction direction) {
         // Native Query의 계산식이나 alias는 unsafe 사용
-        // 괄호로 감싸진 표현식이나 함수 호출
+        // 정렬 값이 중복될 경우 페이징 결과가 섞이는 현상을 막기 위해 id 정렬을 필수로 추가
         if (field.contains("(") && field.contains(")")) {
-            return JpaSort.unsafe(direction, field);
+            Sort primary = JpaSort.unsafe(direction, field);
+            return primary.and(Sort.by(direction, "id"));
         }
-        
+
         return Sort.by(direction, field);
     }
 
