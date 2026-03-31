@@ -53,7 +53,10 @@ public class StoreScheduleRepositoryImpl implements StoreScheduleRepository {
 
     @Override
     public List<StoreSchedule> findAllByStoreIdAndScheduleDate(FindAllByStoreIdAndScheduleDateParam param) {
-        return storeScheduleJpaRepository.findAllByStoreIdAndScheduleDate(param.storeId(), param.scheduleDate());
+        return storeScheduleJpaRepository.findAllByStoreIdAndScheduleDateOrderByStartTimeAsc(
+                param.storeId(),
+                param.scheduleDate()
+        );
     }
 
     @Override
@@ -80,7 +83,11 @@ public class StoreScheduleRepositoryImpl implements StoreScheduleRepository {
     public List<StoreSchedule> findAllByStoreIdAndYearMonth(FindAllByStoreIdAndYearMonthParam param) {
         LocalDate startDate = LocalDate.of(param.year(), param.month(), 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
-        return storeScheduleJpaRepository.findAllByStoreIdAndScheduleDateBetween(param.storeId(), startDate, endDate);
+        return storeScheduleJpaRepository.findAllByStoreIdAndScheduleDateBetweenOrderByScheduleDateAscStartTimeAsc(
+                param.storeId(),
+                startDate,
+                endDate
+        );
     }
 
     @Override
