@@ -51,7 +51,7 @@ public class SecurityConfig {
             "/api/files/**", // 파일(첨부) 메타데이터 API
             "/api/notifications/**", // 알림 관련 API
             "/api/chats/**",   // 채팅 관련 API
-            "/ws-chat/**", "/topic", "/topic/chat/**", "/topic/chat/**", "/app", "/chat/send", "/chat/send/**"// 웹소켓 관련 경로
+            "/ws-chat", "/ws-chat/**", // 웹소켓 관련 경로
     };
 
     public static final String[] AUTHENTICATE_PATH = {
@@ -70,7 +70,7 @@ public class SecurityConfig {
             "/api/admins/**"
     };
 
-    private static final String PORT_FRONT_LOCAL = "http://localhost:5173";
+    private static final String PORT_FRONT_LOCAL = "http://localhost:3000";
     private static final String PORT_BACK_LOCAL = "http://localhost:8080";
 
     private final SocialUserService socialUserService;

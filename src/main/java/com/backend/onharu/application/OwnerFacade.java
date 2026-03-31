@@ -325,6 +325,7 @@ public class OwnerFacade {
      * @param reservationId 예약 ID
      * @param ownerId 사업자 ID
      */
+    @Transactional
     public void confirmReservation(Long reservationId, Long ownerId) {
         Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(reservationId));
         Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(reservation.getStoreSchedule().getStore().getId()));
@@ -377,10 +378,10 @@ public class OwnerFacade {
 
         // 현재 사업자의 나눔 횟수를 기준으로 등급 조회
         levelQueryService.findFirstByConditionNumber(
-                new FindFirstByConditionNumberQuery(owner.getDistributionCount())
+                new FindFirstByConditionNumberQuery(owner.getLevel().getConditionNumber())
         ).ifPresent(nextLevel -> {
-            // 사업자의 현재 등급과 조회된 등급이 다를 경우
-            if (!owner.getLevel().equals(nextLevel)) {
+            // 사업자의 현재 등급에서 승급 조건을 만족한 경우
+            if (owner.getDistributionCount() >= nextLevel.getConditionNumber()) {
                 // 사업자의 등급을 교체
                 owner.changeLevel(nextLevel);
             }
@@ -397,6 +398,7 @@ public class OwnerFacade {
      * 
      * @param reservationId 예약 ID
      */
+    @Transactional
     public void cancelReservation(Long reservationId, CancelReservationRequest request) {
         // 예약 정보 조회
         Reservation reservation = reservationQueryService.getReservation(new GetReservationByIdQuery(reservationId));

@@ -1,7 +1,6 @@
 package com.backend.onharu.domain.chat.dto;
 
-import com.backend.onharu.domain.chat.model.ChatRoom;
-import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.domain.common.enums.RoomType;
 
 import java.util.List;
 
@@ -12,14 +11,16 @@ public class ChatRoomCommand {
 
     /**
      * 채팅방 생성 Command
-     * @param name 채팅방 이름
-     * @param userId 채팅방 주인 사용자 ID
-     * @param participantUserIds 채팅방 참가자 사용자 ID 목록
+     * @param name 채팅방 제목
+     * @param roomType 채팅방 타입
+     * @param targetId 채팅방 참가 대상 사용자 ID
+     * @param userId 채팅방을 생성하는 사용자 ID
      */
     public record CreateChatRoomCommand(
             String name,
-            Long userId,
-            List<Long> participantUserIds
+            RoomType roomType,
+            Long targetId,
+            Long userId
     ) {
     }
 
@@ -51,6 +52,17 @@ public class ChatRoomCommand {
      * @param userId 사용자 ID
      */
     public record LeaveChatRoomCommand(
+            Long chatRoomId,
+            Long userId
+    ) {
+    }
+
+    /**
+     * 채팅방 입장 Command
+     * @param chatRoomId 채팅방 ID
+     * @param userId 사용자 ID
+     */
+    public record EnterChatRoomCommand(
             Long chatRoomId,
             Long userId
     ) {

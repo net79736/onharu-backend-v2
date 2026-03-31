@@ -3,6 +3,8 @@ package com.backend.onharu.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -17,6 +19,13 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
  * API 문서화를 위한 Swagger UI 설정입니다.
  * 세션 기반 인증을 사용하며, Swagger UI에서 쿠키 기반 인증을 지원합니다.
  */
+@OpenAPIDefinition(
+    servers = {
+            @Server(url = "https://onharu-api-v2.votex.co.kr", description = "onharu-api https 서버입니다."),
+            @Server(url = "http://onharu-api.votex.co.kr", description = "onharu-api http 서버입니다."),
+            @Server(url = "http://localhost:8080", description = "kopis local 서버입니다.")
+    }
+)
 @Configuration
 public class SwaggerConfig {
     

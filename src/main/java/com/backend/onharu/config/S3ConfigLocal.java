@@ -33,15 +33,16 @@ public class S3ConfigLocal {
     @Value("${minio.secret-key}")
     private String minioSecretKey;
 
-    @Value("${minio.bucket}")
-    private String region;
+    /** S3 서명용 리전 */
+    @Value("${minio.region}")
+    private String minioRegion;
 
     @PostConstruct
     public void printMinioUrl() {
         log.info("minioUrl: " + minioUrl);
         log.info("minioAccessKey: " + minioAccessKey);
         log.info("minioSecretKey: " + minioSecretKey);
-        log.info("region: " + region);
+        log.info("minioRegion: " + minioRegion);
     }
 
 
@@ -62,9 +63,10 @@ public class S3ConfigLocal {
     @Bean
     public S3Client minioClient() {
         try {
+            // path-style은 S3Configuration 한 곳에서만 설정 (SDK 2.x는 forcePathStyle + pathStyleAccessEnabled 동시 설정 시 예외)
             return S3Client.builder()
                     .endpointOverride(URI.create(minioUrl))
-                    .region(Region.of(region))
+                    .region(Region.of(minioRegion))
                     .credentialsProvider(StaticCredentialsProvider
                             .create(AwsBasicCredentials
                                     .create(minioAccessKey, minioSecretKey)))
@@ -75,6 +77,7 @@ public class S3ConfigLocal {
                     )
                     .build();
         } catch (Exception e) {
+            log.warn("MinIO S3Client 빌드 실패: url={}, region={}, cause={}", minioUrl, minioRegion, e.getMessage());
             throw new CoreException(ErrorType.FileOperation.MINIO_CLIENT_ERROR);
         }
     }
@@ -88,7 +91,7 @@ public class S3ConfigLocal {
     public S3Presigner minioS3Presigner() {
         return S3Presigner.builder()
                 .endpointOverride(URI.create(minioUrl))
-                .region(Region.of(region))
+                .region(Region.of(minioRegion))
                 .credentialsProvider(StaticCredentialsProvider
                         .create(AwsBasicCredentials
                                 .create(minioAccessKey, minioSecretKey)))

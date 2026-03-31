@@ -10,17 +10,24 @@ import org.springframework.transaction.annotation.Transactional;
 import static com.backend.onharu.domain.chat.dto.ChatRoomCommand.*;
 import static com.backend.onharu.domain.chat.dto.ChatRoomRepositoryParam.FindChatRoomByIdParam;
 
+/**
+ * 채팅방 도메인의 Command Service 입니다.
+ */
 @Service
 @RequiredArgsConstructor
 public class ChatRoomCommandService {
 
     private final ChatRoomRepository chatRoomRepository;
 
-    public ChatRoom createChatRoom(String name) {
-        // 채팅방 엔티티 생성
+    /**
+     * 채팅방 생성 (일대일)
+     */
+    @Transactional
+    public ChatRoom createChatRoom(CreateChatRoomCommand command) {
+        // 채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
-                .roomType(RoomType.ONE_TO_ONE) // 기본적으로 일대일 채팅방 생성
-                .name(name)
+                .name(command.name())
+                .roomType(RoomType.ONE_TO_ONE)
                 .build();
 
         // 생성한 채팅방 엔티티를 DB 에 저장
@@ -28,15 +35,8 @@ public class ChatRoomCommandService {
     }
 
     /**
-     * 채팅방 초대
-     */
-    public void inviteChatRoom(InviteChatRoomCommand command) {
-
-    }
-
-
-    /**
      * 채팅방 수정
+     *
      * @param command 채팅방 엔티티를 포함한 Command
      */
     @Transactional
@@ -55,7 +55,7 @@ public class ChatRoomCommandService {
     }
 
     /**
-     * 채팅방 탈퇴
+     * 참가한 채팅방 탈퇴
      */
     @Transactional
     public void leaveChatRoom(LeaveChatRoomCommand command) {
@@ -64,7 +64,7 @@ public class ChatRoomCommandService {
                 new FindChatRoomByIdParam(command.chatRoomId())
         );
 
-        // 채팅방 탈퇴
+        // 채팅방 삭제
         chatRoomRepository.delete(chatRoom);
     }
 }

@@ -112,6 +112,19 @@ class ReservationNotificationMessageTest {
         }
 
         @Test
+        @DisplayName("RESERVATION_CREATED - 가게명이 있으면 예약 번호 포맷 후에도 [가게명] 접두")
+        void shouldPrefixStoreName_WhenReservationCreatedWithStoreName() {
+            // given
+            ReservationNotificationMessage message = ReservationNotificationMessage.RESERVATION_CREATED;
+
+            // when
+            String ownerMessage = message.getOwnerMessageTemplate("테스트카페", 99L);
+
+            // then
+            assertThat(ownerMessage).isEqualTo("[테스트카페] 새로운 예약이 확정되었습니다. 예약 번호: 99");
+        }
+
+        @Test
         @DisplayName("RESERVATION_CONFIRMED - 사장용 메시지 반환")
         void shouldReturnOwnerMessage_WhenReservationConfirmed() {
             // given

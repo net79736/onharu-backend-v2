@@ -22,6 +22,19 @@ public class ChatMessageCommand {
     }
 
     /**
+     * DB에 채팅 메시지 생성 및 저장 Command
+     * @param chatRoom 채팅방 엔티티
+     * @param sender 사용자 엔티티
+     * @param content 메시지 내용
+     */
+    public record CreateMessageCommand(
+            ChatRoom chatRoom,
+            User sender,
+            String content
+    ) {
+    }
+
+    /**
      * 채팅 메시지 읽음 Command
      * @param chatRoomId 채팅방 ID
      * @param userId 사용자 ID

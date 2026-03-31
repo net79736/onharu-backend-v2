@@ -16,6 +16,7 @@ public class ChatControllerDto {
      * @param lastMessage 메시지 내용
      * @param lastMessageTime 메시지 생성 시각
      * @param unreadMessageCount 안읽은 메세지 수
+     * @param chatParticipants 채팅방참가 이름 목록
      */
     public record ChatRoomResponse(
             Long chatRoomId,
@@ -63,12 +64,12 @@ public class ChatControllerDto {
      * 채팅방 생성 요청
      * @param name 채팅방 이름
      * @param roomType 채팅방 타입(일대일 또는 그룹)
-     * @param chatParticipantIds 채팅방 참여자 ID 목록
+     * @param targetId 상대방 사용자 ID
      */
     public record CreateChatRoomRequest(
             String name,
             RoomType roomType,
-            List<Long> chatParticipantIds
+            Long targetId
     ) {
     }
 

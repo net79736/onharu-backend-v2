@@ -3,7 +3,9 @@ package com.backend.onharu.application;
 import static com.backend.onharu.domain.support.error.ErrorType.Store.STORE_OWNER_MISMATCH;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
@@ -34,6 +36,7 @@ import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.model.StoreTag;
 import com.backend.onharu.domain.store.service.StoreQueryService;
+import com.backend.onharu.domain.store.support.StoreSearchSortResolver;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.tag.model.Tag;
 import com.backend.onharu.domain.user.model.User;
@@ -43,6 +46,7 @@ import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -282,10 +286,10 @@ class StoreFacadeTest {
             assertThat(result.getTotalElements()).isEqualTo(2);
             assertThat(result.getContent())
                     .extracting(s -> s.store().getName())
-                    .containsExactlyInAnyOrder("강남 커피숍", "역삼 카페");
+                    .containsExactlyInAnyOrder(store1.getName(), store2.getName());
             assertThat(result.getContent())
                     .extracting(s -> s.store().getName())
-                    .doesNotContain("부산 해운대가게");
+                    .doesNotContain(storeInBusan.getName());
         }
 
         @Test
@@ -382,6 +386,65 @@ class StoreFacadeTest {
         }
 
         @Test
+        @DisplayName("sortField=favoriteCount - tie 시 페이지 중복 없이 조회")
+        @Transactional
+        public void shouldNotReturnDuplicatedStoresBetweenPagesWhenSortingFavoriteCountTie() {
+            // given: 모든 가게의 favoriteCount가 동일한 상황 (favorites 없음 → 0)
+            Owner owner = createTestOwner(
+                    "test_owner_search_favorite_tie",
+                    "테스트 사업자",
+                    "01012345678",
+                    "새싹_favorite_tie",
+                    "1234567890"
+            );
+            Category category = createTestCategory("식당");
+
+            int totalStores = 12;
+            for (int i = 0; i < totalStores; i++) {
+                createTestStore("가게_" + i, owner, category, "37.5665", "126.9780");
+            }
+
+            SearchStoresQuery query = new SearchStoresQuery(null, null, null, null);
+            String sortField = StoreSearchSortResolver.resolve("favoriteCount", false); // JPQL: COUNT(f)
+            int perPage = 2;
+
+            // when
+            Set<Long> seenStoreIds = new HashSet<>();
+
+            Page<StoreWithFavoriteCount> firstPage = storeFacade.searchStores(
+                    query,
+                    PageableUtil.ofOneBased(1, perPage, sortField, "desc")
+            );
+
+            long totalElements = firstPage.getTotalElements();
+            seenStoreIds.addAll(firstPage.getContent().stream()
+                    .map(s -> s.store().getId())
+                    .toList());
+
+            // page 2..N을 추가로 조회하며 중복되는 id가 없는지 검증
+            for (int pageNum = 2; pageNum <= firstPage.getTotalPages(); pageNum++) {
+                Page<StoreWithFavoriteCount> page = storeFacade.searchStores(
+                        query,
+                        PageableUtil.ofOneBased(pageNum, perPage, sortField, "desc")
+                );
+
+                Set<Long> pageIds = page.getContent().stream()
+                        .map(s -> s.store().getId())
+                        .collect(java.util.stream.Collectors.toSet());
+
+                // 페이지 내부 중복 방지(안전장치)
+                assertThat(pageIds.size()).isEqualTo(page.getContent().size());
+
+                // 페이지 간 중복 방지(핵심)
+                assertThat(seenStoreIds).doesNotContainAnyElementsOf(pageIds);
+                seenStoreIds.addAll(pageIds);
+            }
+
+            // then
+            assertThat(seenStoreIds.size()).isEqualTo(totalElements);
+        }
+
+        @Test
         @DisplayName("위도/경도 + 키워드 동시 조건 - 위치 내에서 키워드 필터링")
         @Transactional
         public void shouldSearchStoresWithLocationAndKeyword() {
@@ -389,7 +452,7 @@ class StoreFacadeTest {
             Owner owner = createTestOwner("test_owner_search_both", "테스트 사업자", "01012345678", "새싹7", "1234567890");
             Category category = createTestCategory("식당");
             Store coffeeStore = createTestStore("강남 커피숍", owner, category, "37.5665", "126.9780");
-            Store restaurantStore = createTestStore("강남 식당", owner, category, "37.5666", "126.9781");
+            createTestStore("강남 식당", owner, category, "37.5666", "126.9781");
 
             SearchStoresQuery query = new SearchStoresQuery(37.5665, 126.9780, null, "커피");
             Pageable pageable = Pageable.ofSize(10);
@@ -400,7 +463,7 @@ class StoreFacadeTest {
             // then: 위치 조건 + 가게 이름 "커피" 포함된 가게만 조회
             assertThat(result).isNotNull();
             assertThat(result.getTotalElements()).isEqualTo(1);
-            assertThat(result.getContent().get(0).store().getName()).isEqualTo("강남 커피숍");
+            assertThat(result.getContent().get(0).store().getName()).isEqualTo(coffeeStore.getName());
         }
     }
 

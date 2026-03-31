@@ -2,6 +2,7 @@ package com.backend.onharu.infra.websocket;
 
 import com.backend.onharu.application.ChatFacade;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -11,6 +12,7 @@ import static com.backend.onharu.domain.chat.dto.ChatMessageCommand.*;
 /**
  * 웹소켓 메시지 처리 컨트롤러 (STOMP 사용)
  */
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class ChatController {
@@ -24,6 +26,7 @@ public class ChatController {
      */
     @MessageMapping("/chat/send")
     public void sendMessage(ChatMessageRequest request) {
+        log.info("메시지 전송: {}", request);
 
         // 채팅 메시지 생성 호출 및 응답 생성
         ChatMessageResponse response = chatFacade.createChatMessage(

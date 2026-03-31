@@ -30,4 +30,25 @@ public class ChatParticipantCommand {
             ChatParticipant chatParticipant
     ) {
     }
+
+    /**
+     * 채팅참여자가 마지막으로 읽은 메시지 업데이트 Command
+     * @param chatRoomId 채팅 ID
+     * @param userId 사용자 ID
+     * @param lastMessageId 마지막으로 읽은 메시지 ID
+     */
+    public record UpdateLastReadMessageCommand(
+            Long chatRoomId,
+            Long userId,
+            Long lastMessageId
+    ) {
+    }
+
+    /**
+     * 채팅참여자 제거 Command
+     */
+    public record DeleteChatParticipantCommand(
+            ChatParticipant chatParticipant
+    ){
+    }
 }

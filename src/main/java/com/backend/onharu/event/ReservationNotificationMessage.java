@@ -47,17 +47,19 @@ public enum ReservationNotificationMessage {
 
     /**
      * 가게 사장용 메시지 반환
+     * 템플릿에 %d가 있으면 예약 번호로 치환 후, storeName이 있으면 "[storeName] 본문" 형식으로 반환
      */
     public String getOwnerMessageTemplate(String storeName, Long reservationId) {
-        // reservationId가 있으면 예약 번호 메시지 추가
-        if (ownerMessageTemplate != null && ownerMessageTemplate.contains("%d")) {
-            return String.format(ownerMessageTemplate, reservationId != null ? reservationId : 0L);
-        }
+        // 템플릿에 %d가 있으면 예약 번호로 치환
+        String body = (ownerMessageTemplate != null && ownerMessageTemplate.contains("%d"))
+            ? String.format(ownerMessageTemplate, reservationId != null ? reservationId : 0L)
+            : ownerMessageTemplate;
         // storeName이 없으면 가게 이름 메시지 제거
         if (storeName == null || storeName.isBlank()) {
-            return ownerMessageTemplate;
+            return body;
         }
-        return "[" + storeName + "] " + ownerMessageTemplate;
+        // storeName이 있으면 "[storeName] 본문" 형식으로 반환
+        return "[" + storeName + "] " + body;
     }
 
     /**

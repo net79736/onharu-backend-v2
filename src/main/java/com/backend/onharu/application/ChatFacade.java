@@ -2,6 +2,7 @@ package com.backend.onharu.application;
 
 import com.backend.onharu.domain.chat.dto.ChatMessageQueryService;
 import com.backend.onharu.domain.chat.dto.ChatParticipantQueryService;
+import com.backend.onharu.domain.chat.dto.ChatRoomCommand.EnterChatRoomCommand;
 import com.backend.onharu.domain.chat.dto.ChatRoomCommand.LeaveChatRoomCommand;
 import com.backend.onharu.domain.chat.dto.ChatRoomCommand.UpdateChatRoomCommand;
 import com.backend.onharu.domain.chat.model.ChatMessage;
@@ -11,6 +12,13 @@ import com.backend.onharu.domain.chat.service.ChatMessageCommandService;
 import com.backend.onharu.domain.chat.service.ChatParticipantCommandService;
 import com.backend.onharu.domain.chat.service.ChatRoomCommandService;
 import com.backend.onharu.domain.chat.service.ChatRoomQueryService;
+import com.backend.onharu.domain.child.service.ChildQueryService;
+import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.domain.owner.model.Owner;
+import com.backend.onharu.domain.owner.service.OwnerQueryService;
+import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.store.service.StoreQueryService;
+import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.domain.user.service.UserQueryService;
 import com.backend.onharu.infra.db.chat.ChatRoomSummary;
@@ -19,22 +27,24 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.backend.onharu.domain.chat.dto.ChatMessageCommand.CreateChatMessageCommand;
-import static com.backend.onharu.domain.chat.dto.ChatMessageCommand.ReadMessageCommand;
+import static com.backend.onharu.domain.chat.dto.ChatMessageCommand.*;
 import static com.backend.onharu.domain.chat.dto.ChatMessageQuery.CountUnreadMessageQuery;
 import static com.backend.onharu.domain.chat.dto.ChatMessageQuery.FindChatMessageQuery;
-import static com.backend.onharu.domain.chat.dto.ChatParticipantCommand.CreateChatParticipantCommand;
-import static com.backend.onharu.domain.chat.dto.ChatParticipantCommand.updateChatParticipantCommand;
+import static com.backend.onharu.domain.chat.dto.ChatParticipantCommand.*;
 import static com.backend.onharu.domain.chat.dto.ChatParticipantQuery.*;
 import static com.backend.onharu.domain.chat.dto.ChatRoomCommand.CreateChatRoomCommand;
 import static com.backend.onharu.domain.chat.dto.ChatRoomCommand.InviteChatRoomCommand;
 import static com.backend.onharu.domain.chat.dto.ChatRoomQuery.FindChatRoomByIdQuery;
+import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
+import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByUserIdQuery;
+import static com.backend.onharu.domain.store.dto.StoreQuery.FindByOwnerIdQuery;
+import static com.backend.onharu.domain.support.error.ErrorType.Chat.CAN_NOT_CHAT_WITH_ONESELF;
+import static com.backend.onharu.domain.support.error.ErrorType.Store.STORE_OWNER_MISMATCH;
+import static com.backend.onharu.domain.support.error.ErrorType.User.USER_TYPE_MUST_BE_CHILD_OR_OWNER;
 import static com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
 import static com.backend.onharu.interfaces.api.dto.ChatControllerDto.ChatRoomMessageResponse;
 import static com.backend.onharu.interfaces.api.dto.ChatControllerDto.ChatRoomResponse;
@@ -54,33 +64,45 @@ public class ChatFacade {
     private final ChatMessageQueryService chatMessageQueryService;
 
     private final UserQueryService userQueryService;
+    private final StoreQueryService storeQueryService;
+    private final ChildQueryService childQueryService;
+    private final OwnerQueryService ownerQueryService;
 
-    // 채팅방 생성
+    /**
+     * 채팅방 생성(일대일 채팅방, 참여자까지 생성)
+     */
     @Transactional
     public ChatRoom createChatRoom(CreateChatRoomCommand command) {
-        // 채팅방 생성
-        ChatRoom chatRoom = chatRoomCommandService.createChatRoom(command.name());
-
-        // 채팅방 참가 목록 생성
-        Set<Long> participantUserIds = new HashSet<>();
-        participantUserIds.add(command.userId()); // 채팅방 사용자 ID(방장 ID) 추가
-
-        if (command.participantUserIds() != null) {
-            participantUserIds.addAll(command.participantUserIds()); // 방장 외 사용자 ID 목록 추가
+        // 채팅방 대상 사용자가 자기자신과 같을 경우 예외 처리
+        if (command.userId().equals(command.targetId())) {
+            throw new CoreException(CAN_NOT_CHAT_WITH_ONESELF);
         }
 
-        for (Long userId : participantUserIds) {
-            // 사용자 조회
-            User user = userQueryService.getUser(
-                    new GetUserByIdQuery(userId)
-            );
-            // 채팅참가자 추가
-            chatParticipantCommandService.createChatParticipant(
-                    new CreateChatParticipantCommand(chatRoom, user)
-            );
-        }
+        // 사용자 조회 및 계정 상태 검증
+        User requestUser = userQueryService.getUser(
+                new GetUserByIdQuery(command.userId())
+        );
+        requestUser.verifyStatus();
 
-        // 채팅방 반환
+        // 상대방 사용자 조회 및 계정 상태 검증
+        User targetUser = userQueryService.getUser(
+                new GetUserByIdQuery(command.targetId())
+        );
+        targetUser.verifyStatus();
+
+        // 새 채팅방 생성
+        ChatRoom chatRoom = chatRoomCommandService.createChatRoom(command);
+
+        // 채팅 참여자 생성(사용자)
+        chatParticipantCommandService.createChatParticipant(
+                new CreateChatParticipantCommand(chatRoom, requestUser)
+        );
+
+        // 채팅 참여자 생성(상대방)
+        chatParticipantCommandService.createChatParticipant(
+                new CreateChatParticipantCommand(chatRoom, targetUser)
+        );
+
         return chatRoom;
     }
 
@@ -134,14 +156,23 @@ public class ChatFacade {
 
         // 채팅메시지 생성 및 저장
         ChatMessage chatMessage = chatMessageCommandService.createChatMessage(
-                new CreateChatMessageCommand(
-                        chatRoom.getId(),
-                        sender.getId(),
+                new CreateMessageCommand(
+                        chatRoom,
+                        sender,
                         command.content())
         );
 
         // 채팅방의 마지막으로 읽은 메시지 업데이트
         chatRoom.updateLastMessage(chatMessage.getId());
+
+        // 사용자 읽음 처리
+        chatParticipantCommandService.updateLastReadMessage(
+                new UpdateLastReadMessageCommand(
+                        chatRoom.getId(),
+                        sender.getId(),
+                        chatMessage.getId()
+                )
+        );
 
         // 채팅 메시지 응답 생성
         return new ChatMessageResponse(
@@ -161,7 +192,9 @@ public class ChatFacade {
         List<ChatRoomSummary> chatRoomSummaries = chatParticipantQueryService.getChatRoomSummary(query);
 
         // 채팅방 ID 목록 추출
-        List<Long> chatRoomIds = chatRoomSummaries.stream().map(ChatRoomSummary::getId).toList();
+        List<Long> chatRoomIds = chatRoomSummaries.stream()
+                .map(ChatRoomSummary::getId)
+                .toList();
 
         // 채팅 참가자 조회
         List<ChatParticipant> chatParticipants = chatParticipantQueryService.getParticipants(
@@ -175,17 +208,19 @@ public class ChatFacade {
         // 각 채팅방 마다 적용
         return chatRoomSummaries.stream()
                 .map(chatRoomSummary -> {
-                    // 각 채팅방 마다 안 읽은 메세지 갯수 계산
-                    long unreadMessage = chatMessageQueryService.countUnreadMessage(
-                            new CountUnreadMessageQuery(chatRoomSummary.getId(), chatRoomSummary.getLastReadMessageId())
-                    );
-
                     // 채팅방 참가자 이름 조회
                     List<String> chatParticipantsNames = chatRoomMap.getOrDefault(chatRoomSummary.getId(), List.of()) // 채팅방 조회
                             .stream()
                             .filter(chatParticipant -> !chatParticipant.getUser().getId().equals(query.userId())) // 채팅방 중 사용자 자신을 제외한 참가자 필터링
-                            .map(chatParticipant -> chatParticipant.getUser().getName()) // 채팅 참가자의 이름을 추출
+                            .map(chatParticipant -> {
+                                return displayName(chatParticipant.getUser());
+                            }) // 응답값으로 반환할 이름 적용
                             .toList();
+
+                    // 각 채팅방 마다 안 읽은 메세지 갯수 계산
+                    long unreadMessage = chatMessageQueryService.countUnreadMessage(
+                            new CountUnreadMessageQuery(chatRoomSummary.getId(), chatRoomSummary.getLastReadMessageId())
+                    );
 
                     // 반환값 생성
                     return new ChatRoomResponse(
@@ -200,11 +235,57 @@ public class ChatFacade {
     }
 
     /**
+     * 사용자별 표시할 이름 반환(사업자일 경우 가게명, 아동일 경우 닉네임)
+     */
+    public String displayName(User user) {
+        // 아동일 경우 닉네임 반환
+        if (user.getUserType() == UserType.CHILD) {
+            return childQueryService.getChildByUserId(
+                    new GetChildByUserIdQuery(user.getId())
+            ).getNickname();
+        }
+
+        // 사업자일 경우 연관된 가게명 반환
+        if (user.getUserType() == UserType.OWNER) {
+            Owner owner = ownerQueryService.getOwnerByUserId(
+                    new GetOwnerByUserIdQuery(user.getId())
+            );
+
+            // 사업자의 가게 조회
+            List<Store> stores = storeQueryService.findByOwnerId(new FindByOwnerIdQuery(owner.getId()));
+
+            // 사업자의 가게가 없는 경우
+            if (stores.isEmpty()) {
+                throw new CoreException(STORE_OWNER_MISMATCH);
+            }
+
+            // 첫번째 가게 반환=
+            return stores.get(0).getName();
+        }
+
+        // 다른 타입일 경우 예외발생
+        throw new CoreException(USER_TYPE_MUST_BE_CHILD_OR_OWNER);
+    }
+
+    /**
      * 특정 채팅방의 채팅 메시지 목록 조회
      */
     public List<ChatRoomMessageResponse> findChatMessage(FindChatMessageQuery query) {
         // 채팅 메시지 목록 조회
         List<ChatMessage> chatMessage = chatMessageQueryService.findChatMessage(query);
+
+        // 마지막으로 읽은 메시지 업데이트
+        if (!chatMessage.isEmpty()) {
+            Long chatMessageId = chatMessage.get(0).getId();
+
+            chatParticipantCommandService.updateLastReadMessage(
+                    new UpdateLastReadMessageCommand(
+                            query.chatRoomId(),
+                            query.userId(),
+                            chatMessageId
+                    )
+            );
+        }
 
         // 각 메시지 마다 적용 후 리턴
         return chatMessage.stream()
@@ -222,16 +303,20 @@ public class ChatFacade {
      */
     @Transactional
     public void leaveChatRoom(LeaveChatRoomCommand command) {
-        // 사용자 확인
-        User user = userQueryService.getUser(
-                new GetUserByIdQuery(command.userId())
+        // 채팅방 조회
+        chatRoomQueryService.findChatRoomById(
+                new FindChatRoomByIdQuery(command.chatRoomId())
         );
 
-        // 계정 검증
-        user.verifyStatus();
+        // 채팅방 참가자 조회
+        ChatParticipant chatParticipant = chatParticipantQueryService.getParticipant(
+                new GetChatParticipantQuery(command.chatRoomId(), command.userId())
+        );
 
-        // 채팅방 탈퇴
-        chatRoomCommandService.leaveChatRoom(command);
+        // 채팅참여자 채팅방 탈퇴
+        chatParticipant.leaveChatRoom();
+
+        // todo: 제거 스케줄러(채팅방, 메시지, 채팅 참여자) 필요
     }
 
     /**
@@ -251,5 +336,29 @@ public class ChatFacade {
         chatParticipantCommandService.updateChatParticipant(new updateChatParticipantCommand(chatParticipant));
     }
 
+    /**
+     * 채팅방 입장
+     */
+    @Transactional
+    public void enterChatRoom(EnterChatRoomCommand command) {
+        // 채팅방의 마지막 메시지 조회
+        ChatRoom chatRoom = chatRoomQueryService.findChatRoomById(
+                new FindChatRoomByIdQuery(command.chatRoomId())
+        );
+        Long lastMessageId = chatRoom.getLastMessageId();
 
+        // 채팅방에 메시지가 없는 경우
+        if (lastMessageId == null) {
+            return;
+        }
+
+        // 채팅참가자들이 해당 메시지를 읽었음을 업데이트
+        chatParticipantCommandService.updateLastReadMessage(
+                new UpdateLastReadMessageCommand(
+                        command.chatRoomId(),
+                        command.userId(),
+                        lastMessageId
+                )
+        );
+    }
 }

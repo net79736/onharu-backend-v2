@@ -221,7 +221,10 @@ public class OwnerControllerDto {
             String cancelReason,
 
             @Schema(description = "예약 취소 요청자", example = "CHILD")
-            UserType cancelRequestedBy
+            UserType cancelRequestedBy,
+
+            @Schema(description = "예약자(아동)의 사용자 ID", example = "10")
+            Long userId
     ) {
         public ReservationResponse(Reservation reservation) {
             this(
@@ -238,7 +241,8 @@ public class OwnerControllerDto {
                 reservation.getStatus().name(),
                 reservation.getReservationAt(),
                 reservation.getCancelReason(),
-                reservation.getCancelRequestedBy()
+                reservation.getCancelRequestedBy(),
+                reservation.getChild().getUser().getId()
             );
         }
     }
