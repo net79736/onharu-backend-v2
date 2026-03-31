@@ -23,12 +23,12 @@ public interface StoreScheduleJpaRepository extends JpaRepository<StoreSchedule,
     /**
      * 가게 ID와 일정 날짜로 가게 일정 조회
      */
-    List<StoreSchedule> findAllByStoreIdAndScheduleDate(Long storeId, LocalDate scheduleDate);
+    List<StoreSchedule> findAllByStoreIdAndScheduleDateOrderByStartTimeAsc(Long storeId, LocalDate scheduleDate);
 
     /**
      * 가게 ID와 연/월로 가게 일정 목록 조회
      */
-    List<StoreSchedule> findAllByStoreIdAndScheduleDateBetween(
+    List<StoreSchedule> findAllByStoreIdAndScheduleDateBetweenOrderByScheduleDateAscStartTimeAsc(
             @Param("storeId") Long storeId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
