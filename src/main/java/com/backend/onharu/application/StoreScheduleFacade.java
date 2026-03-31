@@ -101,6 +101,14 @@ public class StoreScheduleFacade {
     }
 
     /**
+     * 여러 가게 ID 중, "오늘(포함) 이후" 스케줄이 존재하는 가게 ID 집합을 반환합니다.
+     * (정의 A: scheduleDate >= today)
+     */
+    public Set<Long> filterReservableStoreIds(Set<Long> storeIds, LocalDate today) {
+        return storeScheduleQueryService.findStoreIdsHavingScheduleOnOrAfter(storeIds, today);
+    }
+
+    /**
      * 해당 가게의 활성 예약(WAITING, CONFIRMED, COMPLETED) 스케줄 ID Set을 반환합니다.
      * CANCELED 상태는 예약 가능한 것으로 간주합니다.
      */

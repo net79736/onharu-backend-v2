@@ -559,7 +559,7 @@ class OwnerFacadeTest {
         @Transactional
         public void shouldSetAvailableDates() {
             // given
-            Owner owner = createTestOwner("test_owner_set_dates", "테스트 사업자", "01012345678", "새싹13", "1234567890");
+            Owner owner = createTestOwner("test_owner_set_dates", "테스트 사업자", "01012345678", "새싹13_" + UUID.randomUUID().toString().substring(0, 8), "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
 
@@ -598,7 +598,7 @@ class OwnerFacadeTest {
         @DisplayName("예약 가능한 날짜 생성 실패 - 오늘의 시작 시간이 지남")
         public void shouldThrowExceptionWhenSetAvailableDatesTimeExpiredToday() {
             // given
-            Owner owner = createTestOwner("test_owner_set_dates_expired", "테스트 사업자", "01012345678", "새싹13", "1234567890");
+            Owner owner = createTestOwner("test_owner_set_dates_expired", "테스트 사업자", "01012345678", "새싹13_" + UUID.randomUUID().toString().substring(0, 8), "1234567890");
             Category category = createTestCategory("식당");
             Store store = createTestStore("테스트 가게", owner, category);
 

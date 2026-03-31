@@ -1,6 +1,8 @@
 package com.backend.onharu.domain.storeschedule.service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,5 +68,13 @@ public class StoreScheduleQueryService {
     public List<StoreSchedule> findAllByStoreIdAndYearMonth(FindAllByStoreIdAndYearMonthQuery query) {
         return storeScheduleRepository.findAllByStoreIdAndYearMonth(
                 new FindAllByStoreIdAndYearMonthParam(query.storeId(), query.year(), query.month()));
+    }
+
+    /**
+     * 여러 가게 ID 중, 기준 날짜(포함) 이후 스케줄이 존재하는 가게 ID 집합을 반환합니다.
+     * 목록 응답에서 isSharing 오버라이드 등 배치 판정에 사용합니다.
+     */
+    public Set<Long> findStoreIdsHavingScheduleOnOrAfter(Set<Long> storeIds, LocalDate today) {
+        return storeScheduleRepository.findStoreIdsHavingScheduleOnOrAfter(storeIds, today);
     }
 }

@@ -18,8 +18,6 @@ import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.Find
 import com.backend.onharu.domain.reservation.dto.ReservationRepositroyParam.GetReservationByIdParam;
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.reservation.repository.ReservationRepository;
-import com.backend.onharu.domain.support.error.CoreException;
-import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
 
 import lombok.RequiredArgsConstructor;
@@ -39,10 +37,6 @@ public class ReservationCommandService {
      */
     public Reservation createReservation(CreateReservationCommand command, StoreSchedule storeSchedule, Child child) {
         LocalDateTime now = LocalDateTime.now();
-        // 일정 날짜/시간이 이미 지났으면 예약 생성 불가
-        if (!storeSchedule.isBookableAt(now)) {
-            throw new CoreException(ErrorType.Reservation.RESERVATION_SCHEDULE_TIME_EXPIRED);
-        }
 
         Reservation reservation = Reservation.builder()
                 .child(child)
