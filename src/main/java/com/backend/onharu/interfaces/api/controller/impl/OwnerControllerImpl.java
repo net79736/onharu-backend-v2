@@ -2,8 +2,11 @@ package com.backend.onharu.interfaces.api.controller.impl;
 
 import static com.backend.onharu.interfaces.api.common.util.PageableUtil.getCurrentPage;
 
+import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -24,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.onharu.application.OwnerFacade;
 import com.backend.onharu.application.StoreFacade;
+import com.backend.onharu.application.StoreScheduleFacade;
 import com.backend.onharu.application.dto.StoreBookingSummaryResult;
 import com.backend.onharu.domain.common.enums.AttachmentType;
 import com.backend.onharu.domain.file.dto.FileQuery.ListByRefsQuery;
@@ -78,6 +82,8 @@ public class OwnerControllerImpl implements IOwnerController {
     private final OwnerFacade ownerFacade;
 
     private final StoreFacade storeFacade;
+
+    private final StoreScheduleFacade storeScheduleFacade;
 
     private final FileQueryService fileQueryService;
 
@@ -279,12 +285,20 @@ public class OwnerControllerImpl implements IOwnerController {
                         Collectors.mapping(File::getFilePath, Collectors.toList())
                 ));
 
+        // 예약 가능한 가게 ID 집합 조회
+        Set<Long> validScheduleStoreIds = storeIds.isEmpty()
+                ? Set.of()
+                : storeScheduleFacade.filterReservableStoreIds(new HashSet<>(storeIds), LocalDate.now());
+
+        // DTO 변환
         List<StoreResponse> storeResponses = storePage.stream()
                 .map(storePageObject -> {
                     // 이미지 목록 추출
                     List<String> images = imagesByStoreId.getOrDefault(storePageObject.store().getId(), List.of());
                     double distanceKm = NumberUtils.truncateToIntegerAsDouble(storePageObject.distance()); // 소수점 버림
-                    return new StoreResponse(storePageObject.store(), distanceKm, images, storePageObject.favoriteCount());
+                    boolean effectiveIsSharing = Boolean.TRUE.equals(storePageObject.store().getIsSharing())
+                            || validScheduleStoreIds.contains(storePageObject.store().getId()); // 공유중
+                    return new StoreResponse(storePageObject.store(), effectiveIsSharing, distanceKm, images, storePageObject.favoriteCount());
                 })
                 .collect(Collectors.toList());
 

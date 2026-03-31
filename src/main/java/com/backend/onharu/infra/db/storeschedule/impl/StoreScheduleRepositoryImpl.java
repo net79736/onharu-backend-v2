@@ -5,6 +5,7 @@ import static com.backend.onharu.domain.support.error.ErrorType.StoreSchedule.ST
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Repository;
 
@@ -80,6 +81,14 @@ public class StoreScheduleRepositoryImpl implements StoreScheduleRepository {
         LocalDate startDate = LocalDate.of(param.year(), param.month(), 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
         return storeScheduleJpaRepository.findAllByStoreIdAndScheduleDateBetween(param.storeId(), startDate, endDate);
+    }
+
+    @Override
+    public Set<Long> findStoreIdsHavingScheduleOnOrAfter(Set<Long> storeIds, LocalDate today) {
+        if (storeIds == null || storeIds.isEmpty()) {
+            return Set.of();
+        }
+        return Set.copyOf(storeScheduleJpaRepository.findDistinctStoreIdsHavingScheduleOnOrAfter(storeIds, today));
     }
 
     @Override

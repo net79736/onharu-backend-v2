@@ -1,6 +1,8 @@
 package com.backend.onharu.domain.storeschedule.repository;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdAndScheduleDateParam;
 import com.backend.onharu.domain.storeschedule.dto.StoreScheduleRepositroyParam.FindAllByStoreIdAndYearMonthParam;
@@ -45,6 +47,11 @@ public interface StoreScheduleRepository {
      * 가게 ID와 연/월로 가게 일정 목록 조회
      */
     List<StoreSchedule> findAllByStoreIdAndYearMonth(FindAllByStoreIdAndYearMonthParam param);
+
+    /**
+     * 여러 가게 ID 중, 기준 날짜(포함) 이후 스케줄이 존재하는 가게 ID 목록 조회
+     */
+    Set<Long> findStoreIdsHavingScheduleOnOrAfter(Set<Long> storeIds, LocalDate today);
 
     /**
      * 특정 시간 범위와 겹치는 가게 일정 조회

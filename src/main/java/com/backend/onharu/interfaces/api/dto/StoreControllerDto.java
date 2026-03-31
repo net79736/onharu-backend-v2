@@ -117,6 +117,31 @@ public class StoreControllerDto {
                 favoriteCount
             ));
         }
+
+        /**
+         * 첨부 이미지 목록 + isSharing 오버라이드로 상세 응답 생성
+         */
+        public GetStoreDetailResponse(Store store, Boolean isSharing, Double distance, List<String> images, Long favoriteCount) {
+            this(new StoreDetailResponse(
+                store.getId(),
+                store.getName(),
+                store.getAddress(),
+                store.getPhone(),
+                store.getLat(),
+                store.getLng(),
+                store.getIntroduction(),
+                store.getIntro(),
+                store.getCategory().getId(),
+                store.getCategory().getName(),
+                store.getIsOpen(),
+                isSharing,
+                distance,
+                StoreRequestMapperDto.toBusinessHourResponses(store.getBusinessHours()),
+                StoreRequestMapperDto.toTagNames(store.getStoreTags()),
+                resolveImages(images),
+                favoriteCount
+            ));
+        }
     }
 
     public record StoreResponse(
@@ -185,6 +210,30 @@ public class StoreControllerDto {
                 store.getCategory().getName(),
                 store.getIsOpen(),
                 store.getIsSharing(),
+                StoreRequestMapperDto.toTagNames(store.getStoreTags()),
+                distance,
+                resolveImages(images),
+                favoriteCount
+            );
+        }
+
+        /**
+         * 이미지 목록 + isSharing 오버라이드로 StoreResponse 생성
+         */
+        public StoreResponse(Store store, Boolean isSharing, Double distance, List<String> images, Long favoriteCount) {
+            this(
+                store.getId(),
+                store.getName(),
+                store.getAddress(),
+                store.getPhone(),
+                store.getLat(),
+                store.getLng(),
+                store.getIntroduction(),
+                store.getIntro(),
+                store.getCategory().getId(),
+                store.getCategory().getName(),
+                store.getIsOpen(),
+                isSharing,
                 StoreRequestMapperDto.toTagNames(store.getStoreTags()),
                 distance,
                 resolveImages(images),

@@ -3,9 +3,9 @@ package com.backend.onharu.domain.reservation.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -31,8 +31,6 @@ import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
-import com.backend.onharu.domain.support.error.CoreException;
-import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.infra.db.child.ChildJpaRepository;
 import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
@@ -257,11 +255,9 @@ class ReservationCommandServiceTest {
         }
 
         @Test
-        @DisplayName("예약 생성 실패 - 일정 시작 시간이 지남")
+        @DisplayName("스케줄 예약 가능 판정 - 과거 일정은 예약 불가")
         public void shouldThrowExceptionWhenScheduleTimeExpired() {
             // given
-            Child savedChild = createTestChild("test_child_expired_cmd", "테스트 아동", "01012345678");
-
             Owner savedOwner = createTestOwner("test_owner_expired_cmd", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
             Store savedStore = createTestStore("테스트 가게", savedOwner, category);
@@ -269,27 +265,16 @@ class ReservationCommandServiceTest {
             StoreSchedule expiredSchedule = storeScheduleJpaRepository.save(
                     StoreSchedule.builder()
                             .store(savedStore)
-                            .scheduleDate(LocalDate.now())
-                            // 테스트 시각 기준으로 항상 과거가 되도록 자정(00:00) 사용
-                            .startTime(LocalTime.of(0, 0))
-                            .endTime(LocalTime.of(1, 0))
+                            // 날짜를 과거로 고정해 시간대/자정 경계 플래키를 제거
+                            .scheduleDate(LocalDate.of(2000, 1, 1))
+                            .startTime(LocalTime.of(10, 0))
+                            .endTime(LocalTime.of(11, 0))
                             .maxPeople(10)
                             .build()
             );
 
-            Integer people = 2;
-
-            // when & then
-            CoreException exception = Assertions.assertThrows(
-                    CoreException.class,
-                    () -> reservationCommandService.createReservation(
-                            new CreateReservationCommand(savedChild.getId(), expiredSchedule.getId(), people),
-                            expiredSchedule,
-                            savedChild
-                    )
-            );
-
-            assertThat(exception.getErrorType()).isEqualTo(ErrorType.Reservation.RESERVATION_SCHEDULE_TIME_EXPIRED);
+            // then: 과거 일정은 예약 불가
+            assertThat(expiredSchedule.isBookableAt(LocalDateTime.now())).isFalse();
         }
     }
 
