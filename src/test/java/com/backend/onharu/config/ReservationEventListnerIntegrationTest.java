@@ -194,7 +194,7 @@ class ReservationEventListnerIntegrationTest {
 
             assertThat(ownerNotifications).hasSize(1);
             assertThat(ownerNotifications.get(0).getMessage())
-                    .isEqualTo("새로운 예약이 확정되었습니다. 예약 번호: " + reservation.getId());
+                    .isEqualTo("[" + TEST_STORE_NAME + "] 새로운 예약이 확정되었습니다. 예약 번호: " + reservation.getId());
             assertThat(ownerNotifications.get(0).getTitle()).isEqualTo("매장 관리 알림");
             assertThat(ownerNotifications.get(0).getType()).isEqualTo(NotificationHistoryType.RESERVATION_CREATED);
         }
@@ -375,7 +375,7 @@ class ReservationEventListnerIntegrationTest {
                     .findByUser_IdOrderByCreatedAtDesc(owner.getUser().getId(), PageRequest.of(0, 10))
                     .getContent();
             assertThat(ownerNotifications.get(0).getMessage())
-                    .isEqualTo("새로운 예약이 확정되었습니다. 예약 번호: " + reservation.getId());
+                    .isEqualTo("[" + TEST_STORE_NAME + "] 새로운 예약이 확정되었습니다. 예약 번호: " + reservation.getId());
 
             // 아동용 알림은 없음
             List<NotificationHistory> childNotifications = notificationHistoryJpaRepository
