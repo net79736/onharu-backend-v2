@@ -3,6 +3,7 @@ package com.backend.onharu.interfaces.api.controller.impl;
 import static com.backend.onharu.interfaces.api.common.util.PageableUtil.getCurrentPage;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,10 @@ import com.backend.onharu.domain.file.service.FileQueryService;
 import com.backend.onharu.domain.reservation.model.Reservation;
 import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
+import com.backend.onharu.domain.store.model.BusinessHours;
 import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.store.repository.BusinessHoursRepository;
+import com.backend.onharu.domain.store.support.StoreOpenStatusCalculator;
 import com.backend.onharu.domain.store.support.StoreSearchSortResolver;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
@@ -86,6 +90,8 @@ public class OwnerControllerImpl implements IOwnerController {
     private final StoreScheduleFacade storeScheduleFacade;
 
     private final FileQueryService fileQueryService;
+    
+    private final BusinessHoursRepository businessHoursRepository;
 
     /**
      * 사업자 정보 등록
@@ -290,7 +296,12 @@ public class OwnerControllerImpl implements IOwnerController {
                 ? Set.of()
                 : storeScheduleFacade.filterReservableStoreIds(new HashSet<>(storeIds), LocalDate.now());
 
+        // 배치로 영업시간 조회 (N+1 방지)
+        Map<Long, List<BusinessHours>> businessHoursByStoreId = businessHoursRepository.findAllByStoreIds(storeIds).stream()
+                .collect(Collectors.groupingBy(bh -> bh.getStore().getId()));
+
         // DTO 변환
+        LocalDateTime now = LocalDateTime.now();
         List<StoreResponse> storeResponses = storePage.stream()
                 .map(storePageObject -> {
                     // 이미지 목록 추출
@@ -298,7 +309,21 @@ public class OwnerControllerImpl implements IOwnerController {
                     double distanceKm = NumberUtils.truncateToIntegerAsDouble(storePageObject.distance()); // 소수점 버림
                     boolean effectiveIsSharing = Boolean.TRUE.equals(storePageObject.store().getIsSharing())
                             || validScheduleStoreIds.contains(storePageObject.store().getId()); // 공유중
-                    return new StoreResponse(storePageObject.store(), effectiveIsSharing, distanceKm, images, storePageObject.favoriteCount());
+                    // 영업중 여부
+                    boolean isOpenNow = StoreOpenStatusCalculator.isOpenNow(
+                            storePageObject.store().getIsOpen(),
+                            businessHoursByStoreId.getOrDefault(storePageObject.store().getId(), List.of()),
+                            now
+                    );
+                    // DTO 변환
+                    return new StoreResponse(
+                            storePageObject.store(),
+                            isOpenNow,
+                            effectiveIsSharing,
+                            distanceKm,
+                            images,
+                            storePageObject.favoriteCount()
+                    );
                 })
                 .collect(Collectors.toList());
 
