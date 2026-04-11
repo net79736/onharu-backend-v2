@@ -6,6 +6,7 @@ import com.backend.onharu.domain.favorite.dto.FavoriteQuery.FindFavoritesByChild
 import com.backend.onharu.domain.favorite.model.Favorite;
 import com.backend.onharu.domain.file.model.File;
 import com.backend.onharu.domain.file.service.FileQueryService;
+import com.backend.onharu.domain.store.support.StoreOpenStatusCalculator;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.controller.IFavoriteController;
@@ -15,7 +16,6 @@ import com.backend.onharu.interfaces.api.dto.FavoriteControllerDto.GetMyFavorite
 import com.backend.onharu.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 import static com.backend.onharu.domain.favorite.dto.FavoriteCommand.ToggleFavoriteCommand;
 import static com.backend.onharu.domain.file.dto.FileQuery.ListByRefQuery;
@@ -117,7 +118,7 @@ public class FavoriteControllerImpl implements IFavoriteController {
                             favorite.getStore().getName(),
                             imagePaths,
                             favorite.getStore().getAddress(),
-                            favorite.getStore().getIsOpen()
+                            StoreOpenStatusCalculator.isOpenNow(favorite.getStore(), LocalDateTime.now())
                     );
                 }
         );

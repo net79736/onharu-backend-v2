@@ -37,7 +37,7 @@ public class StoreCommandService {
                 .lng(command.lng())
                 .introduction(command.introduction())
                 .intro(command.intro())
-                .isOpen(false) // 가게 생성 시 영업 상태는 비영업 상태로 설정
+                .isOpen(true) // 가게 생성 시 영업 상태는 영업 상태로 설정
                 .isSharing(false) // 가게 생성 시 공유중 상태는 비공유 상태로 설정
                 .build();
 

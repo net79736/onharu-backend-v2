@@ -3,6 +3,7 @@ package com.backend.onharu.interfaces.api.controller.impl;
 import static com.backend.onharu.interfaces.api.common.util.PageableUtil.getCurrentPage;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,9 +36,12 @@ import com.backend.onharu.domain.store.dto.CategoryQuery.FindAllByNameQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
+import com.backend.onharu.domain.store.model.BusinessHours;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.store.repository.BusinessHoursRepository;
 import com.backend.onharu.domain.store.repository.CategoryRepository;
+import com.backend.onharu.domain.store.support.StoreOpenStatusCalculator;
 import com.backend.onharu.domain.store.support.StoreSearchSortResolver;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
@@ -75,6 +79,7 @@ public class StoreControllerImpl implements IStoreController {
     private final StoreExcelFacade storeExcelFacade;
     private final StoreScheduleFacade storeScheduleFacade;
     private final FileQueryService fileQueryService;
+    private final BusinessHoursRepository businessHoursRepository;
 
     /**
      * 가게 상세 정보 조회
@@ -112,8 +117,12 @@ public class StoreControllerImpl implements IStoreController {
         // 공유중
         boolean effectiveIsSharing = Boolean.TRUE.equals(storePage.store().getIsSharing()) || hasValidSchedule;
 
+        // 영업중 여부 계산
+        boolean isOpenNow = StoreOpenStatusCalculator.isOpenNow(storePage.store(), LocalDateTime.now());
+
         GetStoreDetailResponse response = new GetStoreDetailResponse(
             storePage.store(),
+            isOpenNow,
             effectiveIsSharing,
             NumberUtils.truncateToIntegerAsDouble(storePage.distance()),
             imagePaths,
@@ -187,8 +196,13 @@ public class StoreControllerImpl implements IStoreController {
                         File::getRefId,
                         Collectors.mapping(File::getFilePath, Collectors.toList())
                 ));
+
+        // 배치로 영업시간 조회 (N+1 방지) → storeId별로 그룹화
+        Map<Long, List<BusinessHours>> businessHoursByStoreId = businessHoursRepository.findAllByStoreIds(storeIds).stream()
+                .collect(Collectors.groupingBy(bh -> bh.getStore().getId()));
         
         // DTO 변환 (이미지 목록 포함)
+        LocalDateTime now = LocalDateTime.now();
         List<StoreResponse> storeResponses = storePage.getContent().stream()
                 .map(storePageObject -> {
                     // 이미지 목록 추출
@@ -197,8 +211,21 @@ public class StoreControllerImpl implements IStoreController {
                     // 공유중
                     boolean effectiveIsSharing = Boolean.TRUE.equals(storePageObject.store().getIsSharing())
                             || validScheduleStoreIds.contains(storePageObject.store().getId());
+                    // 영업중 여부 계산
+                    boolean isOpenNow = StoreOpenStatusCalculator.isOpenNow(
+                            storePageObject.store().getIsOpen(),
+                            businessHoursByStoreId.getOrDefault(storePageObject.store().getId(), List.of()),
+                            now
+                    );
                     // DTO 변환
-                    return new StoreResponse(storePageObject.store(), effectiveIsSharing, distanceKm, images, storePageObject.favoriteCount());
+                    return new StoreResponse(
+                            storePageObject.store(),
+                            isOpenNow,
+                            effectiveIsSharing,
+                            distanceKm,
+                            images,
+                            storePageObject.favoriteCount()
+                    );
                 })
                 .collect(Collectors.toList());
         
