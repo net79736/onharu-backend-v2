@@ -35,6 +35,7 @@ import com.backend.onharu.domain.file.dto.FileQuery.ListByRefsQuery;
 import com.backend.onharu.domain.file.model.File;
 import com.backend.onharu.domain.file.service.FileQueryService;
 import com.backend.onharu.domain.reservation.model.Reservation;
+import com.backend.onharu.domain.reservation.support.ReservationSearchSortResolver;
 import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.BusinessHours;
@@ -359,10 +360,11 @@ public class OwnerControllerImpl implements IOwnerController {
 
         log.info("예약 관리 목록 조회 요청: ownerId={}, storeId={}, request={}", ownerId, storeId, request);
 
+        String sortField = ReservationSearchSortResolver.resolve(request.sortField());
         Pageable pageable = PageableUtil.ofOneBased(
                 request.pageNum(),
                 request.perPage(),
-                request.sortField(),
+                sortField,
                 request.sortDirection()
         );
         Page<Reservation> page = ownerFacade.getStoreBookings(ownerId, storeId, request.effectiveStatusFilter(), pageable);

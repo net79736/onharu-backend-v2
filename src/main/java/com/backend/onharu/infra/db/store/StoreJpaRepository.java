@@ -135,7 +135,7 @@ public interface StoreJpaRepository extends JpaRepository<Store, Long> {
         "LEFT JOIN store_tags st ON st.store_id = s.id " +
         "LEFT JOIN tags t ON t.id = st.tag_id " +
         // 찜 개수 조회
-        "LEFT JOIN (SELECT store_id, COUNT(*) as cnt FROM favorites GROUP BY store_id) f_count ON s.id = f_count.store_id " +
+        "LEFT JOIN (SELECT store_id, COUNT(*) as cnt FROM favorites GROUP BY store_id) f_count ON f_count.store_id = s.id " +
         "WHERE d.distance <= :radius " +
         "AND (:categoryId IS NULL OR c.id = :categoryId) " +
         "AND (:keyword IS NULL OR t.name LIKE CONCAT('%', :keyword, '%') OR s.name LIKE CONCAT('%', :keyword, '%')) " +
