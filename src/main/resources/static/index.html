@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>온하루 API 테스트 (역할별)</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .booking-modal::backdrop {
+      background: rgb(15 23 42 / 0.5);
+    }
+    .booking-modal[open] {
+      display: flex;
+      flex-direction: column;
+      margin: auto;
+      overscroll-behavior: contain;
+    }
+  </style>
 </head>
 <body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col">
   <header class="bg-white border-b border-slate-200 shadow-sm">
@@ -71,62 +82,19 @@
           <h2 class="font-semibold text-emerald-900 mb-2">아동 · 내 예약</h2>
           <p class="text-xs text-emerald-800 mb-3">Security: <code>/api/children/**</code> 외 공개 경로가 많으나, 예약 API는 세션의 아동 ID가 필요합니다.</p>
           <button type="button" id="btnChildReservations" class="w-full py-2 rounded-lg bg-emerald-600 text-white text-sm hover:bg-emerald-700">내 예약 목록 불러오기</button>
-          <div id="childReservationsOut" class="mt-3 text-xs overflow-x-auto max-h-72 overflow-y-auto"></div>
-          <div id="childReservationsPager" class="hidden mt-3 flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-emerald-100">
-            <p id="childResPageInfo" class="text-xs text-slate-500"></p>
-            <div class="flex items-center gap-2">
-              <button type="button" id="btnChildResPrev" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">이전</button>
-              <span id="childResPageNum" class="text-xs text-slate-600 min-w-[4.5rem] text-center"></span>
-              <button type="button" id="btnChildResNext" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">다음</button>
-            </div>
-          </div>
+          <p class="mt-2 text-[11px] text-slate-500 leading-relaxed">
+            목록은 <strong class="text-slate-700">전체 화면에 가까운 모달</strong>로 열립니다. 작은 카드 안에서 스크롤하지 않습니다.
+          </p>
         </div>
 
-        <!-- 사장 전용 -->
+        <!-- 사장 전용 (본 패널은 모달) -->
         <div id="ownerOnlySection" class="hidden bg-white rounded-xl border border-amber-200 p-5 shadow-sm ring-1 ring-amber-100">
           <h2 class="font-semibold text-amber-900 mb-2">사장 · 내 가게 & 스케줄</h2>
           <p class="text-xs text-amber-800 mb-3">Security: <code>/api/owners/**</code> → <code>ROLE_OWNER</code> 필요.</p>
-          <button type="button" id="btnOwnerStores" class="w-full mb-3 py-2 rounded-lg bg-amber-500 text-white text-sm hover:bg-amber-600">내 가게 목록 불러오기</button>
-          <label class="block text-xs text-slate-600 mb-1">스케줄/예약을 볼 가게</label>
-          <select id="ownerStoreSelect" class="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm mb-4"></select>
-
-          <h3 class="text-sm font-medium text-slate-800 mb-2">예약 가능 시간대 생성</h3>
-          <p class="text-xs text-slate-500 mb-2">POST <code>/api/owners/stores/{storeId}/schedules</code></p>
-          <form id="ownerScheduleForm" class="space-y-2 text-sm">
-            <div>
-              <label class="text-xs text-slate-600">날짜 (오늘 이후)</label>
-              <input id="osDate" type="date" required class="w-full border rounded-lg px-2 py-1.5 mt-0.5" />
-            </div>
-            <div>
-              <label class="text-xs text-slate-600">시작 시간 (클릭 선택 · 09:00~21:00)</label>
-              <div id="ownerTimeGrid" class="grid grid-cols-4 gap-2 mt-1.5"></div>
-              <p class="text-xs text-slate-500 mt-2">
-                종료 시간: <strong id="ownerEndTimeLabel" class="text-slate-700">—</strong>
-                <span class="text-slate-400">(시작 시각 + 1시간, 자동)</span>
-              </p>
-              <input type="hidden" id="osStart" value="" />
-              <input type="hidden" id="osEnd" value="" />
-            </div>
-            <div>
-              <label class="text-xs text-slate-600">최대 인원</label>
-              <input id="osMax" type="number" min="1" value="10" required class="w-full border rounded-lg px-2 py-1.5 mt-0.5" />
-            </div>
-            <button type="submit" class="w-full py-2 rounded-lg bg-amber-600 text-white text-sm hover:bg-amber-700">스케줄 등록</button>
-          </form>
-
-          <h3 class="text-sm font-medium text-slate-800 mt-4 mb-2">가게 예약 현황</h3>
-          <p class="text-xs text-slate-500 mb-2">GET <code>/api/owners/stores/{storeId}/reservations</code></p>
-          <button type="button" id="btnOwnerBookings" class="w-full py-2 rounded-lg border border-amber-300 text-amber-900 text-sm hover:bg-amber-50">선택 가게 예약 목록</button>
-          <p class="text-[11px] text-slate-500 mt-1">대기 → <strong>승인</strong> · 확정 → <strong>이용완료</strong> / <strong>취소</strong> (도메인: WAITING→CONFIRMED→COMPLETED)</p>
-          <div id="ownerBookingsOut" class="mt-3 text-xs overflow-x-auto max-h-72 overflow-y-auto"></div>
-          <div id="ownerBookingsPager" class="hidden mt-3 flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-amber-100">
-            <p id="ownerResPageInfo" class="text-xs text-slate-500"></p>
-            <div class="flex items-center gap-2">
-              <button type="button" id="btnOwnerResPrev" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">이전</button>
-              <span id="ownerResPageNum" class="text-xs text-slate-600 min-w-[4.5rem] text-center"></span>
-              <button type="button" id="btnOwnerResNext" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">다음</button>
-            </div>
-          </div>
+          <button type="button" id="btnOpenOwnerScheduleModal" class="w-full py-2.5 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600">가게 · 스케줄 패널 열기</button>
+          <p class="mt-2 text-[11px] text-slate-500 leading-relaxed">
+            가게 선택, 스케줄 등록, 예약 목록은 <strong class="text-slate-700">넓은 모달</strong>에서 진행합니다.
+          </p>
         </div>
 
         <div id="adminHint" class="hidden bg-slate-100 border border-slate-200 rounded-xl p-4 text-sm text-slate-700">
@@ -136,7 +104,7 @@
 
       <!-- 가게 탐색 -->
       <section class="lg:col-span-8 space-y-4">
-        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <div id="storeListSection" class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
           <div class="flex flex-wrap items-end justify-between gap-3 mb-4">
             <div>
               <h2 class="font-semibold text-slate-800">2. 가게 목록 (공통)</h2>
@@ -179,57 +147,173 @@
           </div>
         </div>
 
-        <div id="detailPanel" class="hidden bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
-          <h2 class="font-semibold text-slate-800">3. 가게 상세 · 영업시간 · 스케줄</h2>
+        <div id="detailPanel" class="hidden bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4 scroll-mt-6">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <h2 id="detailPanelHeading" class="text-lg font-semibold text-slate-900">매장 정보</h2>
+              <p class="text-xs text-slate-500 mt-0.5">가게 상세 · 예약</p>
+            </div>
+            <button type="button" id="btnBackToStoreList" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm text-slate-700 hover:bg-slate-50">← 목록으로</button>
+          </div>
+
+          <div id="storeDetailGallery" class="hidden -mx-1"></div>
+
           <div id="storeDetail" class="text-sm space-y-2"></div>
 
-          <div class="border-t border-slate-100 pt-4">
-            <h3 class="text-sm font-medium text-slate-700 mb-2">달력 · 예약 가능 슬롯</h3>
-            <div class="flex flex-wrap items-center gap-2 mb-3">
-              <button type="button" id="btnPrevMonth" class="px-2 py-1 rounded border border-slate-300 text-sm hover:bg-slate-50">◀</button>
-              <span id="monthLabel" class="text-sm font-medium min-w-[8rem] text-center"></span>
-              <button type="button" id="btnNextMonth" class="px-2 py-1 rounded border border-slate-300 text-sm hover:bg-slate-50">▶</button>
+          <button type="button" id="btnOpenReservationFlow" class="w-full py-3.5 rounded-xl bg-emerald-700 text-white text-sm font-semibold shadow-sm hover:bg-emerald-800 transition">
+            예약하기
+          </button>
+
+          <div id="reservationFlowSection" class="hidden space-y-4 border-t border-slate-200 pt-5 mt-1">
+            <div class="flex items-center gap-2 text-slate-800">
+              <span class="text-emerald-600" aria-hidden="true">♥</span>
+              <h3 class="text-sm font-semibold">날짜와 시간을 선택해 주세요.</h3>
             </div>
-            <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-xs mb-4"></div>
-          </div>
 
-          <div id="slotPanel" class="hidden border-t border-slate-100 pt-4">
-            <h3 class="text-sm font-medium text-slate-700 mb-2">선택한 날짜의 시간대 (시작 시간 오름차순)</h3>
-            <p class="text-xs text-slate-500 mb-2">마감: <code>isAvailable === false</code></p>
-            <div id="slotList" class="space-y-2"></div>
-          </div>
-
-          <div id="childReserveHint" class="hidden border-t border-slate-100 pt-4 text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg p-3">
-            예약 신청은 <strong>아동(CHILD)</strong> 계정으로 로그인한 경우에만 가능합니다.
-          </div>
-
-          <div id="reservePanel" class="hidden border-t border-slate-100 pt-4">
-            <h3 class="text-sm font-medium text-slate-700 mb-2">예약 신청 (아동 전용)</h3>
-            <form id="reserveForm" class="flex flex-wrap items-end gap-3">
-              <div>
-                <label class="block text-xs text-slate-600 mb-1">선택 슬롯 ID</label>
-                <input id="pickedScheduleId" type="text" readonly class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm w-40 bg-slate-50" />
+            <div>
+              <div class="flex flex-wrap items-center justify-center gap-2 mb-3">
+                <button type="button" id="btnPrevMonth" class="px-2 py-1 rounded border border-slate-300 text-sm hover:bg-slate-50">◀</button>
+                <span id="monthLabel" class="text-sm font-semibold min-w-[9rem] text-center text-slate-800"></span>
+                <button type="button" id="btnNextMonth" class="px-2 py-1 rounded border border-slate-300 text-sm hover:bg-slate-50">▶</button>
               </div>
-              <div>
-                <label class="block text-xs text-slate-600 mb-1">인원</label>
-                <input id="peopleCount" type="number" min="1" value="1" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm w-24" />
+              <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-xs p-3 rounded-xl border border-slate-200 bg-slate-50/80"></div>
+            </div>
+
+            <div id="slotPanel" class="hidden">
+              <h3 class="text-sm font-medium text-slate-700 mb-2">시간 선택</h3>
+              <div id="slotList" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <div id="selectedScheduleBar" class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-center">
+              <span id="selectedScheduleText" class="text-slate-600">선택된 일정이 없습니다.</span>
+            </div>
+
+            <div id="childReserveHint" class="hidden text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+              예약 신청은 <strong>아동(CHILD)</strong> 계정으로 로그인한 경우에만 가능합니다.
+            </div>
+
+            <div id="reservePanel" class="hidden space-y-4">
+              <div class="flex items-center gap-2 text-slate-800">
+                <span class="text-emerald-600" aria-hidden="true">♥</span>
+                <h3 class="text-sm font-semibold">인원을 선택해 주세요.</h3>
               </div>
-              <button type="submit" id="btnReserveSubmit" class="px-4 py-1.5 rounded-lg bg-violet-600 text-white text-sm hover:bg-violet-700">예약 요청</button>
-            </form>
-            <p class="text-xs text-slate-500 mt-2">POST /api/childrens/stores/{storeId}/reservations</p>
+              <form id="reserveForm" class="space-y-4" novalidate>
+                <input type="hidden" id="pickedScheduleId" value="" />
+                <div>
+                  <label class="block text-xs font-medium text-slate-600 mb-2">방문 예정 인원</label>
+                  <div class="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-1 py-1 shadow-sm">
+                    <button type="button" id="btnPeopleMinus" class="w-11 h-11 rounded-lg border border-slate-200 text-lg leading-none text-slate-700 hover:bg-slate-50">−</button>
+                    <input id="peopleCount" type="number" value="1" class="w-14 text-center border-0 font-semibold text-lg text-slate-900 p-0 focus:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none" />
+                    <button type="button" id="btnPeoplePlus" class="w-11 h-11 rounded-lg border border-slate-200 text-lg leading-none text-slate-700 hover:bg-slate-50">+</button>
+                  </div>
+                </div>
+                <button type="submit" id="btnReserveSubmit" class="w-full py-3.5 rounded-xl bg-emerald-800 text-white text-sm font-semibold shadow hover:bg-emerald-900">예약하기</button>
+              </form>
+              <p class="text-[11px] text-slate-400 text-center">POST /api/childrens/stores/{storeId}/reservations</p>
+            </div>
           </div>
         </div>
       </section>
     </div>
   </main>
 
+  <!-- 아동: 내 예약 (모달) -->
+  <dialog id="childResModal" class="booking-modal w-[min(96vw,1200px)] max-w-full rounded-2xl border border-slate-200 p-0 shadow-2xl">
+    <div class="flex shrink-0 items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50/95 px-4 py-3">
+      <h3 class="pr-2 text-base font-semibold text-emerald-900">아동 · 내 예약 목록</h3>
+      <button type="button" id="btnChildResModalClose" class="shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-50">닫기</button>
+    </div>
+    <div id="childReservationsOut" class="min-h-[min(55vh,520px)] max-h-[calc(90vh-9rem)] overflow-x-auto overflow-y-auto overscroll-contain bg-white p-4 text-sm"></div>
+    <div id="childReservationsPager" class="hidden shrink-0 flex flex-wrap items-center justify-between gap-2 border-t border-emerald-100 bg-slate-50 px-4 py-3">
+      <p id="childResPageInfo" class="text-xs text-slate-500"></p>
+      <div class="flex items-center gap-2">
+        <button type="button" id="btnChildResPrev" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">이전</button>
+        <span id="childResPageNum" class="text-xs text-slate-600 min-w-[4.5rem] text-center"></span>
+        <button type="button" id="btnChildResNext" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">다음</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- 사장: 가게 & 스케줄 (모달) -->
+  <dialog id="ownerScheduleModal" class="booking-modal min-h-0 max-h-[min(92vh,900px)] w-[min(96vw,640px)] max-w-full rounded-2xl border border-slate-200 p-0 shadow-2xl">
+    <div class="flex shrink-0 items-center justify-between gap-3 border-b border-amber-100 bg-amber-50/95 px-4 py-3">
+      <h3 class="pr-2 text-base font-semibold text-amber-950">사장 · 내 가게 & 스케줄</h3>
+      <button type="button" id="btnOwnerScheduleModalClose" class="shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-50">닫기</button>
+    </div>
+    <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-4 text-sm">
+      <button type="button" id="btnOwnerStores" class="w-full py-2.5 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600">내 가게 목록 불러오기</button>
+      <div>
+        <label class="block text-xs text-slate-600 mb-1">스케줄/예약을 볼 가게</label>
+        <select id="ownerStoreSelect" class="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm"></select>
+      </div>
+
+      <div class="rounded-xl border border-slate-100 bg-slate-50/80 p-3">
+        <h3 class="text-sm font-medium text-slate-800 mb-2">예약 가능 시간대 생성</h3>
+        <p class="text-xs text-slate-500 mb-2">POST <code>/api/owners/stores/{storeId}/schedules</code></p>
+        <form id="ownerScheduleForm" class="space-y-2 text-sm">
+          <div>
+            <label class="text-xs text-slate-600">날짜 (오늘 이후)</label>
+            <input id="osDate" type="date" required class="w-full border rounded-lg px-2 py-1.5 mt-0.5 bg-white" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-600">시작 시간 (클릭 선택 · 09:00~21:00)</label>
+            <div id="ownerTimeGrid" class="grid grid-cols-4 gap-2 mt-1.5"></div>
+            <p class="text-xs text-slate-500 mt-2">
+              종료 시간: <strong id="ownerEndTimeLabel" class="text-slate-700">—</strong>
+              <span class="text-slate-400">(시작 시각 + 1시간, 자동)</span>
+            </p>
+            <input type="hidden" id="osStart" value="" />
+            <input type="hidden" id="osEnd" value="" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-600">최대 인원</label>
+            <input id="osMax" type="number" min="1" value="10" required class="w-full border rounded-lg px-2 py-1.5 mt-0.5 bg-white" />
+          </div>
+          <button type="submit" class="w-full py-2 rounded-lg bg-amber-600 text-white text-sm hover:bg-amber-700">스케줄 등록</button>
+        </form>
+      </div>
+
+      <div>
+        <h3 class="text-sm font-medium text-slate-800 mb-2">가게 예약 현황</h3>
+        <p class="text-xs text-slate-500 mb-2">GET <code>/api/owners/stores/{storeId}/reservations</code></p>
+        <button type="button" id="btnOwnerBookings" class="w-full py-2 rounded-lg border border-amber-300 text-amber-900 text-sm hover:bg-amber-50">선택 가게 예약 목록</button>
+        <p class="text-[11px] text-slate-500 mt-1">대기 → <strong>승인</strong> · 확정 → <strong>이용완료</strong> / <strong>취소</strong> (도메인: WAITING→CONFIRMED→COMPLETED)</p>
+        <p class="mt-2 text-[11px] text-slate-500">표는 별도 모달에서 넓게 열립니다.</p>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- 사장: 가게 예약 (모달) -->
+  <dialog id="ownerResModal" class="booking-modal w-[min(96vw,1200px)] max-w-full rounded-2xl border border-slate-200 p-0 shadow-2xl">
+    <div class="flex shrink-0 items-center justify-between gap-3 border-b border-amber-100 bg-amber-50/95 px-4 py-3">
+      <h3 class="pr-2 text-base font-semibold text-amber-950">가게 예약 현황</h3>
+      <button type="button" id="btnOwnerResModalClose" class="shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-50">닫기</button>
+    </div>
+    <div id="ownerBookingsOut" class="min-h-[min(55vh,520px)] max-h-[calc(90vh-9rem)] overflow-x-auto overflow-y-auto overscroll-contain bg-white p-4 text-sm"></div>
+    <div id="ownerBookingsPager" class="hidden shrink-0 flex flex-wrap items-center justify-between gap-2 border-t border-amber-100 bg-slate-50 px-4 py-3">
+      <p id="ownerResPageInfo" class="text-xs text-slate-500"></p>
+      <div class="flex items-center gap-2">
+        <button type="button" id="btnOwnerResPrev" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">이전</button>
+        <span id="ownerResPageNum" class="text-xs text-slate-600 min-w-[4.5rem] text-center"></span>
+        <button type="button" id="btnOwnerResNext" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">다음</button>
+      </div>
+    </div>
+  </dialog>
+
   <footer class="border-t border-slate-200 bg-white">
     <div class="max-w-6xl mx-auto px-4 py-3">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="text-sm font-semibold text-slate-800">API 로그 (요청 헤더·바디 · 응답 코드·본문)</h2>
-        <button type="button" id="btnClearLog" class="text-xs text-slate-500 hover:text-slate-800">비우기</button>
-      </div>
-      <pre id="apiLog" class="text-[11px] leading-relaxed bg-slate-900 text-green-200 rounded-lg p-3 max-h-52 overflow-auto font-mono"></pre>
+      <details id="apiLogDetails" class="group rounded-xl border border-slate-200 bg-slate-50/90 shadow-sm">
+        <summary class="cursor-pointer list-none px-3 py-2.5 text-sm font-semibold text-slate-800 select-none flex items-center gap-2 marker:content-[''] [&::-webkit-details-marker]:hidden">
+          <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-slate-300 bg-white text-[10px] text-slate-500 transition-transform duration-200 group-open:rotate-90" aria-hidden="true">▶</span>
+          <span>API 로그 (요청 헤더·바디 · 응답 코드·본문)</span>
+        </summary>
+        <div class="border-t border-slate-200 px-3 pb-3 pt-2 space-y-2">
+          <div class="flex justify-end">
+            <button type="button" id="btnClearLog" class="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 rounded hover:bg-slate-200/80">비우기</button>
+          </div>
+          <pre id="apiLog" class="text-[11px] leading-relaxed bg-slate-900 text-green-200 rounded-lg p-3 max-h-52 overflow-auto font-mono"></pre>
+        </div>
+      </details>
     </div>
   </footer>
 
@@ -451,13 +535,33 @@
     applyRoleUi();
   }
 
+  function updateSelectedScheduleText() {
+    var el = document.getElementById('selectedScheduleText');
+    if (!el) return;
+    if (!selectedDay) {
+      el.textContent = '선택된 일정이 없습니다.';
+      el.className = 'text-slate-600';
+      return;
+    }
+    var sid = pickedScheduleId && pickedScheduleId.value ? pickedScheduleId.value.trim() : '';
+    if (!sid) {
+      el.textContent = '날짜를 선택했습니다. 시간을 선택해 주세요.';
+      el.className = 'text-slate-600';
+      return;
+    }
+    var slot = lastDailySlots.find(function (s) { return String(s.id) === sid; });
+    var timeStr = slot ? String(slot.startTime || '').slice(0, 5) : '';
+    el.textContent = '선택된 일정 : ' + viewYear + '년 ' + viewMonth + '월 ' + selectedDay + '일 ' + timeStr;
+    el.className = 'font-medium text-emerald-800';
+  }
+
   function updateReserveVisibility() {
-    const isChild = currentUser && currentUser.userType === 'CHILD';
-    const showReserve = isChild && selectedStoreId && selectedDay;
-    childReserveHint.classList.toggle('hidden', isChild || !selectedStoreId || !selectedDay);
-    reservePanel.classList.toggle('hidden', !showReserve);
+    const flowOpen = reservationFlowSection && !reservationFlowSection.classList.contains('hidden');
+    const showReserve = selectedStoreId && selectedDay;
+    if (childReserveHint) childReserveHint.classList.add('hidden');
+    reservePanel.classList.toggle('hidden', !showReserve || !flowOpen);
     const btn = document.getElementById('btnReserveSubmit');
-    if (btn) btn.disabled = !isChild;
+    if (btn) btn.disabled = false;
   }
 
   async function refreshMe() {
@@ -512,13 +616,112 @@
     next.disabled = childResPageNum >= childResTotalPages;
   }
 
+  /** 모달이 열릴 때 뒤 페이지 스크롤 고정. 여러 모달이 겹치면(depth) 마지막이 닫힐 때까지 유지. */
+  var bookingModalBodyScrollLockDepth = 0;
+  var bookingModalBodyScrollY = 0;
+  function enterBookingModalBodyScrollLock() {
+    if (bookingModalBodyScrollLockDepth === 0) {
+      bookingModalBodyScrollY = window.scrollY || window.pageYOffset || 0;
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = '-' + bookingModalBodyScrollY + 'px';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+    }
+    bookingModalBodyScrollLockDepth++;
+  }
+  function leaveBookingModalBodyScrollLock() {
+    if (bookingModalBodyScrollLockDepth <= 0) return;
+    bookingModalBodyScrollLockDepth--;
+    if (bookingModalBodyScrollLockDepth > 0) return;
+    var y = bookingModalBodyScrollY;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    window.scrollTo(0, y);
+  }
+
+  function openChildResModal() {
+    var el = document.getElementById('childResModal');
+    if (el && typeof el.showModal === 'function') {
+      var wasOpen = el.open;
+      try {
+        el.showModal();
+      } catch (err) {}
+      if (!wasOpen) enterBookingModalBodyScrollLock();
+    }
+  }
+  function closeChildResModal() {
+    var el = document.getElementById('childResModal');
+    if (el && typeof el.close === 'function') {
+      try {
+        el.close();
+      } catch (err) {}
+    }
+  }
+  function openOwnerResModal() {
+    var el = document.getElementById('ownerResModal');
+    if (el && typeof el.showModal === 'function') {
+      var wasOpen = el.open;
+      try {
+        el.showModal();
+      } catch (err) {}
+      if (!wasOpen) enterBookingModalBodyScrollLock();
+    }
+  }
+  function closeOwnerResModal() {
+    var el = document.getElementById('ownerResModal');
+    if (el && typeof el.close === 'function') {
+      try {
+        el.close();
+      } catch (err) {}
+    }
+  }
+
+  function openOwnerScheduleModal() {
+    var el = document.getElementById('ownerScheduleModal');
+    if (el && typeof el.showModal === 'function') {
+      var wasOpen = el.open;
+      try {
+        el.showModal();
+      } catch (err) {}
+      if (!wasOpen) enterBookingModalBodyScrollLock();
+    }
+  }
+  /** 예약 목록 모달이 위에 열려 있으면 먼저 닫고 스케줄 모달을 닫음 */
+  function closeOwnerScheduleModal() {
+    var resEl = document.getElementById('ownerResModal');
+    if (resEl && resEl.open && typeof resEl.close === 'function') {
+      try {
+        resEl.close();
+      } catch (err) {}
+    }
+    var el = document.getElementById('ownerScheduleModal');
+    if (el && typeof el.close === 'function') {
+      try {
+        el.close();
+      } catch (err) {}
+    }
+  }
+
+  document.getElementById('childResModal').addEventListener('close', leaveBookingModalBodyScrollLock);
+  document.getElementById('ownerResModal').addEventListener('close', leaveBookingModalBodyScrollLock);
+  document.getElementById('ownerScheduleModal').addEventListener('close', leaveBookingModalBodyScrollLock);
+
   async function loadChildReservations(page) {
     if (!currentUser || currentUser.userType !== 'CHILD') return;
     if (typeof page === 'number' && page >= 1) {
       childResPageNum = page;
     }
     var out = document.getElementById('childReservationsOut');
-    out.innerHTML = '불러오는 중…';
+    out.innerHTML = '<p class="p-8 text-center text-slate-500">불러오는 중…</p>';
+    openChildResModal();
     try {
       var url = '/api/childrens/reservations?pageNum=' + childResPageNum +
         '&perPage=' + CHILD_RES_PER_PAGE +
@@ -533,21 +736,61 @@
       }
       var rows = sortByScheduleDateTime(data.reservations || []);
       if (!rows.length && childResTotalCount === 0) {
-        out.innerHTML = '<p class="text-slate-500">예약이 없습니다.</p>';
+        out.innerHTML = '<p class="p-8 text-center text-slate-500">예약이 없습니다.</p>';
         document.getElementById('childReservationsPager').classList.add('hidden');
         return;
       }
       if (!rows.length) {
-        out.innerHTML = '<p class="text-slate-500">이 페이지에 항목이 없습니다.</p>';
+        out.innerHTML = '<p class="p-8 text-center text-slate-500">이 페이지에 항목이 없습니다.</p>';
         updateChildResPaginationUi();
         return;
       }
-      out.innerHTML = '<table class="w-full border border-slate-200 text-left"><thead class="bg-slate-50"><tr><th class="p-1">ID</th><th class="p-1">가게</th><th class="p-1">일시</th><th class="p-1">상태</th><th class="p-1">인원</th><th class="p-1">작업</th></tr></thead><tbody>' +
+      out.innerHTML =
+        '<table class="w-full min-w-[52rem] border-collapse text-left text-sm">' +
+        '<thead class="sticky top-0 z-10 border-b-2 border-slate-200 bg-slate-100 shadow-sm">' +
+        '<tr>' +
+        '<th class="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">ID</th>' +
+        '<th class="min-w-[12rem] px-3 py-3 font-semibold text-slate-700">가게</th>' +
+        '<th class="min-w-[13rem] px-3 py-3 font-semibold text-slate-700">일시</th>' +
+        '<th class="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">상태</th>' +
+        '<th class="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">인원</th>' +
+        '<th class="min-w-[9rem] px-3 py-3 font-semibold text-slate-700">작업</th>' +
+        '</tr></thead><tbody>' +
         rows.map(function (r) {
-          return '<tr class="border-t border-slate-100"><td class="p-1">' + r.id + '</td><td class="p-1">' + escapeHtml(r.storeName || '') + '</td><td class="p-1">' + String(r.scheduleDate) + ' ' + String(r.startTime) + '</td><td class="p-1">' + reservationStatusHtml(r.status) + '</td><td class="p-1">' + (r.people != null ? r.people : '') + '</td><td class="p-1 align-top whitespace-nowrap">' + childReservationActionsHtml(r) + '</td></tr>';
-        }).join('') + '</tbody></table>';
+          var dt =
+            '<span class="block whitespace-nowrap">' +
+            escapeHtml(String(r.scheduleDate || '')) +
+            '</span>' +
+            '<span class="mt-0.5 block text-xs text-slate-500 whitespace-nowrap">' +
+            escapeHtml(String(r.startTime || '')) +
+            '</span>';
+          return (
+            '<tr class="border-b border-slate-100 hover:bg-emerald-50/40">' +
+            '<td class="px-3 py-3 align-top text-slate-800 tabular-nums">' +
+            r.id +
+            '</td>' +
+            '<td class="px-3 py-3 align-top leading-snug break-words">' +
+            escapeHtml(r.storeName || '') +
+            '</td>' +
+            '<td class="px-3 py-3 align-top text-slate-800">' +
+            dt +
+            '</td>' +
+            '<td class="px-3 py-3 align-top">' +
+            reservationStatusHtml(r.status) +
+            '</td>' +
+            '<td class="px-3 py-3 align-top tabular-nums">' +
+            (r.people != null ? r.people : '') +
+            '</td>' +
+            '<td class="px-3 py-3 align-top whitespace-nowrap">' +
+            childReservationActionsHtml(r) +
+            '</td>' +
+            '</tr>'
+          );
+        }).join('') +
+        '</tbody></table>';
       updateChildResPaginationUi();
     } catch (e) {
+      closeChildResModal();
       out.innerHTML = '';
       document.getElementById('childReservationsPager').classList.add('hidden');
       alert('내 예약 조회 실패: ' + (e.message || e));
@@ -562,6 +805,16 @@
   });
   document.getElementById('btnChildResNext').addEventListener('click', function () {
     if (childResPageNum < childResTotalPages) loadChildReservations(childResPageNum + 1);
+  });
+  document.getElementById('btnChildResModalClose').addEventListener('click', closeChildResModal);
+  document.getElementById('childResModal').addEventListener('click', function (e) {
+    if (e.target === document.getElementById('childResModal')) closeChildResModal();
+  });
+
+  document.getElementById('btnOpenOwnerScheduleModal').addEventListener('click', openOwnerScheduleModal);
+  document.getElementById('btnOwnerScheduleModalClose').addEventListener('click', closeOwnerScheduleModal);
+  document.getElementById('ownerScheduleModal').addEventListener('click', function (e) {
+    if (e.target === document.getElementById('ownerScheduleModal')) closeOwnerScheduleModal();
   });
 
   const ownerStoreSelect = document.getElementById('ownerStoreSelect');
@@ -647,7 +900,8 @@
     if (typeof page === 'number' && page >= 1) {
       ownerResPageNum = page;
     }
-    out.innerHTML = '불러오는 중…';
+    out.innerHTML = '<p class="p-8 text-center text-slate-500">불러오는 중…</p>';
+    openOwnerResModal();
     try {
       var url = '/api/owners/stores/' + storeId + '/reservations?pageNum=' + ownerResPageNum +
         '&perPage=' + OWNER_RES_PER_PAGE +
@@ -662,21 +916,61 @@
       }
       var rows = sortByScheduleDateTime(data.reservations || []);
       if (!rows.length && ownerResTotalCount === 0) {
-        out.innerHTML = '<p class="text-slate-500">예약이 없습니다.</p>';
+        out.innerHTML = '<p class="p-8 text-center text-slate-500">예약이 없습니다.</p>';
         document.getElementById('ownerBookingsPager').classList.add('hidden');
         return;
       }
       if (!rows.length) {
-        out.innerHTML = '<p class="text-slate-500">이 페이지에 항목이 없습니다.</p>';
+        out.innerHTML = '<p class="p-8 text-center text-slate-500">이 페이지에 항목이 없습니다.</p>';
         updateOwnerResPaginationUi();
         return;
       }
-      out.innerHTML = '<table class="w-full border border-slate-200 text-left"><thead class="bg-slate-50"><tr><th class="p-1">ID</th><th class="p-1">닉네임</th><th class="p-1">일시</th><th class="p-1">상태</th><th class="p-1">인원</th><th class="p-1">작업</th></tr></thead><tbody>' +
+      out.innerHTML =
+        '<table class="w-full min-w-[52rem] border-collapse text-left text-sm">' +
+        '<thead class="sticky top-0 z-10 border-b-2 border-slate-200 bg-slate-100 shadow-sm">' +
+        '<tr>' +
+        '<th class="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">ID</th>' +
+        '<th class="min-w-[10rem] px-3 py-3 font-semibold text-slate-700">닉네임</th>' +
+        '<th class="min-w-[13rem] px-3 py-3 font-semibold text-slate-700">일시</th>' +
+        '<th class="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">상태</th>' +
+        '<th class="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">인원</th>' +
+        '<th class="min-w-[10rem] px-3 py-3 font-semibold text-slate-700">작업</th>' +
+        '</tr></thead><tbody>' +
         rows.map(function (r) {
-          return '<tr class="border-t border-slate-100"><td class="p-1">' + r.id + '</td><td class="p-1">' + escapeHtml(r.childNickname || '') + '</td><td class="p-1">' + String(r.scheduleDate) + ' ' + String(r.startTime) + '</td><td class="p-1">' + reservationStatusHtml(r.status) + '</td><td class="p-1">' + (r.people != null ? r.people : '') + '</td><td class="p-1 align-top">' + ownerReservationActionsHtml(r) + '</td></tr>';
-        }).join('') + '</tbody></table>';
+          var dt =
+            '<span class="block whitespace-nowrap">' +
+            escapeHtml(String(r.scheduleDate || '')) +
+            '</span>' +
+            '<span class="mt-0.5 block text-xs text-slate-500 whitespace-nowrap">' +
+            escapeHtml(String(r.startTime || '')) +
+            '</span>';
+          return (
+            '<tr class="border-b border-slate-100 hover:bg-amber-50/40">' +
+            '<td class="px-3 py-3 align-top text-slate-800 tabular-nums">' +
+            r.id +
+            '</td>' +
+            '<td class="px-3 py-3 align-top leading-snug break-words">' +
+            escapeHtml(r.childNickname || '') +
+            '</td>' +
+            '<td class="px-3 py-3 align-top text-slate-800">' +
+            dt +
+            '</td>' +
+            '<td class="px-3 py-3 align-top">' +
+            reservationStatusHtml(r.status) +
+            '</td>' +
+            '<td class="px-3 py-3 align-top tabular-nums">' +
+            (r.people != null ? r.people : '') +
+            '</td>' +
+            '<td class="px-3 py-3 align-top">' +
+            ownerReservationActionsHtml(r) +
+            '</td>' +
+            '</tr>'
+          );
+        }).join('') +
+        '</tbody></table>';
       updateOwnerResPaginationUi();
     } catch (e) {
+      closeOwnerResModal();
       out.innerHTML = '';
       document.getElementById('ownerBookingsPager').classList.add('hidden');
       alert('예약 목록 조회 실패: ' + (e.message || e));
@@ -692,6 +986,10 @@
   document.getElementById('btnOwnerResNext').addEventListener('click', function () {
     if (ownerResPageNum < ownerResTotalPages) loadOwnerBookings(ownerResPageNum + 1);
   });
+  document.getElementById('btnOwnerResModalClose').addEventListener('click', closeOwnerResModal);
+  document.getElementById('ownerResModal').addEventListener('click', function (e) {
+    if (e.target === document.getElementById('ownerResModal')) closeOwnerResModal();
+  });
 
   const storeGrid = document.getElementById('storeGrid');
   const detailPanel = document.getElementById('detailPanel');
@@ -703,6 +1001,7 @@
   const reservePanel = document.getElementById('reservePanel');
   const pickedScheduleId = document.getElementById('pickedScheduleId');
   const peopleCount = document.getElementById('peopleCount');
+  const reservationFlowSection = document.getElementById('reservationFlowSection');
 
   function pad2(n) {
     return String(n).padStart(2, '0');
@@ -846,7 +1145,17 @@
     stores.forEach(function (s) {
       const card = document.createElement('button');
       card.type = 'button';
-      card.className = 'text-left border border-slate-200 rounded-lg p-4 hover:border-indigo-400 hover:bg-indigo-50/40 transition';
+      card.className =
+        'text-left w-full border border-slate-200 rounded-lg p-3 hover:border-indigo-400 hover:bg-indigo-50/40 transition flex gap-3 items-start';
+      var imgs = s.images || [];
+      var thumbUrl = imgs.length > 0 ? imgs[0] : '';
+      var thumbBlock = thumbUrl
+        ? '<div class="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-slate-200 bg-slate-100">' +
+          '<img src="' +
+          escapeHtml(String(thumbUrl)) +
+          '" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async" />' +
+          '</div>'
+        : '<div class="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center text-[10px] text-slate-400 leading-tight text-center px-1">이미지<br/>없음</div>';
       var distRow = '';
       if (storeSortMode === 'distance') {
         var dk = formatDistanceKm(s.distance);
@@ -856,12 +1165,19 @@
           '</div>';
       }
       card.innerHTML =
-        '<div class="font-medium text-slate-800">' + escapeHtml(s.name) + '</div>' +
-        '<div class="text-xs text-slate-500 mt-1 line-clamp-2">' + escapeHtml(s.address || '') + '</div>' +
+        thumbBlock +
+        '<div class="min-w-0 flex-1">' +
+        '<div class="font-medium text-slate-800">' +
+        escapeHtml(s.name) +
+        '</div>' +
+        '<div class="text-xs text-slate-500 mt-1 line-clamp-2">' +
+        escapeHtml(s.address || '') +
+        '</div>' +
         distRow +
         '<div class="mt-2 flex flex-wrap gap-1 text-[10px]">' +
         (s.isOpen ? '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">영업중</span>' : '<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">영업준비</span>') +
         (s.isSharing ? '<span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-800">공유</span>' : '') +
+        '</div>' +
         '</div>';
       card.addEventListener('click', function () {
         openStoreDetail(s.id, s.name);
@@ -985,17 +1301,63 @@
     selectedDay = null;
     lastDailySlots = [];
     pickedScheduleId.value = '';
+    if (peopleCount) peopleCount.value = '1';
     detailPanel.classList.remove('hidden');
+    if (reservationFlowSection) reservationFlowSection.classList.add('hidden');
     slotPanel.classList.add('hidden');
     reservePanel.classList.add('hidden');
     childReserveHint.classList.add('hidden');
+    updateSelectedScheduleText();
+
+    var detailUrl = '/api/stores/' + storeId;
+    if (storeSortMode === 'distance') {
+      var latEl = document.getElementById('storeLatInput');
+      var lngEl = document.getElementById('storeLngInput');
+      if (latEl && lngEl && latEl.value.trim() && lngEl.value.trim()) {
+        detailUrl += '?lat=' + encodeURIComponent(latEl.value.trim()) + '&lng=' + encodeURIComponent(lngEl.value.trim());
+      }
+    }
+
     try {
-      const detail = await apiJson('GET', '/api/stores/' + storeId);
+      const detail = await apiJson('GET', detailUrl);
       const s = detail.store;
+      var heading = document.getElementById('detailPanelHeading');
+      if (heading) heading.textContent = s.name || '매장 정보';
+
+      var gal = document.getElementById('storeDetailGallery');
+      var imgs = s.images || [];
+      if (gal) {
+        if (imgs.length) {
+          gal.classList.remove('hidden');
+          gal.innerHTML =
+            '<div class="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory">' +
+            imgs.map(function (u) {
+              var src = escapeHtml(String(u));
+              return (
+                '<div class="snap-start shrink-0 w-36 h-36 sm:w-40 sm:h-40 rounded-xl overflow-hidden border border-slate-200 bg-slate-100">' +
+                '<img src="' + src + '" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async" />' +
+                '</div>'
+              );
+            }).join('') +
+            '</div>';
+        } else {
+          gal.classList.add('hidden');
+          gal.innerHTML = '';
+        }
+      }
+
       const bh = sortBusinessHours(s.businessHours || []);
       const tags = (s.tagNames || []).map(function (t) {
         return '<span class="inline-block px-1.5 py-0.5 mr-1 mb-1 rounded bg-slate-100 text-slate-700 text-xs">' + escapeHtml(t) + '</span>';
       }).join('');
+
+      var distLine = '';
+      if (s.distance != null && s.distance !== undefined && !isNaN(Number(s.distance))) {
+        distLine =
+          '<div class="sm:col-span-2"><span class="text-slate-500">거리</span><br/><span class="font-medium text-indigo-800 tabular-nums">' +
+          escapeHtml(String(Math.round(Number(s.distance) * 100) / 100)) +
+          ' km</span></div>';
+      }
 
       storeDetail.innerHTML =
         '<div class="grid sm:grid-cols-2 gap-2">' +
@@ -1004,6 +1366,7 @@
         '<div class="sm:col-span-2"><span class="text-slate-500">주소</span><br/>' + escapeHtml(s.address || '') + '</div>' +
         '<div><span class="text-slate-500">전화</span><br/>' + escapeHtml(s.phone || '') + '</div>' +
         '<div><span class="text-slate-500">찜</span> ' + (s.favoriteCount != null ? s.favoriteCount : '-') + '</div>' +
+        distLine +
         '</div>' +
         '<div class="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-100 text-amber-900 text-xs">' +
         '<strong>어린이·청소년 이용 안내</strong><br/>연령 전용 필드는 없고, 소개·태그를 확인하세요.' +
@@ -1019,13 +1382,36 @@
         }).join('') +
         '</tbody></table></div>';
 
-      viewYear = new Date().getFullYear();
-      viewMonth = new Date().getMonth() + 1;
-      await loadMonthSchedules();
+      updateReserveVisibility();
+      detailPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e) {
       alert('가게 상세 조회 실패: ' + (e.message || e));
     }
   }
+
+  document.getElementById('btnBackToStoreList').addEventListener('click', function () {
+    var list = document.getElementById('storeListSection');
+    if (list) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  document.getElementById('btnOpenReservationFlow').addEventListener('click', function () {
+    if (!selectedStoreId) return;
+    if (reservationFlowSection) reservationFlowSection.classList.remove('hidden');
+    viewYear = new Date().getFullYear();
+    viewMonth = new Date().getMonth() + 1;
+    selectedDay = null;
+    pickedScheduleId.value = '';
+    lastDailySlots = [];
+    slotPanel.classList.add('hidden');
+    if (peopleCount) peopleCount.value = '1';
+    updateSelectedScheduleText();
+    updateReserveVisibility();
+    loadMonthSchedules().then(function () {
+      if (reservationFlowSection) {
+        reservationFlowSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
 
   function daysInMonth(y, m) {
     return new Date(y, m, 0).getDate();
@@ -1063,6 +1449,7 @@
     const monFirst = firstWeekday === 0 ? 6 : firstWeekday - 1;
     const dim = daysInMonth(viewYear, viewMonth);
     const headers = ['월','화','수','목','금','토','일'];
+    const now = new Date();
     let html = '';
     headers.forEach(function (h) {
       html += '<div class="font-medium text-slate-500 py-1">' + h + '</div>';
@@ -1074,14 +1461,19 @@
       const sum = summaryByDay(d);
       const avail = sum ? sum.availableSlots : null;
       const isSel = selectedDay === d;
+      const isToday =
+        now.getFullYear() === viewYear && now.getMonth() + 1 === viewMonth && now.getDate() === d;
       const base = 'cursor-pointer rounded-lg border py-2 px-1 transition ';
       const cls = isSel
-        ? base + 'border-indigo-500 bg-indigo-50 text-indigo-900'
-        : base + 'border-slate-200 hover:border-indigo-300 bg-white';
+        ? base + 'border-emerald-700 bg-emerald-700 text-white shadow-md'
+        : base + 'border-slate-200 hover:border-emerald-400 bg-white';
       const sub = avail === null || avail === undefined
         ? ''
-        : '<div class="text-[10px] mt-0.5 ' + (avail > 0 ? 'text-emerald-600' : 'text-slate-400') + '">잔여 ' + avail + '</div>';
-      html += '<div class="' + cls + '" data-day="' + d + '"><div class="font-medium">' + d + '</div>' + sub + '</div>';
+        : '<div class="text-[10px] mt-0.5 ' + (isSel ? 'text-emerald-100' : (avail > 0 ? 'text-emerald-600' : 'text-slate-400')) + '">잔여 ' + avail + '</div>';
+      const todayMark = isToday
+        ? '<div class="text-[9px] leading-none mb-0.5 ' + (isSel ? 'text-emerald-200' : 'text-slate-400') + '">TODAY</div>'
+        : '';
+      html += '<div class="' + cls + '" data-day="' + d + '">' + todayMark + '<div class="font-medium">' + d + '</div>' + sub + '</div>';
     }
     calendarGrid.innerHTML = html;
     calendarGrid.querySelectorAll('[data-day]').forEach(function (el) {
@@ -1099,6 +1491,7 @@
     slotPanel.classList.remove('hidden');
     slotList.innerHTML = '<p class="text-xs text-slate-500">불러오는 중…</p>';
     pickedScheduleId.value = '';
+    updateSelectedScheduleText();
     updateReserveVisibility();
     try {
       const data = await apiJson('GET', '/api/stores/' + selectedStoreId + '/schedules?year=' + viewYear + '&month=' + viewMonth + '&day=' + day);
@@ -1106,32 +1499,39 @@
       lastDailySlots = slots;
       if (!slots.length) {
         slotList.innerHTML = '<p class="text-xs text-slate-500">이 날짜에 등록된 스케줄이 없습니다.</p>';
+        updateSelectedScheduleText();
         return;
       }
       slotList.innerHTML = '';
       slots.forEach(function (slot) {
-        const row = document.createElement('label');
-        const disabled = slot.isAvailable === false;
-        row.className = 'flex items-center gap-3 border rounded-lg px-3 py-2 text-sm ' + (disabled ? 'bg-slate-100 opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-indigo-400');
-        const id = 'slot-' + slot.id;
-        row.innerHTML =
-          '<input type="radio" name="pickSlot" class="shrink-0" id="' + id + '" value="' + slot.id + '" ' + (disabled ? 'disabled' : '') + ' />' +
-          '<div class="flex-1">' +
-          '<div class="font-medium">' + String(slot.startTime) + ' ~ ' + String(slot.endTime) + '</div>' +
-          '<div class="text-xs text-slate-500">슬롯 ' + slot.id + ' · 최대 ' + (slot.maxPeople != null ? slot.maxPeople : '?') + '명 · ' +
-          (slot.isAvailable ? '<span class="text-emerald-600">가능</span>' : '<span class="text-red-600">마감</span>') +
-          '</div></div>';
-        if (!disabled) {
-          row.addEventListener('click', function (ev) {
-            if (ev.target.tagName !== 'INPUT') {
-              row.querySelector('input').checked = true;
-            }
+        var disabled = slot.isAvailable === false;
+        var start = String(slot.startTime || '').slice(0, 5);
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.disabled = disabled;
+        btn.setAttribute('data-slot-id', String(slot.id));
+        btn.setAttribute('title', '슬롯 ' + slot.id + ' · 최대 ' + (slot.maxPeople != null ? slot.maxPeople : '?') + '명');
+        if (disabled) {
+          btn.className =
+            'px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed text-sm font-medium';
+          btn.textContent = start + ' (마감)';
+        } else {
+          btn.className =
+            'slot-pick-btn px-4 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-semibold hover:border-emerald-500 hover:bg-emerald-50/60 transition';
+          btn.textContent = start;
+          btn.addEventListener('click', function () {
+            slotList.querySelectorAll('.slot-pick-btn').forEach(function (b) {
+              b.className =
+                'slot-pick-btn px-4 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-semibold hover:border-emerald-500 hover:bg-emerald-50/60 transition';
+            });
+            btn.className =
+              'slot-pick-btn px-4 py-2.5 rounded-xl border-2 border-emerald-700 bg-emerald-700 text-white text-sm font-semibold shadow';
             pickedScheduleId.value = String(slot.id);
-            peopleCount.max = slot.maxPeople != null ? slot.maxPeople : 99;
-            if (parseInt(peopleCount.value, 10) > parseInt(peopleCount.max, 10)) peopleCount.value = peopleCount.max;
+            updateReserveVisibility();
+            updateSelectedScheduleText();
           });
         }
-        slotList.appendChild(row);
+        slotList.appendChild(btn);
       });
     } catch (e) {
       slotList.innerHTML = '';
@@ -1160,36 +1560,15 @@
 
   document.getElementById('reserveForm').addEventListener('submit', async function (ev) {
     ev.preventDefault();
-    if (!currentUser || currentUser.userType !== 'CHILD') {
-      alert('예약은 아동(CHILD)만 가능합니다.');
-      return;
-    }
-    if (!selectedStoreId) {
-      alert('가게를 먼저 선택하세요.');
-      return;
-    }
-    const sid = pickedScheduleId.value.trim();
-    if (!sid) {
-      alert('예약 가능한 시간대를 선택하세요.');
-      return;
-    }
-    const people = parseInt(peopleCount.value, 10);
-    if (!people || people < 1) {
-      alert('인원을 입력하세요.');
-      return;
-    }
-    const slot = lastDailySlots.find(function (s) { return String(s.id) === sid; });
-    if (slot && slot.maxPeople != null && people > slot.maxPeople) {
-      alert('인원이 최대 인원(' + slot.maxPeople + ')을 초과합니다.');
-      return;
-    }
-    if (slot && slot.isAvailable === false) {
-      alert('선택한 슬롯은 마감되었습니다.');
-      return;
-    }
+    var sidRaw = pickedScheduleId && pickedScheduleId.value ? pickedScheduleId.value.trim() : '';
+    var people = parseInt(peopleCount && peopleCount.value ? peopleCount.value : '0', 10);
+    if (isNaN(people)) people = 0;
+    var scheduleId = parseInt(sidRaw, 10);
+    if (isNaN(scheduleId)) scheduleId = 0;
+    var storeId = selectedStoreId != null ? selectedStoreId : 0;
     try {
-      await apiJson('POST', '/api/childrens/stores/' + selectedStoreId + '/reservations', {
-        storeScheduleId: parseInt(sid, 10),
+      await apiJson('POST', '/api/childrens/stores/' + storeId + '/reservations', {
+        storeScheduleId: scheduleId,
         people: people
       });
       alert('예약 요청이 접수되었습니다.');
@@ -1199,15 +1578,16 @@
     }
   });
 
-  slotList.addEventListener('change', function (e) {
-    if (e.target && e.target.name === 'pickSlot' && e.target.checked) {
-      pickedScheduleId.value = e.target.value;
-      const slot = lastDailySlots.find(function (s) { return String(s.id) === e.target.value; });
-      if (slot && slot.maxPeople != null) {
-        peopleCount.max = slot.maxPeople;
-        if (parseInt(peopleCount.value, 10) > slot.maxPeople) peopleCount.value = String(slot.maxPeople);
-      }
-    }
+  document.getElementById('btnPeopleMinus').addEventListener('click', function () {
+    if (!peopleCount) return;
+    var v = parseInt(peopleCount.value, 10) || 1;
+    if (v > 1) peopleCount.value = String(v - 1);
+  });
+  document.getElementById('btnPeoplePlus').addEventListener('click', function () {
+    if (!peopleCount) return;
+    var v = parseInt(peopleCount.value, 10);
+    if (isNaN(v) || v < 1) v = 1;
+    peopleCount.value = String(v + 1);
   });
 
   document.getElementById('ownerBookingsOut').addEventListener('click', function (e) {
