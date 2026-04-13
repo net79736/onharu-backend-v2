@@ -67,6 +67,10 @@ dependencies {
 
 	// Redis (최근 검색어 등)
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	// Redisson (분산락)
+	implementation 'org.redisson:redisson-spring-boot-starter:3.16.4'
+	// test 프로필: embedded redis로 분산락 테스트 지원
+	testImplementation 'com.github.codemonstur:embedded-redis:1.4.3'
 
 	// OAuth2
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'

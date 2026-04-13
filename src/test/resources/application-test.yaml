@@ -1,4 +1,7 @@
 spring:
+  application:
+    is-secure: false
+    front-domain: localhost
   config:
     activate:
       on-profile: test

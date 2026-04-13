@@ -53,6 +53,7 @@ import com.backend.onharu.domain.storeschedule.service.StoreScheduleQueryService
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.event.model.ReservationEvent;
+import com.backend.onharu.infra.redis.lock.DistributeLockExecutor;
 import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
 import com.backend.onharu.utils.SecurityUtils;
 
@@ -76,31 +77,19 @@ public class ChildFacade {
 
     // 스프링 이벤트 발행기. 쿠폰 발급 완료 등 도메인 이벤트를 발행할 때 사용합니다.
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final DistributeLockExecutor distributeLockExecutor;
 
     /**
      * 예약 하기
      */
     @Transactional
     public void reserve(CreateReservationCommand command) {
-        // 결식 아동 조회   
+        // 결식 아동 조회
         Child child = childQueryService.getChildById(new GetChildByIdQuery(command.childId()));
 
         // 가게 일정 조회
         StoreSchedule storeSchedule = storeScheduleQueryService.getStoreScheduleById(new GetStoreScheduleByIdQuery(command.storeScheduleId()));
         Owner owner = storeSchedule.getStore().getOwner();
-
-        // 이미 지난 시간의 일정이면 예약 불가
-        if (!storeSchedule.isBookableAt(LocalDateTime.now())) {
-            throw new CoreException(ErrorType.Reservation.RESERVATION_SCHEDULE_TIME_EXPIRED);
-        }
-
-        // 조회한 가게 일정이 이미 예약된 일정인지 체크 (테이블 조회해서 확인)
-        Reservation reservation = reservationQueryService.getByStoreScheduleId(new GetByStoreScheduleIdQuery(command.storeScheduleId()));
-        // 예약 가능 여부 확인
-        boolean isUnavailable = reservation != null && !reservation.isAvailable();
-        if (isUnavailable) {
-            throw new CoreException(ErrorType.Reservation.RESERVATION_ALREADY_EXISTS);
-        }
 
         // 예약 인원이 최대 수용 인원을 초과하는지 검증
         if (command.people() == null || command.people() <= 0) {
@@ -112,16 +101,32 @@ public class ChildFacade {
             throw new CoreException(RESERVATION_PEOPLE_EXCEEDS_MAX);
         }
 
-        // 예약 생성
-        Reservation createdReservation = reservationCommandService.createReservation(command, storeSchedule, child);
+        String lockName = "lock:reservation:storeSchedule:" + command.storeScheduleId();
+        distributeLockExecutor.execute(() -> {
+            // 이미 지난 시간의 일정이면 예약 불가
+            if (!storeSchedule.isBookableAt(LocalDateTime.now())) {
+                throw new CoreException(ErrorType.Reservation.RESERVATION_SCHEDULE_TIME_EXPIRED);
+            }
 
-        // 예약 생성 이벤트 발행
-        applicationEventPublisher.publishEvent(new ReservationEvent(
-                createdReservation.getId(),
-                owner.getId(),
-                SecurityUtils.getCurrentUserId(),
-                RESERVATION_CREATED
-        ));
+            // 조회한 가게 일정이 이미 예약된 일정인지 체크 (테이블 조회해서 확인)
+            Reservation reservation = reservationQueryService.getByStoreScheduleId(new GetByStoreScheduleIdQuery(command.storeScheduleId()));
+            boolean isUnavailable = reservation != null && !reservation.isAvailable();
+            if (isUnavailable) {
+                throw new CoreException(ErrorType.Reservation.RESERVATION_ALREADY_EXISTS);
+            }
+
+            // 예약 생성
+            Reservation saved = reservationCommandService.createReservation(command, storeSchedule, child);
+
+            // 예약 생성 이벤트 발행
+            applicationEventPublisher.publishEvent(new ReservationEvent(
+                    saved.getId(),
+                    owner.getId(),
+                    SecurityUtils.getCurrentUserId(),
+                    RESERVATION_CREATED
+            ));
+            return null;
+        }, lockName, 10_000, 10_000);
     }
 
     /**

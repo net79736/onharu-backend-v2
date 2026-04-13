@@ -26,7 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ClientIdentityResolver {
     private static final Pattern CLIENT_ID_SAFE = Pattern.compile("^[a-zA-Z0-9._-]{1,64}$");
     private static final String CLIENT_ID_COOKIE_NAME = "X-Client-Id";
-    private static final int CLIENT_ID_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+    // private static final int CLIENT_ID_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30일
+    private static final int CLIENT_ID_COOKIE_MAX_AGE_SECONDS = 30; // 30초
 
     private final CookieUtils cookieUtils;
 

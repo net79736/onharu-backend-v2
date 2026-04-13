@@ -1,9 +1,13 @@
 spring:
+  application:
+    is-secure: false
+    front-domain: localhost
+
   datasource:
-    url: jdbc:mysql://localhost:3306/onharu_test_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: onharu_test
-    password: test1234
+    url: jdbc:h2:mem:onharu-test;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
 
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
@@ -41,6 +45,7 @@ minio:
   url: http://localhost:9000
   access-key: test-access-key
   secret-key: test-secret-key
+  region: us-east-1
   bucket: test-bucket
 
 SMTP_HOST: localhost

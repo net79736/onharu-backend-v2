@@ -16,10 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class CookieUtils {
-    @Value("${spring.application.is-secure}")
+    @Value("${spring.application.is-secure:false}")
     private boolean isSecure;
 
-    @Value("${spring.application.front-domain}")
+    @Value("${spring.application.front-domain:localhost}")
     private String frontDomain;
 
     /**
