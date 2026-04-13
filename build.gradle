@@ -65,6 +65,9 @@ dependencies {
 	// Validation 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+	// Redis (최근 검색어 등)
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 	// OAuth2
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 

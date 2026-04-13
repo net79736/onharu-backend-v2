@@ -1,13 +1,13 @@
 spring:
   config:
-    activate:
-      on-profile: dev
     import:
       - application-smtp.yaml
       - application-oauth.yaml
       - application-nts.yaml
   application:
     name: onharu
+    is-secure: false
+    front-domain: localhost
 
   # 데이터소스 설정
   datasource:
@@ -27,6 +27,12 @@ spring:
         format_sql: ${JPA_FORMAT_SQL}
         highlight_sql: ${JPA_HIGHLIGHT_SQL}
 
+  # Redis (최근 검색어 — 미기동 시 앱 기동 실패, 예: docker run -d -p 6379:6379 redis:7-alpine)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
 # MinIO 설정 (로컬 개발용)
 minio:
   url: ${MINIO_URL:https://onharu-api-v2.votex.co.kr/minio}
@@ -39,6 +45,10 @@ minio:
 store:
   search:
     default-radius-km: 20  # 기본 반경 20km
+    recent-keywords:
+      max-items: 10 # 최근 검색어 최대 개수
+      max-keyword-length: 30 # 최근 검색어 최대 길이
+      ttl-seconds: 30 # 최근 검색어 유지 시간
 
 # 서버 설정
 server:

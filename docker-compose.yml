@@ -111,6 +111,16 @@ services:
         limits:
           memory: 2048M
 
+  # Redis (최근 검색어 등 — 로컬/도커 WAS에서 REDIS_HOST 로 연결)
+  redis:
+    image: redis:7-alpine
+    container_name: onharu-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - onharu-network
+
   # ----------------------------------------
   # Jenkins CI (컨트롤러 Java 17 — jenkins/jenkins:lts-jdk17)
   # ----------------------------------------
@@ -178,6 +188,8 @@ services:
       SERVER_FRONT_URL: ${SERVER_FRONT_URL}
       SERVER_BACK_URL: ${SERVER_BACK_URL}
       SERVER_URL: ${SERVER_URL}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
 
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]

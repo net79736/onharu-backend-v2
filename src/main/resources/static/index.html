@@ -131,6 +131,10 @@
               <button type="submit" id="btnStoreSearch" class="px-3 py-1.5 rounded-lg bg-slate-800 text-white text-sm font-medium hover:bg-slate-900">검색</button>
               <button type="button" id="btnStoreSearchReset" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm text-slate-700 hover:bg-white">초기화</button>
             </div>
+            <div id="storeRecentWrap" class="mt-2 pt-2 border-t border-slate-100">
+              <p class="text-[10px] font-medium text-slate-500 mb-1.5">최근 검색어 <span class="font-normal text-slate-400">(Redis List+Set · 로그인 시 계정별, 비로그인 시 이 브라우저 ID)</span></p>
+              <div id="storeRecentChips" class="flex flex-wrap gap-1.5 min-h-[1.5rem] text-xs"></div>
+            </div>
           </form>
           <div class="mb-4 space-y-2">
             <div class="flex flex-wrap items-center gap-2">
@@ -341,6 +345,8 @@
 (function () {
   const LS_ME = 'onharu_user_me';
   const LS_TOKEN = 'onharu_access_token';
+  /** 비로그인 시 최근 검색어 Redis 키 구분용 (서버 X-Client-Id) */
+  const LS_RECENT_CLIENT = 'onharu_recent_search_client_id';
   const WEEK_ORDER = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
   const apiLogEl = document.getElementById('apiLog');
   const logs = [];
@@ -431,11 +437,28 @@
     return dto;
   }
 
-  async function apiJson(method, path, body) {
+  function getOrCreateRecentClientId() {
+    try {
+      var id = localStorage.getItem(LS_RECENT_CLIENT);
+      if (!id || id.length < 8) {
+        id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+        localStorage.setItem(LS_RECENT_CLIENT, id);
+      }
+      return id;
+    } catch (e) {
+      return 'fallback-' + String(Date.now());
+    }
+  }
+
+  function recentSearchHeaders() {
+    return { 'X-Client-Id': getOrCreateRecentClientId() };
+  }
+
+  async function apiJson(method, path, body, extraHeaders) {
     const opts = {
       method,
       credentials: 'include',
-      headers: buildAuthHeaders()
+      headers: buildAuthHeaders(extraHeaders || {})
     };
     if (body !== undefined) opts.body = JSON.stringify(body);
     const res = await fetch(path, opts);
@@ -1291,6 +1314,49 @@
     }
   }
 
+  function renderRecentChips(keywords) {
+    var el = document.getElementById('storeRecentChips');
+    if (!el) return;
+    if (!keywords || !keywords.length) {
+      el.innerHTML = '<span class="text-slate-400 text-[11px]">저장된 최근 검색어가 없습니다.</span>';
+      return;
+    }
+    el.innerHTML = keywords
+      .map(function (kw) {
+        return (
+          '<button type="button" class="recent-kw-chip px-2.5 py-1 rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-emerald-50 hover:border-emerald-200 text-[11px] shadow-sm" data-kw-enc="' +
+          encodeURIComponent(kw) +
+          '">' +
+          escapeHtml(kw) +
+          '</button>'
+        );
+      })
+      .join('');
+  }
+
+  async function refreshRecentKeywords() {
+    var el = document.getElementById('storeRecentChips');
+    if (!el) return;
+    try {
+      var list = await apiJson('GET', '/api/stores/recent-keywords', undefined, recentSearchHeaders());
+      renderRecentChips(Array.isArray(list) ? list : []);
+    } catch (e) {
+      el.innerHTML =
+        '<span class="text-amber-800 text-[11px]">최근 검색어를 불러오지 못했습니다. (Redis 미기동·연결 확인)</span>';
+    }
+  }
+
+  async function recordRecentKeyword(raw) {
+    var t = raw && String(raw).trim();
+    if (!t) return;
+    try {
+      await apiJson('POST', '/api/stores/recent-keywords', { keyword: t }, recentSearchHeaders());
+      await refreshRecentKeywords();
+    } catch (e) {
+      console.warn('최근 검색어 저장 실패', e);
+    }
+  }
+
   async function loadStores(page) {
     if (typeof page === 'number' && page >= 1) {
       storePageNum = page;
@@ -1319,6 +1385,25 @@
   if (storeSearchForm) {
     storeSearchForm.addEventListener('submit', function (ev) {
       ev.preventDefault();
+      var kwEl = document.getElementById('storeKeywordInput');
+      var kwVal = kwEl && kwEl.value ? kwEl.value.trim() : '';
+      loadStores(1).then(function () {
+        if (kwVal) {
+          return recordRecentKeyword(kwVal);
+        }
+      });
+    });
+  }
+  var storeRecentWrap = document.getElementById('storeRecentWrap');
+  if (storeRecentWrap) {
+    storeRecentWrap.addEventListener('click', function (e) {
+      var btn = e.target.closest('.recent-kw-chip');
+      if (!btn) return;
+      var enc = btn.getAttribute('data-kw-enc');
+      if (enc == null || enc === '') return;
+      var kw = decodeURIComponent(enc);
+      var kwInput = document.getElementById('storeKeywordInput');
+      if (kwInput) kwInput.value = kw;
       loadStores(1);
     });
   }
@@ -1714,9 +1799,13 @@
     syncStoreSortUi();
   })();
   refreshMe();
-  loadStoreCategories().then(function () {
-    return loadStores(1);
-  });
+  loadStoreCategories()
+    .then(function () {
+      return loadStores(1);
+    })
+    .then(function () {
+      return refreshRecentKeywords();
+    });
 })();
   </script>
 </body>
