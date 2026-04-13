@@ -221,6 +221,36 @@
                 <span class="text-emerald-600" aria-hidden="true">♥</span>
                 <h3 class="text-sm font-semibold">인원을 선택해 주세요.</h3>
               </div>
+
+              <div class="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="text-sm font-semibold text-slate-800">동시성(분산락) 확인</div>
+                  <span class="text-[11px] text-slate-500">동일 일정에 요청 N개를 동시에 전송</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div class="sm:col-span-1">
+                    <label class="block text-xs font-medium text-slate-600 mb-1">요청 개수(N)</label>
+                    <input id="reserveConcurrencyN" type="number" min="2" value="10" class="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm bg-white" />
+                  </div>
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-medium text-slate-600 mb-1">기대 결과</label>
+                    <div class="text-xs text-slate-600 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                      분산락 적용 후: <strong class="text-emerald-700">성공 1</strong>, 실패 N-1 (대개 <code class="bg-white px-1 rounded">이미 예약된 일정</code>)
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button type="button" id="btnReserveConcurrencyRun" class="px-3 py-2 rounded-lg bg-slate-900 text-white text-sm hover:bg-slate-800">
+                    동시 예약 요청 보내기
+                  </button>
+                  <button type="button" id="btnReserveConcurrencyClear" class="px-3 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm hover:bg-slate-50">
+                    결과 지우기
+                  </button>
+                  <span id="reserveConcurrencyStatus" class="text-xs text-slate-500"></span>
+                </div>
+                <pre id="reserveConcurrencyOut" class="hidden text-[12px] leading-5 whitespace-pre-wrap rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800"></pre>
+              </div>
+
               <form id="reserveForm" class="space-y-4" novalidate>
                 <input type="hidden" id="pickedScheduleId" value="" />
                 <div>
@@ -1730,6 +1760,84 @@
       alert('예약 실패: ' + (e.message || e));
     }
   });
+
+  (function initReserveConcurrencyPanel() {
+    var btnRun = document.getElementById('btnReserveConcurrencyRun');
+    var btnClear = document.getElementById('btnReserveConcurrencyClear');
+    var nInput = document.getElementById('reserveConcurrencyN');
+    var out = document.getElementById('reserveConcurrencyOut');
+    var statusEl = document.getElementById('reserveConcurrencyStatus');
+    if (!btnRun || !btnClear || !nInput || !out || !statusEl) return;
+
+    function setOut(text) {
+      out.textContent = text || '';
+      out.classList.toggle('hidden', !out.textContent);
+    }
+
+    btnClear.addEventListener('click', function () {
+      statusEl.textContent = '';
+      setOut('');
+    });
+
+    btnRun.addEventListener('click', async function () {
+      var sidRaw = pickedScheduleId && pickedScheduleId.value ? pickedScheduleId.value.trim() : '';
+      var scheduleId = parseInt(sidRaw, 10);
+      var storeId = selectedStoreId != null ? selectedStoreId : 0;
+      var people = parseInt(peopleCount && peopleCount.value ? peopleCount.value : '0', 10);
+      if (isNaN(people)) people = 0;
+      if (isNaN(scheduleId) || scheduleId <= 0) {
+        alert('먼저 날짜/시간(일정)을 선택해 주세요.');
+        return;
+      }
+      if (!currentUser || currentUser.userType !== 'CHILD') {
+        alert('아동(CHILD) 계정으로 로그인해야 테스트할 수 있습니다.');
+        return;
+      }
+      var n = parseInt(nInput.value || '10', 10);
+      if (isNaN(n) || n < 2) n = 2;
+      if (n > 50) n = 50;
+      nInput.value = String(n);
+
+      btnRun.disabled = true;
+      statusEl.textContent = '요청 전송 중... (N=' + n + ')';
+      setOut('');
+
+      var startedAt = Date.now();
+      var jobs = Array.from({ length: n }).map(function (_, i) {
+        return apiJson('POST', '/api/childrens/stores/' + storeId + '/reservations', {
+          storeScheduleId: scheduleId,
+          people: people
+        }).then(function (data) {
+          return { ok: true, idx: i + 1, data: data };
+        }).catch(function (err) {
+          return { ok: false, idx: i + 1, message: (err && err.message) ? String(err.message) : String(err) };
+        });
+      });
+
+      var results = await Promise.all(jobs);
+      var ok = results.filter(function (r) { return r.ok; });
+      var fail = results.filter(function (r) { return !r.ok; });
+      var elapsed = Date.now() - startedAt;
+
+      var failTop = fail.slice(0, 8).map(function (r) { return '- #' + r.idx + ': ' + r.message; }).join('\n');
+      var okTop = ok.slice(0, 5).map(function (r) { return '- #' + r.idx + ': ' + JSON.stringify(r.data); }).join('\n');
+
+      statusEl.textContent = '완료 · 성공 ' + ok.length + ' / 실패 ' + fail.length + ' · ' + elapsed + 'ms';
+      setOut(
+        '[동시성 테스트 결과]\n' +
+        '- storeId: ' + storeId + '\n' +
+        '- storeScheduleId: ' + scheduleId + '\n' +
+        '- people: ' + people + '\n' +
+        '- N: ' + n + '\n' +
+        '- success: ' + ok.length + '\n' +
+        '- fail: ' + fail.length + '\n\n' +
+        (okTop ? ('[성공 예시]\n' + okTop + '\n\n') : '') +
+        (failTop ? ('[실패 예시]\n' + failTop + '\n') : '')
+      );
+
+      btnRun.disabled = false;
+    });
+  })();
 
   document.getElementById('btnPeopleMinus').addEventListener('click', function () {
     if (!peopleCount) return;
