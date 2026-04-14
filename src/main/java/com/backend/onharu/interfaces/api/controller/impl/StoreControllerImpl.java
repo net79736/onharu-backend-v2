@@ -33,6 +33,7 @@ import com.backend.onharu.domain.file.dto.FileQuery.ListByRefsQuery;
 import com.backend.onharu.domain.file.model.File;
 import com.backend.onharu.domain.file.service.FileQueryService;
 import com.backend.onharu.domain.store.dto.CategoryQuery.FindAllByNameQuery;
+import com.backend.onharu.domain.store.dto.StoreCacheDto;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
@@ -98,11 +99,11 @@ public class StoreControllerImpl implements IStoreController {
     ) {
         log.info("가게 상세 정보 조회 요청: storeId={}", storeId);
         
-        StoreWithFavoriteCount storePage = storeFacade.getStore(new GetStoreQuery(storeId, request.lat(), request.lng()));
+        StoreCacheDto storeCache = storeFacade.getStore(new GetStoreQuery(storeId, request.lat(), request.lng()));
 
         // 가게에 첨부된 이미지 목록 조회
         List<File> files = fileQueryService.listByRef(
-                new ListByRefQuery(AttachmentType.STORE, storePage.store().getId())
+                new ListByRefQuery(AttachmentType.STORE, storeCache.getId())
         );
 
         // 이미지 목록 추출
@@ -112,21 +113,26 @@ public class StoreControllerImpl implements IStoreController {
         
         // 예약 가능한 가게 ID 집합 조회
         boolean hasValidSchedule = !storeScheduleFacade
-                .filterReservableStoreIds(Set.of(storePage.store().getId()), LocalDate.now())
+                .filterReservableStoreIds(Set.of(storeCache.getId()), LocalDate.now())
                 .isEmpty();
         // 공유중
-        boolean effectiveIsSharing = Boolean.TRUE.equals(storePage.store().getIsSharing()) || hasValidSchedule;
+        boolean effectiveIsSharing = Boolean.TRUE.equals(storeCache.getIsSharing()) || hasValidSchedule;
 
         // 영업중 여부 계산
-        boolean isOpenNow = StoreOpenStatusCalculator.isOpenNow(storePage.store(), LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        boolean isOpenNow = StoreOpenStatusCalculator.isOpenNowFromCache(
+                storeCache.getIsOpen(),
+                storeCache.getBusinessHours(),
+                now
+        );
 
         GetStoreDetailResponse response = new GetStoreDetailResponse(
-            storePage.store(),
+            storeCache,
             isOpenNow,
             effectiveIsSharing,
-            NumberUtils.truncateToIntegerAsDouble(storePage.distance()),
+            NumberUtils.truncateToIntegerAsDouble(storeCache.getDistance()),
             imagePaths,
-            storePage.favoriteCount()
+            storeCache.getFavoriteCount()
         );
 
         return ResponseEntity.status(HttpStatus.OK)

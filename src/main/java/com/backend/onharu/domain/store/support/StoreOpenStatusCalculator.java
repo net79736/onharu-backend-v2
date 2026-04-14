@@ -2,9 +2,11 @@ package com.backend.onharu.domain.store.support;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import com.backend.onharu.domain.common.enums.WeekType;
+import com.backend.onharu.domain.store.dto.StoreCacheDto;
 import com.backend.onharu.domain.store.model.BusinessHours;
 import com.backend.onharu.domain.store.model.Store;
 
@@ -54,6 +56,31 @@ public final class StoreOpenStatusCalculator {
     }
 
     /**
+     * (캐시 DTO용) 현재 시각 기준으로 가게의 "영업중" 여부를 계산합니다.
+     *
+     * @param manualOpenFlag 사업자가 설정한 영업 상태
+     * @param businessHours 캐시 DTO의 영업시간
+     * @param now 현재 시각
+     * @return 영업중 여부
+     */
+    public static boolean isOpenNowFromCache(Boolean manualOpenFlag, List<StoreCacheDto.BusinessHoursDto> businessHours, LocalDateTime now) {
+        if (!Boolean.TRUE.equals(manualOpenFlag)) return false;
+        if (now == null) return false;
+        if (businessHours == null || businessHours.isEmpty()) return false;
+
+        WeekType today = toWeekType(now.getDayOfWeek());
+        LocalTime t = now.toLocalTime();
+
+        return businessHours.stream()
+                .map(StoreOpenStatusCalculator::safeParseCachedBusinessHours)
+                .filter(h -> h != null)
+                .filter(h -> h.businessDay == today)
+                .filter(h -> h.openTime != null && h.closeTime != null)
+                .filter(h -> h.openTime.isBefore(h.closeTime))
+                .anyMatch(h -> !t.isBefore(h.openTime) && t.isBefore(h.closeTime));
+    }
+
+    /**
      * 오늘 영업시간으로 판정합니다.
      * 
      * @param businessHours 가게의 영업시간
@@ -72,6 +99,51 @@ public final class StoreOpenStatusCalculator {
                     // 현재 시간이 openTime 이후, closeTime 이전인지 판정
                     return !t.isBefore(bh.getOpenTime()) && t.isBefore(bh.getCloseTime());
                 });
+    }
+
+    /**
+     * (캐시 DTO용) 영업시간을 파싱합니다.
+     * 
+     * @param bh 캐시 DTO의 영업시간
+     * @return 캐시 DTO의 영업시간
+     */
+    private static CachedBusinessHours safeParseCachedBusinessHours(StoreCacheDto.BusinessHoursDto bh) {
+        if (bh == null) return null;
+        WeekType day = safeWeekType(bh.getBusinessDay());
+        LocalTime open = safeLocalTime(bh.getOpenTime());
+        LocalTime close = safeLocalTime(bh.getCloseTime());
+        if (day == null || open == null || close == null) return null;
+        return new CachedBusinessHours(day, open, close);
+    }
+
+    private static WeekType safeWeekType(String businessDay) {
+        if (businessDay == null || businessDay.isBlank()) return null;
+        try {
+            return WeekType.valueOf(businessDay);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static LocalTime safeLocalTime(String time) {
+        if (time == null || time.isBlank()) return null;
+        try {
+            return LocalTime.parse(time);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static final class CachedBusinessHours {
+        private final WeekType businessDay;
+        private final LocalTime openTime;
+        private final LocalTime closeTime;
+
+        private CachedBusinessHours(WeekType businessDay, LocalTime openTime, LocalTime closeTime) {
+            this.businessDay = businessDay;
+            this.openTime = openTime;
+            this.closeTime = closeTime;
+        }
     }
 
     private static WeekType toWeekType(DayOfWeek dayOfWeek) {

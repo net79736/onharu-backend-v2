@@ -1,22 +1,39 @@
 package com.backend.onharu.domain.store.service;
 
-import com.backend.onharu.domain.store.dto.StoreQuery.*;
-import com.backend.onharu.domain.store.dto.StoreRepositroyParam.*;
-import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
-import com.backend.onharu.domain.store.dto.StoreWithFavoriteCountByLocationProjection;
-import com.backend.onharu.domain.store.model.Store;
-import com.backend.onharu.domain.store.repository.StoreRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import com.backend.onharu.domain.store.dto.StoreQuery.FindByCategoryIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.FindByNameQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.FindByOwnerIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.FindWithCategoryAndFavoriteCountByOwnerIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreQuery;
+import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
+import com.backend.onharu.domain.store.dto.StoreCacheDto;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindAllWithCategoryAndFavoriteCountParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByCategoryIdParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByNameParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByOwnerIdParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindWithCategoryAndFavoriteCountByLocationParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreByIdParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreDetailByIdAndLocationParam;
+import com.backend.onharu.domain.store.dto.StoreRepositroyParam.GetStoreDetailByIdParam;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCountByLocationProjection;
+import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.store.repository.StoreRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -42,8 +59,18 @@ public class StoreQueryService {
      * @return 조회된 가게 상세 정보
      * @return
      */
-    public StoreWithFavoriteCount getStoreDetailById(GetStoreQuery query) {
+    public StoreWithFavoriteCount getStoreDetailById(GetStoreByIdQuery query) {
         return storeRepository.getStoreDetailById(new GetStoreDetailByIdParam(query.storeId()));
+    }
+
+    /**
+     * (캐시용) 가게 상세 정보 조회 - Redis 캐시 DTO로 반환합니다.
+     * <p>
+     * 엔티티 그래프를 캐시에 넣지 않기 위해 {@link StoreCacheDto}로 평탄화합니다.
+     */
+    @Cacheable(cacheNames = "storeDetail", key = "'storeId:' + #query.storeId()")
+    public StoreCacheDto getStoreDetailCacheById(GetStoreByIdQuery query) {
+        return StoreCacheDto.from(getStoreDetailById(query));
     }
 
     /**
@@ -58,6 +85,16 @@ public class StoreQueryService {
         // 가게 엔티티 조회
         Store store = storeRepository.getStoreById(new GetStoreByIdParam(content.getId()));
         return new StoreWithFavoriteCount(store, content.getDistance(), content.getFavoriteCount());
+    }
+
+    /**
+     * (캐시용) 가게 상세 정보 조회(거리 포함) - Redis 캐시 DTO로 반환합니다.
+     * <p>
+     * key는 lat/lng를 포함해 같은 storeId라도 위치에 따라 캐시가 분리되도록 합니다.
+     */
+    @Cacheable(cacheNames = "storeDetail", key = "'storeId:' + #query.storeId() + ':lat:' + #query.lat() + ':lng:' + #query.lng()")
+    public StoreCacheDto getStoreDetailCacheByIdAndLocation(GetStoreQuery query) {
+        return StoreCacheDto.from(getStoreDetailByIdAndLocation(query));
     }
 
     /**

@@ -29,17 +29,6 @@ import lombok.RequiredArgsConstructor;
  *
  * <p>Spring의 캐시 추상화를 Redis로 구현합니다.
  * {@code @Cacheable}, {@code @CacheEvict}, {@code @CachePut} 등의 어노테이션을 사용할 수 있습니다.
- *
- * <p>캐시 전략(이 모듈, coupon-issue-v3 {@code RedissCacheConfiguration}과 동일 패턴):
- * <ul>
- *   <li><strong>storeDetail</strong> — 가게 상세(기본, 위치 미포함) 조회,
- *   {@link com.backend.onharu.domain.store.service.StoreQueryService#getStoreDetailByIdCached(Long)} 등</li>
- *   <li>TTL: 기본 30분 (아래 {@code entryTtl}과 동일)</li>
- * </ul>
- *
- * <p>참고: 다른 프로젝트에서는 {@code @Profile("!test")} 로 테스트에서 캐시 빈을 끄기도 합니다.
- * onharu는 테스트에서 Redis/캐시 구성이 필요할 수 있어, 기본적으로 프로필에 따라 분리하지 않습니다.
- * 필요 시 {@code @Profile} 로 조정하세요.
  */
 @EnableCaching
 @RequiredArgsConstructor

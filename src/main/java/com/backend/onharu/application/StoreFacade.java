@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,7 @@ import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.service.OwnerQueryService;
 import com.backend.onharu.domain.store.dto.CategoryQuery.GetCategoryByIdQuery;
+import com.backend.onharu.domain.store.dto.StoreCacheDto;
 import com.backend.onharu.domain.store.dto.StoreCommand.ChangeOpenStatusCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.CreateStoreCommand;
 import com.backend.onharu.domain.store.dto.StoreCommand.DeleteStoreCommand;
@@ -60,13 +63,13 @@ public class StoreFacade {
      * @param storeId 가게 ID
      * @return 조회된 가게 엔티티
      */
-    public StoreWithFavoriteCount getStore(GetStoreQuery query) {
+    public StoreCacheDto getStore(GetStoreQuery query) {
         if (query.hasLocation()) {
-            return storeQueryService.getStoreDetailByIdAndLocation(
-                new GetStoreQuery(query.storeId(), query.lat(), query.lng())
+            return storeQueryService.getStoreDetailCacheByIdAndLocation(
+                    new GetStoreQuery(query.storeId(), query.lat(), query.lng())
             );
         }
-        return storeQueryService.getStoreDetailById(query);
+        return storeQueryService.getStoreDetailCacheById(new GetStoreByIdQuery(query.storeId()));
     }
 
     /**
@@ -154,6 +157,9 @@ public class StoreFacade {
      * @param ownerId 사업자 ID
      */
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(cacheNames = "storeDetail", key = "'storeId:' + #command.id()")
+    })
     public void updateStore(UpdateStoreCommand command, Long ownerId) {
         // 가게 정보 조회
         Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(command.id()));
@@ -236,6 +242,9 @@ public class StoreFacade {
      * @param categoryId 카테고리 ID
      * @param ownerId 사업자 ID
      */
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "storeDetail", key = "'storeId:' + #storeId")
+    })
     public void updateCategory(Long storeId, Long categoryId, Long ownerId) {
         // 가게 정보 조회
         Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(storeId));
@@ -259,6 +268,9 @@ public class StoreFacade {
      * @param storeId 가게 ID
      * @param ownerId 사업자 ID
      */
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "storeDetail", key = "'storeId:' + #command.id()")
+    })
     public void deleteStore(DeleteStoreCommand command, Long ownerId) {
         // 가게 정보 조회
         Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(command.id()));
@@ -280,6 +292,9 @@ public class StoreFacade {
      * @param isOpen 영업 여부
      * @param ownerId 사업자 ID
      */
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "storeDetail", key = "'storeId:' + #storeId")
+    })
     public void changeOpenStatus(Long storeId, Boolean isOpen, Long ownerId) {
         // 가게 정보 조회
         Store store = storeQueryService.getStoreById(new GetStoreByIdQuery(storeId));

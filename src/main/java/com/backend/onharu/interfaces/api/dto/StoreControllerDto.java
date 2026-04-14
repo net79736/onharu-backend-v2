@@ -4,6 +4,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 import com.backend.onharu.domain.common.enums.WeekType;
+import com.backend.onharu.domain.store.dto.StoreCacheDto;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.interfaces.api.common.dto.ImageMetadataRequest;
@@ -92,11 +93,11 @@ public class StoreControllerDto {
     public record GetStoreDetailResponse(
             StoreDetailResponse store
     ) {
-
         /**
-         * 첨부 이미지 목록으로 상세 응답 생성
+         * 캐시 DTO({@link StoreCacheDto}) 기반 상세 응답 생성.
+         * 엔티티를 다시 조회하지 않고도 상세 화면에 필요한 값을 조합할 수 있습니다.
          */
-        public GetStoreDetailResponse(Store store, Double distance, List<String> images, Long favoriteCount) {
+        public GetStoreDetailResponse(StoreCacheDto store, Boolean isOpenNow, Boolean isSharing, Double distance, List<String> images, Long favoriteCount) {
             this(new StoreDetailResponse(
                 store.getId(),
                 store.getName(),
@@ -106,66 +107,14 @@ public class StoreControllerDto {
                 store.getLng(),
                 store.getIntroduction(),
                 store.getIntro(),
-                store.getCategory().getId(),
-                store.getCategory().getName(),
-                store.getIsOpen(),
-                store.getIsSharing(),
-                store.getOwner().getUser().getId(),
-                distance,
-                StoreRequestMapperDto.toBusinessHourResponses(store.getBusinessHours()),
-                StoreRequestMapperDto.toTagNames(store.getStoreTags()),
-                resolveImages(images),
-                favoriteCount
-            ));
-        }
-
-        /**
-         * 영업중 여부를 계산한 값으로 상세 응답 생성
-         */
-        public GetStoreDetailResponse(Store store, Boolean isOpenNow, Boolean isSharing, Double distance, List<String> images, Long favoriteCount) {
-            this(new StoreDetailResponse(
-                store.getId(),
-                store.getName(),
-                store.getAddress(),
-                store.getPhone(),
-                store.getLat(),
-                store.getLng(),
-                store.getIntroduction(),
-                store.getIntro(),
-                store.getCategory().getId(),
-                store.getCategory().getName(),
+                store.getCategoryId(),
+                store.getCategoryName(),
                 isOpenNow,
                 isSharing,
-                store.getOwner().getUser().getId(),
+                store.getOwnerId(),
                 distance,
-                StoreRequestMapperDto.toBusinessHourResponses(store.getBusinessHours()),
-                StoreRequestMapperDto.toTagNames(store.getStoreTags()),
-                resolveImages(images),
-                favoriteCount
-            ));
-        }
-
-        /**
-         * 첨부 이미지 목록 + isSharing 오버라이드로 상세 응답 생성
-         */
-        public GetStoreDetailResponse(Store store, Boolean isSharing, Double distance, List<String> images, Long favoriteCount) {
-            this(new StoreDetailResponse(
-                store.getId(),
-                store.getName(),
-                store.getAddress(),
-                store.getPhone(),
-                store.getLat(),
-                store.getLng(),
-                store.getIntroduction(),
-                store.getIntro(),
-                store.getCategory().getId(),
-                store.getCategory().getName(),
-                store.getIsOpen(),
-                isSharing,
-                store.getOwner().getUser().getId(),
-                distance,
-                StoreRequestMapperDto.toBusinessHourResponses(store.getBusinessHours()),
-                StoreRequestMapperDto.toTagNames(store.getStoreTags()),
+                StoreRequestMapperDto.toBusinessHourResponsesFromCache(store.getBusinessHours()),
+                StoreRequestMapperDto.toTagNamesFromCache(store.getTags()),
                 resolveImages(images),
                 favoriteCount
             ));
@@ -224,31 +173,6 @@ public class StoreControllerDto {
             @Schema(description = "찜 개수", example = "3")
             Long favoriteCount
     ) {
-        /**
-         * 이미지 목록과 함께 StoreResponse 생성 (찜 개수 없음)
-         */
-        public StoreResponse(Store store, Double distance, List<String> images, Long favoriteCount) {
-            this(
-                store.getId(),
-                store.getName(),
-                store.getAddress(),
-                store.getPhone(),
-                store.getLat(),
-                store.getLng(),
-                store.getIntroduction(),
-                store.getIntro(),
-                store.getCategory().getId(),
-                store.getCategory().getName(),
-                store.getIsOpen(),
-                store.getIsSharing(),
-                store.getOwner().getUser().getId(),
-                StoreRequestMapperDto.toTagNames(store.getStoreTags()),
-                distance,
-                resolveImages(images),
-                favoriteCount
-            );
-        }
-
         public StoreResponse(Store store, Boolean isOpenNow, Boolean isSharing, Double distance, List<String> images, Long favoriteCount) {
             this(
                 store.getId(),
@@ -262,31 +186,6 @@ public class StoreControllerDto {
                 store.getCategory().getId(),
                 store.getCategory().getName(),
                 isOpenNow,
-                isSharing,
-                store.getOwner().getUser().getId(),
-                StoreRequestMapperDto.toTagNames(store.getStoreTags()),
-                distance,
-                resolveImages(images),
-                favoriteCount
-            );
-        }
-
-        /**
-         * 이미지 목록 + isSharing 오버라이드로 StoreResponse 생성
-         */
-        public StoreResponse(Store store, Boolean isSharing, Double distance, List<String> images, Long favoriteCount) {
-            this(
-                store.getId(),
-                store.getName(),
-                store.getAddress(),
-                store.getPhone(),
-                store.getLat(),
-                store.getLng(),
-                store.getIntroduction(),
-                store.getIntro(),
-                store.getCategory().getId(),
-                store.getCategory().getName(),
-                store.getIsOpen(),
                 isSharing,
                 store.getOwner().getUser().getId(),
                 StoreRequestMapperDto.toTagNames(store.getStoreTags()),
