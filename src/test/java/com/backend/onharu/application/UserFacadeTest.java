@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.List;
 import java.util.UUID;
 
-import com.backend.onharu.domain.level.model.Level;
-import com.backend.onharu.infra.db.level.LevelJpaRepository;
 import org.junit.jupiter.api.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,14 +25,24 @@ import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
 import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
 import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.infra.db.chat.ChatMessageJpaRepository;
+import com.backend.onharu.infra.db.chat.ChatParticipantJpaRepository;
+import com.backend.onharu.infra.db.chat.ChatRoomJpaRepository;
 import com.backend.onharu.infra.db.child.ChildJpaRepository;
+import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
+import com.backend.onharu.infra.db.file.FileJpaRepository;
 import com.backend.onharu.infra.db.level.LevelJpaRepository;
+import com.backend.onharu.infra.db.notification.NotificationHistoryJpaRepository;
+import com.backend.onharu.infra.db.notification.NotificationJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
+import com.backend.onharu.infra.db.review.ReviewJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
+import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.infra.db.user.UserOAuthJpaRepository;
 
 @Transactional
 @SpringBootTest
@@ -68,15 +76,55 @@ class UserFacadeTest {
     @Autowired
     private LevelJpaRepository levelJpaRepository;
 
+    @Autowired
+    private ChatMessageJpaRepository chatMessageJpaRepository;
+
+    @Autowired
+    private ChatParticipantJpaRepository chatParticipantJpaRepository;
+
+    @Autowired
+    private ChatRoomJpaRepository chatRoomJpaRepository;
+
+    @Autowired
+    private NotificationHistoryJpaRepository notificationHistoryJpaRepository;
+
+    @Autowired
+    private NotificationJpaRepository notificationJpaRepository;
+
+    @Autowired
+    private ReviewJpaRepository reviewJpaRepository;
+
+    @Autowired
+    private FavoriteJpaRepository favoriteJpaRepository;
+
+    @Autowired
+    private FileJpaRepository fileJpaRepository;
+
+    @Autowired
+    private TagJpaRepository tagJpaRepository;
+
+    @Autowired
+    private UserOAuthJpaRepository userOAuthJpaRepository;
+
     @BeforeEach
     public void setUp() {
-        // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
+        // 다른 통합 테스트가 남긴 데이터 때문에 FK 위반이 나지 않도록, 연관 테이블부터 삭제
+        chatMessageJpaRepository.deleteAll();
+        chatParticipantJpaRepository.deleteAll();
+        chatRoomJpaRepository.deleteAll();
+        notificationHistoryJpaRepository.deleteAll();
+        notificationJpaRepository.deleteAll();
+        reviewJpaRepository.deleteAll();
+        favoriteJpaRepository.deleteAll();
         reservationJpaRepository.deleteAll();
+        fileJpaRepository.deleteAll();
         storeScheduleJpaRepository.deleteAll();
         storeJpaRepository.deleteAll();
+        tagJpaRepository.deleteAll();
         categoryJpaRepository.deleteAll();
         childJpaRepository.deleteAll();
         ownerJpaRepository.deleteAll();
+        userOAuthJpaRepository.deleteAll();
         userJpaRepository.deleteAll();
         levelJpaRepository.deleteAll();
     }
@@ -173,7 +221,7 @@ class UserFacadeTest {
         public void shouldSignUpOwner() {
             // given
             // 기본 등급 저장
-            Level level = levelJpaRepository.save(
+            levelJpaRepository.save(
                     Level.builder()
                             .name("비기너")
                             .build()
@@ -222,7 +270,7 @@ class UserFacadeTest {
         public void shouldThrowExceptionWhenLoginIdAlreadyExists() {
             // given
             // 기본 등급 저장
-            Level level = levelJpaRepository.save(
+            levelJpaRepository.save(
                     Level.builder()
                             .name("비기너")
                             .build()

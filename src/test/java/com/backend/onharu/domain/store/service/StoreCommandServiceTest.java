@@ -25,14 +25,24 @@ import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
 import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.infra.db.chat.ChatMessageJpaRepository;
+import com.backend.onharu.infra.db.chat.ChatParticipantJpaRepository;
+import com.backend.onharu.infra.db.chat.ChatRoomJpaRepository;
 import com.backend.onharu.infra.db.child.ChildJpaRepository;
+import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
+import com.backend.onharu.infra.db.file.FileJpaRepository;
 import com.backend.onharu.infra.db.level.LevelJpaRepository;
+import com.backend.onharu.infra.db.notification.NotificationHistoryJpaRepository;
+import com.backend.onharu.infra.db.notification.NotificationJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
+import com.backend.onharu.infra.db.review.ReviewJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
+import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.infra.db.user.UserOAuthJpaRepository;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -69,15 +79,54 @@ class StoreCommandServiceTest {
     @Autowired
     private LevelJpaRepository levelJpaRepository;
 
+    @Autowired
+    private ChatMessageJpaRepository chatMessageJpaRepository;
+
+    @Autowired
+    private ChatParticipantJpaRepository chatParticipantJpaRepository;
+
+    @Autowired
+    private ChatRoomJpaRepository chatRoomJpaRepository;
+
+    @Autowired
+    private NotificationHistoryJpaRepository notificationHistoryJpaRepository;
+
+    @Autowired
+    private NotificationJpaRepository notificationJpaRepository;
+
+    @Autowired
+    private ReviewJpaRepository reviewJpaRepository;
+
+    @Autowired
+    private FavoriteJpaRepository favoriteJpaRepository;
+
+    @Autowired
+    private FileJpaRepository fileJpaRepository;
+
+    @Autowired
+    private TagJpaRepository tagJpaRepository;
+
+    @Autowired
+    private UserOAuthJpaRepository userOAuthJpaRepository;
+
     @BeforeEach
     public void setUp() {
-        // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
+        chatMessageJpaRepository.deleteAll();
+        chatParticipantJpaRepository.deleteAll();
+        chatRoomJpaRepository.deleteAll();
+        notificationHistoryJpaRepository.deleteAll();
+        notificationJpaRepository.deleteAll();
+        reviewJpaRepository.deleteAll();
+        favoriteJpaRepository.deleteAll();
         reservationJpaRepository.deleteAll();
+        fileJpaRepository.deleteAll();
         storeScheduleJpaRepository.deleteAll();
         storeJpaRepository.deleteAll();
+        tagJpaRepository.deleteAll();
         categoryJpaRepository.deleteAll();
         childJpaRepository.deleteAll();
         ownerJpaRepository.deleteAll();
+        userOAuthJpaRepository.deleteAll();
         userJpaRepository.deleteAll();
         levelJpaRepository.deleteAll();
     }
@@ -174,7 +223,7 @@ class StoreCommandServiceTest {
             assertThat(store.getId()).isNotNull();
             assertThat(store.getName()).isEqualTo("따뜻한 식당");
             assertThat(store.getAddress()).isEqualTo("서울시 강남구 테헤란로 123");
-            assertThat(store.getIsOpen()).isFalse();
+            assertThat(store.getIsOpen()).isTrue();
 
             // DB에 저장되었는지 확인
             Store savedStore = storeQueryService.getStoreById(

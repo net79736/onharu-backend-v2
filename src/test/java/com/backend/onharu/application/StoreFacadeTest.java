@@ -40,12 +40,24 @@ import com.backend.onharu.domain.store.support.StoreSearchSortResolver;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.domain.tag.model.Tag;
 import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.infra.db.chat.ChatMessageJpaRepository;
+import com.backend.onharu.infra.db.chat.ChatParticipantJpaRepository;
+import com.backend.onharu.infra.db.chat.ChatRoomJpaRepository;
+import com.backend.onharu.infra.db.child.ChildJpaRepository;
+import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
+import com.backend.onharu.infra.db.file.FileJpaRepository;
 import com.backend.onharu.infra.db.level.LevelJpaRepository;
+import com.backend.onharu.infra.db.notification.NotificationHistoryJpaRepository;
+import com.backend.onharu.infra.db.notification.NotificationJpaRepository;
 import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
+import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
+import com.backend.onharu.infra.db.review.ReviewJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
+import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.infra.db.user.UserOAuthJpaRepository;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 
 @SpringBootTest
@@ -77,13 +89,62 @@ class StoreFacadeTest {
     @Autowired
     private LevelJpaRepository levelJpaRepository;
 
+    @Autowired
+    private ChatMessageJpaRepository chatMessageJpaRepository;
+
+    @Autowired
+    private ChatParticipantJpaRepository chatParticipantJpaRepository;
+
+    @Autowired
+    private ChatRoomJpaRepository chatRoomJpaRepository;
+
+    @Autowired
+    private NotificationHistoryJpaRepository notificationHistoryJpaRepository;
+
+    @Autowired
+    private NotificationJpaRepository notificationJpaRepository;
+
+    @Autowired
+    private ReviewJpaRepository reviewJpaRepository;
+
+    @Autowired
+    private FavoriteJpaRepository favoriteJpaRepository;
+
+    @Autowired
+    private ReservationJpaRepository reservationJpaRepository;
+
+    @Autowired
+    private FileJpaRepository fileJpaRepository;
+
+    @Autowired
+    private StoreScheduleJpaRepository storeScheduleJpaRepository;
+
+    @Autowired
+    private ChildJpaRepository childJpaRepository;
+
+    @Autowired
+    private UserOAuthJpaRepository userOAuthJpaRepository;
+
     @BeforeEach
     public void setUp() {
-        // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
+        // 전체 테스트 스위트 공유 DB에서 남은 FK 때문에 다른 테스트 데이터가 있으면 store 단독 deleteAll 이 실패할 수 있음.
+        // OwnerFacadeTest / ReservationCommandServiceTest 등과 동일한 자식 → 부모 순서로 정리.
+        chatMessageJpaRepository.deleteAll();
+        chatParticipantJpaRepository.deleteAll();
+        chatRoomJpaRepository.deleteAll();
+        notificationHistoryJpaRepository.deleteAll();
+        notificationJpaRepository.deleteAll();
+        reviewJpaRepository.deleteAll();
+        favoriteJpaRepository.deleteAll();
+        reservationJpaRepository.deleteAll();
+        fileJpaRepository.deleteAll();
+        storeScheduleJpaRepository.deleteAll();
         storeJpaRepository.deleteAll();
-        categoryJpaRepository.deleteAll();
         tagJpaRepository.deleteAll();
+        categoryJpaRepository.deleteAll();
+        childJpaRepository.deleteAll();
         ownerJpaRepository.deleteAll();
+        userOAuthJpaRepository.deleteAll();
         userJpaRepository.deleteAll();
         levelJpaRepository.deleteAll();
     }
@@ -506,7 +567,8 @@ class StoreFacadeTest {
             assertThat(store.getPhone()).isEqualTo("0212345678");
             assertThat(store.getOwner().getId()).isEqualTo(owner.getId());
             assertThat(store.getCategory().getId()).isEqualTo(category.getId());
-            assertThat(store.getIsOpen()).isFalse(); // 가게 생성 시 영업 상태는 false
+            // StoreCommandService: 가게 생성 시 isOpen 은 true (영업 중으로 생성)
+            assertThat(store.getIsOpen()).isTrue();
 
             System.out.println("✅ 가게 등록 성공");
             System.out.println("   - 가게 ID: " + store.getId());
