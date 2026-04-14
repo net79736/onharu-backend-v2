@@ -98,7 +98,7 @@ public class StoreControllerImpl implements IStoreController {
     ) {
         log.info("가게 상세 정보 조회 요청: storeId={}", storeId);
         
-         StoreWithFavoriteCount storePage = storeFacade.getStore(new GetStoreQuery(storeId, request.lat(), request.lng()));
+        StoreWithFavoriteCount storePage = storeFacade.getStore(new GetStoreQuery(storeId, request.lat(), request.lng()));
 
         // 가게에 첨부된 이미지 목록 조회
         List<File> files = fileQueryService.listByRef(

@@ -67,6 +67,10 @@ dependencies {
 
 	// Redis (최근 검색어 등)
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	// Spring Cache Abstraction (Redis CacheManager)
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	// Redis 캐시 JSON 직렬화 시 JPA/Hibernate 프록시·지연 로딩 처리
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate6'
 	// Redisson (분산락)
 	implementation 'org.redisson:redisson-spring-boot-starter:3.16.4'
 	// test 프로필: embedded redis로 분산락 테스트 지원
