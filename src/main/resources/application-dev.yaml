@@ -4,6 +4,7 @@ spring:
       - application-smtp.yaml
       - application-oauth.yaml
       - application-nts.yaml
+      - application-jpa-logging.yaml
   application:
     name: onharu
     is-secure: false
@@ -18,14 +19,11 @@ spring:
 
   # JPA 설정
   jpa:
-    show-sql: ${JPA_SHOW_SQL:true}
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
-        format_sql: ${JPA_FORMAT_SQL}
-        highlight_sql: ${JPA_HIGHLIGHT_SQL}
 
   # Redis (최근 검색어 — 미기동 시 앱 기동 실패, 예: docker run -d -p 6379:6379 redis:7-alpine)
   data:
@@ -53,18 +51,3 @@ store:
 # 서버 설정
 server:
   port: 8080
-
-# 로깅 설정
-logging:
-  level:
-    root: INFO
-    com.backend.onharu: DEBUG
-    org.springframework.web: INFO
-    org.hibernate.SQL: ${LOGGING_LEVEL_HIBERNATE_SQL:DEBUG}
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-  file:
-    name: ${LOGGING_FILE_NAME:/app/logs/onharu.log}
-    max-size: 10MB
-    max-history: 30

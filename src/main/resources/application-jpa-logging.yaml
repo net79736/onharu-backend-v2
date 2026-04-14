@@ -1,0 +1,22 @@
+spring:
+  jpa:
+    show-sql: ${JPA_SHOW_SQL}
+    properties:
+      hibernate:
+        format_sql: ${JPA_FORMAT_SQL}
+        highlight_sql: ${JPA_HIGHLIGHT_SQL}
+
+# 로깅 설정
+logging:
+  level:
+    root: INFO
+    com.backend.onharu: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: ${LOGGING_LEVEL_HIBERNATE_SQL}
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: ${LOGGING_FILE_NAME}
+    max-size: 10MB
+    max-history: 30

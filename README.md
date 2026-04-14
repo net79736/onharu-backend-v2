@@ -169,3 +169,77 @@ public void reserve(CreateReservationCommand command) {
 
 ## UI 테스트에서는 문제가 없었기 때문에 배포 전에 발견하기 어려운 유형의 버그였습니다. 테스트 코드로 진짜 동시성 상황을 만들어 검증하는 것이 얼마나 중요한지 다시 한번 체감한 경험이었습니다.
 
+---
+
+# [Troubleshooting] Redis 캐싱 시 연관 엔티티(Category) 누락 및 직렬화 오류 해결
+
+`StoreWithFavoriteCount` 객체에 `@Cacheable`을 적용하여 Redis 캐싱을 구현하는 과정에서 발생한 두 가지 주요 문제와 해결 과정을 기록합니다.
+
+---
+
+## 1. 문제 상황 (Problem)
+
+캐싱 적용 후 다음과 같은 두 가지 결함이 발견되었습니다.
+
+* **문제 A. 직렬화 오류:** `LocalDateTime` 및 JPA 엔티티를 Redis에 저장하는 과정에서 Jackson 직렬화 예외가 발생했습니다. 기본 `ObjectMapper`가 Java 8 날짜 API와 Hibernate 프록시 객체를 처리하지 못하는 것이 원인이었습니다.
+* **문제 B. Category 데이터 누락:** 캐시 히트(Cache Hit) 시 `store.getCategory()`가 `null`을 반환했습니다. DB에는 정상적으로 저장되어 있음에도 불구하고 화면에 카테고리 정보가 뜨지 않는 현상이 발생했습니다.
+
+---
+
+## 2. 원인 분석 (Cause)
+
+### 원인 A. ObjectMapper 설정 누락
+* `JavaTimeModule`이 등록되지 않아 `LocalDateTime` 직렬화에 실패했습니다.
+* `Hibernate6Module` 설정 없이는 JPA의 지연 로딩용 프록시 객체를 Jackson이 제대로 해석하지 못해 오류를 유발했습니다.
+
+### 원인 B. 일반 JOIN과 지연 로딩(Lazy Loading)의 특성
+* 기존 쿼리 `JOIN s.category c`는 조인 조건으로만 사용되었습니다.
+* `SELECT s`를 통해 `Store` 엔티티만 가져올 경우, 연관된 `category`는 여전히 **프록시(가짜 객체)** 상태로 남습니다.
+* Jackson 직렬화기는 이 프록시를 실제 데이터가 없는 것으로 판단하여 `null`로 치환한 뒤 캐시에 저장했습니다.
+
+---
+
+## 3. 해결 방안 (Solution)
+
+### ① JPQL: 일반 JOIN을 FETCH JOIN으로 변경
+`SELECT` 결과에 `Category`가 실제 객체로 포함되어 로드될 수 있도록 쿼리를 수정했습니다.
+
+```java
+// [Before] 조인만 수행하여 category는 프록시 상태로 남음
+"FROM Store s JOIN s.category c ..."
+
+// [After] FETCH JOIN을 사용하여 한 번에 실제 데이터를 로드
+"FROM Store s JOIN FETCH s.category c ..."
+```
+
+### ② ObjectMapper 필수 모듈 3종 추가
+Redis 직렬화에 사용되는 `ObjectMapper`에 아래와 같이 필수 설정을 추가했습니다.
+
+```java
+// LocalDateTime 등 Java 8 날짜/시간 API 지원
+objectMapper.registerModule(new JavaTimeModule());
+
+// JPA(Hibernate) 프록시 객체 정상 처리
+objectMapper.registerModule(new Hibernate6Module());
+
+// 날짜를 숫자 배열이 아닌 ISO 8601 문자열 형식으로 저장
+objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+```
+
+---
+
+## 4. 결과 및 교훈 (Result & Insight)
+
+### 최종 결과
+* **데이터 정합성 확보:** 캐시에서 데이터를 꺼내올 때 `Store` 내부에 `Category` 정보가 정상적으로 포함되어 화면에 노출됩니다.
+* **직렬화 안정화:** `LocalDateTime` 및 Hibernate 프록시 객체들이 오류 없이 Redis에 정상적으로 저장 및 조회됩니다.
+
+### 핵심 교훈
+> **"캐시는 DB 없이 혼자 살 수 있어야 한다."**
+
+* 캐시 저장소에 데이터를 넣는 순간 해당 객체는 DB와의 연결이 끊긴 상태로 존재해야 합니다.
+* 프록시(껍데기) 상태 그대로 캐시에 넣으면, 나중에 꺼냈을 때 데이터를 채워줄 DB 세션이 없어 결국 빈 값만 남게 됩니다.
+* **JOIN**은 검색 조건용으로, **JOIN FETCH**는 실제 데이터 로딩용으로 구분하여 사용해야 하며, **캐싱 대상이라면 반드시 FETCH JOIN**을 고려해야 합니다.
+
+---
+
