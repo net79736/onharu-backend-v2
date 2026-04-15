@@ -8,6 +8,7 @@ import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.level.repository.LevelRepository;
 import com.backend.onharu.domain.support.error.CoreException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.util.Optional;
 
 import static com.backend.onharu.domain.level.dto.LevelQuery.FindFirstByConditionNumberQuery;
 import static com.backend.onharu.domain.level.dto.LevelRepositoryParam.FindFirstByConditionNumberParam;
+import static com.backend.onharu.domain.support.CacheName.LEVEL_LIST;
 
 /**
  * 등급 Query Service
@@ -57,6 +59,7 @@ public class LevelQueryService {
      *
      * @return 조회된 등급 목록
      */
+    @Cacheable(cacheNames = LEVEL_LIST, key = "'all'")
     public List<Level> getLevels() {
         return levelRepository.getLevels();
     }

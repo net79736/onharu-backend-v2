@@ -32,16 +32,15 @@ import com.backend.onharu.domain.file.dto.FileQuery.ListByRefQuery;
 import com.backend.onharu.domain.file.dto.FileQuery.ListByRefsQuery;
 import com.backend.onharu.domain.file.model.File;
 import com.backend.onharu.domain.file.service.FileQueryService;
-import com.backend.onharu.domain.store.dto.CategoryQuery.FindAllByNameQuery;
+import com.backend.onharu.domain.store.dto.CategoryCacheDto;
 import com.backend.onharu.domain.store.dto.StoreCacheDto;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.model.BusinessHours;
-import com.backend.onharu.domain.store.model.Category;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.repository.BusinessHoursRepository;
-import com.backend.onharu.domain.store.repository.CategoryRepository;
+import com.backend.onharu.domain.store.service.CategoryQueryService;
 import com.backend.onharu.domain.store.support.StoreOpenStatusCalculator;
 import com.backend.onharu.domain.store.support.StoreSearchSortResolver;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
@@ -75,7 +74,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class StoreControllerImpl implements IStoreController {
 
-    private final CategoryRepository categoryRepository;
+    private final CategoryQueryService categoryQueryService;
     private final StoreFacade storeFacade;
     private final StoreExcelFacade storeExcelFacade;
     private final StoreScheduleFacade storeScheduleFacade;
@@ -283,10 +282,10 @@ public class StoreControllerImpl implements IStoreController {
     public ResponseEntity<ResponseDTO<List<CategoryResponse>>> getCategoryList() {
         log.info("가게 카테고리 정보 목록 조회 요청");
 
-        List<Category> categories = categoryRepository.findAllByName(new FindAllByNameQuery(null));
+        List<CategoryCacheDto> categories = categoryQueryService.getAllCategoriesCache();
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(categories.stream()
-                        .map(CategoryResponse::new)
+                        .map(c -> new CategoryResponse(c.id(), c.name()))
                         .collect(Collectors.toList())));
     }
 

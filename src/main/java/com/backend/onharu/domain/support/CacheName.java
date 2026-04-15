@@ -14,6 +14,20 @@ public final class CacheName {
      */
     public static final String STORE_DETAIL = "storeDetail";
 
+    /**
+     * 가게 카테고리 목록 캐시.
+     * - key 예: {@code all}
+     * - value: {@code List<CategoryCacheDto>}
+     */
+    public static final String STORE_CATEGORY_LIST = "storeCategoryList";
+
+    /**
+     * 등급 목록 캐시.
+     * - key 예: {@code all}
+     * - value: {@code List<Level>}
+     */
+    public static final String LEVEL_LIST = "levelList";
+
     private CacheName() {
     }
 }
