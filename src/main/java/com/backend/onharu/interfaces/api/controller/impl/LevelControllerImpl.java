@@ -1,26 +1,35 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.backend.onharu.application.LevelFacade;
+import com.backend.onharu.domain.level.dto.LevelCacheDto;
 import com.backend.onharu.domain.level.dto.LevelCommand;
 import com.backend.onharu.domain.level.dto.LevelCommand.CreateLevelCommand;
+import com.backend.onharu.domain.level.dto.LevelCommand.UpdateNameByIdCommand;
+import com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByIdQuery;
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.controller.ILevelController;
 import com.backend.onharu.interfaces.api.dto.LevelControllerDto.CreateLevelRequest;
 import com.backend.onharu.interfaces.api.dto.LevelControllerDto.CreateLevelResponse;
+import com.backend.onharu.interfaces.api.dto.LevelControllerDto.LevelResponse;
+import com.backend.onharu.interfaces.api.dto.LevelControllerDto.UpdateLevelRequest;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
-import static com.backend.onharu.domain.level.dto.LevelCommand.UpdateNameByIdCommand;
-import static com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByIdQuery;
-import static com.backend.onharu.interfaces.api.dto.LevelControllerDto.LevelResponse;
-import static com.backend.onharu.interfaces.api.dto.LevelControllerDto.UpdateLevelRequest;
 
 /**
  * 등급 관련 API 를 제거하는 컨트롤러 구현체 입니다.
@@ -108,14 +117,14 @@ public class LevelControllerImpl implements ILevelController {
         log.info("등급 목록 조회");
 
         // 등급 목록 조회
-        List<Level> levels = levelFacade.getLevels();
+        List<LevelCacheDto> levels = levelFacade.getLevelsCache();
 
         // 응답 리스트 생성
         List<LevelResponse> response = levels.stream()
                 .map(level ->
                         new LevelResponse(
-                                level.getId(),
-                                level.getName()
+                                level.id(),
+                                level.name()
                         )
                 ).toList();
 

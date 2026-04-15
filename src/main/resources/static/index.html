@@ -75,6 +75,50 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
           <h2 class="font-semibold text-slate-800 mb-2">내 정보 (GET /api/users/me)</h2>
           <pre id="mePanel" class="text-xs bg-slate-50 border border-slate-100 rounded-lg p-3 overflow-x-auto text-slate-700 min-h-[4rem]">로그인하면 표시됩니다.</pre>
+
+          <!-- OWNER: 내 등급 + Redis 캐시 확인 (접기/펼치기) -->
+          <details id="ownerLevelDetails" class="hidden mt-3 rounded-xl border border-amber-100 bg-white/60">
+            <summary class="cursor-pointer list-none select-none px-3 py-2.5 text-sm font-semibold text-amber-950 flex items-center justify-between gap-2 [&::-webkit-details-marker]:hidden">
+              <span class="flex items-center gap-2">
+                <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-amber-200 bg-amber-50 text-[10px] text-amber-700" aria-hidden="true">▾</span>
+                내 등급 (캐시 확인)
+              </span>
+              <span id="ownerLevelMiniBadge" class="hidden text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200"></span>
+            </summary>
+            <div class="px-3 pb-3 pt-2 space-y-2">
+              <div class="text-xs text-slate-700">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-medium text-slate-800">내 등급:</span>
+                  <span id="ownerLevelName" class="font-semibold text-amber-950">—</span>
+                  <span class="text-slate-400">·</span>
+                  <span class="text-slate-600">다음:</span>
+                  <span id="ownerNextLevelName" class="font-medium text-slate-800">—</span>
+                  <span class="text-slate-400">·</span>
+                  <span class="text-slate-600">남은 횟수:</span>
+                  <span id="ownerNextRemain" class="font-medium text-slate-800">—</span>
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="text-xs font-semibold text-indigo-900">Redis 레벨 목록 캐시 워밍업</div>
+                  <button type="button" id="btnOwnerWarmupLevels" class="px-2.5 py-1 rounded-lg bg-indigo-700 text-white text-xs font-medium hover:bg-indigo-800">
+                    GET /api/levels 2회
+                  </button>
+                </div>
+                <div class="mt-1 text-[11px] text-indigo-900/80">
+                  <span class="font-medium">측정:</span> <span id="ownerLevelFetchStat">—</span>
+                </div>
+                <div class="mt-1 text-[11px] text-slate-600">
+                  Redis 키: <code class="bg-white/70 px-1 rounded border border-indigo-100">onharu:cache:level:list</code> (Hash field: <code class="bg-white/70 px-1 rounded border border-indigo-100">all</code>)
+                </div>
+              </div>
+
+              <p class="text-[11px] text-slate-500 leading-relaxed">
+                이 영역은 <strong class="text-slate-700">캐시 확인용</strong>이라 기본적으로 접혀있습니다. 필요할 때만 펼쳐서 확인하세요.
+              </p>
+            </div>
+          </details>
         </div>
 
         <!-- 아동 전용 -->
@@ -607,6 +651,54 @@
   const loginFormWrap = document.getElementById('loginFormWrap');
   const loggedInStub = document.getElementById('loggedInStub');
   const loggedInStubText = document.getElementById('loggedInStubText');
+  const ownerLevelDetails = document.getElementById('ownerLevelDetails');
+  const ownerLevelMiniBadge = document.getElementById('ownerLevelMiniBadge');
+  const ownerLevelName = document.getElementById('ownerLevelName');
+  const ownerNextLevelName = document.getElementById('ownerNextLevelName');
+  const ownerNextRemain = document.getElementById('ownerNextRemain');
+  const ownerLevelFetchStat = document.getElementById('ownerLevelFetchStat');
+  const btnOwnerWarmupLevels = document.getElementById('btnOwnerWarmupLevels');
+
+  async function warmupLevelsTwice() {
+    if (!ownerLevelFetchStat) return;
+    ownerLevelFetchStat.textContent = '불러오는 중…';
+    try {
+      var t0 = performance.now();
+      await apiJson('GET', '/api/levels');
+      var t1 = performance.now();
+      await apiJson('GET', '/api/levels');
+      var t2 = performance.now();
+      ownerLevelFetchStat.textContent =
+        '1차 ' + Math.round(t1 - t0) + 'ms · 2차 ' + Math.round(t2 - t1) + 'ms (2차는 캐시 히트 기대)';
+    } catch (e) {
+      ownerLevelFetchStat.textContent = '실패: ' + String(e && e.message ? e.message : e);
+    }
+  }
+
+  async function loadOwnerLevelMini() {
+    if (!currentUser || currentUser.userType !== 'OWNER') return;
+    if (!ownerLevelName || !ownerNextLevelName || !ownerNextRemain) return;
+    ownerLevelName.textContent = '—';
+    ownerNextLevelName.textContent = '—';
+    ownerNextRemain.textContent = '—';
+    if (ownerLevelMiniBadge) ownerLevelMiniBadge.classList.add('hidden');
+
+    try {
+      var prof = await apiJson('GET', '/api/users/profile/owner');
+      var levelName = prof && prof.levelName ? String(prof.levelName) : '—';
+      var nextLevel = prof && prof.nextLevelName ? String(prof.nextLevelName) : '—';
+      var remain = (prof && prof.nextToConditionNumber != null) ? String(prof.nextToConditionNumber) : '—';
+      ownerLevelName.textContent = levelName;
+      ownerNextLevelName.textContent = nextLevel;
+      ownerNextRemain.textContent = remain;
+      if (ownerLevelMiniBadge) {
+        ownerLevelMiniBadge.textContent = levelName;
+        ownerLevelMiniBadge.classList.remove('hidden');
+      }
+    } catch (e) {
+      ownerLevelName.textContent = '(조회 실패)';
+    }
+  }
 
   function applyRoleUi() {
     const t = currentUser && currentUser.userType;
@@ -643,6 +735,35 @@
       mePanel.textContent = '로그인하면 표시됩니다.';
     }
     applyRoleUi();
+
+    // OWNER 로그인 시: "내 등급" 미니 정보만 세팅 (불필요한 목록은 표시하지 않음)
+    if (ownerLevelDetails) {
+      ownerLevelDetails.classList.toggle('hidden', !(me && me.userType === 'OWNER'));
+    }
+    if (me && me.userType === 'OWNER') {
+      loadOwnerLevelMini();
+    }
+  }
+
+  if (btnOwnerWarmupLevels) {
+    btnOwnerWarmupLevels.addEventListener('click', function () {
+      if (!currentUser || currentUser.userType !== 'OWNER') {
+        alert('사장(OWNER)으로 로그인한 경우에만 확인할 수 있습니다.');
+        return;
+      }
+      warmupLevelsTwice();
+    });
+  }
+
+  // details를 펼쳤을 때 1회만 워밍업 실행 (원하면 버튼으로 반복)
+  if (ownerLevelDetails) {
+    ownerLevelDetails.addEventListener('toggle', function () {
+      if (!ownerLevelDetails.open) return;
+      if (!currentUser || currentUser.userType !== 'OWNER') return;
+      // 이미 측정 결과가 있으면 자동 실행은 하지 않음
+      if (ownerLevelFetchStat && ownerLevelFetchStat.textContent && ownerLevelFetchStat.textContent !== '—') return;
+      warmupLevelsTwice();
+    });
   }
 
   function isChildUser() {
@@ -1677,8 +1798,32 @@
       }
 
       const bh = sortBusinessHours(s.businessHours || []);
-      const tags = (s.tagNames || []).map(function (t) {
-        return '<span class="inline-block px-1.5 py-0.5 mr-1 mb-1 rounded bg-slate-100 text-slate-700 text-xs">' + escapeHtml(t) + '</span>';
+
+      function tagChipClass(i) {
+        // 알록달록한 팔레트(배경/보더/텍스트). 가독성 우선.
+        var palette = [
+          'bg-sky-50 text-sky-800 border-sky-200',
+          'bg-emerald-50 text-emerald-800 border-emerald-200',
+          'bg-amber-50 text-amber-900 border-amber-200',
+          'bg-violet-50 text-violet-800 border-violet-200',
+          'bg-rose-50 text-rose-800 border-rose-200',
+          'bg-lime-50 text-lime-800 border-lime-200',
+          'bg-indigo-50 text-indigo-800 border-indigo-200',
+          'bg-teal-50 text-teal-800 border-teal-200'
+        ];
+        return palette[i % palette.length];
+      }
+
+      const tags = (s.tagNames || []).map(function (t, idx) {
+        var txt = escapeHtml(t);
+        return (
+          '<span class="inline-flex items-center gap-1 mr-1 mb-1 px-2 py-1 rounded-full border text-[11px] font-medium shadow-sm ' +
+          tagChipClass(idx) +
+          '">' +
+          '<span class="opacity-70" aria-hidden="true">#</span>' +
+          txt +
+          '</span>'
+        );
       }).join('');
 
       var distLine = '';

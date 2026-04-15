@@ -1,16 +1,16 @@
 package com.backend.onharu.domain.level.service;
 
-import com.backend.onharu.domain.level.dto.LevelCommand.CreateLevelCommand;
-import com.backend.onharu.domain.level.model.Level;
-import com.backend.onharu.domain.level.repository.LevelRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.backend.onharu.domain.level.dto.LevelCommand.UpdateNameByIdCommand;
-import static com.backend.onharu.domain.level.dto.LevelRepositoryParam.UpdateNameByIdParam;
-import static com.backend.onharu.domain.support.CacheName.LEVEL_LIST;
+import com.backend.onharu.domain.level.dto.LevelCommand.CreateLevelCommand;
+import com.backend.onharu.domain.level.dto.LevelCommand.UpdateNameByIdCommand;
+import com.backend.onharu.domain.level.dto.LevelRepositoryParam.UpdateNameByIdParam;
+import com.backend.onharu.domain.level.model.Level;
+import com.backend.onharu.domain.level.repository.LevelRepository;
+import com.backend.onharu.infra.redis.cache.LevelHashCacheRepository;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * 등급 Command Service
@@ -23,6 +23,7 @@ import static com.backend.onharu.domain.support.CacheName.LEVEL_LIST;
 public class LevelCommandService {
 
     private final LevelRepository levelRepository;
+    private final LevelHashCacheRepository levelHashCacheRepository;
 
     /**
      * 등급을 생성합니다.
@@ -30,14 +31,14 @@ public class LevelCommandService {
      * @param command 등급 생성 Command
      * @return 생성된 등급 엔티티
      */
-    @CacheEvict(cacheNames = LEVEL_LIST, key = "'all'")
     public Level createLevel(CreateLevelCommand command) {
         Level level = Level.builder()
                 .name(command.name())
                 .conditionNumber(command.conditionNumber())
                 .build();
-
-        return levelRepository.save(level);
+        Level saved = levelRepository.save(level);
+        levelHashCacheRepository.evictAll();
+        return saved;
     }
 
     /**
@@ -45,7 +46,6 @@ public class LevelCommandService {
      *
      * @param command 등급명, 등급 ID 를 포함한 등급 수정 Command
      */
-    @CacheEvict(cacheNames = LEVEL_LIST, key = "'all'")
     public void updateNameById(UpdateNameByIdCommand command) {
         levelRepository.updateNameById(
                 new UpdateNameByIdParam(
@@ -54,22 +54,23 @@ public class LevelCommandService {
                         command.conditionNumber()
                 )
         );
+        levelHashCacheRepository.evictAll();
     }
 
     /**
      * 변경된 등급의 정보를 DB 에 반영합니다.
      * @param level 등급 엔티티
      */
-    @CacheEvict(cacheNames = LEVEL_LIST, key = "'all'")
     public void updateLevel(Level level) {
         levelRepository.save(level);
+        levelHashCacheRepository.evictAll();
     }
 
     /**
      * 등급 엔티티를 제거합니다.
      */
-    @CacheEvict(cacheNames = LEVEL_LIST, key = "'all'")
     public void deleteLevel(Level level) {
         levelRepository.deleteLevel(level);
+        levelHashCacheRepository.evictAll();
     }
 }

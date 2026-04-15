@@ -1,17 +1,19 @@
 package com.backend.onharu.application;
 
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import com.backend.onharu.domain.level.dto.LevelCacheDto;
 import com.backend.onharu.domain.level.dto.LevelCommand.CreateLevelCommand;
 import com.backend.onharu.domain.level.dto.LevelCommand.DeleteLevelCommand;
+import com.backend.onharu.domain.level.dto.LevelCommand.UpdateNameByIdCommand;
+import com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByIdQuery;
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.level.service.LevelCommandService;
 import com.backend.onharu.domain.level.service.LevelQueryService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-
-import static com.backend.onharu.domain.level.dto.LevelCommand.UpdateNameByIdCommand;
-import static com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByIdQuery;
 
 /**
  * 등급 Facade
@@ -48,8 +50,8 @@ public class LevelFacade {
      *
      * @return 조회된 등급 목록
      */
-    public List<Level> getLevels() {
-        return levelQueryService.getLevels();
+    public List<LevelCacheDto> getLevelsCache() {
+        return levelQueryService.getLevelsCache();
     }
 
     /**

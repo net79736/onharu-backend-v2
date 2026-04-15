@@ -1,23 +1,24 @@
 package com.backend.onharu.domain.level.service;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.backend.onharu.domain.level.dto.LevelCacheDto;
+import com.backend.onharu.domain.level.dto.LevelQuery.FindFirstByConditionNumberQuery;
 import com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByIdQuery;
 import com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByNameQuery;
+import com.backend.onharu.domain.level.dto.LevelRepositoryParam.FindFirstByConditionNumberParam;
 import com.backend.onharu.domain.level.dto.LevelRepositoryParam.GetLevelByIdParam;
 import com.backend.onharu.domain.level.dto.LevelRepositoryParam.GetLevelByNameParam;
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.level.repository.LevelRepository;
 import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.infra.redis.cache.LevelHashCacheRepository;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
-
-import static com.backend.onharu.domain.level.dto.LevelQuery.FindFirstByConditionNumberQuery;
-import static com.backend.onharu.domain.level.dto.LevelRepositoryParam.FindFirstByConditionNumberParam;
-import static com.backend.onharu.domain.support.CacheName.LEVEL_LIST;
 
 /**
  * 등급 Query Service
@@ -31,6 +32,7 @@ import static com.backend.onharu.domain.support.CacheName.LEVEL_LIST;
 public class LevelQueryService {
 
     private final LevelRepository levelRepository;
+    private final LevelHashCacheRepository levelHashCacheRepository;
 
     /**
      * 등급 ID로 등급을 조회합니다.
@@ -55,13 +57,19 @@ public class LevelQueryService {
     }
 
     /**
-     * 전체 등급 목록을 조회합니다.
+     * 전체 등급 목록을 조회합니다. (캐시용: DTO로 평탄화)
      *
      * @return 조회된 등급 목록
      */
-    @Cacheable(cacheNames = LEVEL_LIST, key = "'all'")
-    public List<Level> getLevels() {
-        return levelRepository.getLevels();
+    public List<LevelCacheDto> getLevelsCache() {
+        List<LevelCacheDto> cached = levelHashCacheRepository.getAll();
+        if (!cached.isEmpty()) {
+            return cached;
+        }
+        List<Level> levels = levelRepository.getLevels();
+        List<LevelCacheDto> mapped = levels.stream().map(LevelCacheDto::from).toList();
+        levelHashCacheRepository.putAll(mapped);
+        return mapped;
     }
 
     /**
