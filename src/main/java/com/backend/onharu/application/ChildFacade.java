@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -201,6 +202,7 @@ public class ChildFacade {
      * @param command 아동 ID 와 가게 ID 를 포함한 Command
      * @return true: 찜등록, false: 찜취소
      */
+    @CacheEvict(cacheNames = "storeDetail", key = "'storeId:' + #command.storeId()")
     public boolean toggleFavorite(ToggleFavoriteCommand command) {
         Long childId = command.childId();
         Long storeId = command.storeId();

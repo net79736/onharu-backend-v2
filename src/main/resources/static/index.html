@@ -536,6 +536,8 @@
   let selectedStoreId = null;
   // CHILD 로그인 시, 내가 찜한 storeId 집합 (하트 UI에 사용)
   let myFavoriteStoreIds = new Set();
+  // 마지막으로 받아온 가게 목록 응답(하트 싱크를 위해 재렌더링에 사용)
+  let lastStoreListData = null;
   let viewYear = new Date().getFullYear();
   let viewMonth = new Date().getMonth() + 1;
   let selectedDay = null;
@@ -656,6 +658,14 @@
       arr.forEach(function (f) {
         if (f && f.storeId != null) myFavoriteStoreIds.add(Number(f.storeId));
       });
+      // 찜 목록 로딩 타이밍 때문에 목록/상세 하트가 어긋날 수 있어 즉시 재렌더링
+      if (lastStoreListData) {
+        renderStoreCards(lastStoreListData);
+      }
+      var detailHeart = document.getElementById('btnToggleFavoriteHeart');
+      if (detailHeart && selectedStoreId != null) {
+        detailHeart.innerHTML = heartSvg(myFavoriteStoreIds.has(Number(selectedStoreId)));
+      }
     } catch (e) {
       console.warn('[favorite] refresh failed', e);
     }
@@ -1517,6 +1527,7 @@
     }
     try {
       const data = await apiJson('GET', '/api/stores?' + buildStoreListQueryString());
+      lastStoreListData = data;
       storeTotalCount = data.totalCount != null ? Number(data.totalCount) : 0;
       var tp = data.totalPages != null ? Number(data.totalPages) : 1;
       storeTotalPages = Math.max(1, tp);

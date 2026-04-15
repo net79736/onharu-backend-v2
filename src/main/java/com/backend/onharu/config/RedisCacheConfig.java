@@ -82,6 +82,7 @@ public class RedisCacheConfig {
     @Bean
     public RedisCacheConfiguration redisCacheConfiguration() {
         return RedisCacheConfiguration.defaultCacheConfig()
+                .computePrefixWith(cacheName -> cacheName + ":") // :: 대신 : 하나만 사용
                 .entryTtl(Duration.ofMinutes(30)) // 30분 (TTL)
                 .serializeKeysWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
