@@ -534,6 +534,8 @@
 
   let currentUser = null;
   let selectedStoreId = null;
+  // CHILD 로그인 시, 내가 찜한 storeId 집합 (하트 UI에 사용)
+  let myFavoriteStoreIds = new Set();
   let viewYear = new Date().getFullYear();
   let viewMonth = new Date().getMonth() + 1;
   let selectedDay = null;
@@ -557,19 +559,29 @@
     var lngText = document.getElementById('storeLngText');
     if (latText) latText.textContent = storeGeoLat || '—';
     if (lngText) lngText.textContent = storeGeoLng || '—';
+    syncStoreSortUi();
   }
 
-  function setStoreGeoStatus(text) {
+  function setStoreGeoStatus(text, kind) {
     var el = document.getElementById('storeGeoStatus');
     if (!el) return;
     var t = text ? String(text).trim() : '';
     if (!t) {
       el.classList.add('hidden');
       el.textContent = '';
+      el.className = 'hidden text-[11px] text-slate-500';
       return;
     }
     el.classList.remove('hidden');
     el.textContent = t;
+    var k = kind ? String(kind) : '';
+    if (k === 'error') {
+      el.className = 'text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md';
+    } else if (k === 'loading') {
+      el.className = 'text-[11px] font-medium text-slate-700 bg-white/80 border border-slate-200 px-2 py-0.5 rounded-md';
+    } else {
+      el.className = 'text-[11px] font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md';
+    }
   }
 
   const CHILD_RES_PER_PAGE = 10;
@@ -631,6 +643,48 @@
     applyRoleUi();
   }
 
+  function isChildUser() {
+    return currentUser && currentUser.userType === 'CHILD';
+  }
+
+  async function refreshMyFavorites() {
+    myFavoriteStoreIds = new Set();
+    if (!isChildUser()) return;
+    try {
+      const res = await apiJson('GET', '/api/favorites?pageNum=1&perPage=500&sortField=id&sortDirection=desc');
+      const arr = (res && res.favorites) ? res.favorites : [];
+      arr.forEach(function (f) {
+        if (f && f.storeId != null) myFavoriteStoreIds.add(Number(f.storeId));
+      });
+    } catch (e) {
+      console.warn('[favorite] refresh failed', e);
+    }
+  }
+
+  function heartSvg(filled) {
+    if (filled) {
+      return (
+        '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="text-rose-600">' +
+          '<path fill="currentColor" d="M12 21s-7-4.534-10-9.5C-.5 7.5 2 4 5.5 4 7.54 4 9.24 5.17 10 6.38 10.76 5.17 12.46 4 14.5 4 18 4 20.5 7.5 22 11.5 19 16.466 12 21 12 21z"/>' +
+        '</svg>'
+      );
+    }
+    return (
+      '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="text-rose-600">' +
+        '<path fill="none" stroke="currentColor" stroke-width="2" d="M12 21s-7-4.534-10-9.5C-.5 7.5 2 4 5.5 4 7.54 4 9.24 5.17 10 6.38 10.76 5.17 12.46 4 14.5 4 18 4 20.5 7.5 22 11.5 19 16.466 12 21 12 21z"/>' +
+      '</svg>'
+    );
+  }
+
+  async function toggleFavorite(storeId) {
+    const sid = Number(storeId);
+    const res = await apiJson('POST', '/api/favorites/stores/' + sid);
+    const isFav = !!(res && res.isFavorite);
+    if (isFav) myFavoriteStoreIds.add(sid);
+    else myFavoriteStoreIds.delete(sid);
+    return isFav;
+  }
+
   function updateSelectedScheduleText() {
     var el = document.getElementById('selectedScheduleText');
     if (!el) return;
@@ -664,6 +718,7 @@
     try {
       const me = await apiJson('GET', '/api/users/me');
       setAuthUi(me);
+      await refreshMyFavorites();
     } catch (e) {
       setAuthUi(null);
     }
@@ -676,6 +731,7 @@
     try {
       await apiJson('POST', '/api/users/login', { loginId: loginId, password: password });
       await refreshMe();
+      await loadStores(1);
       alert('로그인 성공');
     } catch (e) {
       alert('로그인 실패: ' + (e.message || e));
@@ -686,6 +742,8 @@
     try {
       await apiJson('POST', '/api/users/logout', {});
       setAuthUi(null);
+      myFavoriteStoreIds = new Set();
+      await loadStores(1);
       alert('로그아웃되었습니다.');
     } catch (e) {
       alert('로그아웃 실패: ' + (e.message || e));
@@ -1155,10 +1213,28 @@
   }
 
   function syncStoreSortUi() {
-    var geoRow = document.getElementById('storeGeoRow');
-    // 위치 입력은 정렬과 무관하게 쓸 수 있으므로 항상 노출
+    // 좌표가 있어야만 거리순 정렬을 "활성화"
+    var hasGeo = !!(storeGeoLat && storeGeoLng);
+    var distBtn = document.querySelector('#storeSortGroup [data-store-sort="distance"]');
+    if (distBtn) {
+      // 숨기지 말고 비활성 느낌을 강하게
+      distBtn.setAttribute('data-disabled', hasGeo ? '0' : '1');
+      distBtn.setAttribute('aria-disabled', hasGeo ? 'false' : 'true');
+      distBtn.title = hasGeo ? '' : '내 위치가 필요합니다';
+      if (!hasGeo) {
+        distBtn.className = 'store-sort-btn px-3 py-1.5 text-xs font-medium rounded-md transition bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70';
+      }
+    }
+
+    // 현재 모드가 distance인데 좌표가 사라졌으면 name으로 되돌림
+    if (storeSortMode === 'distance' && !hasGeo) {
+      storeSortMode = 'name';
+    }
+
     document.querySelectorAll('#storeSortGroup [data-store-sort]').forEach(function (btn) {
       var mode = btn.getAttribute('data-store-sort');
+      // distance는 위에서 비활성 스타일을 강제했으니, 좌표 있을 때만 일반 스타일 적용
+      if (mode === 'distance' && !(storeGeoLat && storeGeoLng)) return;
       btn.className = storeSortButtonClass(mode === storeSortMode);
     });
   }
@@ -1193,10 +1269,6 @@
     }
     // lat/lng는 "거리 표시"를 위한 옵션 (정렬과 무관). 입력 UI는 없고 내부 상태만 전송.
     if (storeGeoLat && storeGeoLng) {
-      q += '&lat=' + encodeURIComponent(storeGeoLat) + '&lng=' + encodeURIComponent(storeGeoLng);
-    } else if (storeSortMode === 'distance') {
-      // 거리순은 좌표가 없으면 기본값(서울)로 동작시키고, 그 값을 화면에도 표시
-      setStoreGeo('37.5665', '126.9780');
       q += '&lat=' + encodeURIComponent(storeGeoLat) + '&lng=' + encodeURIComponent(storeGeoLng);
     }
     return q;
@@ -1248,10 +1320,9 @@
       return;
     }
     stores.forEach(function (s) {
-      const card = document.createElement('button');
-      card.type = 'button';
+      const card = document.createElement('div');
       card.className =
-        'text-left w-full border border-slate-200 rounded-lg p-3 hover:border-indigo-400 hover:bg-indigo-50/40 transition flex gap-3 items-start';
+        'relative text-left w-full border border-slate-200 rounded-lg p-3 hover:border-indigo-400 hover:bg-indigo-50/40 transition flex gap-3 items-start cursor-pointer';
       var imgs = s.images || [];
       var thumbUrl = imgs.length > 0 ? imgs[0] : '';
       var thumbBlock = thumbUrl
@@ -1285,6 +1356,36 @@
         (s.isSharing ? '<span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-800">공유</span>' : '') +
         '</div>' +
         '</div>';
+
+      // 목록 찜 토글 하트(아동만)
+      if (isChildUser()) {
+        const filled = myFavoriteStoreIds.has(Number(s.id));
+        const favBtn = document.createElement('button');
+        favBtn.type = 'button';
+        favBtn.className = 'absolute top-2 right-2 w-9 h-9 rounded-full bg-white/90 border border-slate-200 shadow-sm flex items-center justify-center hover:bg-white';
+        favBtn.setAttribute('aria-label', '찜 토글');
+        favBtn.innerHTML = heartSvg(filled);
+        favBtn.addEventListener('click', async function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          favBtn.disabled = true;
+          try {
+            await toggleFavorite(s.id);
+            favBtn.innerHTML = heartSvg(myFavoriteStoreIds.has(Number(s.id)));
+            // evict 후 재조회로 favoriteCount 갱신 체감
+            await loadStores(storePageNum);
+            if (selectedStoreId && Number(selectedStoreId) === Number(s.id)) {
+              await openStoreDetail(selectedStoreId, s.name);
+            }
+          } catch (err) {
+            alert('찜 토글 실패: ' + (err.message || err));
+          } finally {
+            favBtn.disabled = false;
+          }
+        });
+        card.appendChild(favBtn);
+      }
+
       card.addEventListener('click', function () {
         openStoreDetail(s.id, s.name);
       });
@@ -1471,7 +1572,12 @@
   document.getElementById('storeSortGroup').addEventListener('click', function (ev) {
     var btn = ev.target.closest('[data-store-sort]');
     if (!btn) return;
-    setStoreSortMode(btn.getAttribute('data-store-sort'), true);
+    var mode = btn.getAttribute('data-store-sort');
+    if (mode === 'distance' && !(storeGeoLat && storeGeoLng)) {
+      setStoreGeoStatus('좌표 없음', 'error');
+      return;
+    }
+    setStoreSortMode(mode, true);
     loadStores(1);
   });
 
@@ -1482,11 +1588,11 @@
     }
     var btn = document.getElementById('btnStoreMyLocation');
     if (btn) btn.disabled = true;
-    setStoreGeoStatus('위치 가져오는 중…');
+    setStoreGeoStatus('위치 가져오는 중…', 'loading');
     navigator.geolocation.getCurrentPosition(
       function (pos) {
         setStoreGeo(pos.coords.latitude, pos.coords.longitude);
-        setStoreGeoStatus('');
+        setStoreGeoStatus('좌표 설정됨', 'ok');
         if (btn) btn.disabled = false;
         loadStores(1);
       },
@@ -1500,7 +1606,7 @@
         else if (code === 3) label = 'TIMEOUT';
 
         // alert 대신 상태로 보여주고(공간 적게), 원인 파악에 필요한 정보는 남김
-        setStoreGeoStatus('');
+        setStoreGeoStatus('실패(' + label + ')', 'error');
         console.warn('[geo] getCurrentPosition failed', { code: code, label: label, message: msg, err: err });
       },
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 }
@@ -1578,7 +1684,14 @@
         '<div><span class="text-slate-500">카테고리</span><br/>' + escapeHtml(s.categoryName || '') + '</div>' +
         '<div class="sm:col-span-2"><span class="text-slate-500">주소</span><br/>' + escapeHtml(s.address || '') + '</div>' +
         '<div><span class="text-slate-500">전화</span><br/>' + escapeHtml(s.phone || '') + '</div>' +
-        '<div><span class="text-slate-500">찜</span> ' + (s.favoriteCount != null ? s.favoriteCount : '-') + '</div>' +
+        '<div class="flex items-center justify-between gap-2">' +
+          '<div><span class="text-slate-500">찜</span> <span class="font-medium">' + (s.favoriteCount != null ? s.favoriteCount : '-') + '</span></div>' +
+          (isChildUser()
+            ? '<button type="button" id="btnToggleFavoriteHeart" class="w-9 h-9 rounded-full bg-white border border-rose-200 text-rose-700 shadow-sm flex items-center justify-center hover:bg-rose-50" aria-label="찜 토글">' +
+                heartSvg(myFavoriteStoreIds.has(Number(selectedStoreId))) +
+              '</button>'
+            : '<span class="text-[11px] text-slate-400">아동 로그인 시 가능</span>') +
+        '</div>' +
         distLine +
         '</div>' +
         '<div class="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-100 text-amber-900 text-xs">' +
@@ -1594,6 +1707,25 @@
           return '<tr class="border-t border-slate-100"><td class="p-2">' + escapeHtml(String(row.businessDay)) + '</td><td class="p-2">' + escapeHtml(String(row.openTime)) + '</td><td class="p-2">' + escapeHtml(String(row.closeTime)) + '</td></tr>';
         }).join('') +
         '</tbody></table></div>';
+
+      // 찜 토글(하트): cache evict → 다음 GET에서 favoriteCount 갱신 확인용
+      var favBtn = document.getElementById('btnToggleFavoriteHeart');
+      if (favBtn) {
+        favBtn.addEventListener('click', async function () {
+          if (!selectedStoreId) return;
+          favBtn.disabled = true;
+          try {
+            await toggleFavorite(selectedStoreId);
+            // evict 후 재조회 (상세 + 목록)
+            await openStoreDetail(selectedStoreId, s.name);
+            await loadStores(storePageNum);
+          } catch (err) {
+            alert('찜 토글 실패: ' + (err.message || err));
+          } finally {
+            favBtn.disabled = false;
+          }
+        });
+      }
 
       updateReserveVisibility();
       detailPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1930,9 +2062,8 @@
 
   initOwnerTimeGrid();
   (function initStoreListSort() {
-    // 기본 좌표(서울)로 시작: 사용자는 입력 수정 없이 "현재 전송 좌표"만 확인
-    setStoreGeo('37.5665', '126.9780');
-    syncStoreSortUi();
+    // 좌표는 사용자가 "내 위치"를 눌러 허용했을 때만 설정합니다.
+    syncStoreSortUi(); // 초기에는 거리순 버튼이 숨겨짐
   })();
   refreshMe();
   loadStoreCategories()
