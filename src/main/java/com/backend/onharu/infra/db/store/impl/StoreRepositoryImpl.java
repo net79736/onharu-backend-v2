@@ -53,6 +53,15 @@ public class StoreRepositoryImpl implements StoreRepository {
     }
 
     @Override
+    public Double getStoreDistanceByIdAndLocation(GetStoreDetailByIdAndLocationParam param) {
+        Double distance = storeJpaRepository.getStoreDistanceByIdAndLocation(param.storeId(), param.lat(), param.lng());
+        if (distance == null) {
+            throw new CoreException(STORE_NOT_FOUND);
+        }
+        return distance;
+    }
+
+    @Override
     public StoreWithFavoriteCount getStoreDetailById(GetStoreDetailByIdParam param) {
         return storeJpaRepository.getStoreDetailById(param.storeId())
                 .orElseThrow(() -> new CoreException(STORE_NOT_FOUND));

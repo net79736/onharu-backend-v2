@@ -141,4 +141,35 @@ public final class StoreCacheDto implements Serializable {
                 List.copyOf(tagList)
         );
     }
+
+    /**
+     * 거리가 추가된 StoreCacheDto 반환
+     * 
+     * @param distance
+     * @return 
+     */
+    public StoreCacheDto withDistance(Double distance) {
+        return new StoreCacheDto(
+                id,
+                name,
+                address,
+                phone,
+                lat,
+                lng,
+                introduction,
+                intro,
+                isOpen,
+                isSharing,
+                createdAt,
+                updatedAt,
+                categoryId,
+                categoryName,
+                ownerId,
+                ownerName,
+                favoriteCount,
+                distance,
+                businessHours,
+                tags
+        );
+    }
 }

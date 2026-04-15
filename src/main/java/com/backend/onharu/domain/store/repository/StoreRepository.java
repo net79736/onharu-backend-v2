@@ -49,6 +49,11 @@ public interface StoreRepository {
     StoreWithFavoriteCountByLocationProjection getStoreDetailByIdAndLocation(GetStoreDetailByIdAndLocationParam param);
 
     /**
+     * 거리만 조회 (가게 상세와 분리)
+     */
+    Double getStoreDistanceByIdAndLocation(GetStoreDetailByIdAndLocationParam param);
+
+    /**
      * ID 목록으로 가게 목록 조회
      */
     List<Store> findByIds(List<Long> ids);

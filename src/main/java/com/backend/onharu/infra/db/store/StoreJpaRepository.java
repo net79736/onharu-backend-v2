@@ -66,6 +66,19 @@ public interface StoreJpaRepository extends JpaRepository<Store, Long> {
     Optional<StoreWithFavoriteCountByLocationProjection> getStoreDetailByIdAndLocation(@Param("storeId") Long storeId, @Param("lat") Double lat, @Param("lng") Double lng);
 
     /**
+     * 거리만 조회 (가게 상세와 분리)
+     *
+     * <p>lat/lng가 있을 때 "distance"는 항상 DB에서 계산하도록 분리합니다.</p>
+     */
+    @Query(value =
+        "SELECT " +
+        " (6371 * acos(cos(radians(:lat)) * cos(radians(s.lat)) * cos(radians(s.lng) - radians(:lng)) + sin(radians(:lat)) * sin(radians(s.lat)))) " +
+        "FROM stores s " +
+        "WHERE s.id = :storeId",
+        nativeQuery = true)
+    Double getStoreDistanceByIdAndLocation(@Param("storeId") Long storeId, @Param("lat") Double lat, @Param("lng") Double lng);
+
+    /**
      * 사업자 ID로 페이징된 가게 목록 조회
      * COUNT 내에 DISTINCT 사용 이유: 카디널리티 조인 방지를 위함.
      */

@@ -64,12 +64,12 @@ public class StoreFacade {
      * @return 조회된 가게 엔티티
      */
     public StoreCacheDto getStore(GetStoreQuery query) {
-        if (query.hasLocation()) {
-            return storeQueryService.getStoreDetailCacheByIdAndLocation(
-                    new GetStoreQuery(query.storeId(), query.lat(), query.lng())
-            );
+        StoreCacheDto storeCache = storeQueryService.getStoreDetailCacheById(new GetStoreByIdQuery(query.storeId()));
+        if (!query.hasLocation()) {
+            return storeCache;
         }
-        return storeQueryService.getStoreDetailCacheById(new GetStoreByIdQuery(query.storeId()));
+        Double distance = storeQueryService.getStoreDistanceByIdAndLocation(new GetStoreQuery(query.storeId(), query.lat(), query.lng()));
+        return storeCache.withDistance(distance);
     }
 
     /**

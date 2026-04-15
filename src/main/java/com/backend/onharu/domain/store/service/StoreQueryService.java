@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.backend.onharu.domain.store.dto.StoreCacheDto;
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByCategoryIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByNameQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.FindByOwnerIdQuery;
@@ -18,7 +19,6 @@ import com.backend.onharu.domain.store.dto.StoreQuery.FindWithCategoryAndFavorit
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreQuery;
 import com.backend.onharu.domain.store.dto.StoreQuery.SearchStoresQuery;
-import com.backend.onharu.domain.store.dto.StoreCacheDto;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindAllWithCategoryAndFavoriteCountParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByCategoryIdParam;
 import com.backend.onharu.domain.store.dto.StoreRepositroyParam.FindByNameParam;
@@ -80,6 +80,7 @@ public class StoreQueryService {
      * @return 조회된 가게 상세 정보
      * @return
      */
+    @Deprecated(forRemoval = true)
     public StoreWithFavoriteCount getStoreDetailByIdAndLocation(GetStoreQuery query) {
         StoreWithFavoriteCountByLocationProjection content = storeRepository.getStoreDetailByIdAndLocation(new GetStoreDetailByIdAndLocationParam(query.storeId(), query.lat(), query.lng()));
         // 가게 엔티티 조회
@@ -88,13 +89,12 @@ public class StoreQueryService {
     }
 
     /**
-     * (캐시용) 가게 상세 정보 조회(거리 포함) - Redis 캐시 DTO로 반환합니다.
-     * <p>
-     * key는 lat/lng를 포함해 같은 storeId라도 위치에 따라 캐시가 분리되도록 합니다.
+     * 거리만 조회 (가게 상세와 분리)
+     *
+     * <p>lat/lng가 있을 때 distance는 항상 DB에서만 계산합니다.</p>
      */
-    @Cacheable(cacheNames = "storeDetail", key = "'storeId:' + #query.storeId() + ':lat:' + #query.lat() + ':lng:' + #query.lng()")
-    public StoreCacheDto getStoreDetailCacheByIdAndLocation(GetStoreQuery query) {
-        return StoreCacheDto.from(getStoreDetailByIdAndLocation(query));
+    public Double getStoreDistanceByIdAndLocation(GetStoreQuery query) {
+        return storeRepository.getStoreDistanceByIdAndLocation(new GetStoreDetailByIdAndLocationParam(query.storeId(), query.lat(), query.lng()));
     }
 
     /**
