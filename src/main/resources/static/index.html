@@ -136,7 +136,7 @@
               <div id="storeRecentChips" class="flex flex-wrap gap-1.5 min-h-[1.5rem] text-xs"></div>
             </div>
           </form>
-          <div class="mb-4 space-y-2">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div class="flex flex-wrap items-center gap-2">
               <span class="text-xs font-medium text-slate-600 shrink-0">정렬</span>
               <div class="inline-flex flex-wrap rounded-lg border border-slate-200 p-0.5 bg-slate-50" id="storeSortGroup" role="group" aria-label="가게 목록 정렬">
@@ -145,18 +145,16 @@
                 <button type="button" data-store-sort="name" class="store-sort-btn px-3 py-1.5 text-xs font-medium rounded-md transition">이름순</button>
               </div>
             </div>
-            <div id="storeGeoRow" class="hidden flex flex-wrap items-end gap-2 rounded-lg border border-emerald-100 bg-emerald-50/50 px-3 py-2">
-              <p class="text-[11px] text-emerald-900 w-full sm:w-auto sm:mr-2">거리순은 서버가 <code class="bg-white/80 px-1 rounded">lat</code>·<code class="bg-white/80 px-1 rounded">lng</code>로 반경 내 거리를 계산합니다.</p>
-              <div>
-                <label class="block text-[10px] font-medium text-slate-600 mb-0.5">위도</label>
-                <input id="storeLatInput" type="text" inputmode="decimal" placeholder="37.5665"
-                  class="w-28 border border-slate-300 rounded-lg px-2 py-1 text-xs font-mono" />
+            <div id="storeGeoRow" class="ml-auto flex items-center gap-2 rounded-lg border border-emerald-100 bg-emerald-50/50 px-3 py-2">
+              <div class="min-w-[9rem]">
+                <div class="text-[10px] font-medium text-slate-600 mb-0.5">현재 전송 좌표</div>
+                <div class="text-xs font-mono text-emerald-950 tabular-nums">
+                  <span class="text-slate-600">lat</span> <span id="storeLatText">—</span>
+                  <span class="mx-1 text-slate-300">·</span>
+                  <span class="text-slate-600">lng</span> <span id="storeLngText">—</span>
+                </div>
               </div>
-              <div>
-                <label class="block text-[10px] font-medium text-slate-600 mb-0.5">경도</label>
-                <input id="storeLngInput" type="text" inputmode="decimal" placeholder="126.9780"
-                  class="w-28 border border-slate-300 rounded-lg px-2 py-1 text-xs font-mono" />
-              </div>
+              <span id="storeGeoStatus" class="hidden text-[11px] text-slate-500"></span>
               <button type="button" id="btnStoreMyLocation" class="px-2.5 py-1 rounded-lg border border-emerald-300 bg-white text-emerald-900 text-xs font-medium hover:bg-emerald-50">내 위치</button>
             </div>
           </div>
@@ -548,6 +546,31 @@
   let storeTotalCount = 0;
   /** 'distance' | 'favoriteCount' | 'name' — GET /api/stores 의 sortField 와 대응 */
   let storeSortMode = 'name';
+  // "내 위치"를 편집 입력 없이도 전달/표시하기 위한 내부 상태
+  let storeGeoLat = '';
+  let storeGeoLng = '';
+
+  function setStoreGeo(lat, lng) {
+    storeGeoLat = lat ? String(lat).trim() : '';
+    storeGeoLng = lng ? String(lng).trim() : '';
+    var latText = document.getElementById('storeLatText');
+    var lngText = document.getElementById('storeLngText');
+    if (latText) latText.textContent = storeGeoLat || '—';
+    if (lngText) lngText.textContent = storeGeoLng || '—';
+  }
+
+  function setStoreGeoStatus(text) {
+    var el = document.getElementById('storeGeoStatus');
+    if (!el) return;
+    var t = text ? String(text).trim() : '';
+    if (!t) {
+      el.classList.add('hidden');
+      el.textContent = '';
+      return;
+    }
+    el.classList.remove('hidden');
+    el.textContent = t;
+  }
 
   const CHILD_RES_PER_PAGE = 10;
   let childResPageNum = 1;
@@ -1133,9 +1156,7 @@
 
   function syncStoreSortUi() {
     var geoRow = document.getElementById('storeGeoRow');
-    if (geoRow) {
-      geoRow.classList.toggle('hidden', storeSortMode !== 'distance');
-    }
+    // 위치 입력은 정렬과 무관하게 쓸 수 있으므로 항상 노출
     document.querySelectorAll('#storeSortGroup [data-store-sort]').forEach(function (btn) {
       var mode = btn.getAttribute('data-store-sort');
       btn.className = storeSortButtonClass(mode === storeSortMode);
@@ -1170,12 +1191,13 @@
     if (cid) {
       q += '&categoryId=' + encodeURIComponent(cid);
     }
-    if (storeSortMode === 'distance') {
-      var latEl = document.getElementById('storeLatInput');
-      var lngEl = document.getElementById('storeLngInput');
-      var lat = latEl && latEl.value.trim() ? latEl.value.trim() : '37.5665';
-      var lng = lngEl && lngEl.value.trim() ? lngEl.value.trim() : '126.9780';
-      q += '&lat=' + encodeURIComponent(lat) + '&lng=' + encodeURIComponent(lng);
+    // lat/lng는 "거리 표시"를 위한 옵션 (정렬과 무관). 입력 UI는 없고 내부 상태만 전송.
+    if (storeGeoLat && storeGeoLng) {
+      q += '&lat=' + encodeURIComponent(storeGeoLat) + '&lng=' + encodeURIComponent(storeGeoLng);
+    } else if (storeSortMode === 'distance') {
+      // 거리순은 좌표가 없으면 기본값(서울)로 동작시키고, 그 값을 화면에도 표시
+      setStoreGeo('37.5665', '126.9780');
+      q += '&lat=' + encodeURIComponent(storeGeoLat) + '&lng=' + encodeURIComponent(storeGeoLng);
     }
     return q;
   }
@@ -1240,11 +1262,12 @@
           '</div>'
         : '<div class="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center text-[10px] text-slate-400 leading-tight text-center px-1">이미지<br/>없음</div>';
       var distRow = '';
-      if (storeSortMode === 'distance') {
-        var dk = formatDistanceKm(s.distance);
+      // lat/lng를 보냈다면 정렬과 무관하게 distance가 내려올 수 있으므로 값이 있으면 표시
+      var dk = formatDistanceKm(s.distance);
+      if (dk) {
         distRow =
           '<div class="text-xs font-semibold text-indigo-700 mt-1.5 tabular-nums">' +
-          (dk ? '거리 ' + escapeHtml(dk) : '거리 —') +
+          '거리 ' + escapeHtml(dk) +
           '</div>';
       }
       card.innerHTML =
@@ -1457,19 +1480,30 @@
       alert('이 브라우저는 위치 정보를 지원하지 않습니다.');
       return;
     }
+    var btn = document.getElementById('btnStoreMyLocation');
+    if (btn) btn.disabled = true;
+    setStoreGeoStatus('위치 가져오는 중…');
     navigator.geolocation.getCurrentPosition(
       function (pos) {
-        var latEl = document.getElementById('storeLatInput');
-        var lngEl = document.getElementById('storeLngInput');
-        if (latEl) latEl.value = String(pos.coords.latitude);
-        if (lngEl) lngEl.value = String(pos.coords.longitude);
-        setStoreSortMode('distance', true);
+        setStoreGeo(pos.coords.latitude, pos.coords.longitude);
+        setStoreGeoStatus('');
+        if (btn) btn.disabled = false;
         loadStores(1);
       },
-      function () {
-        alert('위치를 가져올 수 없습니다. 위도·경도를 직접 입력하세요.');
+      function (err) {
+        if (btn) btn.disabled = false;
+        var code = err && err.code ? err.code : 0;
+        var msg = err && err.message ? err.message : '';
+        var label = 'UNKNOWN';
+        if (code === 1) label = 'PERMISSION_DENIED';
+        else if (code === 2) label = 'POSITION_UNAVAILABLE';
+        else if (code === 3) label = 'TIMEOUT';
+
+        // alert 대신 상태로 보여주고(공간 적게), 원인 파악에 필요한 정보는 남김
+        setStoreGeoStatus('');
+        console.warn('[geo] getCurrentPosition failed', { code: code, label: label, message: msg, err: err });
       },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 }
     );
   });
   document.getElementById('btnStorePrev').addEventListener('click', function () {
@@ -1493,12 +1527,8 @@
     updateSelectedScheduleText();
 
     var detailUrl = '/api/stores/' + storeId;
-    if (storeSortMode === 'distance') {
-      var latEl = document.getElementById('storeLatInput');
-      var lngEl = document.getElementById('storeLngInput');
-      if (latEl && lngEl && latEl.value.trim() && lngEl.value.trim()) {
-        detailUrl += '?lat=' + encodeURIComponent(latEl.value.trim()) + '&lng=' + encodeURIComponent(lngEl.value.trim());
-      }
+    if (storeGeoLat && storeGeoLng) {
+      detailUrl += '?lat=' + encodeURIComponent(storeGeoLat) + '&lng=' + encodeURIComponent(storeGeoLng);
     }
 
     try {
@@ -1900,10 +1930,8 @@
 
   initOwnerTimeGrid();
   (function initStoreListSort() {
-    var latEl = document.getElementById('storeLatInput');
-    var lngEl = document.getElementById('storeLngInput');
-    if (latEl && !latEl.value) latEl.value = '37.5665';
-    if (lngEl && !lngEl.value) lngEl.value = '126.9780';
+    // 기본 좌표(서울)로 시작: 사용자는 입력 수정 없이 "현재 전송 좌표"만 확인
+    setStoreGeo('37.5665', '126.9780');
     syncStoreSortUi();
   })();
   refreshMe();
