@@ -2,7 +2,6 @@ package com.backend.onharu.config;
 
 import java.time.Duration;
 
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +37,42 @@ public class RedisCacheConfig {
     private final RedisConnectionFactory redisConnectionFactory;
 
     /**
+     * Redis를 캐시 저장소로 사용하는 CacheManager 빈을 생성합니다.
+     * 이 CacheManager는 @Cacheable, @CacheEvict 등에서 사용됩니다.
+     */
+    @Primary // 기본 캐시 매니저로 설정
+    @Bean
+    public RedisCacheManager cacheManager(RedisCacheConfiguration redisCacheConfiguration) {
+        return RedisCacheManager.builder(redisConnectionFactory) // Redis 연결 팩토리 주입
+                .cacheDefaults(redisCacheConfiguration)          // 기본 캐시 설정 적용
+                .build();                                        // CacheManager 인스턴스 생성
+    }
+
+    /**
+     * Redis 기본 캐시 설정
+     *
+     * <ul>
+     *   <li>TTL: 30분 (기존 동작 유지)</li>
+     *   <li>Key: String 직렬화</li>
+     *   <li>Value: JSON 직렬화 (위 ObjectMapper)</li>
+     * </ul>
+     */
+    @Bean
+    public RedisCacheConfiguration redisCacheConfiguration() {
+        return RedisCacheConfiguration.defaultCacheConfig()
+                .computePrefixWith(cacheName -> cacheName + ":") // :: 대신 : 하나만 사용
+                .entryTtl(Duration.ofMinutes(30)) // 30분 (TTL)
+                .serializeKeysWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
+                )
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(
+                                new GenericJackson2JsonRedisSerializer(redisCacheValueObjectMapper())
+                        )
+                );
+    }
+
+    /**
      * Redis 캐시에 넣는 값(JSON)을 직렬화할 때 쓰는 ObjectMapper입니다.
      *
      * <ul>
@@ -68,41 +103,5 @@ public class RedisCacheConfig {
                 JsonTypeInfo.As.PROPERTY
         );
         return objectMapper;
-    }
-
-    /**
-     * Redis 기본 캐시 설정
-     *
-     * <ul>
-     *   <li>TTL: 30분 (기존 동작 유지)</li>
-     *   <li>Key: String 직렬화</li>
-     *   <li>Value: JSON 직렬화 (위 ObjectMapper)</li>
-     * </ul>
-     */
-    @Bean
-    public RedisCacheConfiguration redisCacheConfiguration() {
-        return RedisCacheConfiguration.defaultCacheConfig()
-                .computePrefixWith(cacheName -> cacheName + ":") // :: 대신 : 하나만 사용
-                .entryTtl(Duration.ofMinutes(30)) // 30분 (TTL)
-                .serializeKeysWith(
-                        RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
-                )
-                .serializeValuesWith(
-                        RedisSerializationContext.SerializationPair.fromSerializer(
-                                new GenericJackson2JsonRedisSerializer(redisCacheValueObjectMapper())
-                        )
-                );
-    }
-
-    /**
-     * Redis를 캐시 저장소로 사용하는 CacheManager 빈을 생성합니다.
-     * 이 CacheManager는 @Cacheable, @CacheEvict 등에서 사용됩니다.
-     */
-    @Primary // 기본 캐시 매니저로 설정
-    @Bean
-    public CacheManager redisCacheManager(RedisCacheConfiguration redisCacheConfiguration) {
-        return RedisCacheManager.builder(redisConnectionFactory) // Redis 연결 팩토리 주입
-                .cacheDefaults(redisCacheConfiguration)          // 기본 캐시 설정 적용
-                .build();                                        // CacheManager 인스턴스 생성
     }
 }

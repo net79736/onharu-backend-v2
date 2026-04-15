@@ -31,6 +31,7 @@ import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
 import com.backend.onharu.domain.store.dto.StoreWithFavoriteCountByLocationProjection;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.repository.StoreRepository;
+import com.backend.onharu.domain.support.CacheName;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +69,7 @@ public class StoreQueryService {
      * <p>
      * 엔티티 그래프를 캐시에 넣지 않기 위해 {@link StoreCacheDto}로 평탄화합니다.
      */
-    @Cacheable(cacheNames = "storeDetail", key = "'storeId:' + #query.storeId()")
+    @Cacheable(cacheNames = CacheName.STORE_DETAIL, key = "'storeId:' + #query.storeId()")
     public StoreCacheDto getStoreDetailCacheById(GetStoreByIdQuery query) {
         return StoreCacheDto.from(getStoreDetailById(query));
     }

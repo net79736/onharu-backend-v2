@@ -44,6 +44,7 @@ import com.backend.onharu.domain.review.service.ReviewQueryService;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.service.StoreQueryService;
+import com.backend.onharu.domain.support.CacheName;
 import com.backend.onharu.event.model.ReservationEvent;
 import com.backend.onharu.infra.redis.lock.DistributeLockExecutor;
 import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
@@ -202,7 +203,7 @@ public class ChildFacade {
      * @param command 아동 ID 와 가게 ID 를 포함한 Command
      * @return true: 찜등록, false: 찜취소
      */
-    @CacheEvict(cacheNames = "storeDetail", key = "'storeId:' + #command.storeId()")
+    @CacheEvict(cacheNames = CacheName.STORE_DETAIL, key = "'storeId:' + #command.storeId()")
     public boolean toggleFavorite(ToggleFavoriteCommand command) {
         Long childId = command.childId();
         Long storeId = command.storeId();

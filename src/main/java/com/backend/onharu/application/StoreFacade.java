@@ -33,6 +33,7 @@ import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.repository.CategoryRepository;
 import com.backend.onharu.domain.store.service.StoreCommandService;
 import com.backend.onharu.domain.store.service.StoreQueryService;
+import com.backend.onharu.domain.support.CacheName;
 import com.backend.onharu.domain.tag.dto.TagCommand.CreateTagCommand;
 import com.backend.onharu.domain.tag.dto.TagQuery.FindByNameQuery;
 import com.backend.onharu.domain.tag.model.Tag;
@@ -158,7 +159,7 @@ public class StoreFacade {
      */
     @Transactional
     @Caching(evict = {
-        @CacheEvict(cacheNames = "storeDetail", key = "'storeId:' + #command.id()")
+        @CacheEvict(cacheNames = CacheName.STORE_DETAIL, key = "'storeId:' + #command.id()")
     })
     public void updateStore(UpdateStoreCommand command, Long ownerId) {
         // 가게 정보 조회
@@ -243,7 +244,7 @@ public class StoreFacade {
      * @param ownerId 사업자 ID
      */
     @Caching(evict = {
-            @CacheEvict(cacheNames = "storeDetail", key = "'storeId:' + #storeId")
+            @CacheEvict(cacheNames = CacheName.STORE_DETAIL, key = "'storeId:' + #storeId")
     })
     public void updateCategory(Long storeId, Long categoryId, Long ownerId) {
         // 가게 정보 조회
@@ -269,7 +270,7 @@ public class StoreFacade {
      * @param ownerId 사업자 ID
      */
     @Caching(evict = {
-            @CacheEvict(cacheNames = "storeDetail", key = "'storeId:' + #command.id()")
+            @CacheEvict(cacheNames = CacheName.STORE_DETAIL, key = "'storeId:' + #command.id()")
     })
     public void deleteStore(DeleteStoreCommand command, Long ownerId) {
         // 가게 정보 조회
@@ -293,7 +294,7 @@ public class StoreFacade {
      * @param ownerId 사업자 ID
      */
     @Caching(evict = {
-            @CacheEvict(cacheNames = "storeDetail", key = "'storeId:' + #storeId")
+            @CacheEvict(cacheNames = CacheName.STORE_DETAIL, key = "'storeId:' + #storeId")
     })
     public void changeOpenStatus(Long storeId, Boolean isOpen, Long ownerId) {
         // 가게 정보 조회
