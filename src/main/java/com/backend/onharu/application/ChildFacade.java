@@ -43,6 +43,7 @@ import com.backend.onharu.domain.review.dto.ReviewQuery.FindReviewedReservationI
 import com.backend.onharu.domain.review.service.ReviewQueryService;
 import com.backend.onharu.domain.store.dto.StoreQuery.GetStoreByIdQuery;
 import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.store.service.StoreFavoriteCountService;
 import com.backend.onharu.domain.store.service.StoreQueryService;
 import com.backend.onharu.domain.support.CacheName;
 import com.backend.onharu.event.model.ReservationEvent;
@@ -64,6 +65,7 @@ public class ChildFacade {
     private final ReservationQueryService reservationQueryService;
     private final ReviewQueryService reviewQueryService;
     private final StoreQueryService storeQueryService;
+    private final StoreFavoriteCountService storeFavoriteCountService;
     private final FavoriteCommandService favoriteCommandService;
     private final FavoriteQueryService favoriteQueryService;
 
@@ -218,6 +220,7 @@ public class ChildFacade {
             favoriteCommandService.deleteFavorite(
                     new DeleteFavoriteCommand(favorite.get())
             );
+            storeFavoriteCountService.changeFavoriteCount(storeId, -1);
 
             return false; // false: 찜취소
         }
@@ -234,6 +237,7 @@ public class ChildFacade {
         favoriteCommandService.createFavorite(
                 new CreateFavoriteCommand(child, store)
         );
+        storeFavoriteCountService.changeFavoriteCount(storeId, +1);
 
         return true; // true: 찜등록
     }

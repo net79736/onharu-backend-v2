@@ -23,7 +23,8 @@ public class StoreViewCountStrategy implements CountStrategy {
 
     static final String KEY_PREFIX = "onharu:count:store:";
     static final String PATTERN = KEY_PREFIX + "*";
-    static final String FIELD_VIEW = "view";
+    static final String FIELD_VIEW = "view"; // 조회수
+    static final String FIELD_FAVORITE = "favorite"; // 좋아요 수
 
     private final StoreCountJpaRepository storeCountJpaRepository;
     private final EntityManager entityManager;
@@ -58,16 +59,20 @@ public class StoreViewCountStrategy implements CountStrategy {
     @Transactional(readOnly = true)
     public CommonCount loadFromDatabase(long id) {
         return storeCountJpaRepository.findById(id)
-                .map(sc -> new CommonCount(sc.getViewCount() != null ? sc.getViewCount() : 0L))
-                .orElseGet(() -> new CommonCount(0L));
+                .map(sc -> new CommonCount(
+                        sc.getViewCount() != null ? sc.getViewCount() : 0L, // 조회수
+                        sc.getFavoriteCount() != null ? sc.getFavoriteCount() : 0L // 좋아요 수
+                ))
+                .orElseGet(() -> new CommonCount(0L, 0L));
     }
 
     @Override
     @Transactional
     public void updateToDatabase(long id, CommonCount count) {
-        // count.viewCount는 Redis Hash의 "절대 조회수"로 취급합니다. (감소 방지)
-        int updated = storeCountJpaRepository.setViewCountIfGreater(id, count.viewCount()); // Redis 값 반영
-        if (updated > 0) return;
+        // viewCount는 감소 방지(더 큰 값만), favoriteCount는 절대값 그대로 반영(+/- 토글 반영)
+        int viewUpdated = storeCountJpaRepository.setViewCountIfGreater(id, count.viewCount()); // 조회수
+        int favoriteUpdated = storeCountJpaRepository.setFavoriteCount(id, Math.max(0L, count.favoriteCount())); // 좋아요 수
+        if (viewUpdated > 0 || favoriteUpdated > 0) return; // 조회수 또는 좋아요 수 업데이트 성공 시 종료
 
         // 토이 프로젝트 기준: StoreCount가 없으면 0으로 시작(혹은 생성 시도)만 하고 넘어갑니다.
         // (Redis에만 있다가 유실될 수 있어도 무방)
@@ -75,7 +80,8 @@ public class StoreViewCountStrategy implements CountStrategy {
             Store storeRef = entityManager.getReference(Store.class, id); // 프록시 조회
             StoreCount sc = StoreCount.create(storeRef); // 생성
             storeCountJpaRepository.save(sc); // 저장
-            storeCountJpaRepository.setViewCountIfGreater(id, count.viewCount()); // Redis 값 반영
+            storeCountJpaRepository.setViewCountIfGreater(id, count.viewCount()); // 조회수 Redis 값 반영
+            storeCountJpaRepository.setFavoriteCount(id, Math.max(0L, count.favoriteCount())); // 좋아요 수 Redis 값 반영
         } catch (DataIntegrityViolationException ignored) {
             // 동시 생성/이미 존재 등: 무시
         } catch (EntityNotFoundException ignored) {

@@ -42,21 +42,17 @@ public class StoreCount {
     @Column(name = "VIEW_COUNT", nullable = false)
     private Long viewCount = 0L;
 
-    private StoreCount(Store store, long viewCount) {
+    @Column(name = "FAVORITE_COUNT", nullable = false)
+    private Long favoriteCount = 0L;
+
+    private StoreCount(Store store, long viewCount, long favoriteCount) {
         this.store = store;
         this.viewCount = Math.max(0L, viewCount);
+        this.favoriteCount = Math.max(0L, favoriteCount);
     }
 
     public static StoreCount create(Store store) {
-        return new StoreCount(store, 0L);
-    }
-
-    /**
-     * 기존 stores.view_count가 존재하는 환경에서 최초 분리 시,
-     * StoreCount row가 없으면 이 메서드로 초기 값을 흡수합니다.
-     */
-    public static StoreCount migrateFromStore(Store store, long viewCount) {
-        return new StoreCount(store, viewCount);
+        return new StoreCount(store, 0L, 0L);
     }
 }
 

@@ -28,5 +28,12 @@ public interface StoreCountJpaRepository extends JpaRepository<StoreCount, Long>
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE StoreCount sc SET sc.viewCount = :viewCount WHERE sc.storeId = :storeId AND sc.viewCount < :viewCount")
     int setViewCountIfGreater(@Param("storeId") Long storeId, @Param("viewCount") long viewCount);
+
+    /**
+     * favoriteCount는 토글(+1/-1)이 존재하므로 Redis 절대값을 그대로 반영합니다.
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE StoreCount sc SET sc.favoriteCount = :favoriteCount WHERE sc.storeId = :storeId")
+    int setFavoriteCount(@Param("storeId") Long storeId, @Param("favoriteCount") long favoriteCount);
 }
 

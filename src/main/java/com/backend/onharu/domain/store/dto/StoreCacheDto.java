@@ -204,4 +204,33 @@ public final class StoreCacheDto implements Serializable {
                 tags
         );
     }
+
+    /**
+     * 찜(좋아요) 수가 덮어씌워진 StoreCacheDto 반환 (Redis 절대값 반영용).
+     */
+    public StoreCacheDto withFavoriteCount(Long favoriteCount) {
+        return new StoreCacheDto(
+                id,
+                name,
+                address,
+                phone,
+                lat,
+                lng,
+                introduction,
+                intro,
+                isOpen,
+                isSharing,
+                createdAt,
+                updatedAt,
+                categoryId,
+                categoryName,
+                ownerId,
+                ownerName,
+                favoriteCount != null ? favoriteCount : 0L,
+                viewCount,
+                distance,
+                businessHours,
+                tags
+        );
+    }
 }

@@ -63,15 +63,15 @@ public class RedisCountBulkUpdater {
                     continue;
                 }
 
-                // 현재는 store view만: Redis hash field "view"를 절대값으로 해석
                 long viewCount = safeParseLong(redisHash.get(StoreViewCountStrategy.FIELD_VIEW), 0L);
+                long favoriteCount = safeParseLong(redisHash.get(StoreViewCountStrategy.FIELD_FAVORITE), 0L);
 
                 // DB 업데이트(전략에서 절대값으로 반영)
-                strategy.updateToDatabase(id, new CommonCount(viewCount));
+                strategy.updateToDatabase(id, new CommonCount(viewCount, favoriteCount));
 
                 redisTemplate.delete(key);
 
-                log.info("✅ [RedisCountBulkUpdater] DB 저장 완료 - type: {}, id: {}, view: {}", type, id, viewCount);
+                log.info("✅ [RedisCountBulkUpdater] DB 저장 완료 - type: {}, id: {}, view: {}, favorite: {}", type, id, viewCount, favoriteCount);
             } catch (Exception e) {
                 log.error("❌ [RedisCountBulkUpdater] 저장 실패 - key: {}, 이유: {}", key, e.getMessage(), e);
             }
