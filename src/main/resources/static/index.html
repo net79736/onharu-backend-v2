@@ -22,6 +22,7 @@
     <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="text-xl font-semibold text-slate-800">온하루 백엔드 테스트 UI</h1>
+        <p class="text-xs mt-1"><a href="#signup" class="text-indigo-600 hover:text-indigo-800 font-medium">로컬 회원가입</a> <span class="text-slate-300">·</span> <span class="text-slate-500">아래 좌측 패널에서 진행</span></p>
         <p class="text-sm text-slate-500 mt-1">
           인증: <strong>서버 세션 쿠키</strong>(<code class="bg-slate-100 px-1 rounded">POST /api/users/login</code>) —
           이 프로젝트는 JWT를 발급하지 않습니다. 역할은 <code class="bg-slate-100 px-1 rounded">GET /api/users/me</code>의 <code>userType</code>으로 판별합니다.
@@ -143,6 +144,99 @@
 
         <div id="adminHint" class="hidden bg-slate-100 border border-slate-200 rounded-xl p-4 text-sm text-slate-700">
           <strong>ADMIN</strong> 계정은 이 페이지의 <code>/api/owners/**</code>·아동 예약 API와 역할이 다릅니다. 관리자 전용은 <code>/api/admins/**</code>를 참고하세요.
+        </div>
+
+        <!-- 로컬 회원가입 (onharu-frontend 플로우 참고: 이메일 인증 → 가입) -->
+        <div id="signupCard" class="bg-white rounded-xl border border-indigo-200 p-5 shadow-sm ring-1 ring-indigo-100 scroll-mt-6">
+          <h2 class="font-semibold text-indigo-950 mb-1" id="signup">로컬 회원가입</h2>
+          <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+            <code class="bg-slate-100 px-1 rounded">POST /api/auth/email/send-code</code> ·
+            <code class="bg-slate-100 px-1 rounded">verify-code</code> 후
+            <code class="bg-slate-100 px-1 rounded">/api/users/signup/…</code> 호출합니다. 로그인 아이디는 <strong class="text-slate-700">이메일</strong>과 동일하게 둡니다.
+          </p>
+          <div class="flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 mb-4 w-full max-w-md" role="tablist" aria-label="가입 유형">
+            <button type="button" id="signupTabOwner" class="signup-tab flex-1 py-2 text-xs font-semibold rounded-md bg-indigo-600 text-white">매장 (사업자)</button>
+            <button type="button" id="signupTabChild" class="signup-tab flex-1 py-2 text-xs font-semibold rounded-md text-slate-600 hover:bg-white">아동</button>
+          </div>
+
+          <div class="grid gap-3 text-sm">
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1" for="suEmail">이메일 (로그인 ID)</label>
+              <div class="flex flex-wrap gap-2 items-end">
+                <input id="suEmail" type="email" autocomplete="email" required placeholder="child@example.com"
+                  class="flex-1 min-w-[12rem] border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                <button type="button" id="btnSuSendCode" class="shrink-0 px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 disabled:opacity-40">인증번호 전송</button>
+              </div>
+            </div>
+            <div id="suCodeRow" class="hidden">
+              <label class="block text-xs font-medium text-slate-600 mb-1" for="suCode">인증번호</label>
+              <div class="flex flex-wrap gap-2 items-end">
+                <input id="suCode" type="text" inputmode="text" autocomplete="one-time-code" placeholder="메일로 받은 코드"
+                  class="flex-1 min-w-[12rem] border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                <button type="button" id="btnSuVerify" class="shrink-0 px-3 py-2 rounded-lg border border-indigo-300 text-indigo-900 text-xs font-semibold hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed">인증 확인</button>
+              </div>
+              <p id="suTimer" class="text-[11px] text-rose-600 mt-1 font-mono hidden"></p>
+            </div>
+            <p id="suEmailStatus" class="text-[11px] text-slate-600 hidden"></p>
+
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1" for="suPassword">비밀번호</label>
+                <input id="suPassword" type="password" autocomplete="new-password" required
+                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1" for="suPassword2">비밀번호 확인</label>
+                <input id="suPassword2" type="password" autocomplete="new-password" required
+                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1" for="suPhone">휴대폰 (하이픈 없이)</label>
+              <input id="suPhone" type="tel" inputmode="numeric" required placeholder="01012345678"
+                class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+            </div>
+
+            <div id="suOwnerFields" class="grid gap-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1" for="suStoreName">매장명</label>
+                <input id="suStoreName" type="text" required placeholder="따뜻한 식당"
+                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1" for="suBizNo">사업자등록번호 (10자리)</label>
+                <input id="suBizNo" type="text" inputmode="numeric" maxlength="10" required placeholder="1234567890"
+                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+            </div>
+
+            <div id="suChildFields" class="grid gap-3 hidden">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1" for="suChildName">이름</label>
+                <input id="suChildName" type="text" placeholder="홍길동"
+                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1" for="suNickname">닉네임</label>
+                <input id="suNickname" type="text" placeholder="온하루"
+                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1" for="suFileKey">증빙 fileKey (S3 객체 키)</label>
+                <input id="suFileKey" type="text" placeholder="images/certificate.pdf"
+                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1" for="suFilePath">증빙 filePath (전체 URL)</label>
+                <input id="suFilePath" type="url" placeholder="https://…/bucket/images/certificate.pdf"
+                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+              <p class="text-[11px] text-slate-500">아동 가입은 프론트처럼 업로드 후 URL 을 쓰면 됩니다. 로컬에서 MinIO URL 을 붙여 넣어 테스트하세요.</p>
+            </div>
+
+            <button type="button" id="btnSuSubmit" class="w-full py-2.5 rounded-lg bg-indigo-700 text-white text-sm font-semibold hover:bg-indigo-800 disabled:opacity-40" disabled>회원가입 요청</button>
+            <p id="suMsg" class="text-xs text-slate-600 min-h-[1rem]"></p>
+          </div>
         </div>
       </section>
 
@@ -871,6 +965,224 @@
       alert('로그인 실패: ' + (e.message || e));
     }
   });
+
+  /* ---------- 로컬 회원가입 (이메일 인증 + /api/users/signup) ---------- */
+  (function setupLocalSignup() {
+    var signupRole = 'owner';
+    var suEmailVerified = false;
+    var suTimerId = null;
+    var suTimeLeft = 0;
+
+    var tabOwner = document.getElementById('signupTabOwner');
+    var tabChild = document.getElementById('signupTabChild');
+    var ownerFields = document.getElementById('suOwnerFields');
+    var childFields = document.getElementById('suChildFields');
+    var btnSend = document.getElementById('btnSuSendCode');
+    var btnVerify = document.getElementById('btnSuVerify');
+    var btnSubmit = document.getElementById('btnSuSubmit');
+    var codeRow = document.getElementById('suCodeRow');
+    var suTimer = document.getElementById('suTimer');
+    var suMsg = document.getElementById('suMsg');
+    var suEmailStatus = document.getElementById('suEmailStatus');
+
+    function setSignupMsg(text, isError) {
+      if (!suMsg) return;
+      suMsg.textContent = text || '';
+      suMsg.className = 'text-xs min-h-[1rem] ' + (isError ? 'text-rose-700' : 'text-slate-600');
+    }
+
+    function clearSuTimer() {
+      if (suTimerId) {
+        clearInterval(suTimerId);
+        suTimerId = null;
+      }
+      suTimeLeft = 0;
+      if (suTimer) {
+        suTimer.classList.add('hidden');
+        suTimer.textContent = '';
+      }
+    }
+
+    function startSuTimer(seconds) {
+      clearSuTimer();
+      suTimeLeft = seconds;
+      if (suTimer) suTimer.classList.remove('hidden');
+      function tick() {
+        if (suTimeLeft <= 0) {
+          clearSuTimer();
+          return;
+        }
+        var m = Math.floor(suTimeLeft / 60);
+        var s = suTimeLeft % 60;
+        if (suTimer) {
+          suTimer.textContent = '남은 시간 ' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+        suTimeLeft--;
+      }
+      tick();
+      suTimerId = setInterval(tick, 1000);
+    }
+
+    function setEmailVerified(ok) {
+      suEmailVerified = !!ok;
+      if (btnVerify) btnVerify.disabled = suEmailVerified;
+      if (btnSubmit) btnSubmit.disabled = !suEmailVerified;
+      if (suEmailStatus) {
+        suEmailStatus.classList.toggle('hidden', !suEmailVerified);
+        suEmailStatus.textContent = suEmailVerified ? '이메일 인증이 완료되었습니다. 나머지 정보를 입력한 뒤 가입하세요.' : '';
+        suEmailStatus.className =
+          'text-[11px] ' + (suEmailVerified ? 'text-emerald-700 font-medium' : 'hidden');
+      }
+    }
+
+    function resetEmailFlow() {
+      suEmailVerified = false;
+      setEmailVerified(false);
+      clearSuTimer();
+      if (codeRow) codeRow.classList.add('hidden');
+      var c = document.getElementById('suCode');
+      if (c) c.value = '';
+    }
+
+    function syncTabs() {
+      if (!tabOwner || !tabChild || !ownerFields || !childFields) return;
+      var onOwner = signupRole === 'owner';
+      tabOwner.className =
+        'signup-tab flex-1 py-2 text-xs font-semibold rounded-md ' +
+        (onOwner ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-white');
+      tabChild.className =
+        'signup-tab flex-1 py-2 text-xs font-semibold rounded-md ' +
+        (!onOwner ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-white');
+      ownerFields.classList.toggle('hidden', !onOwner);
+      childFields.classList.toggle('hidden', onOwner);
+      resetEmailFlow();
+      setSignupMsg('');
+    }
+
+    if (tabOwner) {
+      tabOwner.addEventListener('click', function () {
+        signupRole = 'owner';
+        syncTabs();
+      });
+    }
+    if (tabChild) {
+      tabChild.addEventListener('click', function () {
+        signupRole = 'child';
+        syncTabs();
+      });
+    }
+    syncTabs();
+
+    if (btnSend) {
+      btnSend.addEventListener('click', async function () {
+        var emailEl = document.getElementById('suEmail');
+        var email = emailEl && emailEl.value ? emailEl.value.trim() : '';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          setSignupMsg('올바른 이메일 형식을 입력해 주세요.', true);
+          return;
+        }
+        setSignupMsg('');
+        btnSend.disabled = true;
+        try {
+          await apiJson('POST', '/api/auth/email/send-code', { email: email });
+          if (codeRow) codeRow.classList.remove('hidden');
+          startSuTimer(180);
+          setEmailVerified(false);
+          setSignupMsg('인증 메일을 발송했습니다. 메일함을 확인해 주세요.', false);
+        } catch (e) {
+          setSignupMsg('발송 실패: ' + (e && e.message ? e.message : e), true);
+        } finally {
+          btnSend.disabled = false;
+        }
+      });
+    }
+
+    if (btnVerify) {
+      btnVerify.addEventListener('click', async function () {
+        var emailEl = document.getElementById('suEmail');
+        var codeEl = document.getElementById('suCode');
+        var email = emailEl && emailEl.value ? emailEl.value.trim() : '';
+        var code = codeEl && codeEl.value ? codeEl.value.trim() : '';
+        if (!email || !code) {
+          setSignupMsg('이메일과 인증번호를 입력해 주세요.', true);
+          return;
+        }
+        btnVerify.disabled = true;
+        try {
+          await apiJson('POST', '/api/auth/email/verify-code', { email: email, code: code });
+          setEmailVerified(true);
+          clearSuTimer();
+          setSignupMsg('인증에 성공했습니다. 회원가입을 진행할 수 있습니다.', false);
+        } catch (e) {
+          setSignupMsg('인증 실패: ' + (e && e.message ? e.message : e), true);
+        } finally {
+          if (!suEmailVerified) btnVerify.disabled = false;
+        }
+      });
+    }
+
+    if (btnSubmit) {
+      btnSubmit.addEventListener('click', async function () {
+        if (!suEmailVerified) {
+          setSignupMsg('이메일 인증을 먼저 완료해 주세요.', true);
+          return;
+        }
+        var email = (document.getElementById('suEmail') && document.getElementById('suEmail').value || '').trim();
+        var pw = document.getElementById('suPassword') && document.getElementById('suPassword').value;
+        var pw2 = document.getElementById('suPassword2') && document.getElementById('suPassword2').value;
+        var phone = (document.getElementById('suPhone') && document.getElementById('suPhone').value || '').trim();
+        if (!pw || pw !== pw2) {
+          setSignupMsg('비밀번호와 비밀번호 확인이 일치하지 않습니다.', true);
+          return;
+        }
+        btnSubmit.disabled = true;
+        try {
+          if (signupRole === 'owner') {
+            var storeName = (document.getElementById('suStoreName') && document.getElementById('suStoreName').value || '').trim();
+            var biz = (document.getElementById('suBizNo') && document.getElementById('suBizNo').value || '').trim();
+            if (!/^\d{10}$/.test(biz)) {
+              setSignupMsg('사업자등록번호는 숫자 10자리여야 합니다.', true);
+              btnSubmit.disabled = false;
+              return;
+            }
+            await apiJson('POST', '/api/users/signup/owner', {
+              loginId: email,
+              password: pw,
+              passwordConfirm: pw2,
+              name: storeName,
+              phone: phone,
+              businessNumber: biz
+            });
+            setSignupMsg('매장 회원가입이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.', false);
+          } else {
+            var cname = (document.getElementById('suChildName') && document.getElementById('suChildName').value || '').trim();
+            var nick = (document.getElementById('suNickname') && document.getElementById('suNickname').value || '').trim();
+            var fk = (document.getElementById('suFileKey') && document.getElementById('suFileKey').value || '').trim();
+            var fp = (document.getElementById('suFilePath') && document.getElementById('suFilePath').value || '').trim();
+            if (!cname || !nick || !fk || !fp) {
+              setSignupMsg('아동 가입: 이름·닉네임·증빙 fileKey·filePath 를 모두 입력해 주세요.', true);
+              btnSubmit.disabled = false;
+              return;
+            }
+            await apiJson('POST', '/api/users/signup/child', {
+              loginId: email,
+              password: pw,
+              passwordConfirm: pw2,
+              name: cname,
+              phone: phone,
+              nickname: nick,
+              images: [{ fileKey: fk, filePath: fp, displayOrder: '0' }]
+            });
+            setSignupMsg('아동 회원가입이 완료되었습니다.', false);
+          }
+        } catch (e) {
+          setSignupMsg('가입 실패: ' + (e && e.message ? e.message : e), true);
+        } finally {
+          btnSubmit.disabled = !suEmailVerified;
+        }
+      });
+    }
+  })();
 
   btnLogout.addEventListener('click', async function () {
     try {
