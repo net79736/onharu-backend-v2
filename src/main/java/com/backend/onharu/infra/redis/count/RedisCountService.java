@@ -57,6 +57,20 @@ public class RedisCountService {
     }
 
     /**
+     * 안전하게 카운트를 증가시키고 결과를 반환
+     */
+    private long incrementCount(String key, String field, long fallbackValue) {
+        try {
+            Long updated = redisTemplate.opsForHash().increment(key, field, 1);
+            redisTemplate.expire(key, TTL); // 활동이 있을 때마다 TTL 연장
+            return updated != null ? updated : (fallbackValue + 1);
+        } catch (Exception e) {
+            log.error("❌ [RedisCountService] Increment 실패 - key: {}, error: {}", key, e.getMessage());
+            return fallbackValue + 1;
+        }
+    }
+
+    /**
      * 찜(좋아요) 수 조회 (증가/감소 없음).
      */
     public long getFavoriteCount(DomainType content, long contentId) {
@@ -88,20 +102,6 @@ public class RedisCountService {
         } catch (Exception e) {
             log.error("❌ [RedisCountService] Favorite 변경 실패 - key: {}, error: {}", key, e.getMessage());
             return Math.max(0L, current + delta);
-        }
-    }
-
-    /**
-     * 안전하게 카운트를 증가시키고 결과를 반환
-     */
-    private long incrementCount(String key, String field, long fallbackValue) {
-        try {
-            Long updated = redisTemplate.opsForHash().increment(key, field, 1);
-            redisTemplate.expire(key, TTL); // 활동이 있을 때마다 TTL 연장
-            return updated != null ? updated : (fallbackValue + 1);
-        } catch (Exception e) {
-            log.error("❌ [RedisCountService] Increment 실패 - key: {}, error: {}", key, e.getMessage());
-            return fallbackValue + 1;
         }
     }
 
