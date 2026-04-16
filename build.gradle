@@ -85,6 +85,9 @@ dependencies {
 
 	// SMTP 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	
+	// 이메일 HTML 템플릿 (Thymeleaf — MVC 뷰는 비활성화하고 메일 전용 엔진만 사용)
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
 	// WebSocket(STOMP)
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'

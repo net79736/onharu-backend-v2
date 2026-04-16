@@ -1,4 +1,7 @@
 spring:
+  # Thymeleaf MVC 자동 설정은 사용하지 않음(메일 본문 전용 SpringTemplateEngine 만 등록)
+  thymeleaf:
+    enabled: false
   main:
     allow-bean-definition-overriding: true
   profiles:

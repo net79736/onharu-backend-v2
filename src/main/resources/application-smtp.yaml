@@ -3,6 +3,8 @@ spring:
     host: ${SMTP_HOST} # SMTP 서버 주소: smtp.gmail.com
     port: ${SMTP_PORT} # SMTP 포트번호: 465(SSL), 587(TLS)
     username: ${SMTP_USERNAME} # 사용자 이메일: 이메일명
+    # 발신 주소(미설정 시 username 과 동일하게 사용)
+    from: ${MAIL_FROM:}
     password: ${SMTP_PASSWORD} # 사용자 앱 비밀번호: 0000 0000 0000 0000
     properties:
       mail:

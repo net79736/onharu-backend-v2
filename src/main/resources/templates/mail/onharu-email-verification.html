@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>온하루 이메일 인증</title>
+</head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:48px 16px;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08);">
+                <tr>
+                    <td style="padding:32px 32px 16px;">
+                        <table cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td style="width:48px;height:48px;vertical-align:middle;">
+                                    <div style="width:48px;height:48px;background:#4f46e5;border-radius:12px;text-align:center;line-height:48px;color:#fff;font-size:22px;font-weight:800;">온</div>
+                                </td>
+                                <td style="padding-left:14px;vertical-align:middle;">
+                                    <p style="margin:0;color:#312e81;font-size:18px;font-weight:700;letter-spacing:-0.02em;">온하루</p>
+                                    <p style="margin:4px 0 0;color:#64748b;font-size:12px;">따뜻한 나눔을 연결하는 플랫폼</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 32px 8px;">
+                        <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#0f172a;letter-spacing:-0.03em;">이메일 인증</h1>
+                        <p style="margin:0;font-size:14px;line-height:1.6;color:#334155;">
+                            안녕하세요. <span th:text="${email}">user@example.com</span> 님,<br/>
+                            아래 인증 코드를 <strong style="color:#0f172a;">3분 이내</strong>에 입력해 주세요.
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:16px 32px 32px;">
+                        <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#475569;">인증 코드</p>
+                        <div style="background:#eef2ff;border:2px solid #4f46e5;border-radius:10px;padding:18px 12px;text-align:center;">
+                            <span th:text="${code}"
+                                  style="font-size:18px;font-weight:800;color:#3730a3;letter-spacing:0.04em;word-break:break-all;font-family:ui-monospace,Menlo,Consolas,monospace;">CODE</span>
+                        </div>
+                        <p style="margin:20px 0 0;font-size:12px;line-height:1.6;color:#64748b;">
+                            본 메일은 발신 전용입니다. 문의는 서비스 내 고객센터를 이용해 주세요.
+                        </p>
+                    </td>
+                </tr>
+            </table>
+            <p style="margin:24px 0 0;font-size:11px;color:#94a3b8;">Copyright © Onharu</p>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
