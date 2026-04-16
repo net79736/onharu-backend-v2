@@ -1,30 +1,56 @@
 package com.backend.onharu.application;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.backend.onharu.application.dto.UserLogin;
 import com.backend.onharu.domain.child.dto.ChildCommand.CreateChildCommand;
+import com.backend.onharu.domain.child.dto.ChildCommand.UpdateChildCommand;
+import com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
+import com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.child.service.ChildCommandService;
 import com.backend.onharu.domain.child.service.ChildQueryService;
 import com.backend.onharu.domain.common.enums.AttachmentType;
 import com.backend.onharu.domain.common.enums.StatusType;
 import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.domain.level.dto.LevelQuery.FindFirstByConditionNumberQuery;
+import com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByNameQuery;
 import com.backend.onharu.domain.level.model.Level;
 import com.backend.onharu.domain.level.service.LevelCommandService;
 import com.backend.onharu.domain.level.service.LevelQueryService;
 import com.backend.onharu.domain.owner.dto.OwnerCommand.CreateOwnerCommand;
+import com.backend.onharu.domain.owner.dto.OwnerCommand.UpdateOwnerCommand;
+import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
+import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByUserIdQuery;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.service.OwnerCommandService;
 import com.backend.onharu.domain.owner.service.OwnerQueryService;
 import com.backend.onharu.domain.store.dto.StoreQuery;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.service.StoreQueryService;
-import com.backend.onharu.domain.user.dto.UserCommand.*;
+import com.backend.onharu.domain.user.dto.UserCommand.CreateUserCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.LoginUserCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.UpdateChildProfileCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.UpdateDeletedUserCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.UpdateOwnerProfileCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.UpdateUserCommand;
 import com.backend.onharu.domain.user.dto.UserOAuthCommand.CreateUserOAuth;
 import com.backend.onharu.domain.user.dto.UserOAuthCommand.LoginUserOAuthCommand;
 import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpChildUserOAuthCommand;
 import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpOwnerUserOAuthCommand;
 import com.backend.onharu.domain.user.dto.UserOAuthQuery.GetUserByUserOAuthQuery;
+import com.backend.onharu.domain.user.dto.UserProfile.NextLevelInfo;
 import com.backend.onharu.domain.user.dto.UserProfile.UserChildProfile;
+import com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
+import com.backend.onharu.domain.user.dto.UserQuery.GetChildProfileQuery;
+import com.backend.onharu.domain.user.dto.UserQuery.GetOwnerProfileQuery;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByLoginIdQuery;
 import com.backend.onharu.domain.user.model.User;
@@ -33,27 +59,9 @@ import com.backend.onharu.domain.user.service.UserCommandService;
 import com.backend.onharu.domain.user.service.UserOAuthCommandService;
 import com.backend.onharu.domain.user.service.UserOAuthQueryService;
 import com.backend.onharu.domain.user.service.UserQueryService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.UUID;
-
-import static com.backend.onharu.domain.child.dto.ChildCommand.UpdateChildCommand;
-import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByIdQuery;
-import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
-import static com.backend.onharu.domain.level.dto.LevelQuery.FindFirstByConditionNumberQuery;
-import static com.backend.onharu.domain.level.dto.LevelQuery.GetLevelByNameQuery;
-import static com.backend.onharu.domain.owner.dto.OwnerCommand.UpdateOwnerCommand;
-import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByIdQuery;
-import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByUserIdQuery;
-import static com.backend.onharu.domain.user.dto.UserProfile.NextLevelInfo;
-import static com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
-import static com.backend.onharu.domain.user.dto.UserQuery.GetChildProfileQuery;
-import static com.backend.onharu.domain.user.dto.UserQuery.GetOwnerProfileQuery;
 
 /**
  * 사용자 Facade
@@ -340,6 +348,14 @@ public class UserFacade {
         user.verifyStatus(); // 사용자 계정 상태 검증(ACTIVE 또는 PENDING 가 아닐경우 예외 발생)
 
         return user;
+    }
+
+    /**
+     * 로그인 ID 부분 일치 검색 (채팅 상대 선택용). 본인은 결과에서 제외됩니다.
+     */
+    @Transactional(readOnly = true)
+    public List<User> searchUsersByLoginIdForChat(String keyword, Long excludeUserId) {
+        return userQueryService.searchUsersByLoginIdLike(keyword, excludeUserId);
     }
 
     /**

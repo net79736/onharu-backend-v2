@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "User", description = "사용자 API")
 public interface IUserController {
@@ -277,5 +278,13 @@ public interface IUserController {
      */
     @Operation(summary = "로그인 확인", description = "현재 로그인 여부를 확인하고 사용자 정보를 반환합니다.")
     ResponseEntity<ResponseDTO<MeResponse>> getMe(
+    );
+
+    /**
+     * 로그인 ID 부분 일치 검색 (채팅 상대 선택 등). 본인은 제외됩니다.
+     */
+    @Operation(summary = "사용자 검색 (로그인 ID LIKE)", description = "키워드가 loginId에 포함된 활성 사용자를 최대 20명까지 조회합니다. 로그인 필요.")
+    ResponseEntity<ResponseDTO<SearchUsersResponse>> searchUsersByLoginId(
+            @RequestParam(name = "keyword", required = false) String keyword
     );
 }

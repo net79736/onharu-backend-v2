@@ -1,13 +1,15 @@
 package com.backend.onharu.infra.db.user;
 
-import com.backend.onharu.domain.common.enums.StatusType;
-import com.backend.onharu.domain.user.model.User;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.Optional;
+import com.backend.onharu.domain.common.enums.StatusType;
+import com.backend.onharu.domain.user.model.User;
 
 /**
  * 사용자 JPA Repository
@@ -21,6 +23,25 @@ public interface UserJpaRepository extends JpaRepository<User, Long> {
      * @return 조회된 사용자 엔티티
      */
     Optional<User> findByLoginId(String loginId);
+
+    /**
+     * 로그인 ID LIKE 검색 (대소문자 무시), 본인 제외, 활성 계정만, 최대 20건.
+     */
+    @Query(
+        """
+            SELECT u FROM User u 
+             WHERE LOWER(u.loginId) LIKE LOWER(CONCAT('%', :loginId, '%'))
+               AND u.id != :id 
+               AND u.statusType = :statusType 
+             ORDER BY u.loginId ASC
+             LIMIT 20
+        """
+    )
+    List<User> searchUsersByLoginIdLike(
+            String loginId,
+            Long id,
+            StatusType statusType
+    );
 
     /**
      * 로그인 ID로 사용자 존재 여부를 확인합니다.

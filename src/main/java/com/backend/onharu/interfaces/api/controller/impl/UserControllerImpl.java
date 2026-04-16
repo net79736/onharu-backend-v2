@@ -1,28 +1,10 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
-import com.backend.onharu.application.UserFacade;
-import com.backend.onharu.application.dto.UserLogin;
-import com.backend.onharu.domain.common.enums.AttachmentType;
-import com.backend.onharu.domain.common.enums.StatusType;
-import com.backend.onharu.domain.file.dto.FileCommand;
-import com.backend.onharu.domain.file.model.File;
-import com.backend.onharu.domain.file.service.FileQueryService;
-import com.backend.onharu.domain.store.model.Store;
-import com.backend.onharu.domain.user.dto.UserCommand.*;
-import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpChildUserOAuthCommand;
-import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpOwnerUserOAuthCommand;
-import com.backend.onharu.domain.user.dto.UserProfile.UserChildProfile;
-import com.backend.onharu.domain.user.model.User;
-import com.backend.onharu.infra.security.LocalUser;
-import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
-import com.backend.onharu.interfaces.api.controller.IUserController;
-import com.backend.onharu.interfaces.api.dto.UserControllerDto.*;
-import com.backend.onharu.utils.SecurityUtils;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import static com.backend.onharu.interfaces.api.common.dto.ImageMetadataRequest.toImageMetadataList;
+
+import java.util.List;
+import java.util.Objects;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,15 +13,62 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Objects;
+import com.backend.onharu.application.UserFacade;
+import com.backend.onharu.application.dto.UserLogin;
+import com.backend.onharu.domain.common.enums.AttachmentType;
+import com.backend.onharu.domain.common.enums.StatusType;
+import com.backend.onharu.domain.file.dto.FileCommand;
+import com.backend.onharu.domain.file.dto.FileQuery.ListByRefQuery;
+import com.backend.onharu.domain.file.model.File;
+import com.backend.onharu.domain.file.service.FileQueryService;
+import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.user.dto.UserCommand.LoginUserCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.SignUpChildCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.SignUpOwnerCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.UpdateChildProfileCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.UpdateDeletedUserCommand;
+import com.backend.onharu.domain.user.dto.UserCommand.UpdateOwnerProfileCommand;
+import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpChildUserOAuthCommand;
+import com.backend.onharu.domain.user.dto.UserOAuthCommand.SignUpOwnerUserOAuthCommand;
+import com.backend.onharu.domain.user.dto.UserProfile.UserChildProfile;
+import com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
+import com.backend.onharu.domain.user.dto.UserQuery.GetChildProfileQuery;
+import com.backend.onharu.domain.user.dto.UserQuery.GetOwnerProfileQuery;
+import com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
+import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.infra.security.LocalUser;
+import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
+import com.backend.onharu.interfaces.api.controller.IUserController;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.ChildProfileResponse;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.LoginUserRequest;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.MeResponse;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.OwnerProfileResponse;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.SearchUserItemResponse;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.SearchUsersResponse;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpChildRequest;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpChildResponse;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpOwnerRequest;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.SignUpOwnerResponse;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.UpdateChildProfileRequest;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.UpdateOwnerProfileRequest;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.finishSignUpChildRequest;
+import com.backend.onharu.interfaces.api.dto.UserControllerDto.finishSignUpOwnerRequest;
+import com.backend.onharu.utils.SecurityUtils;
 
-import static com.backend.onharu.domain.file.dto.FileQuery.ListByRefQuery;
-import static com.backend.onharu.domain.user.dto.UserProfile.UserOwnerProfile;
-import static com.backend.onharu.domain.user.dto.UserQuery.*;
-import static com.backend.onharu.interfaces.api.common.dto.ImageMetadataRequest.toImageMetadataList;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 사용자 관련 API를 제공하는 컨트롤러 구현체입니다.
@@ -477,6 +506,33 @@ public class UserControllerImpl implements IUserController {
                 user.getStatusType(),
                 user.getProviderType()
         ); // 응답 생성
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
+    }
+
+    /**
+     * 로그인 ID LIKE 검색 (채팅 상대 선택)
+     * GET /api/users/search?keyword=
+     */
+    @Override
+    @GetMapping("/search")
+    public ResponseEntity<ResponseDTO<SearchUsersResponse>> searchUsersByLoginId(
+            @RequestParam(name = "keyword", required = false) String keyword
+    ) {
+        log.info("사용자 검색 요청: keyword={}", keyword);
+
+        Long userId = SecurityUtils.getUserId();
+        List<User> found = userFacade.searchUsersByLoginIdForChat(
+                keyword != null ? keyword : "",
+                userId
+        );
+
+        List<SearchUserItemResponse> items = found.stream()
+                .map(u -> new SearchUserItemResponse(u.getId(), u.getLoginId(), u.getUserType()))
+                .toList();
+
+        SearchUsersResponse response = new SearchUsersResponse(items);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(response));

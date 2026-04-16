@@ -331,4 +331,28 @@ public class UserControllerDto {
             ProviderType providerType
     ) {
     }
+
+    /**
+     * 로그인 ID LIKE 검색 — 한 명
+     */
+    public record SearchUserItemResponse(
+            @Schema(description = "사용자 ID", example = "2")
+            Long userId,
+
+            @Schema(description = "로그인 아이디", example = "owner123@test.com")
+            String loginId,
+
+            @Schema(description = "사용자 유형", example = "OWNER")
+            UserType userType
+    ) {
+    }
+
+    /**
+     * 로그인 ID LIKE 검색 결과
+     */
+    public record SearchUsersResponse(
+            @Schema(description = "검색된 사용자 목록 (최대 20명)")
+            List<SearchUserItemResponse> users
+    ) {
+    }
 }

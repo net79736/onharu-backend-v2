@@ -4,8 +4,11 @@ import com.backend.onharu.domain.user.dto.UserRepositoryParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByIdParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByLoginIdParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByNameAndPhoneParam;
+import com.backend.onharu.domain.user.dto.UserRepositoryParam.SearchUsersByLoginIdLikeParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.UpdateUserByIdAndPasswordParam;
 import com.backend.onharu.domain.user.model.User;
+
+import java.util.List;
 
 /**
  * 사용자 Repository 인터페이스
@@ -65,4 +68,9 @@ public interface UserRepository {
      * @param param 사용자 ID, 사용자 계정 상태가 포함된 파라미터
      */
     void updateDeletedUser(UserRepositoryParam.UpdateDeletedUserParam param);
+
+    /**
+     * 로그인 ID에 키워드가 포함된 활성 사용자를 조회합니다 (본인 제외, 최대 20건).
+     */
+    List<User> searchUsersByLoginIdLike(SearchUsersByLoginIdLikeParam param);
 }

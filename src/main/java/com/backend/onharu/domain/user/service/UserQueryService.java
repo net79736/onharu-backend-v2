@@ -1,5 +1,7 @@
 package com.backend.onharu.domain.user.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +12,7 @@ import com.backend.onharu.domain.user.dto.UserQuery.GetUserByNameAndPhoneQuery;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByIdParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByLoginIdParam;
 import com.backend.onharu.domain.user.dto.UserRepositoryParam.GetUserByNameAndPhoneParam;
+import com.backend.onharu.domain.user.dto.UserRepositoryParam.SearchUsersByLoginIdLikeParam;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.domain.user.repository.UserRepository;
 
@@ -58,5 +61,19 @@ public class UserQueryService {
      */
     public User getUserByNameAndPhone(GetUserByNameAndPhoneQuery query) {
         return userRepository.getUserByNameAndPhone(new GetUserByNameAndPhoneParam(query.name(), query.phone()));
+    }
+
+    /**
+     * 로그인 ID 부분 일치로 사용자를 검색합니다 (본인 제외, 활성만, 최대 20건).
+     */
+    public List<User> searchUsersByLoginIdLike(String keyword, Long excludeUserId) {
+        if (keyword == null || keyword.isBlank()) {
+            return List.of();
+        }
+        String k = keyword.trim();
+        if (k.length() > 100) {
+            k = k.substring(0, 100);
+        }
+        return userRepository.searchUsersByLoginIdLike(new SearchUsersByLoginIdLikeParam(k, excludeUserId));
     }
 }

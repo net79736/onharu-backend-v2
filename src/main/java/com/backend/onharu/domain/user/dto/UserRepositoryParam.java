@@ -54,4 +54,13 @@ public class UserRepositoryParam {
             StatusType statusType
     ) {
     }
+
+    /**
+     * 로그인 ID 부분 일치(LIKE) 검색 파라미터
+     */
+    public record SearchUsersByLoginIdLikeParam(
+            String keyword,
+            Long excludeUserId
+    ) {
+    }
 }
