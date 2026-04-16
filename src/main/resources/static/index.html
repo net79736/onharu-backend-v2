@@ -1841,7 +1841,10 @@
         '<div class="sm:col-span-2"><span class="text-slate-500">주소</span><br/>' + escapeHtml(s.address || '') + '</div>' +
         '<div><span class="text-slate-500">전화</span><br/>' + escapeHtml(s.phone || '') + '</div>' +
         '<div class="flex items-center justify-between gap-2">' +
-          '<div><span class="text-slate-500">찜</span> <span class="font-medium">' + (s.favoriteCount != null ? s.favoriteCount : '-') + '</span></div>' +
+          '<div class="flex items-center gap-3">' +
+            '<div><span class="text-slate-500">찜</span> <span class="font-medium">' + (s.favoriteCount != null ? s.favoriteCount : '-') + '</span></div>' +
+            '<div><span class="text-slate-500">조회수</span> <span class="font-medium tabular-nums">' + (s.viewCount != null ? s.viewCount : '-') + '</span></div>' +
+          '</div>' +
           (isChildUser()
             ? '<button type="button" id="btnToggleFavoriteHeart" class="w-9 h-9 rounded-full bg-white border border-rose-200 text-rose-700 shadow-sm flex items-center justify-center hover:bg-rose-50" aria-label="찜 토글">' +
                 heartSvg(myFavoriteStoreIds.has(Number(selectedStoreId))) +

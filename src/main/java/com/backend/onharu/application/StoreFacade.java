@@ -33,6 +33,7 @@ import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.repository.CategoryRepository;
 import com.backend.onharu.domain.store.service.StoreCommandService;
 import com.backend.onharu.domain.store.service.StoreQueryService;
+import com.backend.onharu.domain.store.service.StoreViewCountService;
 import com.backend.onharu.domain.support.CacheName;
 import com.backend.onharu.domain.tag.dto.TagCommand.CreateTagCommand;
 import com.backend.onharu.domain.tag.dto.TagQuery.FindByNameQuery;
@@ -52,6 +53,7 @@ public class StoreFacade {
 
     private final StoreQueryService storeQueryService;
     private final StoreCommandService storeCommandService;
+    private final StoreViewCountService storeViewCountService;
     private final OwnerQueryService ownerQueryService;
     private final CategoryRepository categoryRepository;
     private final TagQueryService tagQueryService;
@@ -65,7 +67,12 @@ public class StoreFacade {
      * @return 조회된 가게 엔티티
      */
     public StoreCacheDto getStore(GetStoreQuery query) {
+        // 조회수 +1 (Redis 절대값) — DB flush는 스케줄러가 처리
+        long viewCount = storeViewCountService.recordViewAndGet(query.storeId());
+
         StoreCacheDto storeCache = storeQueryService.getStoreDetailCacheById(new GetStoreByIdQuery(query.storeId()));
+        // 캐시 DTO에 조회수 절대값을 덮어써서 응답에 즉시 반영
+        storeCache = storeCache.withViewCount(viewCount);
         if (!query.hasLocation()) {
             return storeCache;
         }

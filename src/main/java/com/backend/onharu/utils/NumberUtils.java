@@ -21,4 +21,19 @@ public final class NumberUtils {
         }
         return (double) value.longValue();
     }
+
+    /**
+     * 카운트 값을 Long으로 변환
+     * 
+     * @param value
+     * @return
+     */
+    public static long toLong(Object value) {
+        if (value == null) return 0L;
+        try {
+            return Long.parseLong(String.valueOf(value));
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
+    }
 }

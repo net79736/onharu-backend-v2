@@ -51,6 +51,7 @@ public final class StoreCacheDto implements Serializable {
 
     // 집계
     private final Long favoriteCount;
+    private final Long viewCount;
     private final Double distance;
 
     // 컬렉션 (flatten)
@@ -134,6 +135,7 @@ public final class StoreCacheDto implements Serializable {
 
                 // 집계
                 swfc.favoriteCount(),
+                store.getViewCount() != null ? store.getViewCount() : 0L,
                 swfc.distance(),
 
                 // 컬렉션은 불변으로 저장(캐시 DTO 불변성 유지)
@@ -167,6 +169,36 @@ public final class StoreCacheDto implements Serializable {
                 ownerId,
                 ownerName,
                 favoriteCount,
+                viewCount,
+                distance,
+                businessHours,
+                tags
+        );
+    }
+
+    /**
+     * 조회수가 덮어씌워진 StoreCacheDto 반환 (Redis 절대값 반영용).
+     */
+    public StoreCacheDto withViewCount(Long viewCount) {
+        return new StoreCacheDto(
+                id,
+                name,
+                address,
+                phone,
+                lat,
+                lng,
+                introduction,
+                intro,
+                isOpen,
+                isSharing,
+                createdAt,
+                updatedAt,
+                categoryId,
+                categoryName,
+                ownerId,
+                ownerName,
+                favoriteCount,
+                viewCount != null ? viewCount : 0L,
                 distance,
                 businessHours,
                 tags

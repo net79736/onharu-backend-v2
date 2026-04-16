@@ -116,7 +116,8 @@ public class StoreControllerDto {
                 StoreRequestMapperDto.toBusinessHourResponsesFromCache(store.getBusinessHours()),
                 StoreRequestMapperDto.toTagNamesFromCache(store.getTags()),
                 resolveImages(images),
-                favoriteCount
+                favoriteCount,
+                store.getViewCount()
             ));
         }
     }
@@ -249,7 +250,10 @@ public class StoreControllerDto {
             List<String> images,
 
             @Schema(description = "찜 개수", example = "3")
-            Long favoriteCount
+            Long favoriteCount,
+
+            @Schema(description = "조회수", example = "12")
+            Long viewCount
     ) {
     }
 
