@@ -71,12 +71,6 @@ public class Store extends BaseEntity {
     @Column(name = "IS_SHARING", nullable = false)
     private Boolean isSharing = false;
 
-    /**
-     * 가게 조회수 (Redis 누적 → 스케줄러로 DB flush)
-     */
-    @Column(name = "VIEW_COUNT", nullable = false)
-    private Long viewCount = 0L;
-
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BusinessHours> businessHours = new ArrayList<>();
 
@@ -97,7 +91,6 @@ public class Store extends BaseEntity {
         this.intro = intro;
         this.isOpen = isOpen != null ? isOpen : false;
         this.isSharing = isSharing != null ? isSharing : false;
-        this.viewCount = 0L;
     }
 
     /**

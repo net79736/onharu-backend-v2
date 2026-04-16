@@ -135,7 +135,7 @@ public final class StoreCacheDto implements Serializable {
 
                 // 집계
                 swfc.favoriteCount(),
-                store.getViewCount() != null ? store.getViewCount() : 0L,
+                0L, // viewCount는 Redis 절대값을 상세 조회 시점에 덮어씌웁니다.
                 swfc.distance(),
 
                 // 컬렉션은 불변으로 저장(캐시 DTO 불변성 유지)

@@ -1,17 +1,21 @@
 package com.backend.onharu.infra.redis.count;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.store.model.Store;
-import com.backend.onharu.infra.db.store.StoreJpaRepository;
+import com.backend.onharu.domain.store.model.StoreCount;
+import com.backend.onharu.infra.db.store.StoreCountJpaRepository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 /**
  * Store 조회수 동기화 전략.
  *
- * <p>Redis Hash field "view" 값을 DB의 stores.view_count에 반영합니다.</p>
+ * <p>Redis Hash field "view" 값을 DB의 store_counts.view_count에 반영합니다.</p>
  */
 @Component
 @RequiredArgsConstructor
@@ -21,7 +25,8 @@ public class StoreViewCountStrategy implements CountStrategy {
     static final String PATTERN = KEY_PREFIX + "*";
     static final String FIELD_VIEW = "view";
 
-    private final StoreJpaRepository storeJpaRepository;
+    private final StoreCountJpaRepository storeCountJpaRepository;
+    private final EntityManager entityManager;
 
     @Override
     public DomainType getSupportedDomain() {
@@ -52,15 +57,29 @@ public class StoreViewCountStrategy implements CountStrategy {
     @Override
     @Transactional(readOnly = true)
     public CommonCount loadFromDatabase(long id) {
-        Store store = storeJpaRepository.findById(id).orElse(null);
-        long v = (store != null && store.getViewCount() != null) ? store.getViewCount() : 0L;
-        return new CommonCount(v);
+        return storeCountJpaRepository.findById(id)
+                .map(sc -> new CommonCount(sc.getViewCount() != null ? sc.getViewCount() : 0L))
+                .orElseGet(() -> new CommonCount(0L));
     }
 
     @Override
     @Transactional
     public void updateToDatabase(long id, CommonCount count) {
         // count.viewCount는 Redis Hash의 "절대 조회수"로 취급합니다. (감소 방지)
-        storeJpaRepository.setViewCountIfGreater(id, count.viewCount());
+        int updated = storeCountJpaRepository.setViewCountIfGreater(id, count.viewCount()); // Redis 값 반영
+        if (updated > 0) return;
+
+        // 토이 프로젝트 기준: StoreCount가 없으면 0으로 시작(혹은 생성 시도)만 하고 넘어갑니다.
+        // (Redis에만 있다가 유실될 수 있어도 무방)
+        try {
+            Store storeRef = entityManager.getReference(Store.class, id); // 프록시 조회
+            StoreCount sc = StoreCount.create(storeRef); // 생성
+            storeCountJpaRepository.save(sc); // 저장
+            storeCountJpaRepository.setViewCountIfGreater(id, count.viewCount()); // Redis 값 반영
+        } catch (DataIntegrityViolationException ignored) {
+            // 동시 생성/이미 존재 등: 무시
+        } catch (EntityNotFoundException ignored) {
+            // store 자체가 없으면 무시
+        }
     }
 }

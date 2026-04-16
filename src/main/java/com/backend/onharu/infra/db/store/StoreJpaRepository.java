@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -183,22 +182,4 @@ public interface StoreJpaRepository extends JpaRepository<Store, Long> {
      * 가게 이름으로 검색
      */
     List<Store> findAllByNameContainingIgnoreCase(String name);
-
-    /**
-     * 조회수(delta) 누적 반영 (Redis → DB bulk flush 용).
-     * clearAutomatically: 자동으로 영속성 컨텍스트 비우기
-     * flushAutomatically: 영속성 컨텍스트의 변경 사항을 DB에 반영
-     */
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE Store s SET s.viewCount = COALESCE(s.viewCount, 0) + :delta WHERE s.id = :storeId")
-    int incrementViewCount(@Param("storeId") Long storeId, @Param("delta") long delta);
-
-    /**
-     * 조회수를 절대값으로 설정합니다. (감소 방지)
-     *
-     * <p>Redis에 캐시된 조회수는 단조 증가만 하므로, DB 값보다 클 때만 업데이트합니다.</p>
-     */
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE Store s SET s.viewCount = :viewCount WHERE s.id = :storeId AND (s.viewCount IS NULL OR s.viewCount < :viewCount)")
-    int setViewCountIfGreater(@Param("storeId") Long storeId, @Param("viewCount") long viewCount);
 }

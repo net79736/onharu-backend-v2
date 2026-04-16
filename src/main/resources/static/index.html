@@ -226,6 +226,9 @@
 
           <div id="storeDetail" class="text-sm space-y-2"></div>
 
+          <!-- 리뷰(감사 리뷰) 섹션: 상세 카드와 분리된 별도 카드로 렌더링 -->
+          <div id="storeReviewSection" class="text-sm"></div>
+
           <button type="button" id="btnOpenReservationFlow" class="w-full py-3.5 rounded-xl bg-emerald-700 text-white text-sm font-semibold shadow-sm hover:bg-emerald-800 transition">
             예약하기
           </button>
@@ -1764,6 +1767,10 @@
     childReserveHint.classList.add('hidden');
     updateSelectedScheduleText();
 
+    // 리뷰 섹션은 storeDetail과 분리된 별도 카드로 렌더링
+    var storeReviewSection = document.getElementById('storeReviewSection');
+    if (storeReviewSection) storeReviewSection.innerHTML = '';
+
     var detailUrl = '/api/stores/' + storeId;
     if (storeGeoLat && storeGeoLng) {
       detailUrl += '?lat=' + encodeURIComponent(storeGeoLat) + '&lng=' + encodeURIComponent(storeGeoLng);
@@ -1859,13 +1866,221 @@
         '<div class="mt-2"><span class="text-slate-500 text-xs">한줄 소개</span><p class="mt-0.5">' + escapeHtml(s.intro || '—') + '</p></div>' +
         '<div class="mt-2"><span class="text-slate-500 text-xs">상세 소개</span><p class="mt-0.5 whitespace-pre-wrap">' + escapeHtml(s.introduction || '—') + '</p></div>' +
         '<div class="mt-2"><span class="text-slate-500 text-xs">태그</span><div class="mt-1">' + (tags || '<span class="text-slate-400 text-xs">—</span>') + '</div></div>' +
-        '<div class="mt-4"><span class="text-slate-500 text-xs font-medium">영업시간 (요일 순)</span>' +
-        '<table class="mt-1 w-full text-xs border border-slate-200 rounded overflow-hidden">' +
-        '<thead class="bg-slate-50"><tr><th class="text-left p-2">요일</th><th class="text-left p-2">오픈</th><th class="text-left p-2">마감</th></tr></thead><tbody>' +
-        bh.map(function (row) {
-          return '<tr class="border-t border-slate-100"><td class="p-2">' + escapeHtml(String(row.businessDay)) + '</td><td class="p-2">' + escapeHtml(String(row.openTime)) + '</td><td class="p-2">' + escapeHtml(String(row.closeTime)) + '</td></tr>';
-        }).join('') +
-        '</tbody></table></div>';
+        (bh && bh.length
+          ? (
+            '<div class="mt-4"><span class="text-slate-500 text-xs font-medium">영업시간 (요일 순)</span>' +
+            '<table class="mt-1 w-full text-xs border border-slate-200 rounded overflow-hidden">' +
+            '<thead class="bg-slate-50"><tr><th class="text-left p-2">요일</th><th class="text-left p-2">오픈</th><th class="text-left p-2">마감</th></tr></thead><tbody>' +
+            bh.map(function (row) {
+              return '<tr class="border-t border-slate-100"><td class="p-2">' + escapeHtml(String(row.businessDay)) + '</td><td class="p-2">' + escapeHtml(String(row.openTime)) + '</td><td class="p-2">' + escapeHtml(String(row.closeTime)) + '</td></tr>';
+            }).join('') +
+            '</tbody></table></div>'
+          )
+          : '');
+
+      // 리뷰(댓글) HTML은 storeDetail 밖(별도 카드)에 렌더링
+      var reviewSectionHtml =
+        '<section class="mt-6">' +
+          '<div class="rounded-3xl border border-slate-200 bg-white shadow-md overflow-hidden">' +
+            '<div class="px-5 py-4 bg-gradient-to-r from-indigo-50 via-white to-slate-50 border-b border-slate-200">' +
+              '<div class="flex flex-wrap items-center justify-between gap-2">' +
+                '<div class="min-w-[10rem]">' +
+                  '<div class="flex items-center gap-2">' +
+                    '<span class="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-600 text-white text-sm font-bold" aria-hidden="true">✍</span>' +
+                    '<div class="text-base font-semibold text-slate-900">리뷰</div>' +
+                  '</div>' +
+                  '<div class="mt-0.5 text-[11px] text-slate-500">GET <code>/api/reviews/stores/{storeId}</code></div>' +
+                '</div>' +
+                '<div class="flex items-center gap-2">' +
+                  '<button type="button" id="btnReloadReviews" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm">새로고침</button>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="px-5 py-4 bg-white">' +
+              '<div id="reviewWriteWrap" class="' + (isChildUser() ? '' : 'hidden') + ' rounded-2xl border border-emerald-200 bg-emerald-50/30 p-4">' +
+                '<div class="flex items-start justify-between gap-3">' +
+                  '<div>' +
+                    '<div class="text-sm font-semibold text-emerald-900">리뷰 작성</div>' +
+                    '<div class="text-[11px] text-slate-500 mt-0.5">아동만 · 이용완료(COMPLETED) 예약만 가능</div>' +
+                  '</div>' +
+                  '<span class="text-[10px] px-2 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold">POST /api/reviews/stores/{storeId}</span>' +
+                '</div>' +
+                '<div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">' +
+                  '<div class="sm:col-span-1">' +
+                    '<label class="block text-[11px] font-semibold text-slate-700 mb-1">예약 선택</label>' +
+                    '<select id="reviewReservationSelect" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400">' +
+                      '<option value="">불러오는 중…</option>' +
+                    '</select>' +
+                    '<p class="mt-1 text-[10px] text-slate-500">내 예약 · 리뷰 미작성 · 이 가게</p>' +
+                  '</div>' +
+                  '<div class="sm:col-span-2">' +
+                    '<label class="block text-[11px] font-semibold text-slate-700 mb-1">내용</label>' +
+                    '<textarea id="reviewContentInput" rows="3" maxlength="500" placeholder="감사 리뷰를 남겨주세요 (최대 500자)" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400"></textarea>' +
+                    '<div class="mt-2 flex flex-wrap items-center justify-between gap-2">' +
+                      '<span id="reviewWriteStatus" class="text-[11px] text-slate-500"></span>' +
+                      '<button type="button" id="btnSubmitReview" class="px-4 py-2 rounded-xl bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 shadow-sm">등록</button>' +
+                    '</div>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+
+              '<div id="reviewHintNonChild" class="' + (isChildUser() ? 'hidden' : '') + ' mt-4 text-[12px] text-slate-600 rounded-xl border border-slate-200 bg-white px-3 py-2">' +
+                '<strong class="text-slate-800">리뷰 작성 조건</strong> · 아동(CHILD) 로그인 + 이용완료(COMPLETED) 예약' +
+              '</div>' +
+
+              '<div id="reviewList" class="mt-4 space-y-2"></div>' +
+              '<div id="reviewPager" class="mt-4 flex items-center justify-between gap-2">' +
+                '<button type="button" id="btnReviewPrev" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">이전</button>' +
+                '<div class="text-[11px] text-slate-500"><span id="reviewPageLabel">—</span></div>' +
+                '<button type="button" id="btnReviewNext" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">다음</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</section>';
+
+      if (storeReviewSection) {
+        storeReviewSection.innerHTML = reviewSectionHtml;
+      }
+
+      // --------------------
+      // 리뷰(댓글) 기능
+      // --------------------
+      var reviewPageNum = 1;
+      var reviewTotalPages = 1;
+
+      function reviewCardHtml(r) {
+        var nick = escapeHtml(r && r.nickname ? r.nickname : '익명');
+        var content = escapeHtml(r && r.content ? r.content : '');
+        var dt = escapeHtml(r && r.createAt ? String(r.createAt) : '');
+        return (
+          '<div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">' +
+            '<div class="flex items-center justify-between gap-2">' +
+              '<div class="text-xs font-semibold text-slate-800">' + nick + '</div>' +
+              '<div class="text-[11px] text-slate-400 tabular-nums">' + dt + '</div>' +
+            '</div>' +
+            '<div class="mt-2 text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">' + content + '</div>' +
+          '</div>'
+        );
+      }
+
+      async function loadReviews(page) {
+        if (!selectedStoreId) return;
+        if (typeof page === 'number' && page >= 1) reviewPageNum = page;
+        var listEl = document.getElementById('reviewList');
+        var lblEl = document.getElementById('reviewPageLabel');
+        var prevBtn = document.getElementById('btnReviewPrev');
+        var nextBtn = document.getElementById('btnReviewNext');
+        if (listEl) listEl.innerHTML = '<div class="text-[11px] text-slate-500 px-1 py-2">불러오는 중…</div>';
+        try {
+          var url = '/api/reviews/stores/' + selectedStoreId +
+            '?pageNum=' + reviewPageNum +
+            '&perPage=5&sortField=id&sortDirection=desc';
+          var data = await apiJson('GET', url);
+          var rows = (data && data.reviews) ? data.reviews : [];
+          var tp = data && data.totalPages != null ? Number(data.totalPages) : 1;
+          reviewTotalPages = Math.max(1, tp);
+          if (reviewPageNum > reviewTotalPages) {
+            reviewPageNum = reviewTotalPages;
+          }
+          if (!rows.length) {
+            if (listEl) listEl.innerHTML = '<div class="text-[11px] text-slate-500 px-1 py-2">아직 리뷰가 없습니다.</div>';
+          } else {
+            if (listEl) listEl.innerHTML = rows.map(reviewCardHtml).join('');
+          }
+          if (lblEl) lblEl.textContent = reviewPageNum + ' / ' + reviewTotalPages;
+          if (prevBtn) prevBtn.disabled = reviewPageNum <= 1;
+          if (nextBtn) nextBtn.disabled = reviewPageNum >= reviewTotalPages;
+        } catch (e) {
+          if (listEl) listEl.innerHTML = '<div class="text-[11px] text-rose-700 px-1 py-2">리뷰 조회 실패: ' + escapeHtml(e.message || e) + '</div>';
+          if (lblEl) lblEl.textContent = '—';
+        }
+      }
+
+      async function loadWritableReservations() {
+        var sel = document.getElementById('reviewReservationSelect');
+        if (!sel) return;
+        if (!isChildUser()) {
+          sel.innerHTML = '<option value="">(아동 로그인 필요)</option>';
+          return;
+        }
+        try {
+          // COMPLETED 예약만 불러오고, 현재 가게 + reviewed=false만 남김
+          var url = '/api/childrens/reservations?pageNum=1&perPage=50&statusFilter=COMPLETED&sortField=scheduleDate&sortDirection=desc';
+          var data = await apiJson('GET', url);
+          var arr = (data && data.reservations) ? data.reservations : [];
+          var filtered = arr.filter(function (r) {
+            if (!r) return false;
+            if (String(r.status || '').toUpperCase() !== 'COMPLETED') return false;
+            if (r.reviewed === true) return false;
+            return Number(r.storeId) === Number(selectedStoreId);
+          });
+          if (!filtered.length) {
+            sel.innerHTML = '<option value="">(작성 가능한 예약 없음)</option>';
+            return;
+          }
+          sel.innerHTML = '<option value="">예약을 선택하세요</option>' + filtered.map(function (r) {
+            var date = r.scheduleDate ? String(r.scheduleDate) : '';
+            var start = r.startTime ? String(r.startTime).slice(0,5) : '';
+            var label = '예약 #' + r.id + ' · ' + date + ' ' + start;
+            return '<option value="' + String(r.id) + '">' + escapeHtml(label) + '</option>';
+          }).join('');
+        } catch (e) {
+          sel.innerHTML = '<option value="">(예약 로드 실패)</option>';
+        }
+      }
+
+      async function submitReview() {
+        if (!isChildUser()) {
+          alert('아동(CHILD) 로그인 후 작성할 수 있습니다.');
+          return;
+        }
+        if (!selectedStoreId) return;
+        var sel = document.getElementById('reviewReservationSelect');
+        var input = document.getElementById('reviewContentInput');
+        var statusEl = document.getElementById('reviewWriteStatus');
+        var btn = document.getElementById('btnSubmitReview');
+        if (!sel || !input || !btn) return;
+        var reservationId = sel.value ? String(sel.value).trim() : '';
+        var content = input.value ? input.value.trim() : '';
+        if (!reservationId) {
+          alert('예약을 선택하세요. (이용완료 예약만 리뷰 작성 가능)');
+          return;
+        }
+        if (!content) {
+          alert('리뷰 내용을 입력하세요.');
+          return;
+        }
+        btn.disabled = true;
+        if (statusEl) statusEl.textContent = '등록 중…';
+        try {
+          await apiJson('POST', '/api/reviews/stores/' + selectedStoreId, {
+            reservationId: Number(reservationId),
+            content: content
+          });
+          if (statusEl) statusEl.textContent = '등록 완료';
+          input.value = '';
+          await loadWritableReservations(); // reviewed=true 반영 위해 다시 로드
+          await loadReviews(1);
+        } catch (e) {
+          if (statusEl) statusEl.textContent = '';
+          alert('리뷰 등록 실패: ' + (e.message || e));
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      var reloadBtn = document.getElementById('btnReloadReviews');
+      if (reloadBtn) reloadBtn.addEventListener('click', function () { loadReviews(reviewPageNum); });
+      var prevBtn = document.getElementById('btnReviewPrev');
+      if (prevBtn) prevBtn.addEventListener('click', function () { if (reviewPageNum > 1) loadReviews(reviewPageNum - 1); });
+      var nextBtn = document.getElementById('btnReviewNext');
+      if (nextBtn) nextBtn.addEventListener('click', function () { if (reviewPageNum < reviewTotalPages) loadReviews(reviewPageNum + 1); });
+      var submitBtn = document.getElementById('btnSubmitReview');
+      if (submitBtn) submitBtn.addEventListener('click', submitReview);
+
+      // 최초 로드
+      loadReviews(1);
+      loadWritableReservations();
 
       // 찜 토글(하트): cache evict → 다음 GET에서 favoriteCount 갱신 확인용
       var favBtn = document.getElementById('btnToggleFavoriteHeart');
