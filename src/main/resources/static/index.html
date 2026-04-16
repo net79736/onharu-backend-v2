@@ -1888,6 +1888,7 @@
                   '<div class="flex items-center gap-2">' +
                     '<span class="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-600 text-white text-sm font-bold" aria-hidden="true">✍</span>' +
                     '<div class="text-base font-semibold text-slate-900">리뷰</div>' +
+                    '<span id="reviewTotalCountBadge" class="ml-1 inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-700">0개</span>' +
                   '</div>' +
                   '<div class="mt-0.5 text-[11px] text-slate-500">GET <code>/api/reviews/stores/{storeId}</code></div>' +
                 '</div>' +
@@ -1968,6 +1969,7 @@
         if (typeof page === 'number' && page >= 1) reviewPageNum = page;
         var listEl = document.getElementById('reviewList');
         var lblEl = document.getElementById('reviewPageLabel');
+        var totalEl = document.getElementById('reviewTotalCountBadge');
         var prevBtn = document.getElementById('btnReviewPrev');
         var nextBtn = document.getElementById('btnReviewNext');
         if (listEl) listEl.innerHTML = '<div class="text-[11px] text-slate-500 px-1 py-2">불러오는 중…</div>';
@@ -1977,8 +1979,10 @@
             '&perPage=5&sortField=id&sortDirection=desc';
           var data = await apiJson('GET', url);
           var rows = (data && data.reviews) ? data.reviews : [];
+          var tc = data && data.totalCount != null ? Number(data.totalCount) : rows.length;
           var tp = data && data.totalPages != null ? Number(data.totalPages) : 1;
           reviewTotalPages = Math.max(1, tp);
+          if (totalEl) totalEl.textContent = (isNaN(tc) ? 0 : tc) + '개';
           if (reviewPageNum > reviewTotalPages) {
             reviewPageNum = reviewTotalPages;
           }
@@ -1993,6 +1997,7 @@
         } catch (e) {
           if (listEl) listEl.innerHTML = '<div class="text-[11px] text-rose-700 px-1 py-2">리뷰 조회 실패: ' + escapeHtml(e.message || e) + '</div>';
           if (lblEl) lblEl.textContent = '—';
+          if (totalEl) totalEl.textContent = '—';
         }
       }
 
