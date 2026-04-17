@@ -35,6 +35,8 @@ public class SecurityConfig {
             "/",
             "/index.html",
             "/oauth2/**", "/login/oauth2/**", "/signup/**",
+            "/js/**", // 채팅 UI 자바스크립트
+            "/partials/**", // 채팅 UI 파트
             "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**",
             "/error", "/favicon.ico",
             "/api/users/login/**", "/api/users/signup/**",

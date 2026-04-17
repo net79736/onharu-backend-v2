@@ -32,6 +32,25 @@ stompClient.connect({}, function (frame) {
 });
 ```
 
+## 코드 흐름 설명
+```
+모달 열기
+  └─ loadChatRooms()          ← GET /api/chats (목록)
+       └─ 채팅방 클릭
+            └─ openChatRoom()
+                 ├─ loadMessages()     ← GET /api/chats/{id}/messages (REST, 커서 기반)
+                 │    └─ 스크롤 상단 도달 시 더 불러오기 (페이징)
+                 └─ connectStomp()     ← ws:// 연결
+                      └─ subscribe /topic/chat/{id}
+                           └─ 새 메시지 수신 → renderMessages()
+
+전송 버튼 / Enter
+  └─ sendChatMessage()
+       └─ stompClient.publish /app/chat/send
+```
+
+
+
 ### 📡 STOMP 실시간 채팅 전체 통신 로그 분석
 ![이미지](./images/websocket_1.png)
 
