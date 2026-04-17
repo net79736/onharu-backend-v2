@@ -155,7 +155,7 @@ public interface IChatController {
      * DELETE /api/chats/{chatRoomId}
      */
     @Operation(summary = "채팅방 탈퇴", description = "채팅방에서 탈퇴합니다.")
-    ResponseEntity<ResponseDTO<String>> leaveChatRoom(
+    ResponseEntity<ResponseDTO<Void>> leaveChatRoom(
 
             @Parameter(description = "채팅방 ID", example = "1", required = true)
             @PathVariable Long chatRoomId

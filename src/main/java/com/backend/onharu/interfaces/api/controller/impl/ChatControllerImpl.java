@@ -1,25 +1,46 @@
 package com.backend.onharu.interfaces.api.controller.impl;
 
+import java.util.List;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.backend.onharu.application.ChatFacade;
+import com.backend.onharu.domain.chat.dto.ChatMessageCommand.ReadMessageCommand;
+import com.backend.onharu.domain.chat.dto.ChatMessageQuery.FindChatMessageQuery;
+import com.backend.onharu.domain.chat.dto.ChatParticipantQuery.GetChatRoomSummaryQuery;
+import com.backend.onharu.domain.chat.dto.ChatRoomCommand.CreateChatRoomCommand;
+import com.backend.onharu.domain.chat.dto.ChatRoomCommand.EnterChatRoomCommand;
+import com.backend.onharu.domain.chat.dto.ChatRoomCommand.InviteChatRoomCommand;
+import com.backend.onharu.domain.chat.dto.ChatRoomCommand.LeaveChatRoomCommand;
+import com.backend.onharu.domain.chat.dto.ChatRoomCommand.UpdateChatRoomCommand;
 import com.backend.onharu.domain.chat.model.ChatRoom;
 import com.backend.onharu.domain.common.enums.RoomType;
 import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
 import com.backend.onharu.interfaces.api.controller.IChatController;
+import com.backend.onharu.interfaces.api.dto.ChatControllerDto.ChatRoomMessageResponse;
+import com.backend.onharu.interfaces.api.dto.ChatControllerDto.ChatRoomMessagesResponse;
+import com.backend.onharu.interfaces.api.dto.ChatControllerDto.ChatRoomResponse;
+import com.backend.onharu.interfaces.api.dto.ChatControllerDto.ChatRoomsResponse;
+import com.backend.onharu.interfaces.api.dto.ChatControllerDto.CreateChatRoomRequest;
+import com.backend.onharu.interfaces.api.dto.ChatControllerDto.CreateChatRoomResponse;
+import com.backend.onharu.interfaces.api.dto.ChatControllerDto.InviteChatRoomRequest;
+import com.backend.onharu.interfaces.api.dto.ChatControllerDto.ReadMessageRequest;
+import com.backend.onharu.interfaces.api.dto.ChatControllerDto.UpdateChatRoomRequest;
 import com.backend.onharu.utils.SecurityUtils;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
-import static com.backend.onharu.domain.chat.dto.ChatMessageCommand.ReadMessageCommand;
-import static com.backend.onharu.domain.chat.dto.ChatMessageQuery.FindChatMessageQuery;
-import static com.backend.onharu.domain.chat.dto.ChatParticipantQuery.GetChatRoomSummaryQuery;
-import static com.backend.onharu.domain.chat.dto.ChatRoomCommand.*;
-import static com.backend.onharu.interfaces.api.dto.ChatControllerDto.*;
 
 @Slf4j
 @RestController
@@ -191,7 +212,7 @@ public class ChatControllerImpl implements IChatController {
      * DELETE /api/chats/{chatRoomId}
      */
     @DeleteMapping("/{chatRoomId}")
-    public ResponseEntity<ResponseDTO<String>> leaveChatRoom(
+    public ResponseEntity<ResponseDTO<Void>> leaveChatRoom(
             @PathVariable Long chatRoomId
     ) {
         log.info("채팅방 탈퇴");
@@ -204,11 +225,8 @@ public class ChatControllerImpl implements IChatController {
                 new LeaveChatRoomCommand(chatRoomId, userId)
         );
 
-        // 응답 생성
-        String response = "채팅방 탈퇴 성공";
-
-        return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .body(ResponseDTO.success(response));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.<Void>success(null));
     }
 
     /**
