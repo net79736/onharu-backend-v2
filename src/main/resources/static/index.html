@@ -2945,7 +2945,7 @@
     });
 
     /* ---------- 채팅방 열기 ---------- */
-    function openChatRoom(roomId, roomName) {
+    async function openChatRoom(roomId, roomName) {
       if (activeChatRoomId === roomId) return;
       disconnectStomp();
       activeChatRoomId = roomId;
@@ -2962,7 +2962,13 @@
       btnChatSend.disabled = true;
 
       highlightActiveRoom();
-      loadMessages(roomId, null);
+      try {
+        await apiJson('POST', '/api/chats/' + roomId);
+      } catch (e) {
+        console.warn('[chat] 입장(읽음 처리) 실패', e);
+      }
+      await loadMessages(roomId, null);
+      loadChatRooms();
       connectStomp(roomId);
     }
 
@@ -3090,6 +3096,11 @@
               chatRoomMessages.unshift(newMsg);
               renderMessages();
               chatMessages.scrollTop = chatMessages.scrollHeight;
+              if (Number(roomId) === Number(activeChatRoomId)) {
+                apiJson('POST', '/api/chats/' + roomId).then(function () { loadChatRooms(); }).catch(function (err) {
+                  console.warn('[chat] 실시간 읽음 처리 실패', err);
+                });
+              }
             }
           } catch (e) {
             console.error('[STOMP] parse error', e);
