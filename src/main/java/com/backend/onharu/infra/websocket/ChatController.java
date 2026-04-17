@@ -1,13 +1,15 @@
 package com.backend.onharu.infra.websocket;
 
-import com.backend.onharu.application.ChatFacade;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-import static com.backend.onharu.domain.chat.dto.ChatMessageCommand.*;
+import com.backend.onharu.application.ChatFacade;
+import com.backend.onharu.domain.chat.dto.ChatMessageCommand.CreateChatMessageCommand;
+import com.backend.onharu.domain.support.ChatStompDestination;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 웹소켓 메시지 처리 컨트롤러 (STOMP 사용)
@@ -21,23 +23,29 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate; // 메시지 구독 경로에 브로드 캐스팅 역할
 
     /**
-     * 메시지 전송
-     * @param request 채팅방 ID, 발신자 ID, 메시지 내용을 포함한 요청
+     * [실제 메시지 배달 로직]
+     * 클라이언트가 "/app/chat/send"로 메시지를 보내면, 이 메서드가 실행됩니다.
      */
-    @MessageMapping("/chat/send")
+    @MessageMapping(ChatStompDestination.MESSAGE_MAPPING_CHAT_SEND)
     public void sendMessage(ChatMessageRequest request) {
-        log.info("메시지 전송: {}", request);
+        log.info("메시지 전송 요청 발생: {}", request);
 
-        // 채팅 메시지 생성 호출 및 응답 생성
+        // 2. [비즈니스 로직] 데이터베이스(DB)에 저장하고, 화면에 보여줄 예쁜 데이터를 만듭니다.
+        // "누가, 어느 방에, 어떤 내용"을 썼는지 DB에 기록하는 역할을 합니다.
         ChatMessageResponse response = chatFacade.createChatMessage(
                 new CreateChatMessageCommand(
-                        request.chatRoomId(),
-                        request.senderId(),
-                        request.content()
+                    request.chatRoomId(), // 어느 채팅방인지
+                    request.senderId(),   // 누가 보냈는지
+                    request.content()     // 뭐라고 했는지
                 )
         );
 
-        // 해당 채팅방에 참여한 메시지 구독자에게 전송(브로드캐스팅)
-        messagingTemplate.convertAndSend("/topic/chat/" + request.chatRoomId(), response);
+        // 3. [배달/방송] 처리가 끝난 메시지를 해당 채팅방을 '구독' 중인 모든 사람에게 던집니다.
+        // 주소 앞에 "/topic"이 붙었죠? 아까 설정한 '브로커'가 이 주소를 보고 
+        // "아! /topic/chat/방번호 주소를 듣고 있는 모든 사람한테 다 보내줄게!" 하고 실시간 배달을 완료합니다.
+        messagingTemplate.convertAndSend(
+            ChatStompDestination.topicChatRoom(request.chatRoomId()), // "/topic/chat/{chatRoomId}"
+            response
+        );
     }
 }

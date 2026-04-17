@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
  * @param createdAt 메시지 생성시간
  */
 public record ChatMessageResponse(
-        Long chatMessageId,
-        Long sender,
-        String content,
-        LocalDateTime createdAt
+        Long chatMessageId, // 채팅메시지 ID
+        Long sender, // 발신자(메세지를 보낸 사용자 ID)
+        String content, // 메시지 내용
+        LocalDateTime createdAt // 메시지 생성시간
 ) {
 }

@@ -211,9 +211,9 @@ com.backend.onharu.interfaces.api.common.dto.ErrorResponse
 | `PATCH` | `/api/chats/{chatRoomId}` | 방 이름 수정 |
 | `POST` | `/api/chats/{chatRoomId}/read` | 읽음 처리 |
 | `GET` | `/api/chats` | 내 채팅방 목록 |
-| `GET` | `/api/chats/{chatRoomId}/messages` | 메시지 커서 조회 |
+| `GET` | `/api/chats/{chatRoomId}/messages` | 채팅방 메시지 조회 |
 | `DELETE` | `/api/chats/{chatRoomId}` | 퇴장 |
-| `POST` | `/api/chats/{chatRoomId}` | 입장(읽음 처리) |
+| `POST` | `/api/chats/{chatRoomId}` | 입장 |
 
 ### 3.13 Upload (S3) — `S3ControllerImpl` 베이스 `/api/upload`
 

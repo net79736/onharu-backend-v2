@@ -2881,6 +2881,15 @@
     var isLoadingMore = false;
     var oldestCursorId = null;
 
+    /** STOMP destination — 서버 ChatStompDestination(domain.support)과 규칙 동일하게 유지 */
+    var CHAT_STOMP = {
+      wsPath: '/ws-chat',
+      topicRoom: function (roomId) {
+        return '/topic/chat/' + roomId;
+      },
+      sendDestination: '/app/chat/send'
+    };
+
     function formatChatDate(iso) {
       var d = new Date(iso);
       return d.toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' });
@@ -2954,7 +2963,7 @@
     /* ---------- 채팅방 열기 ---------- */
     async function openChatRoom(roomId, roomName) {
       if (activeChatRoomId === roomId) return;
-      disconnectStomp();
+      disconnectStomp(); // 기존 채팅방 연결 끊기
       activeChatRoomId = roomId;
       activeChatRoomName = roomName;
       chatRoomMessages = [];
@@ -2975,8 +2984,8 @@
         console.warn('[chat] 입장(읽음 처리) 실패', e);
       }
       await loadMessages(roomId, null);
-      loadChatRooms();
-      connectStomp(roomId);
+      loadChatRooms(); // 채팅방 목록 새로고침
+      connectStomp(roomId); // 채팅방 연결
     }
 
     function highlightActiveRoom() {
@@ -3080,7 +3089,7 @@
         return;
       }
       var wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
-      var brokerURL = wsProto + '://' + location.host + '/ws-chat';
+      var brokerURL = wsProto + '://' + location.host + CHAT_STOMP.wsPath;
 
       stompClient = new StompJs.Client({
         brokerURL: brokerURL,
@@ -3095,7 +3104,7 @@
         btnChatSend.disabled = false;
         chatInput.focus();
 
-        stompClient.subscribe('/topic/chat/' + roomId, function (frame) {
+        stompClient.subscribe(CHAT_STOMP.topicRoom(roomId), function (frame) {
           try {
             var newMsg = JSON.parse(frame.body);
             var dup = chatRoomMessages.some(function (m) { return m.chatMessageId === newMsg.chatMessageId; });
@@ -3154,7 +3163,7 @@
       if (!content || !stompClient || !stompClient.connected || !activeChatRoomId) return;
       var senderId = currentUser ? (currentUser.userId || currentUser.id) : 0;
       stompClient.publish({
-        destination: '/app/chat/send',
+        destination: CHAT_STOMP.sendDestination,
         body: JSON.stringify({
           chatRoomId: activeChatRoomId,
           senderId: senderId,
