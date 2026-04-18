@@ -84,7 +84,7 @@ com.backend.onharu/
 │   └── dto/                        # 퍼사드 전용 DTO 등
 ├── domain/                         # 도메인별 모델·서비스·리포지토리 인터페이스·DTO
 │   ├── outbox/                     # 트랜잭션 아웃박스(OutboxEvent, OutboxEventRepository …)
-│   ├── event/                      # EventPublisher, ChatKafkaOutboxPort 등 메시징 포트
+│   ├── event/                      # ChatKafkaOutboxPort 등 Kafka 관련 도메인 포트
 │   ├── chat/
 │   ├── child/
 │   ├── common/                     # BaseEntity, Enum, JpaAuditingConfig, SecurityAuditorAware 등

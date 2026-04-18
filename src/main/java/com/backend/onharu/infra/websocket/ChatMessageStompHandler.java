@@ -2,6 +2,7 @@ package com.backend.onharu.infra.websocket;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -9,12 +10,10 @@ import org.springframework.stereotype.Controller;
 import com.backend.onharu.application.ChatFacade;
 import com.backend.onharu.domain.chat.dto.ChatMessageCommand.CreateChatMessageCommand;
 import com.backend.onharu.domain.event.ChatKafkaOutboxPort;
-import com.backend.onharu.domain.event.EventPublisher;
 import com.backend.onharu.domain.support.ChatStompDestination;
+import com.backend.onharu.infra.kafka.KafkaProducer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.springframework.beans.factory.ObjectProvider;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,11 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-public class ChatController {
+public class ChatMessageStompHandler {
 
     private final ChatFacade chatFacade;
     private final SimpMessagingTemplate messagingTemplate; // 메시지 구독 경로에 브로드 캐스팅 역할
-    private final ObjectProvider<EventPublisher> eventPublisher;
+    private final ObjectProvider<KafkaProducer> kafkaProducer;
     /** 아웃박스 사용 시 채팅 Kafka 적재는 DB 트랜잭션 안에서만 처리하고, 여기서는 직접 발행하지 않습니다. */
     private final ObjectProvider<ChatKafkaOutboxPort> chatKafkaOutboxPort;
     private final ObjectMapper objectMapper;
@@ -63,15 +62,14 @@ public class ChatController {
         // 4. Kafka: 아웃박스 활성 시 Facade 에서 이미 적재했으므로 여기서는 직접 발행하지 않습니다.
         // 아웃박스 비활성 + Kafka 활성 시에만 기존 즉시 발행 경로를 씁니다.
         if (chatKafkaOutboxPort.getIfAvailable() == null) {
-            eventPublisher.ifAvailable(publisher -> publishChatEvent(publisher, request, response));
+            kafkaProducer.ifAvailable(producer -> this.publishChatEvent(producer, request, response));
         }
     }
 
     /**
-     * STOMP 처리 직후 동일 내용을 Kafka 로 비동기 적재(coupon/movie 의 publish 패턴).
-     * onharu.kafka.enabled=false 이면 빈이 없어 호출되지 않습니다.
+     * STOMP 처리 직후 동일 내용을 Kafka 로 비동기 적재
      */
-    private void publishChatEvent(EventPublisher publisher, ChatMessageRequest request, ChatMessageResponse response) {
+    private void publishChatEvent(KafkaProducer producer, ChatMessageRequest request, ChatMessageResponse response) {
         try {
             String payload = objectMapper.writeValueAsString(Map.of(
                     "chatRoomId", request.chatRoomId(),
@@ -80,7 +78,7 @@ public class ChatController {
                     "content", response.content(),
                     "createdAt", response.createdAt().toString()
             ));
-            publisher.publish(payload);
+            producer.publish(payload);
         } catch (JsonProcessingException e) {
             log.warn("Kafka 채팅 이벤트 JSON 직렬화 실패: {}", e.getMessage());
         }

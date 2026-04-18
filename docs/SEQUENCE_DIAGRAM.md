@@ -130,7 +130,7 @@ sequenceDiagram
     SimpMessagingTemplate-->>Client: SUBSCRIBE /topic/chat/{id} 인 클라이언트에 전달
 ```
 
-Kafka 로의 전송은 **STOMP 이후 비동기**이며, 기본은 **아웃박스 릴레이**(`OutboxRelayScheduler` → 브로커)이다. 아웃박스를 끈 경우에만 `ChatController` 가 `EventPublisher` 로 즉시 발행한다. 흐름·설정은 `docs/chat-kafka-flow.md` 참고.
+Kafka 로의 전송은 **STOMP 이후 비동기**이며, 기본은 **아웃박스 릴레이**(`OutboxRelayScheduler` → 브로커)이다. 아웃박스를 끈 경우에만 `ChatMessageStompHandler` 가 `KafkaProducer` 로 즉시 발행한다. 흐름·설정은 `docs/chat-kafka-flow.md` 참고.
 
 ---
 

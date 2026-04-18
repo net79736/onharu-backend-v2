@@ -234,7 +234,7 @@ REST가 아니라 **메시징**으로 동작한다. 설정은 `WebSocketConfigur
 | SockJS/STOMP 엔드포인트 | `/ws-chat` |
 | 클라이언트→서버 prefix | `/app` |
 | 구독 prefix | `/topic`, `/queue` |
-| 메시지 전송 예시 | `@MessageMapping("/chat/send")` → `infra.websocket.ChatController` |
+| 메시지 전송 예시 | `@MessageMapping("/chat/send")` → `infra.websocket.ChatMessageStompHandler` |
 
 브라우저·클라이언트는 STOMP 클라이언트로 연결 후 `/app/chat/send` 등으로 송신한다.
 

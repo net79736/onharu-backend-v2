@@ -194,6 +194,9 @@ public class ChatFacade {
                 chatMessage.getContent(),
                 chatMessage.getCreatedAt()
         );
+
+        // 아웃 박스 활성 시 Kafka 발행용 페이로드를 아웃박스에 적재
+        // ChatKafkaOutboxAdapter 구현체가 주입
         chatKafkaOutboxPort.ifAvailable(port -> port.enqueueChatMessagePublished(
                 command.chatRoomId(),
                 chatMessage.getId(),

@@ -148,7 +148,7 @@
 
 ### 6.5 명시적 비포함·선택 기술
 
-- **Apache Kafka / Spring Kafka** 는 `build.gradle` 에 포함되어 있으며, **`onharu.kafka.enabled`** 로 켜고 끕니다. 채팅 이벤트는 **트랜잭션 아웃박스**(`outbox_events` + 릴레이) 또는 설정에 따라 **즉시 `EventPublisher` 발행**으로 Kafka에 적재할 수 있습니다. 상세는 `docs/chat-kafka-flow.md` 를 본다.
+- **Apache Kafka / Spring Kafka** 는 `build.gradle` 에 포함되어 있으며, **`onharu.kafka.enabled`** 로 켜고 끕니다. 채팅 이벤트는 **트랜잭션 아웃박스**(`outbox_events` + 릴레이) 또는 설정에 따라 **`KafkaProducer` 즉시 발행**으로 Kafka에 적재할 수 있습니다. 상세는 `docs/chat-kafka-flow.md` 를 본다.
 - **대기열 토큰·영화 좌석·지갑·결제 게이트** 등은 **본 저장소 요구사항에 해당하지 않는다**.
 
 ---

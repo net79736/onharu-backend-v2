@@ -19,7 +19,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import com.backend.onharu.domain.event.EventPublisher;
+import com.backend.onharu.infra.kafka.KafkaProducer;
 
 /**
  * coupon-issue-v3 {@code KafkaIntegrationTest} / movie {@code @EmbeddedKafka} 패턴과 동일한 축:
@@ -56,7 +56,7 @@ class KafkaIntegrationTest {
     static final String DEFAULT_TOPIC = "onharu-chat";
 
     @Autowired
-    private EventPublisher eventPublisher;
+    private KafkaProducer kafkaProducer;
 
     @Autowired
     private KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
@@ -84,7 +84,7 @@ class KafkaIntegrationTest {
     @DisplayName("기본 토픽 publish 와 명시 토픽 publish 모두 컨슈머가 수신한다")
     void publish_defaultAndExplicitTopic_deliveredToListener() {
         String payloadDefault = "embedded-default-" + System.nanoTime();
-        eventPublisher.publish(payloadDefault);
+        kafkaProducer.publish(payloadDefault);
         await()
                 .atMost(30, TimeUnit.SECONDS)
                 .pollInterval(Duration.ofMillis(100))
@@ -93,7 +93,7 @@ class KafkaIntegrationTest {
         KafkaTestMessageCollector.clearReceivedMessages();
 
         String payloadExplicit = "embedded-explicit-" + System.nanoTime();
-        eventPublisher.publish(DEFAULT_TOPIC, payloadExplicit);
+        kafkaProducer.publish(DEFAULT_TOPIC, payloadExplicit);
         await()
                 .atMost(30, TimeUnit.SECONDS)
                 .pollInterval(Duration.ofMillis(100))

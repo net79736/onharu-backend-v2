@@ -32,11 +32,11 @@ Kafka는 “채팅 화면을 그리는 유일한 경로”가 **아닙니다**.
 - **클라이언트 → 서버 (채팅 전송)**  
   - **Destination**: `/app/chat/send`  
   - `APP_PREFIX`(`/app`) + `MESSAGE_MAPPING_CHAT_SEND`(`/chat/send`)  
-  - 서버의 `ChatController.sendMessage` 가 `@MessageMapping` 으로 이 요청을 받습니다.
+  - 서버의 `ChatMessageStompHandler.sendMessage` 가 `@MessageMapping` 으로 이 요청을 받습니다.
 
 - **서버 → 클라이언트 (방 안 브로드캐스트)**  
   - **Destination**: `/topic/chat/{chatRoomId}`  
-  - `ChatController` 가 `SimpMessagingTemplate.convertAndSend` 로 이 주소에 보내면,  
+  - `ChatMessageStompHandler` 가 `SimpMessagingTemplate.convertAndSend` 로 이 주소에 보내면,  
     그 방을 **subscribe** 한 모든 세션에 메시지가 갑니다.
 
 즉, **“채팅 한 번 보내기”의 사용자 관점 흐름**은 대략 다음과 같습니다.
@@ -48,7 +48,7 @@ Kafka는 “채팅 화면을 그리는 유일한 경로”가 **아닙니다**.
 
 ---
 
-## 3. 서버 내부 처리 순서 (`ChatController` / `ChatFacade`)
+## 3. 서버 내부 처리 순서 (`ChatMessageStompHandler` / `ChatFacade`)
 
 `sendMessage` 가 호출되면 순서는 다음과 같습니다.
 
@@ -68,8 +68,8 @@ Kafka는 “채팅 화면을 그리는 유일한 경로”가 **아닙니다**.
 
    | 조건 | 동작 |
    |------|------|
-   | `onharu.kafka.enabled=true` **이고** `onharu.kafka.outbox.enabled=true`(기본) | **아웃박스**: `ChatFacade`에서 이미 적재했으므로 `ChatController`는 **직접 `EventPublisher`를 호출하지 않음**. 이후 `OutboxRelayScheduler`가 PENDING 행을 읽어 `KafkaTemplate`으로 브로커에 전송하고 행을 **SENT**로 갱신합니다. |
-   | `onharu.kafka.enabled=true` **이고** `onharu.kafka.outbox.enabled=false` | **즉시 발행(레거시 비교용)**: `ChatController`가 `ObjectProvider<EventPublisher>`로 `KafkaProducer.publish(...)` 를 호출해 곧바로 기본 토픽으로 전송합니다. |
+   | `onharu.kafka.enabled=true` **이고** `onharu.kafka.outbox.enabled=true`(기본) | **아웃박스**: `ChatFacade`에서 이미 적재했으므로 `ChatMessageStompHandler`는 **`KafkaProducer`를 호출하지 않음**. 이후 `OutboxRelayScheduler`가 PENDING 행을 읽어 `KafkaTemplate`으로 브로커에 전송하고 행을 **SENT**로 갱신합니다. |
+   | `onharu.kafka.enabled=true` **이고** `onharu.kafka.outbox.enabled=false` | **즉시 발행**: `ChatMessageStompHandler`가 `ObjectProvider<KafkaProducer>`로 `KafkaProducer.publish(...)` 를 호출해 곧바로 기본 토픽으로 전송합니다. |
 
 Kafka 직렬화 필드 예시 (코드 기준):
 
@@ -79,13 +79,13 @@ Kafka 직렬화 필드 예시 (코드 기준):
 
 ## 4. Kafka Producer·릴레이
 
-### 4.1 `EventPublisher` / `KafkaProducer`
+### 4.1 `KafkaProducer`
 
-- **클래스**: `KafkaProducer` (`EventPublisher` 구현)  
+- **클래스**: `KafkaProducer`  
 - **조건**: `@ConditionalOnProperty(name = "onharu.kafka.enabled", havingValue = "true")`  
 - **토픽**: `spring.kafka.template.default-topic` → 설정상 기본값 **`onharu-chat`**  
 - **브로커 주소**: `spring.kafka.bootstrap-servers` → 기본 **`localhost:9092`** (환경변수 `KAFKA_BOOTSTRAP_SERVERS` 로 변경 가능)  
-- **용도**: 아웃박스를 끈 경우 채팅 STOMP 직후 **즉시 발행**; 또는 도메인에서 직접 `publish` 호출 시.
+- **용도**: 아웃박스를 끈 경우 채팅 STOMP 직후 **즉시 발행**; 테스트·기타 호출에서 `publish` 사용.
 
 발행은 `KafkaTemplate` 을 사용하며, 전송 결과는 비동기로 로그에 남깁니다.
 
@@ -134,7 +134,7 @@ Kafka 직렬화 필드 예시 (코드 기준):
 핵심만 정리하면:
 
 - **`onharu.kafka.enabled`** — Kafka 빈·`KafkaProducerConfig` 로드 여부 (`ONHARU_KAFKA_ENABLED` 등으로 제어 가능).
-- **`onharu.kafka.outbox.enabled`** — `true`(기본)면 채팅은 아웃박스 경로; `false`면 STOMP 직후 `EventPublisher` 즉시 발행.
+- **`onharu.kafka.outbox.enabled`** — `true`(기본)면 채팅은 아웃박스 경로; `false`면 STOMP 직후 `KafkaProducer` 즉시 발행.
 - **`onharu.kafka.outbox.relay-delay-ms`** — 릴레이 스케줄 주기(밀리초).
 - **`onharu.kafka.system-topic`**, **`onharu.kafka.system-consumer-group`** — 시스템 컨슈머용.
 - **`KafkaProducerConfig`** — `onharu.kafka.enabled=true` 일 때만 `KafkaTemplate`, ConsumerFactory, `kafkaListenerContainerFactory` 등을 등록합니다.
@@ -148,7 +148,7 @@ Kafka 직렬화 필드 예시 (코드 기준):
 sequenceDiagram
     participant C as 클라이언트
     participant STOMP as STOMP Simple Broker
-    participant CC as ChatController
+    participant CC as ChatMessageStompHandler
     participant CF as ChatFacade / DB
     participant O as outbox_events
     participant SCH as OutboxRelayScheduler
@@ -170,7 +170,7 @@ sequenceDiagram
         SCH->>K: publish 시스템 토픽(알림)
         K->>KS: poll / log
     else kafka on, outbox disabled
-        CC->>K: EventPublisher 즉시 publish
+        CC->>K: KafkaProducer 즉시 publish
     end
 ```
 
@@ -186,7 +186,7 @@ sequenceDiagram
    - 브로커가 떠 있어야 하고, 앱 설정에서 `onharu.kafka.enabled=true` (또는 `ONHARU_KAFKA_ENABLED=true`) 가 맞아야 합니다.  
    - 로컬에서는 `docker-compose.kafka.yaml` 등으로 Zookeeper + Kafka 를 띄우는 방식을 쓸 수 있습니다.
 
-3. **왜 `ObjectProvider<EventPublisher>` / `ObjectProvider<ChatKafkaOutboxPort>` 인가?**  
+3. **왜 `ObjectProvider<KafkaProducer>` / `ObjectProvider<ChatKafkaOutboxPort>` 인가?**  
    - Kafka가 꺼진 설정에서는 `KafkaProducer`·`ChatKafkaOutboxAdapter` 빈이 **아예 없을 수 있어** 필수 주입만 하면 기동이 실패합니다.  
    - `ifAvailable` / `getIfAvailable()` 로 “있을 때만” 발행·아웃박스 분기합니다.
 
@@ -242,9 +242,9 @@ sequenceDiagram
 |------|------|
 | STOMP 엔드포인트·브로커 prefix | `WebSocketConfiguration.java` |
 | 목적지 경로 상수 | `ChatStompDestination.java` |
-| 채팅 수신·브로드캐스트·Kafka 분기 | `infra.websocket.ChatController.java` |
+| 채팅 수신·브로드캐스트·Kafka 분기 | `infra.websocket.ChatMessageStompHandler.java` |
 | 채팅 메시지 저장·아웃박스 적재 | `ChatFacade.java`, `ChatKafkaOutboxAdapter.java` |
-| Kafka 즉시 발행 (`EventPublisher`) | `KafkaProducer.java` |
+| Kafka 즉시 발행 | `KafkaProducer.java` |
 | Kafka 템플릿·리스너 팩토리 | `KafkaProducerConfig.java` |
 | 아웃박스 릴레이 | `OutboxRelayScheduler.java`, `OutboxRelayProcessor.java` |
 | Kafka 구독(기본/시스템 토픽) | `OnharuDefaultKafkaConsumer.java`, `OnharuSystemKafkaConsumer.java` |
@@ -256,7 +256,7 @@ sequenceDiagram
 
 ## 11. 통합 테스트 (참고)
 
-- `KafkaIntegrationTest` — `EventPublisher` 직접 발행·임베디드 Kafka  
+- `KafkaIntegrationTest` — `KafkaProducer` 직접 발행·임베디드 Kafka  
 - `OutboxRelayIntegrationTest` — 아웃박스 적재 후 릴레이·채팅/시스템 토픽 수신 검증  
 - 수신 검증용 테스트 전용 리스너: `KafkaTestMessageCollector`, `KafkaSystemTestMessageCollector` (`src/test/java`)
 
