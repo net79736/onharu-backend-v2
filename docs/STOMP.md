@@ -1,5 +1,7 @@
 # STOMP(WebSocket) 채팅 인터페이스
 
+실시간 전송은 본 문서 경로를 따르고, 동일 메시지의 **Kafka·아웃박스** 적재는 `docs/chat-kafka-flow.md` 에 정리되어 있다.
+
 ## Chat (REST) — `ChatControllerImpl` 베이스 `/api/chats`
 
 | Method | Path | 설명 |

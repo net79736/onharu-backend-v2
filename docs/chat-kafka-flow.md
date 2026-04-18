@@ -4,17 +4,20 @@
 
 ---
 
-## 1. 큰 그림: 두 가지 “배달”이 있다
+## 1. 큰 그림: 두 가지 “배달” + DB·아웃박스
 
-채팅 메시지가 들어오면 서버는 **서로 다른 두 통로**를 씁니다.
+채팅 메시지가 들어오면 서버는 **서로 다른 통로**를 씁니다.
 
 | 구분 | 기술 | 역할 |
 |------|------|------|
 | **실시간 화면 반영** | STOMP + 인메모리 Simple Broker | 같은 채팅방에 접속한 클라이언트에게 **즉시** 메시지 브로드캐스트 |
+| **영구 저장** | JPA + MySQL 등 | `ChatFacade` 가 채팅 메시지·읽음 상태 등을 **DB에 저장** |
 | **이벤트 기록·후처리** | Apache Kafka | 메시지 내용을 **토픽에 적재**해, 다른 서비스·배치·분석으로 확장 가능하게 함 |
 
 Kafka는 “채팅 화면을 그리는 유일한 경로”가 **아닙니다**.  
-화면은 STOMP로 가고, Kafka는 **같은 사건을 복제해 이벤트 스트림으로 남기는** 용도에 가깝습니다. (현재 Consumer는 로그 확인·향후 확장용입니다.)
+화면은 STOMP로 가고, Kafka는 **같은 사건을 이벤트 스트림으로 남기는** 용도에 가깝습니다.
+
+**Kafka 연동이 켜져 있고 아웃박스가 기본(`onharu.kafka.outbox.enabled=true`)일 때** 채팅 이벤트는 먼저 **`outbox_events` 테이블**에 쌓인 뒤, 스케줄러가 브로커로 전송합니다. DB 저장과 아웃박스 INSERT는 **같은 트랜잭션**(`ChatFacade.createChatMessage`)에서 처리되어, “DB만 커밋되고 Kafka 전송은 실패”하는 **이중 쓰기 불일치**를 줄이는 **트랜잭션 아웃박스** 패턴입니다.
 
 ---
 
@@ -41,11 +44,11 @@ Kafka는 “채팅 화면을 그리는 유일한 경로”가 **아닙니다**.
 1. WebSocket으로 `/ws-chat` 연결  
 2. STOMP로 `/app/chat/send` 에 메시지 전송 (JSON 등 — `ChatMessageRequest` 형식에 맞게)  
 3. 서버가 DB 저장 후 `/topic/chat/{chatRoomId}` 로 응답 브로드캐스트  
-4. (Kafka 켜져 있으면) 같은 내용을 Kafka 토픽으로도 발행  
+4. (Kafka 켜져 있으면) 동일 내용이 **아웃박스 경로 또는 즉시 발행 경로**로 Kafka 토픽에 반영 (아래 §3 참고)
 
 ---
 
-## 3. 서버 내부 처리 순서 (`ChatController`)
+## 3. 서버 내부 처리 순서 (`ChatController` / `ChatFacade`)
 
 `sendMessage` 가 호출되면 순서는 다음과 같습니다.
 
@@ -54,16 +57,19 @@ Kafka는 “채팅 화면을 그리는 유일한 경로”가 **아닙니다**.
 
 2. **비즈니스 + DB (`ChatFacade`)**  
    - `CreateChatMessageCommand` 로 채팅방 ID, 발신자 ID, 내용을 넘겨 메시지 생성·저장  
-   - 결과로 `ChatMessageResponse` (화면에 줄 DTO) 획득
+   - 결과로 `ChatMessageResponse` (화면에 줄 DTO) 획득  
+   - **Kafka + 아웃박스가 켜져 있으면** 같은 트랜잭션 안에서 `ChatKafkaOutboxPort` 구현체가 `outbox_events` 에 **PENDING** 행을 INSERT합니다 (`ChatKafkaOutboxAdapter`).
 
 3. **실시간 브로드캐스트 (STOMP)**  
    - `messagingTemplate.convertAndSend("/topic/chat/{chatRoomId}", response)`  
    - 이 단계에서 **연결된 클라이언트**가 실시간으로 새 메시지를 받습니다.
 
-4. **Kafka 발행 (선택)**  
-   - `onharu.kafka.enabled=true` 일 때만 `OnharuKafkaProducer` 빈이 존재  
-   - `ObjectProvider<OnharuKafkaProducer>` 로 “빈이 있을 때만” `publishChatEvent` 호출  
-   - JSON 문자열로 직렬화한 뒤 `producer.publish(payload)` 호출
+4. **Kafka 로 채팅 이벤트 반영 (두 가지 모드)**  
+
+   | 조건 | 동작 |
+   |------|------|
+   | `onharu.kafka.enabled=true` **이고** `onharu.kafka.outbox.enabled=true`(기본) | **아웃박스**: `ChatFacade`에서 이미 적재했으므로 `ChatController`는 **직접 `EventPublisher`를 호출하지 않음**. 이후 `OutboxRelayScheduler`가 PENDING 행을 읽어 `KafkaTemplate`으로 브로커에 전송하고 행을 **SENT**로 갱신합니다. |
+   | `onharu.kafka.enabled=true` **이고** `onharu.kafka.outbox.enabled=false` | **즉시 발행(레거시 비교용)**: `ChatController`가 `ObjectProvider<EventPublisher>`로 `KafkaProducer.publish(...)` 를 호출해 곧바로 기본 토픽으로 전송합니다. |
 
 Kafka 직렬화 필드 예시 (코드 기준):
 
@@ -71,27 +77,53 @@ Kafka 직렬화 필드 예시 (코드 기준):
 
 ---
 
-## 4. Kafka Producer: 무엇을 어디로 보내는가
+## 4. Kafka Producer·릴레이
 
-- **클래스**: `OnharuKafkaProducer`  
+### 4.1 `EventPublisher` / `KafkaProducer`
+
+- **클래스**: `KafkaProducer` (`EventPublisher` 구현)  
 - **조건**: `@ConditionalOnProperty(name = "onharu.kafka.enabled", havingValue = "true")`  
 - **토픽**: `spring.kafka.template.default-topic` → 설정상 기본값 **`onharu-chat`**  
-- **브로커 주소**: `spring.kafka.bootstrap-servers` → 기본 **`localhost:9092`** (환경변수 `KAFKA_BOOTSTRAP_SERVERS` 로 변경 가능)
+- **브로커 주소**: `spring.kafka.bootstrap-servers` → 기본 **`localhost:9092`** (환경변수 `KAFKA_BOOTSTRAP_SERVERS` 로 변경 가능)  
+- **용도**: 아웃박스를 끈 경우 채팅 STOMP 직후 **즉시 발행**; 또는 도메인에서 직접 `publish` 호출 시.
 
-발행은 `KafkaTemplate` 을 사용하며, 전송 결과는 비동기로 로그에 남습니다 (`sendAndLog`).
+발행은 `KafkaTemplate` 을 사용하며, 전송 결과는 비동기로 로그에 남깁니다.
+
+### 4.2 트랜잭션 아웃박스 (릴레이)
+
+| 구성요소 | 역할 |
+|----------|------|
+| `domain.event.ChatKafkaOutboxPort` | 채팅 저장과 같은 트랜잭션에서 아웃박스 적재를 위한 포트 |
+| `ChatKafkaOutboxAdapter` | 포트 구현 — JSON 생성 후 `OutboxEventRepository.save` |
+| `domain.outbox.model.OutboxEvent` / `OutboxEventRepository` | 영속화 (구현: `OutboxEventRepositoryImpl` + `OutboxEventJpaRepository`) |
+| `OutboxRelayScheduler` | `@Scheduled` — PENDING 행 조회 후 `OutboxRelayProcessor` 호출 |
+| `OutboxRelayProcessor` | 행별 `REQUIRES_NEW` 트랜잭션으로 Kafka 전송 후 SENT 처리; 성공 시 **시스템 토픽**에 릴레이 알림 JSON 전송(선택) |
+
+스케줄링은 **`config.ScheduleConfig`** 에 `@EnableScheduling` 한 번만 둡니다 (`OnharuApplication` 과 중복 금지).
+
+프로덕션에서 `ddl-auto=validate` 이면 `outbox_events` 테이블 DDL은 수동 적용이 필요할 수 있습니다. 참고: `src/main/resources/db/manual/outbox_events_mysql.sql`.
 
 ---
 
-## 5. Kafka Consumer: 지금은 무엇을 하나
+## 5. Kafka Consumer
 
-- **클래스**: `OnharuKafkaConsumer`  
-- **조건**: Producer 와 동일하게 `onharu.kafka.enabled=true` 일 때만 빈 등록  
-- **구독 토픽**: Producer 와 동일하게 `spring.kafka.template.default-topic` (`onharu-chat`)  
+### 5.1 기본 토픽 (`onharu-chat` 등)
+
+- **클래스**: `OnharuDefaultKafkaConsumer`  
+- **조건**: `onharu.kafka.enabled=true`  
+- **구독 토픽**: `spring.kafka.template.default-topic`  
 - **그룹**: `spring.kafka.consumer.group-id` (기본 `onharu-group`)  
-- **현재 동작**: 수신한 메시지와 헤더를 **로그로 출력** (`log.info`)  
-- **주석상 의도**: 이후 읽음 처리·알림·분석 등 **비동기 후처리**로 확장하기 위한 자리
+- **리스너 id**: `onharuKafkaConsumer`  
+- **현재 동작**: 수신 메시지·헤더를 **로그** (`log.info`)
 
-같은 애플리케이션 안에서 Producer가 보낸 메시지를 Consumer가 다시 받아 로그만 찍는 구조이므로, **로컬에서 “Kafka까지 도는지” 확인**할 때 유용합니다.
+### 5.2 시스템 토픽 (두 번째 컨슈머)
+
+- **클래스**: `OnharuSystemKafkaConsumer`  
+- **토픽**: `onharu.kafka.system-topic` (기본 **`onharu-system-events`**)  
+- **그룹**: `onharu.kafka.system-consumer-group` (기본 **`onharu-system-group`**)  
+- **용도**: 아웃박스 릴레이가 채팅 토픽 전송 후 보내는 **`OUTBOX_RELAYED`** 알림 등을 구독·로그(향후 알림·모니터링 확장 자리)
+
+같은 애플리케이션에서 기본 토픽 컨슈머는 **로컬에서 “Kafka까지 도는지” 확인**할 때 유용합니다.
 
 ---
 
@@ -101,18 +133,12 @@ Kafka 직렬화 필드 예시 (코드 기준):
 
 핵심만 정리하면:
 
-- **`onharu.kafka.enabled`**  
-  - `${ONHARU_KAFKA_ENABLED:false}` 형태로 두면, 환경변수 미설정 시 **기본은 false** 에 가깝게 동작하도록 맞출 수 있습니다.  
-  - (실제 YAML 내용은 배포본마다 다를 수 있으니, **현재 레포의 `application-kafka.yaml` 을 기준**으로 확인하세요.)
-
-- **`ONHARU_KAFKA_ENABLED=true`**  
-  - Kafka 관련 `@Configuration` / `@Component` 가 활성화됩니다.
-
-- **`KafkaProducerConfig`**  
-  - 역시 `onharu.kafka.enabled=true` 일 때만 로드되어 `KafkaTemplate`, ConsumerFactory, `kafkaListenerContainerFactory` 등을 등록합니다.
-
-- **애플리케이션 메인**  
-  - `OnharuApplication` 에서 `KafkaAutoConfiguration` 을 제외하고, `infra.kafka` 패키지의 수동 설정만 쓰는 패턴입니다.
+- **`onharu.kafka.enabled`** — Kafka 빈·`KafkaProducerConfig` 로드 여부 (`ONHARU_KAFKA_ENABLED` 등으로 제어 가능).
+- **`onharu.kafka.outbox.enabled`** — `true`(기본)면 채팅은 아웃박스 경로; `false`면 STOMP 직후 `EventPublisher` 즉시 발행.
+- **`onharu.kafka.outbox.relay-delay-ms`** — 릴레이 스케줄 주기(밀리초).
+- **`onharu.kafka.system-topic`**, **`onharu.kafka.system-consumer-group`** — 시스템 컨슈머용.
+- **`KafkaProducerConfig`** — `onharu.kafka.enabled=true` 일 때만 `KafkaTemplate`, ConsumerFactory, `kafkaListenerContainerFactory` 등을 등록합니다.
+- **`OnharuApplication`** — `KafkaAutoConfiguration` 을 제외하고, `infra.kafka` 패키지의 수동 설정만 쓰는 패턴입니다.
 
 ---
 
@@ -123,20 +149,28 @@ sequenceDiagram
     participant C as 클라이언트
     participant STOMP as STOMP Simple Broker
     participant CC as ChatController
-    participant DB as ChatFacade / DB
+    participant CF as ChatFacade / DB
+    participant O as outbox_events
+    participant SCH as OutboxRelayScheduler
     participant K as Kafka Broker
-    participant KC as OnharuKafkaConsumer
+    participant KC as OnharuDefaultKafkaConsumer
+    participant KS as OnharuSystemKafkaConsumer
 
     C->>STOMP: SEND /app/chat/send
     STOMP->>CC: sendMessage()
-    CC->>DB: createChatMessage
-    DB-->>CC: ChatMessageResponse
+    CC->>CF: createChatMessage
+    Note over CF,O: 아웃박스 켜짐: 같은 트랜잭션에서 INSERT
+    CF-->>CC: ChatMessageResponse
     CC->>STOMP: convertAndSend /topic/chat/{roomId}
     STOMP-->>C: 구독자에게 실시간 전달
-    alt onharu.kafka.enabled=true
-        CC->>K: publish JSON (토픽 onharu-chat)
-        K->>KC: poll
-        KC->>KC: log.info(...)
+    alt onharu.kafka.enabled=true and outbox enabled
+        SCH->>O: PENDING 조회
+        SCH->>K: publish 채팅 토픽
+        K->>KC: poll / log
+        SCH->>K: publish 시스템 토픽(알림)
+        K->>KS: poll / log
+    else kafka on, outbox disabled
+        CC->>K: EventPublisher 즉시 publish
     end
 ```
 
@@ -146,15 +180,18 @@ sequenceDiagram
 
 1. **Kafka가 꺼져 있어도 채팅이 되나?**  
    - STOMP 브로드캐스트와 DB 저장은 **Kafka와 무관**합니다.  
-   - `onharu.kafka.enabled=false` 이면 Producer/Consumer 빈이 없고, Kafka 전송만 생략됩니다.
+   - `onharu.kafka.enabled=false` 이면 Producer/Consumer·아웃박스 어댑터·릴레이 빈이 없고, Kafka 전송만 생략됩니다.
 
 2. **Kafka만 켜면 되나?**  
    - 브로커가 떠 있어야 하고, 앱 설정에서 `onharu.kafka.enabled=true` (또는 `ONHARU_KAFKA_ENABLED=true`) 가 맞아야 합니다.  
    - 로컬에서는 `docker-compose.kafka.yaml` 등으로 Zookeeper + Kafka 를 띄우는 방식을 쓸 수 있습니다.
 
-3. **왜 `ObjectProvider<OnharuKafkaProducer>` 인가?**  
-   - Kafka가 꺼진 설정에서는 `OnharuKafkaProducer` 빈이 **아예 없기 때문**에, 필수 주입만 하면 기동이 실패합니다.  
-   - `ifAvailable` 로 “있을 때만” 발행합니다.
+3. **왜 `ObjectProvider<EventPublisher>` / `ObjectProvider<ChatKafkaOutboxPort>` 인가?**  
+   - Kafka가 꺼진 설정에서는 `KafkaProducer`·`ChatKafkaOutboxAdapter` 빈이 **아예 없을 수 있어** 필수 주입만 하면 기동이 실패합니다.  
+   - `ifAvailable` / `getIfAvailable()` 로 “있을 때만” 발행·아웃박스 분기합니다.
+
+4. **아웃박스와 즉시 발행 중 뭐가 기본인가?**  
+   - `application-kafka.yaml` 기준 **아웃박스가 기본**입니다. 즉시 발행으로 비교하려면 `onharu.kafka.outbox.enabled=false` 를 설정합니다.
 
 ---
 
@@ -205,12 +242,24 @@ sequenceDiagram
 |------|------|
 | STOMP 엔드포인트·브로커 prefix | `WebSocketConfiguration.java` |
 | 목적지 경로 상수 | `ChatStompDestination.java` |
-| 채팅 수신·브로드캐스트·Kafka 발행 | `ChatController.java` |
-| Kafka 발행 | `OnharuKafkaProducer.java` |
+| 채팅 수신·브로드캐스트·Kafka 분기 | `infra.websocket.ChatController.java` |
+| 채팅 메시지 저장·아웃박스 적재 | `ChatFacade.java`, `ChatKafkaOutboxAdapter.java` |
+| Kafka 즉시 발행 (`EventPublisher`) | `KafkaProducer.java` |
 | Kafka 템플릿·리스너 팩토리 | `KafkaProducerConfig.java` |
-| Kafka 구독(로그) | `OnharuKafkaConsumer.java` |
+| 아웃박스 릴레이 | `OutboxRelayScheduler.java`, `OutboxRelayProcessor.java` |
+| Kafka 구독(기본/시스템 토픽) | `OnharuDefaultKafkaConsumer.java`, `OnharuSystemKafkaConsumer.java` |
+| 아웃박스 영속성 | `OutboxEventRepository` / `OutboxEventRepositoryImpl`, `OutboxEventJpaRepository` |
+| 스케줄 활성화 | `config/ScheduleConfig.java` |
 | Kafka 속성 | `application-kafka.yaml` |
 
 ---
 
-*문서 생성 시점 기준으로 코드와 설정을 맞추었습니다. 설정 기본값이 바뀌면 `application-kafka.yaml` 을 우선 확인하세요.*
+## 11. 통합 테스트 (참고)
+
+- `KafkaIntegrationTest` — `EventPublisher` 직접 발행·임베디드 Kafka  
+- `OutboxRelayIntegrationTest` — 아웃박스 적재 후 릴레이·채팅/시스템 토픽 수신 검증  
+- 수신 검증용 테스트 전용 리스너: `KafkaTestMessageCollector`, `KafkaSystemTestMessageCollector` (`src/test/java`)
+
+---
+
+*설정 기본값이 바뀌면 `application-kafka.yaml` 을 우선 확인하세요.*

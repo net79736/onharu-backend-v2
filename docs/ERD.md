@@ -89,6 +89,7 @@ erDiagram
 | `chat_rooms` | `ChatRoom` | 채팅방 |
 | `chat_participants` | `ChatParticipant` | 채팅 참가(CHAT_ROOM_ID+USER_ID 유니크) |
 | `chat_messages` | `ChatMessage` | 메시지(CHAT_ROOM_ID, USER_ID 발신) |
+| `outbox_events` | `OutboxEvent` | Kafka 발행 대기 페이로드(트랜잭션 아웃박스; 채팅 테이블과 FK 없음) |
 | `files` | `File` | 파일 메타(ref_type, ref_id, file_key …) |
 | `EMAIL_AUTHENTICATION` | `EmailAuthentication` | 이메일 인증 |
 

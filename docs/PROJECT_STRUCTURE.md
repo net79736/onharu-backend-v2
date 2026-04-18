@@ -37,7 +37,8 @@
 
 ### Kafka
 
-- `build.gradle` 의존성 기준 **Spring Kafka 미사용**. 메시징은 **도메인 이벤트·`@TransactionalEventListener`** 등 (`event` 패키지) 위주.
+- **`spring-kafka`** (`build.gradle`) — **선택적** 사용. `onharu.kafka.enabled=false` 이면 `KafkaAutoConfiguration` 없이 기동하고, `true` 일 때 `infra.kafka` 수동 설정(`KafkaProducerConfig`)과 Producer/Consumer·**트랜잭션 아웃박스**(`infra.kafka.outbox`)가 로드됩니다.
+- 예약 등 **도메인 내부 이벤트**는 기존처럼 `ApplicationEventPublisher` + `event` 패키지 리스너를 사용합니다(Kafka와 별개).
 
 ---
 
@@ -82,6 +83,8 @@ com.backend.onharu/
 │   ├── validator/StoreScheduleValidator.java
 │   └── dto/                        # 퍼사드 전용 DTO 등
 ├── domain/                         # 도메인별 모델·서비스·리포지토리 인터페이스·DTO
+│   ├── outbox/                     # 트랜잭션 아웃박스(OutboxEvent, OutboxEventRepository …)
+│   ├── event/                      # EventPublisher, ChatKafkaOutboxPort 등 메시징 포트
 │   ├── chat/
 │   ├── child/
 │   ├── common/                     # BaseEntity, Enum, JpaAuditingConfig, SecurityAuditorAware 등
@@ -100,7 +103,8 @@ com.backend.onharu/
 │   ├── user/
 │   └── support/                    # CacheName, error(CoreException, ErrorCode, ErrorType …)
 ├── infra/                          # 인프라 구현
-│   ├── db/                         # JPA, *JpaRepository, *RepositoryImpl (도메인별 하위 패키지)
+│   ├── db/                         # JPA, *JpaRepository, *RepositoryImpl (도메인별 하위 패키지, `db/outbox` 등)
+│   ├── kafka/                      # KafkaTemplate, Consumer, 아웃박스 릴레이(`outbox/`), 설정은 KafkaProducerConfig
 │   ├── redis/                      # 캐시(해시), 조회수·카운트, 최근 검색어, 분산 락(DistributeLockExecutor) 등
 │   ├── security/                   # LocalUser·LocalUserService, OAuth2 핸들러, SocialUser — `jwt` 하위 패키지는 비어 있음
 │   │   └── oauth/                  # OAuth2Success/FailureHandler, SocialUserService, OAuthAttributes …
@@ -146,4 +150,4 @@ com.backend.onharu/
 
 ### 설정 프로파일 파일 (참고)
 
-`src/main/resources/` — `application.yaml` 외 `application-dev.yaml`, `application-prod.yaml`, `application-test.yaml`, `application-oauth.yaml`, `application-smtp.yaml`, `application-nts.yaml`, `application-swagger.yaml`, `application-jpa-logging.yaml` 등 프로파일별 분리.
+`src/main/resources/` — `application.yaml` 외 `application-dev.yaml`, `application-prod.yaml`, `application-test.yaml`, `application-oauth.yaml`, `application-smtp.yaml`, `application-nts.yaml`, `application-swagger.yaml`, `application-jpa-logging.yaml`, **`application-kafka.yaml`**(Kafka·아웃박스, 선택 import) 등 프로파일별 분리.

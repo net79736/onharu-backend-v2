@@ -238,6 +238,8 @@ REST가 아니라 **메시징**으로 동작한다. 설정은 `WebSocketConfigur
 
 브라우저·클라이언트는 STOMP 클라이언트로 연결 후 `/app/chat/send` 등으로 송신한다.
 
+채팅 메시지의 **Kafka 적재**는 REST가 아니라 위 STOMP 처리·`ChatFacade` 흐름에서 이루어지며, 기본은 **DB 아웃박스 후 릴레이**이다(`docs/chat-kafka-flow.md`).
+
 ---
 
 ## 5. 인증·노출 범위
