@@ -91,6 +91,10 @@ dependencies {
 
 	// WebSocket(STOMP)
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	// Kafka (로컬 개발: application-kafka.yaml + onharu.kafka.enabled=true, coupon/movie 패턴)
+	implementation 'org.springframework.kafka:spring-kafka'
+	testImplementation 'org.springframework.kafka:spring-kafka-test'
 }
 
 // 2. Jacoco 설정

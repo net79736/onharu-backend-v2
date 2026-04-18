@@ -5,8 +5,13 @@ import java.time.ZoneId;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 
-@SpringBootApplication
+/**
+ * Kafka는 {@code infra.kafka} 수동 설정만 사용합니다(coupon/movie 패턴).
+ * {@link KafkaAutoConfiguration} 제외로 onharu.kafka.enabled=false 일 때 브로커 없이 기동 가능합니다.
+ */
+@SpringBootApplication(exclude = {KafkaAutoConfiguration.class})
 public class OnharuApplication {
 
 	public static void main(String[] args) {

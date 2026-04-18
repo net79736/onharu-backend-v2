@@ -5,6 +5,7 @@ spring:
       - application-oauth.yaml
       - application-nts.yaml
       - application-jpa-logging.yaml
+      - optional:application-kafka.yaml
   application:
     name: onharu
     is-secure: false
