@@ -9,8 +9,8 @@ import org.springframework.stereotype.Controller;
 
 import com.backend.onharu.application.ChatFacade;
 import com.backend.onharu.domain.chat.dto.ChatMessageCommand.CreateChatMessageCommand;
+import com.backend.onharu.domain.event.EventPublisher;
 import com.backend.onharu.domain.support.ChatStompDestination;
-import com.backend.onharu.infra.kafka.OnharuKafkaProducer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -27,7 +27,7 @@ public class ChatController {
 
     private final ChatFacade chatFacade;
     private final SimpMessagingTemplate messagingTemplate; // 메시지 구독 경로에 브로드 캐스팅 역할
-    private final ObjectProvider<OnharuKafkaProducer> kafkaProducer;
+    private final ObjectProvider<EventPublisher> eventPublisher;
     private final ObjectMapper objectMapper;
 
     /**
@@ -56,16 +56,16 @@ public class ChatController {
             response
         );
 
-        // 4. [비동기 배달] Kafka 로 메시지를 전송합니다.
-        // onharu.kafka.enabled=false 이면 빈이 없어 호출되지 않습니다.
-        kafkaProducer.ifAvailable(producer -> publishChatEvent(producer, request, response));
+        // 4. [비동기 배달] 이벤트 버스(Kafka 구현체)로 적재합니다.
+        // onharu.kafka.enabled=false 이면 EventPublisher 빈이 없어 호출되지 않습니다.
+        eventPublisher.ifAvailable(publisher -> publishChatEvent(publisher, request, response));
     }
 
     /**
      * STOMP 처리 직후 동일 내용을 Kafka 로 비동기 적재(coupon/movie 의 publish 패턴).
      * onharu.kafka.enabled=false 이면 빈이 없어 호출되지 않습니다.
      */
-    private void publishChatEvent(OnharuKafkaProducer producer, ChatMessageRequest request, ChatMessageResponse response) {
+    private void publishChatEvent(EventPublisher publisher, ChatMessageRequest request, ChatMessageResponse response) {
         try {
             String payload = objectMapper.writeValueAsString(Map.of(
                     "chatRoomId", request.chatRoomId(),
@@ -74,7 +74,7 @@ public class ChatController {
                     "content", response.content(),
                     "createdAt", response.createdAt().toString()
             ));
-            producer.publish(payload);
+            publisher.publish(payload);
         } catch (JsonProcessingException e) {
             log.warn("Kafka 채팅 이벤트 JSON 직렬화 실패: {}", e.getMessage());
         }

@@ -11,23 +11,26 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
+import com.backend.onharu.domain.event.EventPublisher;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * coupon-issue-v3 의 {@code com.example.coupon_core.event.producer.KafkaProducer} 와 동일한 발행 패턴.
+ * coupon-issue-v3 의 {@code KafkaProducer} 와 동일하며, {@link EventPublisher} 를 구현합니다.
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "onharu.kafka.enabled", havingValue = "true")
-public class OnharuKafkaProducer {
+public class KafkaProducer implements EventPublisher {
 
     private final KafkaTemplate<String, String> onharuKafkaTemplate;
 
     @Value("${spring.kafka.template.default-topic}")
     private String defaultTopic;
 
+    @Override
     public void publish(String payload) {
         Message<String> message = MessageBuilder
                 .withPayload(payload)
@@ -36,6 +39,7 @@ public class OnharuKafkaProducer {
         sendAndLog(onharuKafkaTemplate.send(message));
     }
 
+    @Override
     public void publish(String topic, String payload) {
         Message<String> message = MessageBuilder
                 .withPayload(payload)
