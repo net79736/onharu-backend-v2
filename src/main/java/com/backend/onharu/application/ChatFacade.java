@@ -1,10 +1,36 @@
 package com.backend.onharu.application;
 
+import static com.backend.onharu.domain.support.error.ErrorType.Chat.CAN_NOT_CHAT_WITH_ONESELF;
+import static com.backend.onharu.domain.support.error.ErrorType.Store.STORE_OWNER_MISMATCH;
+import static com.backend.onharu.domain.support.error.ErrorType.User.USER_TYPE_MUST_BE_CHILD_OR_OWNER;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.backend.onharu.domain.chat.dto.ChatMessageCommand.CreateChatMessageCommand;
+import com.backend.onharu.domain.chat.dto.ChatMessageCommand.CreateMessageCommand;
+import com.backend.onharu.domain.chat.dto.ChatMessageCommand.ReadMessageCommand;
+import com.backend.onharu.domain.chat.dto.ChatMessageQuery.CountUnreadMessageQuery;
+import com.backend.onharu.domain.chat.dto.ChatMessageQuery.FindChatMessageQuery;
 import com.backend.onharu.domain.chat.dto.ChatMessageQueryService;
+import com.backend.onharu.domain.chat.dto.ChatParticipantCommand.CreateChatParticipantCommand;
+import com.backend.onharu.domain.chat.dto.ChatParticipantCommand.UpdateLastReadMessageCommand;
+import com.backend.onharu.domain.chat.dto.ChatParticipantCommand.updateChatParticipantCommand;
+import com.backend.onharu.domain.chat.dto.ChatParticipantQuery.GetChatParticipantQuery;
+import com.backend.onharu.domain.chat.dto.ChatParticipantQuery.GetChatParticipantsQuery;
+import com.backend.onharu.domain.chat.dto.ChatParticipantQuery.GetChatRoomSummaryQuery;
 import com.backend.onharu.domain.chat.dto.ChatParticipantQueryService;
+import com.backend.onharu.domain.chat.dto.ChatRoomCommand.CreateChatRoomCommand;
 import com.backend.onharu.domain.chat.dto.ChatRoomCommand.EnterChatRoomCommand;
+import com.backend.onharu.domain.chat.dto.ChatRoomCommand.InviteChatRoomCommand;
 import com.backend.onharu.domain.chat.dto.ChatRoomCommand.LeaveChatRoomCommand;
 import com.backend.onharu.domain.chat.dto.ChatRoomCommand.UpdateChatRoomCommand;
+import com.backend.onharu.domain.chat.dto.ChatRoomQuery.FindChatRoomByIdQuery;
 import com.backend.onharu.domain.chat.model.ChatMessage;
 import com.backend.onharu.domain.chat.model.ChatParticipant;
 import com.backend.onharu.domain.chat.model.ChatRoom;
@@ -12,42 +38,26 @@ import com.backend.onharu.domain.chat.service.ChatMessageCommandService;
 import com.backend.onharu.domain.chat.service.ChatParticipantCommandService;
 import com.backend.onharu.domain.chat.service.ChatRoomCommandService;
 import com.backend.onharu.domain.chat.service.ChatRoomQueryService;
+import com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
 import com.backend.onharu.domain.child.service.ChildQueryService;
 import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.domain.event.ChatKafkaOutboxPort;
+import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByUserIdQuery;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.service.OwnerQueryService;
+import com.backend.onharu.domain.store.dto.StoreQuery.FindByOwnerIdQuery;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.service.StoreQueryService;
 import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.domain.user.service.UserQueryService;
 import com.backend.onharu.infra.db.chat.ChatRoomSummary;
 import com.backend.onharu.infra.websocket.ChatMessageResponse;
+import com.backend.onharu.interfaces.api.dto.ChatControllerDto.ChatRoomMessageResponse;
+import com.backend.onharu.interfaces.api.dto.ChatControllerDto.ChatRoomResponse;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static com.backend.onharu.domain.chat.dto.ChatMessageCommand.*;
-import static com.backend.onharu.domain.chat.dto.ChatMessageQuery.CountUnreadMessageQuery;
-import static com.backend.onharu.domain.chat.dto.ChatMessageQuery.FindChatMessageQuery;
-import static com.backend.onharu.domain.chat.dto.ChatParticipantCommand.*;
-import static com.backend.onharu.domain.chat.dto.ChatParticipantQuery.*;
-import static com.backend.onharu.domain.chat.dto.ChatRoomCommand.CreateChatRoomCommand;
-import static com.backend.onharu.domain.chat.dto.ChatRoomCommand.InviteChatRoomCommand;
-import static com.backend.onharu.domain.chat.dto.ChatRoomQuery.FindChatRoomByIdQuery;
-import static com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
-import static com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByUserIdQuery;
-import static com.backend.onharu.domain.store.dto.StoreQuery.FindByOwnerIdQuery;
-import static com.backend.onharu.domain.support.error.ErrorType.Chat.CAN_NOT_CHAT_WITH_ONESELF;
-import static com.backend.onharu.domain.support.error.ErrorType.Store.STORE_OWNER_MISMATCH;
-import static com.backend.onharu.domain.support.error.ErrorType.User.USER_TYPE_MUST_BE_CHILD_OR_OWNER;
-import static com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
-import static com.backend.onharu.interfaces.api.dto.ChatControllerDto.ChatRoomMessageResponse;
-import static com.backend.onharu.interfaces.api.dto.ChatControllerDto.ChatRoomResponse;
 
 /**
  * 채팅 관련 Facade 입니다.
@@ -67,6 +77,9 @@ public class ChatFacade {
     private final StoreQueryService storeQueryService;
     private final ChildQueryService childQueryService;
     private final OwnerQueryService ownerQueryService;
+
+    /** Kafka 아웃박스 활성 시에만 빈이 주입됩니다. */
+    private final ObjectProvider<ChatKafkaOutboxPort> chatKafkaOutboxPort;
 
     /**
      * 채팅방 생성(일대일 채팅방, 참여자까지 생성)
@@ -175,12 +188,20 @@ public class ChatFacade {
         );
 
         // 채팅 메시지 응답 생성
-        return new ChatMessageResponse(
+        ChatMessageResponse response = new ChatMessageResponse(
                 chatMessage.getId(),
                 sender.getId(),
                 chatMessage.getContent(),
                 chatMessage.getCreatedAt()
         );
+        chatKafkaOutboxPort.ifAvailable(port -> port.enqueueChatMessagePublished(
+                command.chatRoomId(),
+                chatMessage.getId(),
+                sender.getId(),
+                chatMessage.getContent(),
+                chatMessage.getCreatedAt()
+        ));
+        return response;
     }
 
     /**

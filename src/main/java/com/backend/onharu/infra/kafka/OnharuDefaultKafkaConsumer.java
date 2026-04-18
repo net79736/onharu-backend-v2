@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "onharu.kafka.enabled", havingValue = "true")
-public class OnharuKafkaConsumer {
+public class OnharuDefaultKafkaConsumer {
 
     @KafkaListener(
             id = "onharuKafkaConsumer",

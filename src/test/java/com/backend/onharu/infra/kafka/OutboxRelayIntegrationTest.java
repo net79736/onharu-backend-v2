@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -18,16 +19,15 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import com.backend.onharu.domain.event.EventPublisher;
+import com.backend.onharu.domain.event.ChatKafkaOutboxPort;
 
 /**
- * coupon-issue-v3 {@code KafkaIntegrationTest} / movie {@code @EmbeddedKafka} 패턴과 동일한 축:
- * 임베디드 브로커로 발행→구독까지 검증합니다.
- * 수신 검증은 {@link KafkaTestMessageCollector}(테스트 전용 리스너, 별도 consumer group)로 합니다.
+ * 트랜잭션 아웃박스: DB 커밋된 PENDING 행이 릴레이에 의해 채팅 토픽·시스템 토픽으로 전달되는지 검증합니다.
  */
 @SpringBootTest
-@Import(KafkaTestMessageCollector.class)
+@Import({KafkaTestMessageCollector.class, KafkaSystemTestMessageCollector.class})
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @EmbeddedKafka(
@@ -38,6 +38,8 @@ import com.backend.onharu.domain.event.EventPublisher;
         properties = {
                 "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
                 "onharu.kafka.enabled=true",
+                "onharu.kafka.outbox.enabled=true",
+                "onharu.kafka.outbox.relay-delay-ms=200",
                 "spring.kafka.listener.auto-startup=true",
                 "spring.kafka.template.default-topic=onharu-chat",
                 "spring.kafka.consumer.group-id=onharu-embedded-test",
@@ -50,13 +52,14 @@ import com.backend.onharu.domain.event.EventPublisher;
                 "onharu.kafka.system-consumer-group=onharu-system-embedded-test"
         }
 )
-@DisplayName("Kafka Embedded 통합 테스트")
-class KafkaIntegrationTest {
-
-    static final String DEFAULT_TOPIC = "onharu-chat";
+@DisplayName("Kafka 트랜잭션 아웃박스 릴레이")
+class OutboxRelayIntegrationTest {
 
     @Autowired
-    private EventPublisher eventPublisher;
+    private ChatKafkaOutboxPort chatKafkaOutboxPort;
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     @Autowired
     private KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
@@ -64,6 +67,7 @@ class KafkaIntegrationTest {
     @BeforeEach
     void setUp() {
         KafkaTestMessageCollector.clearReceivedMessages();
+        KafkaSystemTestMessageCollector.clearReceivedMessages();
         await()
                 .atMost(60, TimeUnit.SECONDS)
                 .pollInterval(Duration.ofMillis(100))
@@ -71,7 +75,8 @@ class KafkaIntegrationTest {
                     for (String id : new String[] {
                             "onharuKafkaConsumer",
                             "kafkaTestMessageCollector",
-                            "onharuSystemKafkaConsumer"
+                            "onharuSystemKafkaConsumer",
+                            "kafkaSystemTestMessageCollector"
                     }) {
                         MessageListenerContainer c = kafkaListenerEndpointRegistry.getListenerContainer(id);
                         assertThat(c).isNotNull();
@@ -81,22 +86,26 @@ class KafkaIntegrationTest {
     }
 
     @Test
-    @DisplayName("기본 토픽 publish 와 명시 토픽 publish 모두 컨슈머가 수신한다")
-    void publish_defaultAndExplicitTopic_deliveredToListener() {
-        String payloadDefault = "embedded-default-" + System.nanoTime();
-        eventPublisher.publish(payloadDefault);
+    @DisplayName("아웃박스 적재 후 릴레이가 채팅 토픽과 시스템 토픽으로 전달한다")
+    void pendingOutbox_relayedToChatAndSystemTopic() {
+        String marker = "outbox-it-" + System.nanoTime();
+        transactionTemplate.executeWithoutResult(status -> chatKafkaOutboxPort.enqueueChatMessagePublished(
+                99L,
+                100L,
+                101L,
+                marker,
+                LocalDateTime.now()
+        ));
+
         await()
                 .atMost(30, TimeUnit.SECONDS)
                 .pollInterval(Duration.ofMillis(100))
-                .untilAsserted(() -> assertThat(KafkaTestMessageCollector.receivedMessages()).contains(payloadDefault));
+                .untilAsserted(() -> assertThat(KafkaTestMessageCollector.receivedMessages()).anyMatch(s -> s.contains(marker)));
 
-        KafkaTestMessageCollector.clearReceivedMessages();
-
-        String payloadExplicit = "embedded-explicit-" + System.nanoTime();
-        eventPublisher.publish(DEFAULT_TOPIC, payloadExplicit);
         await()
                 .atMost(30, TimeUnit.SECONDS)
                 .pollInterval(Duration.ofMillis(100))
-                .untilAsserted(() -> assertThat(KafkaTestMessageCollector.receivedMessages()).contains(payloadExplicit));
+                .untilAsserted(() -> assertThat(KafkaSystemTestMessageCollector.receivedMessages())
+                        .anyMatch(s -> s.contains("OUTBOX_RELAYED") && s.contains("\"outboxEventId\"")));
     }
 }
