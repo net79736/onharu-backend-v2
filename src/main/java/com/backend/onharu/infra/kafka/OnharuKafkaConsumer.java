@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 public class OnharuKafkaConsumer {
 
     @KafkaListener(
+            id = "onharuKafkaConsumer",
             topics = "${spring.kafka.template.default-topic}", // 기본 토픽
             groupId = "${spring.kafka.consumer.group-id}", // 기본 그룹 ID
             containerFactory = "kafkaListenerContainerFactory"
