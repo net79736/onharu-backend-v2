@@ -100,7 +100,7 @@
 ### 4.11 채팅 (`Chat` — `/api/chats`)
 
 - 채팅방 **생성·수정·초대·목록·메시지 커서 조회·읽음·입장·퇴장** 등 REST 로 제공.
-- **실시간 메시지 전송**은 `WebSocketConfiguration` 의 STOMP 엔드포인트(`/ws-chat` 등)와 `infra.websocket.ChatController` 의 `@MessageMapping` 으로 처리한다.
+- **실시간 메시지 전송**은 `WebSocketConfiguration` 의 STOMP 엔드포인트(`/ws-chat` 등)와 `infra.websocket.ChatMessageStompHandler` 의 `@MessageMapping` 으로 처리한다.
 
 ### 4.12 파일 업로드 (`S3` — `/api/upload`)
 

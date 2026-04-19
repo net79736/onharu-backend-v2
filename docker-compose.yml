@@ -111,6 +111,28 @@ services:
         limits:
           memory: 2048M
 
+  # RabbitMQ (채팅 이벤트 큐 등 — 호스트 앱: RABBITMQ_HOST=localhost, compose 내부 WAS: rabbitmq)
+  # 관리 UI: http://localhost:15672  (기본 계정 onharu / onharu — application-rabbitmq.yaml 과 동일)
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: onharu-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-onharu}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-onharu}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - onharu-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
   # Redis (최근 검색어 등 — 로컬/도커 WAS에서 REDIS_HOST 로 연결)
   redis:
     image: redis:7-alpine
@@ -245,6 +267,11 @@ services:
       SERVER_URL: ${SERVER_URL}
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
+      RABBITMQ_HOST: ${RABBITMQ_HOST:-rabbitmq}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-onharu}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-onharu}
+      ONHARU_RABBITMQ_ENABLED: ${ONHARU_RABBITMQ_ENABLED:-false}
 
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
@@ -277,4 +304,6 @@ volumes:
   jenkins_home:
     driver: local
   kafka_data:
+    driver: local
+  rabbitmq_data:
     driver: local

@@ -96,7 +96,7 @@ Kafka 직렬화 필드 예시 (코드 기준):
 | `domain.event.ChatKafkaOutboxPort` | 채팅 저장과 같은 트랜잭션에서 아웃박스 적재를 위한 포트 |
 | `ChatKafkaOutboxAdapter` | 포트 구현 — JSON 생성 후 `OutboxEventRepository.save` |
 | `domain.outbox.model.OutboxEvent` / `OutboxEventRepository` | 영속화 (구현: `OutboxEventRepositoryImpl` + `OutboxEventJpaRepository`) |
-| `OutboxRelayScheduler` | `@Scheduled` — PENDING 행 조회 후 `OutboxRelayProcessor` 호출 |
+| `OutboxRelayScheduler` (`infra/kafka/outbox/scheduler`) | `@Scheduled` — PENDING 행 조회 후 `OutboxRelayProcessor` 호출 |
 | `OutboxRelayProcessor` | 행별 `REQUIRES_NEW` 트랜잭션으로 Kafka 전송 후 SENT 처리; 성공 시 **시스템 토픽**에 릴레이 알림 JSON 전송(선택) |
 
 스케줄링은 **`config.ScheduleConfig`** 에 `@EnableScheduling` 한 번만 둡니다 (`OnharuApplication` 과 중복 금지).
@@ -133,12 +133,12 @@ Kafka 직렬화 필드 예시 (코드 기준):
 
 핵심만 정리하면:
 
-- **`onharu.kafka.enabled`** — Kafka 빈·`KafkaProducerConfig` 로드 여부 (`ONHARU_KAFKA_ENABLED` 등으로 제어 가능).
+- **`onharu.kafka.enabled`** — Kafka 빈·`KafkaConfig` 로드 여부 (`ONHARU_KAFKA_ENABLED` 등으로 제어 가능).
 - **`onharu.kafka.outbox.enabled`** — `true`(기본)면 채팅은 아웃박스 경로; `false`면 STOMP 직후 `KafkaProducer` 즉시 발행.
 - **`onharu.kafka.outbox.relay-delay-ms`** — 릴레이 스케줄 주기(밀리초).
 - **`onharu.kafka.system-topic`**, **`onharu.kafka.system-consumer-group`** — 시스템 컨슈머용.
-- **`KafkaProducerConfig`** — `onharu.kafka.enabled=true` 일 때만 `KafkaTemplate`, ConsumerFactory, `kafkaListenerContainerFactory` 등을 등록합니다.
-- **`OnharuApplication`** — `KafkaAutoConfiguration` 을 제외하고, `infra.kafka` 패키지의 수동 설정만 쓰는 패턴입니다.
+- **`KafkaConfig`** (`config` 패키지) — `onharu.kafka.enabled=true` 일 때만 `KafkaTemplate`, ConsumerFactory, `kafkaListenerContainerFactory` 등을 등록합니다.
+- **`OnharuApplication`** — `KafkaAutoConfiguration` 을 제외하고, `config.KafkaConfig` 의 수동 설정을 쓰는 패턴입니다.
 
 ---
 
@@ -242,12 +242,12 @@ sequenceDiagram
 |------|------|
 | STOMP 엔드포인트·브로커 prefix | `WebSocketConfiguration.java` |
 | 목적지 경로 상수 | `ChatStompDestination.java` |
-| 채팅 수신·브로드캐스트·Kafka 분기 | `infra.websocket.ChatMessageStompHandler.java` |
-| 채팅 메시지 저장·아웃박스 적재 | `ChatFacade.java`, `ChatKafkaOutboxAdapter.java` |
-| Kafka 즉시 발행 | `KafkaProducer.java` |
-| Kafka 템플릿·리스너 팩토리 | `KafkaProducerConfig.java` |
-| 아웃박스 릴레이 | `OutboxRelayScheduler.java`, `OutboxRelayProcessor.java` |
-| Kafka 구독(기본/시스템 토픽) | `OnharuDefaultKafkaConsumer.java`, `OnharuSystemKafkaConsumer.java` |
+| 채팅 수신·브로드캐스트·Kafka 분기 | `infra/websocket/ChatMessageStompHandler.java` |
+| 채팅 메시지 저장·아웃박스 적재 | `ChatFacade.java`, `infra/kafka/outbox/ChatKafkaOutboxAdapter.java` |
+| Kafka 즉시 발행 | `infra/kafka/KafkaProducer.java` |
+| Kafka 템플릿·리스너 팩토리 | `config/KafkaConfig.java` |
+| 아웃박스 릴레이 | `infra/kafka/outbox/scheduler/OutboxRelayScheduler.java`, `infra/kafka/outbox/OutboxRelayProcessor.java` |
+| Kafka 구독(기본/시스템 토픽) | `infra/kafka/OnharuDefaultKafkaConsumer.java`, `infra/kafka/OnharuSystemKafkaConsumer.java` |
 | 아웃박스 영속성 | `OutboxEventRepository` / `OutboxEventRepositoryImpl`, `OutboxEventJpaRepository` |
 | 스케줄 활성화 | `config/ScheduleConfig.java` |
 | Kafka 속성 | `application-kafka.yaml` |

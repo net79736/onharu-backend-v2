@@ -1,0 +1,14 @@
+# RabbitMQ — dev 등에서 optional import
+# 브로커 없이 앱만 띄우려면: onharu.rabbitmq.enabled=false 또는 ONHARU_RABBITMQ_ENABLED=false
+onharu:
+  rabbitmq:
+    enabled: ${ONHARU_RABBITMQ_ENABLED:false}
+    chat-events-queue: ${ONHARU_RABBITMQ_CHAT_QUEUE:onharu.chat.events}
+
+spring:
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:onharu}
+    password: ${RABBITMQ_PASSWORD:onharu}
+    virtual-host: ${RABBITMQ_VHOST:/}

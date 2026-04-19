@@ -117,20 +117,20 @@ sequenceDiagram
     autonumber
     actor Client
     participant StompBroker as WebSocket/STOMP
-    participant ChatController as infra.websocket.ChatController
+    participant ChatStomp as infra.websocket.ChatMessageStompHandler
     participant ChatFacade
     participant SimpMessagingTemplate
 
     Client->>StompBroker: SEND /app/chat/send (chatRoomId, senderId, content)
-    StompBroker->>ChatController: @MessageMapping /chat/send
-    ChatController->>ChatFacade: createChatMessage(CreateChatMessageCommand)
+    StompBroker->>ChatStomp: @MessageMapping /chat/send
+    ChatStomp->>ChatFacade: createChatMessage(CreateChatMessageCommand)
     Note over ChatFacade: Kafka+아웃박스 켜짐: 같은 트랜잭션에서 outbox_events 적재
-    ChatFacade-->>ChatController: ChatMessageResponse
-    ChatController->>SimpMessagingTemplate: convertAndSend("/topic/chat/"+chatRoomId, response)
+    ChatFacade-->>ChatStomp: ChatMessageResponse
+    ChatStomp->>SimpMessagingTemplate: convertAndSend("/topic/chat/"+chatRoomId, response)
     SimpMessagingTemplate-->>Client: SUBSCRIBE /topic/chat/{id} 인 클라이언트에 전달
 ```
 
-Kafka 로의 전송은 **STOMP 이후 비동기**이며, 기본은 **아웃박스 릴레이**(`OutboxRelayScheduler` → 브로커)이다. 아웃박스를 끈 경우에만 `ChatMessageStompHandler` 가 `KafkaProducer` 로 즉시 발행한다. 흐름·설정은 `docs/chat-kafka-flow.md` 참고.
+Kafka 로의 전송은 **STOMP 이후 비동기**이며, 기본은 **아웃박스 릴레이**(`infra/kafka/outbox/scheduler/OutboxRelayScheduler` → 브로커)이다. 아웃박스를 끈 경우에만 `ChatMessageStompHandler` 가 `KafkaProducer` 로 즉시 발행한다. 흐름·설정은 `docs/chat-kafka-flow.md` 참고.
 
 ---
 

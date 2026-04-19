@@ -65,9 +65,11 @@ minio:
   region: ${MINIO_REGION:us-east-1}
   bucket: ${MINIO_BUCKET:onharu-minio-test} # 테스트용 버킷 이름 분리 권장
 
-# Kafka 수동 설정은 테스트에서 비활성 (브로커 불필요)
+# Kafka / RabbitMQ 수동 설정은 테스트에서 비활성 (브로커 불필요)
 onharu:
   kafka:
+    enabled: false
+  rabbitmq:
     enabled: false
 
 logging:

@@ -6,6 +6,7 @@ spring:
       - application-nts.yaml
       - application-jpa-logging.yaml
       - optional:application-kafka.yaml
+      - optional:application-rabbitmq.yaml
   application:
     name: onharu
     is-secure: false

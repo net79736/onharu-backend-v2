@@ -42,6 +42,7 @@ import com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
 import com.backend.onharu.domain.child.service.ChildQueryService;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.event.ChatKafkaOutboxPort;
+import com.backend.onharu.domain.event.ChatRabbitPublishPort;
 import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByUserIdQuery;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.service.OwnerQueryService;
@@ -80,6 +81,9 @@ public class ChatFacade {
 
     /** Kafka 아웃박스 활성 시에만 빈이 주입됩니다. */
     private final ObjectProvider<ChatKafkaOutboxPort> chatKafkaOutboxPort;
+
+    /** RabbitMQ 활성 시에만 빈이 주입됩니다. */
+    private final ObjectProvider<ChatRabbitPublishPort> chatRabbitPublishPort;
 
     /**
      * 채팅방 생성(일대일 채팅방, 참여자까지 생성)
@@ -198,6 +202,16 @@ public class ChatFacade {
         // 아웃 박스 활성 시 Kafka 발행용 페이로드를 아웃박스에 적재
         // ChatKafkaOutboxAdapter 구현체가 주입
         chatKafkaOutboxPort.ifAvailable(port -> port.enqueueChatMessagePublished(
+                command.chatRoomId(),
+                chatMessage.getId(),
+                sender.getId(),
+                chatMessage.getContent(),
+                chatMessage.getCreatedAt()
+        ));
+
+        // RabbitMQ 활성 시 RabbitMQ 발행용 페이로드를 RabbitMQ 큐로 전송
+        // ChatRabbitPublishAdapter 구현체가 주입
+        chatRabbitPublishPort.ifAvailable(port -> port.publishChatMessagePublished(
                 command.chatRoomId(),
                 chatMessage.getId(),
                 sender.getId(),

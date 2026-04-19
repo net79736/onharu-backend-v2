@@ -18,6 +18,8 @@ import { runChatSendStomp, wsUrlFromHttpBase } from './stomp-chat-send.js';
  *   - 또는 수동: K6_CHAT_ROOM_ID, K6_SENDER_ID
  *   - 채팅방이 하나도 없으면 setup 실패 (UI에서 방을 먼저 만드세요)
  *
+ * DB에 메시지가 쌓임(실서비스와 동일 경로). 개발 DB 정리: load-test/sql/cleanup-k6-chat-messages.sql
+ *
  * 인증: K6_COOKIE 또는 K6_BEARER_TOKEN
  *
  * 예약: K6_RESERVATION_ROLE=child|owner

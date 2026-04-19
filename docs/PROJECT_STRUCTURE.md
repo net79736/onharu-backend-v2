@@ -37,8 +37,12 @@
 
 ### Kafka
 
-- **`spring-kafka`** (`build.gradle`) — **선택적** 사용. `onharu.kafka.enabled=false` 이면 `KafkaAutoConfiguration` 없이 기동하고, `true` 일 때 `infra.kafka` 수동 설정(`KafkaProducerConfig`)과 Producer/Consumer·**트랜잭션 아웃박스**(`infra.kafka.outbox`)가 로드됩니다.
+- **`spring-kafka`** (`build.gradle`) — **선택적** 사용. `onharu.kafka.enabled=false` 이면 `KafkaAutoConfiguration` 없이 기동하고, `true` 일 때 **`config.KafkaConfig`** 로 `KafkaTemplate`·ConsumerFactory·리스너 팩토리를 등록하고, **`infra.kafka`** 에 Producer/Consumer 빈·**트랜잭션 아웃박스**(`infra.kafka.outbox`, 릴레이 스케줄은 `outbox/scheduler`)가 로드됩니다.
 - 예약 등 **도메인 내부 이벤트**는 기존처럼 `ApplicationEventPublisher` + `event` 패키지 리스너를 사용합니다(Kafka와 별개).
+
+### RabbitMQ
+
+- **`spring-boot-starter-amqp`** — **선택적** 사용. `onharu.rabbitmq.enabled=false`(기본)이면 `RabbitAutoConfiguration` 없이 기동하고, `true` 일 때 `config.RabbitMqConfig`·`infra.rabbitmq`(채팅 큐 발행/구독)가 로드됩니다. 상세는 `docs/RABBITMQ.md`, Docker는 `docker-compose.yml` 의 `rabbitmq` 서비스.
 
 ---
 
@@ -55,7 +59,7 @@
 
 - 연결 엔드포인트: **`/ws-chat`** (`WebSocketConfiguration`)
 - 브로커 prefix: **`/topic`**, **`/queue`** / 앱 prefix: **`/app`**
-- 메시지 처리: `infra.websocket.ChatController` — `@MessageMapping("/chat/send")` 등
+- 메시지 처리: `infra.websocket.ChatMessageStompHandler` — `@MessageMapping("/chat/send")` 등
 
 ---
 
@@ -76,6 +80,7 @@ com.backend.onharu/
 │   ├── S3ConfigLocal.java, RestTemplateConfig.java
 │   ├── PasswordEncoderConfig.java, ServerUrlProperties.java
 │   ├── ScheduleConfig.java, AsyncConfig.java
+│   ├── KafkaConfig.java              # onharu.kafka.enabled=true 일 때만 (Producer/Consumer 팩토리, KafkaTemplate)
 │   └── …
 ├── application/                    # 유스케이스 조립
 │   ├── *Facade.java                # 12개: Auth, Chat, Child, File, Level, Notification, Owner, Review, Store, StoreExcel, StoreSchedule, User
@@ -84,7 +89,7 @@ com.backend.onharu/
 │   └── dto/                        # 퍼사드 전용 DTO 등
 ├── domain/                         # 도메인별 모델·서비스·리포지토리 인터페이스·DTO
 │   ├── outbox/                     # 트랜잭션 아웃박스(OutboxEvent, OutboxEventRepository …)
-│   ├── event/                      # ChatKafkaOutboxPort 등 Kafka 관련 도메인 포트
+│   ├── event/                      # ChatKafkaOutboxPort, ChatRabbitPublishPort 등 메시징 포트
 │   ├── chat/
 │   ├── child/
 │   ├── common/                     # BaseEntity, Enum, JpaAuditingConfig, SecurityAuditorAware 등
@@ -104,13 +109,14 @@ com.backend.onharu/
 │   └── support/                    # CacheName, error(CoreException, ErrorCode, ErrorType …)
 ├── infra/                          # 인프라 구현
 │   ├── db/                         # JPA, *JpaRepository, *RepositoryImpl (도메인별 하위 패키지, `db/outbox` 등)
-│   ├── kafka/                      # KafkaTemplate, Consumer, 아웃박스 릴레이(`outbox/`), 설정은 KafkaProducerConfig
+│   ├── kafka/                      # KafkaTemplate, Consumer, 아웃박스(`outbox/`, 릴레이 스케줄 `outbox/scheduler/`) — 설정은 config.KafkaConfig
+│   ├── rabbitmq/                   # RabbitTemplate, 채팅 이벤트 큐 발행·리스너 (연결·큐 빈은 config.RabbitMqConfig)
 │   ├── redis/                      # 캐시(해시), 조회수·카운트, 최근 검색어, 분산 락(DistributeLockExecutor) 등
 │   ├── security/                   # LocalUser·LocalUserService, OAuth2 핸들러, SocialUser — `jwt` 하위 패키지는 비어 있음
 │   │   └── oauth/                  # OAuth2Success/FailureHandler, SocialUserService, OAuthAttributes …
 │   ├── email/                      # EmailSender, EmailSendService, impl
 │   ├── nts/                        # 사업자번호 등 외부 연동 (NtsBusinessNumber, NtsBusinessNumberImpl)
-│   └── websocket/                  # STOMP 메시지 DTO·ChatController
+│   └── websocket/                  # STOMP DTO·ChatMessageStompHandler
 ├── interfaces/
 │   ├── api/
 │   │   ├── controller/             # I*Controller + impl/*ControllerImpl
@@ -120,7 +126,7 @@ com.backend.onharu/
 │   └── shceduler/                  # @Scheduled (패키지명 철자: shceduler)
 │       ├── ReservationScheduler.java
 │       └── StoreViewCountScheduler.java
-├── event/                          # ReservationEvent, ReservationNotificationMessage, listener
+├── event/                          # ReservationEvent, ReservationNotificationMessage, listener (도메인 `event` 패키지의 ChatKafkaOutboxPort 등과 별개)
 └── utils/                          # DateUtils, NumberUtils, CookieUtils, SecurityUtils
 ```
 

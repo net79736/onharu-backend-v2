@@ -94,6 +94,8 @@ dependencies {
 
 	// Kafka (로컬 개발: application-kafka.yaml + onharu.kafka.enabled=true, coupon/movie 패턴)
 	implementation 'org.springframework.kafka:spring-kafka'
+	// RabbitMQ (로컬: docker-compose rabbitmq + application-rabbitmq.yaml + onharu.rabbitmq.enabled=true)
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
 	testImplementation 'org.awaitility:awaitility:4.2.2'
 }

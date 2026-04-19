@@ -5,13 +5,14 @@ import java.time.ZoneId;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 
 /**
- * Kafka는 {@code infra.kafka} 수동 설정만 사용합니다(coupon/movie 패턴).
- * {@link KafkaAutoConfiguration} 제외로 onharu.kafka.enabled=false 일 때 브로커 없이 기동 가능합니다.
+ * Kafka / RabbitMQ 는 각각 {@code infra.kafka}, {@code infra.rabbitmq} 수동 설정만 사용합니다.
+ * 자동 구성을 제외시켜 브로커 엔진 없이 기동할 수 있도록 위함.
  */
-@SpringBootApplication(exclude = {KafkaAutoConfiguration.class})
+@SpringBootApplication(exclude = {KafkaAutoConfiguration.class, RabbitAutoConfiguration.class})
 public class OnharuApplication {
 
 	public static void main(String[] args) {
