@@ -1,4 +1,4 @@
-package com.backend.onharu.infra.kafka.outbox;
+package com.backend.onharu.infra.kafka.outbox.scheduler;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import com.backend.onharu.domain.outbox.OutboxEventStatus;
 import com.backend.onharu.domain.outbox.model.OutboxEvent;
 import com.backend.onharu.domain.outbox.repository.OutboxEventRepository;
+import com.backend.onharu.infra.kafka.outbox.OutboxRelayProcessor;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

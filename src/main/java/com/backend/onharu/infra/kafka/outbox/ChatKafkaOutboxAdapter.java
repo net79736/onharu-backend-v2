@@ -34,6 +34,16 @@ public class ChatKafkaOutboxAdapter implements ChatKafkaOutboxPort {
     @Value("${spring.kafka.template.default-topic}")
     private String defaultChatTopic; // onharu-chat
 
+    /**
+     * 채팅 메시지 JSON을 아웃박스 DB 테이블에 적재합니다. 릴레이 스케줄러가 Kafka 로 전송합니다.
+     * defaultChatTopic: onharu-chat
+     * 
+     * @param chatRoomId 채팅방 ID
+     * @param chatMessageId 채팅 메시지 ID
+     * @param senderId 채팅 메시지 발신자 ID
+     * @param content 채팅 메시지 내용
+     * @param createdAt 채팅 메시지 생성 시간
+     */
     @Override
     public void enqueueChatMessagePublished(
             long chatRoomId,

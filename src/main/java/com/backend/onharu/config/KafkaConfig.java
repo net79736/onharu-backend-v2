@@ -1,4 +1,4 @@
-package com.backend.onharu.infra.kafka;
+package com.backend.onharu.config;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @EnableConfigurationProperties(KafkaProperties.class)
 @ConditionalOnProperty(name = "onharu.kafka.enabled", havingValue = "true")
-public class KafkaProducerConfig {
+public class KafkaConfig {
 
     private final KafkaProperties kafkaProperties;
 

@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.backend.onharu.domain.outbox.OutboxEventStatus;
 import com.backend.onharu.domain.outbox.model.OutboxEvent;
 import com.backend.onharu.domain.outbox.repository.OutboxEventRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -55,9 +54,8 @@ public class OutboxRelayProcessor {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void relayOne(long outboxEventId) throws ExecutionException, InterruptedException, TimeoutException {
         OutboxEvent row = outboxEventRepository.getById(outboxEventId);
-        
         // 아웃박스 행 상태가 대기 중이 아니면 릴레이하지 않습니다.
-        if (row.getStatus() != OutboxEventStatus.PENDING) {
+        if (!row.isPending()) {
             return;
         }
         // 아웃박스 행을 Kafka 로 전송합니다.
@@ -84,10 +82,16 @@ public class OutboxRelayProcessor {
         }
     }
 
+    /**
+     * 아웃박스 행 상태를 FAILED 로 변경합니다.
+     * 
+     * @param outboxEventId
+     */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void markFailed(long outboxEventId) {
         outboxEventRepository.findById(outboxEventId).ifPresent(row -> {
-            if (row.getStatus() == OutboxEventStatus.PENDING) {
+            // 아웃박스 행 상태가 대기 중이면 상태를 FAILED 로 변경합니다.
+            if (row.isPending()) {
                 row.markFailed();
                 outboxEventRepository.save(row);
             }

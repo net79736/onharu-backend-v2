@@ -62,4 +62,12 @@ public class OutboxEvent extends BaseEntity {
     public void markFailed() {
         this.status = OutboxEventStatus.FAILED;
     }
+
+    /**
+     * 아웃박스 행 상태가 대기 중인지 확인합니다.
+     * @return
+     */
+    public boolean isPending() {
+        return this.status == OutboxEventStatus.PENDING;
+    }
 }
