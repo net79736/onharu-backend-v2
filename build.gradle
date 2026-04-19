@@ -89,8 +89,9 @@ dependencies {
 	// 이메일 HTML 템플릿 (Thymeleaf — MVC 뷰는 비활성화하고 메일 전용 엔진만 사용)
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
-	// WebSocket(STOMP)
+	// WebSocket(STOMP) + STOMP broker relay(RabbitMQ 등) 시 Reactor Netty TCP 클라이언트 필요
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.springframework.boot:spring-boot-starter-reactor-netty'
 
 	// Kafka (로컬 개발: application-kafka.yaml + onharu.kafka.enabled=true, coupon/movie 패턴)
 	implementation 'org.springframework.kafka:spring-kafka'

@@ -50,6 +50,7 @@ import com.backend.onharu.domain.store.dto.StoreQuery.FindByOwnerIdQuery;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.service.StoreQueryService;
 import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.domain.user.service.UserQueryService;
@@ -379,6 +380,11 @@ public class ChatFacade {
      */
     @Transactional
     public void enterChatRoom(EnterChatRoomCommand command) {
+        // 사용자 ID 가 없는 경우 예외 발생
+        if (command.userId() == null) {
+            throw new CoreException(ErrorType.Chat.CHAT_AUTHENTICATION_REQUIRED);
+        }
+
         // 채팅방의 마지막 메시지 조회
         ChatRoom chatRoom = chatRoomQueryService.findChatRoomById(
                 new FindChatRoomByIdQuery(command.chatRoomId())

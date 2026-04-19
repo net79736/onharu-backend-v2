@@ -1,5 +1,8 @@
 package com.backend.onharu.config;
 
+import org.springframework.amqp.core.AcknowledgeMode;
+import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
@@ -55,7 +58,14 @@ public class RabbitMqConfig {
      */
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
-        return new RabbitTemplate(connectionFactory);
+        RabbitTemplate template = new RabbitTemplate(connectionFactory);
+        // 디스크 영속: 브로커 재시작·클러스터에서 메시지 손실 완화 (큐도 durable 이어야 함)
+        template.setBeforePublishPostProcessors(message -> {
+            message.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT); // 메시지를 메모리가 아닌 디스크(Disk)에 저장하도록 브로커(RabbitMQ)에 지시
+            message.getMessageProperties().setContentType(MessageProperties.CONTENT_TYPE_TEXT_PLAIN); // 메시지 콘텐츠 유형을 텍스트로 설정
+            return message;
+        });
+        return template;
     }
 
     /**
@@ -79,19 +89,28 @@ public class RabbitMqConfig {
     public Queue onharuChatEventsQueue(
             @Value("${onharu.rabbitmq.chat-events-queue:onharu.chat.events}") String name
     ) {
+        // durable=true: RabbitMQ 서버가 꺼졌다가 다시 켜져도 이 큐를 삭제하지 않고 그대로 유지하겠다는 뜻
         return new Queue(name, true);
     }
 
     /**
      * RabbitMQ 리스너 컨테이너 팩토리 설정
-     * 
-     * @param connectionFactory
-     * @return
+     * * @RabbitListener가 메시지를 소비할 때 사용할 환경 설정을 정의합니다.
+     * * [주요 설정: 수동 승인(MANUAL ACK)]
+     * 1. 데이터 안전성: 기본값인 AUTO는 전달 즉시 메시지를 삭제하지만, MANUAL은 처리가 완료될 때까지 보관합니다.
+     * 2. 장애 복구: 로직 수행 중 에러 발생 시 basicAck를 보내지 않으면, RabbitMQ가 메시지를 큐에 유지(Re-queue)하여 재처리를 보장합니다.
+     * 3. 정교한 제어: 비즈니스 로직 성공 시에만 ack를 전송하고, 실패 시 nack/reject를 통해 재시도 여부를 결정할 수 있습니다.
+     * * @param connectionFactory RabbitMQ 연결을 위한 팩토리
+     * @return 설정이 완료된 리스너 컨테이너 팩토리
      */
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
+        
+        // 수동 ACK 모드 설정: 처리(DB 저장, 푸시 등) 완료 후 명시적으로 basicAck를 호출해야 함
+        factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);
+        
         return factory;
     }
 }

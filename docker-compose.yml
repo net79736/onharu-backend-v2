@@ -120,11 +120,13 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+      - "61613:61613" # STOMP 플러그인 — Spring StompBrokerRelay 가 브로커와 통신할 때 사용 (기본 61613)
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-onharu}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-onharu}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+      - ./docker/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
     networks:
       - onharu-network
     healthcheck:
@@ -272,6 +274,10 @@ services:
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-onharu}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-onharu}
       ONHARU_RABBITMQ_ENABLED: ${ONHARU_RABBITMQ_ENABLED:-false}
+      # RabbitMQ STOMP 플러그인 기동 후 true 로 두면 SimpleBroker 대신 브로커 릴레이 사용
+      ONHARU_STOMP_RELAY_ENABLED: ${ONHARU_STOMP_RELAY_ENABLED:-false}
+      RABBITMQ_STOMP_HOST: ${RABBITMQ_STOMP_HOST:-rabbitmq}
+      RABBITMQ_STOMP_PORT: ${RABBITMQ_STOMP_PORT:-61613}
 
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]

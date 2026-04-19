@@ -18,8 +18,8 @@ public final class ChatStompDestination {
     public static final String WS_ENDPOINT_ANT_PATTERN = WS_ENDPOINT + "/**";
 
     /**
-     * 단순 브로커가 구독 배달에 사용하는 prefix.
-     * {@link com.backend.onharu.config.WebSocketConfiguration} 의 {@code enableSimpleBroker}와 동일해야 합니다.
+     * 브로커(인메모리 SimpleBroker 또는 외부 릴레이)가 구독 배달에 사용하는 prefix.
+     * {@link com.backend.onharu.config.WebSocketConfig} 의 브로커 설정과 동일해야 합니다.
      */
     public static final String BROKER_PREFIX_TOPIC = "/topic";
     public static final String BROKER_PREFIX_QUEUE = "/queue";

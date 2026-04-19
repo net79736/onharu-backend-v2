@@ -542,6 +542,8 @@ public enum ErrorType implements IErrorType {
     public enum Chat implements IErrorType {
         CHAT_ROOM_NOT_FOUND(ErrorCode.NOT_FOUND, "채팅방 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         CAN_NOT_CHAT_WITH_ONESELF(ErrorCode.NOT_FOUND, "자기 자신과 채팅할 수 없습니다.", LogLevel.ERROR),
+        /** SecurityContext 에 로그인 사용자가 없을 때 (익명 요청 등) */
+        CHAT_AUTHENTICATION_REQUIRED(ErrorCode.UNAUTHORIZED, "채팅방 이용을 위해 로그인이 필요합니다.", LogLevel.WARN),
         CHAT_PARTICIPANTS_NOT_FOUND(ErrorCode.NOT_FOUND, "채팅참여자 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         CHAT_MESSAGE_NOT_FOUND(ErrorCode.NOT_FOUND, "채팅메시지 정보를 찾을 수 없습니다.", LogLevel.ERROR),
         ;

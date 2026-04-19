@@ -12,7 +12,7 @@ import jakarta.annotation.PostConstruct;
 
 @Profile("!test")
 @Configuration
-public class RedissonConfiguration {
+public class RedissonConfig {
 
     @Value("${spring.data.redis.host:localhost}")
     private String host;

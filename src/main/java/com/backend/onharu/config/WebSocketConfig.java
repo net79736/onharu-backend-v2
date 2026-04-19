@@ -1,7 +1,9 @@
 package com.backend.onharu.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.util.StringUtils;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -10,7 +12,31 @@ import com.backend.onharu.domain.support.ChatStompDestination;
 
 @Configuration
 @EnableWebSocketMessageBroker // Spring STOMP 활성화
-public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    @Value("${onharu.stomp.relay.enabled:false}")
+    private boolean stompRelayEnabled; // RabbitMQ STOMP 플러그인 사용 여부
+
+    @Value("${onharu.stomp.relay.host:localhost}")
+    private String stompRelayHost; // RabbitMQ STOMP 플러그인 호스트
+
+    @Value("${onharu.stomp.relay.port:61613}")
+    private int stompRelayPort; // RabbitMQ STOMP 플러그인 포트
+
+    @Value("${onharu.stomp.relay.client-login:onharu}")
+    private String stompClientLogin; // RabbitMQ STOMP 플러그인 클라이언트 로그인
+
+    @Value("${onharu.stomp.relay.client-passcode:onharu}")
+    private String stompClientPasscode; // RabbitMQ STOMP 플러그인 클라이언트 패스코드
+
+    @Value("${onharu.stomp.relay.system-login:guest}")
+    private String stompSystemLogin; // RabbitMQ STOMP 플러그인 시스템 로그인
+
+    @Value("${onharu.stomp.relay.system-passcode:guest}")
+    private String stompSystemPasscode; // RabbitMQ STOMP 플러그인 시스템 패스코드
+
+    @Value("${onharu.stomp.relay.virtual-host:/}")
+    private String stompVirtualHost; // RabbitMQ STOMP 플러그인 가상 호스트
 
     /**
      * [단계 1] 클라이언트가 서버에 처음 연결될 '접속 지점' 설정
@@ -43,7 +69,30 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
         // 클라이언트(프론트엔드)는 이 주소들을 '구독(Subscribe)'하고 기다립니다.
         // - /topic : 주로 1:N 전체 채팅이나 단체 채팅방용 (방송 개념)
         // - /queue : 주로 1:1 메시지나 특정 사용자 지정 전송용 (개인 우편함 개념)
-        registry.enableSimpleBroker(ChatStompDestination.BROKER_PREFIX_TOPIC, ChatStompDestination.BROKER_PREFIX_QUEUE);
+        // registry.enableSimpleBroker(ChatStompDestination.BROKER_PREFIX_TOPIC, ChatStompDestination.BROKER_PREFIX_QUEUE);
+
+        // 1. [도착 지점] 인메모리 SimpleBroker 또는 외부 브로커(RabbitMQ STOMP 등) 릴레이
+        if (stompRelayEnabled) {
+            var relay = registry
+                    .enableStompBrokerRelay(
+                            ChatStompDestination.BROKER_PREFIX_TOPIC,
+                            ChatStompDestination.BROKER_PREFIX_QUEUE
+                    )
+                    .setRelayHost(stompRelayHost) // RabbitMQ STOMP 플러그인 호스트
+                    .setRelayPort(stompRelayPort) // RabbitMQ STOMP 플러그인 포트
+                    .setClientLogin(stompClientLogin) // RabbitMQ STOMP 플러그인 클라이언트 로그인
+                    .setClientPasscode(stompClientPasscode) // RabbitMQ STOMP 플러그인 클라이언트 패스코드
+                    .setSystemLogin(stompSystemLogin) // RabbitMQ STOMP 플러그인 시스템 로그인
+                    .setSystemPasscode(stompSystemPasscode); // RabbitMQ STOMP 플러그인 시스템 패스코드
+            if (StringUtils.hasText(stompVirtualHost)) {
+                relay.setVirtualHost(stompVirtualHost);
+            }
+        } else {
+            registry.enableSimpleBroker(
+                    ChatStompDestination.BROKER_PREFIX_TOPIC,
+                    ChatStompDestination.BROKER_PREFIX_QUEUE
+            );
+        }
 
         // 2. [출발 지점 설정] 클라이언트가 서버로 메시지를 "보낼" 때 붙이는 규칙(Prefix)입니다.
         // 사용자가 채팅을 입력해서 전송할 때, 주소 앞에 "/app"을 붙여서 보내도록 약속하는 것입니다.

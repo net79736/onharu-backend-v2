@@ -2,8 +2,19 @@
 # 브로커 없이 앱만 띄우려면: onharu.rabbitmq.enabled=false 또는 ONHARU_RABBITMQ_ENABLED=false
 onharu:
   rabbitmq:
-    enabled: ${ONHARU_RABBITMQ_ENABLED:false}
+    enabled: ${ONHARU_RABBITMQ_ENABLED:true}
     chat-events-queue: ${ONHARU_RABBITMQ_CHAT_QUEUE:onharu.chat.events}
+  # WebSocket STOMP — RabbitMQ STOMP 플러그인(기본 61613)과 연동 시 true (브로커 미기동 시 앱 기동 실패 가능)
+  stomp:
+    relay:
+      enabled: ${ONHARU_STOMP_RELAY_ENABLED:true}
+      host: ${RABBITMQ_STOMP_HOST:localhost}
+      port: ${RABBITMQ_STOMP_PORT:61613}
+      client-login: ${RABBITMQ_STOMP_CLIENT_LOGIN:onharu}
+      client-passcode: ${RABBITMQ_STOMP_CLIENT_PASSCODE:onharu}
+      system-login: ${RABBITMQ_STOMP_SYSTEM_LOGIN:onharu}
+      system-passcode: ${RABBITMQ_STOMP_SYSTEM_PASSCODE:onharu}
+      virtual-host: ${RABBITMQ_STOMP_VHOST:/}
 
 spring:
   rabbitmq:
