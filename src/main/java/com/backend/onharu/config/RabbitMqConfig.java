@@ -1,9 +1,13 @@
 package com.backend.onharu.config;
 
 import org.springframework.amqp.core.AcknowledgeMode;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -79,19 +83,6 @@ public class RabbitMqConfig {
         return new RabbitAdmin(connectionFactory);
     }
 
-    /**
-     * 채팅 이벤트 큐 설정
-     * 
-     * @param name 채팅 이벤트 큐 이름
-     * @return
-     */
-    @Bean
-    public Queue onharuChatEventsQueue(
-            @Value("${onharu.rabbitmq.chat-events-queue:onharu.chat.events}") String name
-    ) {
-        // durable=true: RabbitMQ 서버가 꺼졌다가 다시 켜져도 이 큐를 삭제하지 않고 그대로 유지하겠다는 뜻
-        return new Queue(name, true);
-    }
 
     /**
      * RabbitMQ 리스너 컨테이너 팩토리 설정
@@ -112,5 +103,33 @@ public class RabbitMqConfig {
         factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);
         
         return factory;
+    }
+
+    // 1. 쓰레기통 역할을 할 Exchange와 Queue 만들기
+    @Bean
+    public DirectExchange deadLetterExchange() {
+        return new DirectExchange("onharu.chat.dlx");
+    }
+
+    @Bean
+    public Queue deadLetterQueue() {
+        return new Queue("onharu.chat.dead-letter"); // 실제 실패한 메시지가 쌓일 큐
+    }
+
+    @Bean
+    public Binding deadLetterBinding() {
+        return BindingBuilder.bind(deadLetterQueue()).to(deadLetterExchange()).with("dead-letter-key");
+    }
+
+    // 2. ★핵심★ 원래 사용하던 메인 큐에 DLX 옵션 달기
+    @Bean
+    public Queue chatEventsQueue(
+            @Value("${onharu.rabbitmq.chat-events-queue:onharu.chat.events}") String name
+    ) {
+        // durable=true: RabbitMQ 서버가 꺼졌다가 다시 켜져도 이 큐를 삭제하지 않고 그대로 유지하겠다는 뜻
+        return QueueBuilder.durable(name) // 설정파일에서 이름을 가져오도록 변경
+                .withArgument("x-dead-letter-exchange", "onharu.chat.dlx")
+                .withArgument("x-dead-letter-routing-key", "dead-letter-key")
+                .build();
     }
 }

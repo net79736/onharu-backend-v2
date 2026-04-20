@@ -221,6 +221,7 @@ public final class SecurityUtils implements ApplicationContextAware {
 
         if (authentication == null || !authentication.isAuthenticated() // 인증되지 않은 사용자이거나 익명 사용자인 경우
                 || authentication.getPrincipal().equals("anonymousUser")) {
+            // TODO: 처음에 채팅 메시지 보낼때 여기로 들어오고 있음.
             return null;
         }
 

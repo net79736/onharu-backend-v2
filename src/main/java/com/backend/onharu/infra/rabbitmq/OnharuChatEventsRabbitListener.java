@@ -54,9 +54,9 @@ public class OnharuChatEventsRabbitListener {
     private void processChatEventPayload(String payload) throws JsonProcessingException {
         JsonNode root = objectMapper.readTree(payload);
         log.info(
-                "rabbit chat event received chatRoomId={} chatMessageId={}",
-                root.path("chatRoomId").asText(),
-                root.path("chatMessageId").asText()
+            "rabbit chat event received chatRoomId={} chatMessageId={}",
+            root.path("chatRoomId").asText(),
+            root.path("chatMessageId").asText()
         );
     }
 }

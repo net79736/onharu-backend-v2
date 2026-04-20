@@ -409,7 +409,7 @@
 
     var STOMP = {
       wsPath: '/ws-chat',
-      topicRoom:   function (roomId) { return '/topic/chat/' + roomId; },
+      topicRoom:   function (roomId) { return '/topic/chat.' + roomId; },
       sendDest:    '/app/chat/send',
     };
 
@@ -423,9 +423,9 @@
 
       stompClient = new StompJs.Client({
         brokerURL: wsProto + '://' + location.host + STOMP.wsPath,
-        reconnectDelay: 5000,
-        heartbeatIncoming: 4000,
-        heartbeatOutgoing: 4000,
+        reconnectDelay: 5000,              // 자동 재연결
+        heartbeatIncoming: 20000,          // 클라이언트→서버
+        heartbeatOutgoing: 10000           // 서버→클라이언트
       });
 
       stompClient.onConnect = function () {

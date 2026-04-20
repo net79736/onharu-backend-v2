@@ -46,10 +46,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
 
         // 1. {@link ChatStompDestination#WS_ENDPOINT} 이름으로 대문을 만듭니다.
-        // 클라이언트는 소켓 연결을 시도할 때 ws://서버주소 + WS_ENDPOINT 주소를 사용하게 됩니다.
+        // 클라이언트가 소켓 연결을 시도할 때 → ws://서버주소 + WS_ENDPOINT 주소를 사용 (예: ws://localhost:8080/ws-chat)
         registry.addEndpoint(ChatStompDestination.WS_ENDPOINT)
 
-                // 2. 보안 설정: 누가 이 대문에 들어올 수 있는지 정합니다.
+                // 2. 보안 설정
                 .setAllowedOriginPatterns("*") // TODO: 운영 시 프론트 도메인으로 제한
 
                 // 3. SockJS — 구형 브라우저 대비 시 .withSockJS() 검토
@@ -65,10 +65,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
 
-        // 1. [도착 지점 설정] 서버가 클라이언트에게 메시지를 "전달"할 때 사용하는 경로입니다.
-        // 클라이언트(프론트엔드)는 이 주소들을 '구독(Subscribe)'하고 기다립니다.
-        // - /topic : 주로 1:N 전체 채팅이나 단체 채팅방용 (방송 개념)
-        // - /queue : 주로 1:1 메시지나 특정 사용자 지정 전송용 (개인 우편함 개념)
+        // 1. [메시지 배달 경로 설정] 
+        // 서버가 사용자에게 메시지를 쏠 때, 어떤 "채널"을 사용할지 정의합니다.
+        // 프론트엔드는 이 주소를 '구독'해서 실시간 데이터를 받습니다.
+
+        // - /topic : 단체 채널. (예: 식당의 실시간 예약 현황 업데이트, 전체 공지)
+        // - /queue : 개인 채널. (예: 특정 아이에게 전송되는 '예약 확정' 알림, 1:1 문의 답변)
         // registry.enableSimpleBroker(ChatStompDestination.BROKER_PREFIX_TOPIC, ChatStompDestination.BROKER_PREFIX_QUEUE);
 
         // 1. [도착 지점] 인메모리 SimpleBroker 또는 외부 브로커(RabbitMQ STOMP 등) 릴레이
@@ -77,7 +79,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     .enableStompBrokerRelay(
                             ChatStompDestination.BROKER_PREFIX_TOPIC,
                             ChatStompDestination.BROKER_PREFIX_QUEUE
-                    )
+                    ) // SimpleBroker는 해당하는 경로를 SUBSCRIBE하는 Client에게 메세지를 전달하는 간단한 작업을 수행
                     .setRelayHost(stompRelayHost) // RabbitMQ STOMP 플러그인 호스트
                     .setRelayPort(stompRelayPort) // RabbitMQ STOMP 플러그인 포트
                     .setClientLogin(stompClientLogin) // RabbitMQ STOMP 플러그인 클라이언트 로그인

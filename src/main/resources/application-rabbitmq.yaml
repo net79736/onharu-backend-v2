@@ -23,3 +23,9 @@ spring:
     username: ${RABBITMQ_USERNAME:onharu}
     password: ${RABBITMQ_PASSWORD:onharu}
     virtual-host: ${RABBITMQ_VHOST:/}
+    listener:
+      simple:
+        # [manual | auto] 수동(manual) 설정 시 처리(DB 저장, 푸시 등) 후 명시적으로 basicAck를 호출해야 함
+        acknowledge-mode: manual
+        max-attempts: 3 # 3번만 시도하고 포기
+        initial-interval: 1000ms # 첫 재시도 대기시간

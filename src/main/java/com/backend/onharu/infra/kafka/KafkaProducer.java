@@ -38,7 +38,7 @@ public class KafkaProducer {
                 .withPayload(payload)
                 .setHeader(KafkaHeaders.TOPIC, defaultTopic)
                 .build();
-        // Kafka 메시지 전송 결과를 로깅합니다.
+        // Kafka 메시지 전송 및 결과를 로깅합니다.
         sendAndLog(onharuKafkaTemplate.send(message));
     }
 
@@ -47,7 +47,7 @@ public class KafkaProducer {
                 .withPayload(payload)
                 .setHeader(KafkaHeaders.TOPIC, topic)
                 .build();
-        // Kafka 메시지 전송 결과를 로깅합니다.
+        // Kafka 메시지 전송 및 결과를 로깅합니다.
         sendAndLog(onharuKafkaTemplate.send(message));
     }
 

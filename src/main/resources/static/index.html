@@ -976,7 +976,6 @@
       await apiJson('POST', '/api/users/login', { loginId: loginId, password: password });
       await refreshMe();
       await loadStores(1);
-      alert('로그인 성공');
     } catch (e) {
       alert('로그인 실패: ' + (e.message || e));
     }

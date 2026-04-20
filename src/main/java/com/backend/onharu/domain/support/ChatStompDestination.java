@@ -34,13 +34,14 @@ public final class ChatStompDestination {
      */
     public static final String MESSAGE_MAPPING_CHAT_SEND = "/chat/send";
 
-    private static final String TOPIC_CHAT_BASE = BROKER_PREFIX_TOPIC + "/chat/";
+    private static final String TOPIC_CHAT_BASE = BROKER_PREFIX_TOPIC + "/chat.";
 
     /**
      * 채팅방 단위 브로드캐스트 토픽 — 클라이언트는 이 경로를 subscribe 합니다.
+     * /topic/chat.{chatRoomId} (예: /topic/chat.1)
      */
     public static String topicChatRoom(long chatRoomId) {
-        return TOPIC_CHAT_BASE + chatRoomId; // "/topic/chat/{chatRoomId}"
+        return TOPIC_CHAT_BASE + chatRoomId;
     }
 
     /**

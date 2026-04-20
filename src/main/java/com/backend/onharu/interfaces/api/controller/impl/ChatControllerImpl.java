@@ -240,6 +240,7 @@ public class ChatControllerImpl implements IChatController {
         log.info("채팅방 입장");
 
         // 세션에 로그인된 사용자 ID 추출
+        // TODO: 처음에 채팅 메시지 보낼때 userId를 제대로 받아오지 못하고 있음
         Long userId = SecurityUtils.getUserId();
 
         // 채팅방 입장
