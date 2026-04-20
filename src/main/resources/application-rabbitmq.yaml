@@ -27,5 +27,8 @@ spring:
       simple:
         # [manual | auto] 수동(manual) 설정 시 처리(DB 저장, 푸시 등) 후 명시적으로 basicAck를 호출해야 함
         acknowledge-mode: manual
+      retry:
+        enabled: true # 재시도 활성화 시 사용
         max-attempts: 3 # 3번만 시도하고 포기
         initial-interval: 1000ms # 첫 재시도 대기시간
+      default-requeue-rejected: false # 재시도 끝난 후 다시 큐에 넣지 않음. Dead Letter Queue 로 이동.
