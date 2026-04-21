@@ -23,9 +23,6 @@ public class StoreViewCountScheduler {
     public void flushStoreViewCounts() {
         try {
             bulkUpdater.bulkUpdate(DomainType.STORE);
-            // bulkUpdater.bulkUpdate(DomainType.LEVEL);
-            // bulkUpdater.bulkUpdate(DomainType.OWNER);
-            // bulkUpdater.bulkUpdate(DomainType.TAG);
         } catch (Exception e) {
             log.warn("[StoreViewCountScheduler] flush failed", e);
         }
