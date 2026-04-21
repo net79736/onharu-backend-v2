@@ -62,9 +62,9 @@ public class RedisCountService {
      */
     private long incrementCount(String key, String field, long fallbackValue) {
         try {
-            Long updated = redisTemplate.opsForHash().increment(key, field, 1);
+            long updated = redisTemplate.opsForHash().increment(key, field, 1);
             redisTemplate.expire(key, TTL); // 활동이 있을 때마다 TTL 연장
-            return updated != null ? updated : (fallbackValue + 1);
+            return updated;
         } catch (Exception e) {
             log.error("❌ [RedisCountService] Increment 실패 - key: {}, error: {}", key, e.getMessage());
             return fallbackValue + 1;
@@ -96,10 +96,9 @@ public class RedisCountService {
         String key = strategy.getRedisKey(contentId);
         long current = ensureSeededAndGet(key, strategy, contentId, FIELD_FAVORITE);
         try {
-            Long updated = redisTemplate.opsForHash().increment(key, FIELD_FAVORITE, delta);
+            long updated = redisTemplate.opsForHash().increment(key, FIELD_FAVORITE, delta);
             redisTemplate.expire(key, TTL);
-            long v = updated != null ? updated : (current + delta);
-            return Math.max(0L, v);
+            return Math.max(0L, updated);
         } catch (Exception e) {
             log.error("❌ [RedisCountService] Favorite 변경 실패 - key: {}, error: {}", key, e.getMessage());
             return Math.max(0L, current + delta);
@@ -128,7 +127,7 @@ public class RedisCountService {
      */
     private CommonCount ensureSeededAndGetAll(String key, CountStrategy strategy, long contentId) {
         Map<Object, Object> redisMap = redisTemplate.opsForHash().entries(key);
-        if (redisMap != null && !redisMap.isEmpty()
+        if (!redisMap.isEmpty()
                 && redisMap.containsKey(FIELD_VIEW)
                 && redisMap.containsKey(FIELD_FAVORITE)) {
             long view = Math.max(0L, toLong(redisMap.get(FIELD_VIEW)));
