@@ -50,9 +50,10 @@ public enum ReservationNotificationMessage {
      * 템플릿에 %d가 있으면 예약 번호로 치환 후, storeName이 있으면 "[storeName] 본문" 형식으로 반환
      */
     public String getOwnerMessageTemplate(String storeName, Long reservationId) {
+        long safeReservationId = reservationId != null ? reservationId : 0L;
         // 템플릿에 %d가 있으면 예약 번호로 치환
         String body = (ownerMessageTemplate != null && ownerMessageTemplate.contains("%d"))
-            ? String.format(ownerMessageTemplate, reservationId != null ? reservationId : 0L)
+            ? String.format(ownerMessageTemplate, safeReservationId)
             : ownerMessageTemplate;
         // storeName이 없으면 가게 이름 메시지 제거
         if (storeName == null || storeName.isBlank()) {
