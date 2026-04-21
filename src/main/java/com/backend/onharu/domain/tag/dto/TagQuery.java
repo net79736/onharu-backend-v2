@@ -2,7 +2,7 @@ package com.backend.onharu.domain.tag.dto;
 
 import java.util.List;
 
-public class TagQuery {
+public interface TagQuery {
     /**
      * 태그 ID로 단건 조회
      */
