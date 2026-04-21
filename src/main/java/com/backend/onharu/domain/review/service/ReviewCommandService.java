@@ -39,7 +39,7 @@ public class ReviewCommandService {
      * 리뷰 수정
      */
     public void updateReview(UpdateReviewCommand command) {
-        Review review = reviewRepository.getReviewById(
+        reviewRepository.getReviewById(
                 new GetReviewByIdParam(
                         command.reviewId()
                 )
