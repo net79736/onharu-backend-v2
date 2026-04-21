@@ -78,9 +78,7 @@ public class StoreScheduleValidator {
                 .collect(Collectors.groupingBy(ScheduleTimeRange::scheduleDate));
 
         // 각 날짜별로 시간 겹침 체크
-        groupedByDate.forEach((date, dailySchedules) -> {
-            checkTimeOverlaps(dailySchedules);
-        });
+        groupedByDate.forEach((date, dailySchedules) -> checkTimeOverlaps(dailySchedules));
     }
 
     /**
