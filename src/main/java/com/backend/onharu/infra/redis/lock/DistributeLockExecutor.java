@@ -25,6 +25,7 @@ public class DistributeLockExecutor {
         }, lockName, waitMs, leaseMs);
     }
 
+    @SuppressWarnings("java:S2139") // 분산 락 인터럽트는 희귀한 이벤트라 호출자와 무관하게 시점/lockName 을 즉시 로그로 남긴다.
     public <T> T execute(Supplier<T> supplier, String lockName, long waitMs, long leaseMs) {
         RLock rLock = redissonClient.getLock(lockName);
         logger.info("🐧 락 획득 시도 lockName={}", lockName);
@@ -35,6 +36,7 @@ public class DistributeLockExecutor {
             acquired = rLock.tryLock(waitMs, leaseMs, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            logger.error("🐧 락 획득 실패 InterruptedException lockName={}", lockName, e);
             throw new IllegalStateException("[" + lockName + "] 락 획득 중 인터럽트가 발생했습니다.", e);
         }
         if (!acquired) {
