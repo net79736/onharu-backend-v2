@@ -117,8 +117,6 @@ public class NotificationFacade {
      */
     @Transactional
     public void markAllNotificationAsRead(Long userId) {
-        notificationHistoryQueryService.findUnReadedNotificationHistoriesByUserId(userId).forEach(history -> {
-            history.markAsRead();
-        });
+        notificationHistoryQueryService.findUnReadedNotificationHistoriesByUserId(userId).forEach(NotificationHistory::markAsRead);
     }
 }
