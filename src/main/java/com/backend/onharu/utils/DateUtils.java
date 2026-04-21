@@ -4,7 +4,10 @@ import java.time.LocalDate;
 
 import com.backend.onharu.domain.common.enums.WeekType;
 
-public class DateUtils {
+public final class DateUtils {
+
+    private DateUtils() {
+    }
 
     /** WeekType을 대표 LocalDate로 변환 (API 응답용). */
     public static LocalDate toLocalDate(WeekType weekType) {
