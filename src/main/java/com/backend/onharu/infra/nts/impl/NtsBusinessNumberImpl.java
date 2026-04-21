@@ -26,7 +26,7 @@ import static com.backend.onharu.domain.support.error.ErrorType.Owner.BUSINESS_N
 @RequiredArgsConstructor
 public class NtsBusinessNumberImpl implements NtsBusinessNumber {
 
-    private static final String bSTT = "계속사업자"; // 국세청 API 응답
+    private static final String CONTINUING_BUSINESS = "계속사업자"; // 국세청 API 응답
 
     private final RestTemplate restTemplate; // 외부 API 호출용 RestTemplate
 
@@ -79,7 +79,7 @@ public class NtsBusinessNumberImpl implements NtsBusinessNumber {
             // 사업자 상태값 추출
             String status = ntsResponse.data().get(0).businessStatus();
 
-            return bSTT.equals(status); // 사업자 상태값이 "계속사업자"와 일치하는지 확인
+            return CONTINUING_BUSINESS.equals(status); // 사업자 상태값이 "계속사업자"와 일치하는지 확인
 
         } catch (Exception e) {
             log.error("국세청 API 호출 중 에러 발생: {}", e.getMessage());
