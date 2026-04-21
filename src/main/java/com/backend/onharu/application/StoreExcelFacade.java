@@ -239,7 +239,6 @@ public class StoreExcelFacade {
                     log.error("가게 생성 실패 원인: {}", e.getCause());
                     log.error("가게 생성 실패 메시지: {}", e.getMessage());
                     log.error("가게 생성 실패 예외: {}", e);
-                    // throw e;
                     failureCount++;
                 }
             }

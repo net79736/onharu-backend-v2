@@ -188,27 +188,4 @@ public interface IAuthController {
             ValidatePasswordRequest request
     );
 
-//    @Operation(summary = "SMS 인증 코드 발송", description = "전화번호로 SMS 인증 코드를 발송합니다.")
-//    ResponseEntity<ResponseDTO<Void>> sendSmsCode(
-//            @Schema(description = "SMS 인증 발송 요청")
-//            SendSmsCodeRequest request
-//    );
-//
-//    @Operation(summary = "SMS 인증 코드 검증", description = "발송된 SMS 인증 코드를 검증합니다.")
-//    ResponseEntity<ResponseDTO<Void>> verifySmsCode(
-//            @Schema(description = "SMS 인증 검증 요청")
-//            VerifySmsCodeRequest request
-//    );
-
-    // @Operation(summary = "이메일 인증 번호 만료 처리", description = "이메일 인증 번호를 만료 처리합니다.")
-    // ResponseEntity<ResponseDTO<Void>> expireEmailVerification(
-    //         @Schema(description = "이메일", example = "user@example.com")
-    //         String email
-    // );
-
-    // @Operation(summary = "SMS 인증 번호 만료 처리", description = "SMS 인증 번호를 만료 처리합니다.")
-    // ResponseEntity<ResponseDTO<Void>> expireSmsVerification(
-    //         @Schema(description = "전화번호", example = "010-1234-5678")
-    //         String phoneNumber
-    // );
 }
