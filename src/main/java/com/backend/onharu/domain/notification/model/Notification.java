@@ -29,7 +29,7 @@ public class Notification extends BaseEntity {
     @Builder
     public Notification(User user, Boolean isSystemEnabled) {
         this.user = user;
-        this.isSystemEnabled = isSystemEnabled != null ? isSystemEnabled : false;
+        this.isSystemEnabled = Boolean.TRUE.equals(isSystemEnabled);
     }
 
     /**
@@ -38,6 +38,6 @@ public class Notification extends BaseEntity {
      * @param isSystemEnabled 시스템 알림 수신 여부
      */
     public void update(Boolean isSystemEnabled) {
-        this.isSystemEnabled = isSystemEnabled != null ? isSystemEnabled : false;
+        this.isSystemEnabled = Boolean.TRUE.equals(isSystemEnabled);
     }
 }

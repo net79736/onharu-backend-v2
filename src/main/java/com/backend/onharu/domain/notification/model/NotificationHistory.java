@@ -78,7 +78,7 @@ public class NotificationHistory extends BaseEntity {
         this.message = message;
         this.relatedEntityType = relatedEntityType;
         this.relatedEntityId = relatedEntityId;
-        this.isRead = isRead != null ? isRead : false;
+        this.isRead = Boolean.TRUE.equals(isRead);
     }
 
     /**

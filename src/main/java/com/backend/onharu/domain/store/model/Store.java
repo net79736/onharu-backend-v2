@@ -89,8 +89,8 @@ public class Store extends BaseEntity {
         this.lng = lng;
         this.introduction = introduction;
         this.intro = intro;
-        this.isOpen = isOpen != null ? isOpen : false;
-        this.isSharing = isSharing != null ? isSharing : false;
+        this.isOpen = Boolean.TRUE.equals(isOpen);
+        this.isSharing = Boolean.TRUE.equals(isSharing);
     }
 
     /**
