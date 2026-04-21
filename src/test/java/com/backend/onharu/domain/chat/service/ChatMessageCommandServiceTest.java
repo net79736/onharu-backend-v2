@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.UUID;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.chat.dto.ChatMessageCommand.CreateMessageCommand;
 import com.backend.onharu.domain.chat.dto.ChatRoomCommand.CreateChatRoomCommand;
@@ -27,6 +27,7 @@ import com.backend.onharu.infra.db.user.UserJpaRepository;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 @DisplayName("ChatMessageCommandService 통합 테스트")
 class ChatMessageCommandServiceTest {
 
@@ -48,13 +49,7 @@ class ChatMessageCommandServiceTest {
     @Autowired
     private UserJpaRepository userJpaRepository;
 
-    @BeforeEach
-    void setUp() {
-        chatMessageJpaRepository.deleteAll();
-        chatParticipantJpaRepository.deleteAll();
-        chatRoomJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-    }
+    // @Transactional 클래스 레벨 적용으로 각 테스트가 자동 롤백됨.
 
     private User createUser(String suffix) {
         return userJpaRepository.save(

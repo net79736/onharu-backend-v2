@@ -5,13 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.UUID;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.chat.dto.ChatRoomCommand.CreateChatRoomCommand;
 import com.backend.onharu.domain.chat.dto.ChatRoomCommand.LeaveChatRoomCommand;
@@ -27,6 +27,7 @@ import com.backend.onharu.infra.db.chat.ChatRoomJpaRepository;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 @DisplayName("ChatRoomCommandService 통합 테스트")
 class ChatRoomCommandServiceTest {
 
@@ -45,12 +46,7 @@ class ChatRoomCommandServiceTest {
     @Autowired
     private ChatMessageJpaRepository chatMessageJpaRepository;
 
-    @BeforeEach
-    void setUp() {
-        chatMessageJpaRepository.deleteAll();
-        chatParticipantJpaRepository.deleteAll();
-        chatRoomJpaRepository.deleteAll();
-    }
+    // @Transactional 클래스 레벨 적용으로 각 테스트가 자동 롤백됨.
 
     private CreateChatRoomCommand sampleCreateCommand(String suffix) {
         return new CreateChatRoomCommand(

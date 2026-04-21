@@ -5,13 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.UUID;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.chat.dto.ChatMessageCommand.CreateChatMessageCommand;
 import com.backend.onharu.domain.chat.dto.ChatMessageCommand.ReadMessageCommand;
@@ -34,8 +34,12 @@ import com.backend.onharu.infra.db.chat.ChatRoomJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
 import com.backend.onharu.infra.websocket.ChatMessageResponse;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 @DisplayName("ChatFacade 통합 테스트")
 class ChatFacadeTest {
 
@@ -57,13 +61,10 @@ class ChatFacadeTest {
     @Autowired
     private UserJpaRepository userJpaRepository;
 
-    @BeforeEach
-    void setUp() {
-        chatMessageJpaRepository.deleteAll();
-        chatParticipantJpaRepository.deleteAll();
-        chatRoomJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-    }
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    // @Transactional 클래스 레벨 적용으로 각 테스트가 자동 롤백됨.
 
     private User saveUser(String suffix, StatusType statusType) {
         return userJpaRepository.save(
@@ -165,6 +166,8 @@ class ChatFacadeTest {
             ChatMessageResponse response = chatFacade.createChatMessage(
                     new CreateChatMessageCommand(room.getId(), requester.getId(), "자동 읽음"));
 
+            entityManager.flush();
+            entityManager.clear();
             ChatParticipant senderParticipant = chatParticipantRepository.findByChatRoomIdAndUserId(
                     new FindByChatRoomIdAndUserIdParam(room.getId(), requester.getId()));
             assertThat(senderParticipant.getLastReadMessageId()).isEqualTo(response.chatMessageId());
@@ -187,6 +190,8 @@ class ChatFacadeTest {
 
             chatFacade.readMessage(new ReadMessageCommand(room.getId(), u2.getId(), msg.chatMessageId()));
 
+            entityManager.flush();
+            entityManager.clear();
             ChatParticipant p = chatParticipantRepository.findByChatRoomIdAndUserId(
                     new FindByChatRoomIdAndUserIdParam(room.getId(), u2.getId()));
             assertThat(p.getLastReadMessageId()).isEqualTo(msg.chatMessageId());
