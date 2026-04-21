@@ -24,7 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public final class SecurityUtils implements ApplicationContextAware {
-    
+
+    private static final String ANONYMOUS_USER = "anonymousUser";
+
     private static ApplicationContext applicationContext;
     
     @Override
@@ -46,7 +48,7 @@ public final class SecurityUtils implements ApplicationContextAware {
         Authentication authentication = getCurrentAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated() 
-                || authentication.getPrincipal().equals("anonymousUser")) {
+                || authentication.getPrincipal().equals(ANONYMOUS_USER)) {
             log.info("authentication: {}", authentication);
             log.info("authentication이 null 또는 익명 사용자");
             return null;
@@ -132,7 +134,7 @@ public final class SecurityUtils implements ApplicationContextAware {
         Authentication authentication = getCurrentAuthentication();
         return authentication != null 
                 && authentication.isAuthenticated() 
-                && !authentication.getPrincipal().equals("anonymousUser");
+                && !authentication.getPrincipal().equals(ANONYMOUS_USER);
     }
     
     /**
@@ -220,7 +222,7 @@ public final class SecurityUtils implements ApplicationContextAware {
         Authentication authentication = getCurrentAuthentication(); // 현재 인증된 사용자 객체 반환
 
         if (authentication == null || !authentication.isAuthenticated() // 인증되지 않은 사용자이거나 익명 사용자인 경우
-                || authentication.getPrincipal().equals("anonymousUser")) {
+                || authentication.getPrincipal().equals(ANONYMOUS_USER)) {
             // TODO: 처음에 채팅 메시지 보낼때 여기로 들어오고 있음.
             return null;
         }
