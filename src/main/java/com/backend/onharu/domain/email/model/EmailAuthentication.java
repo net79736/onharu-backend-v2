@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Random;
 
@@ -87,14 +88,15 @@ public class EmailAuthentication extends BaseEntity {
      * 인증 토큰용 랜덤 숫자 6자리 생성 메소드 입니다.
      * @return 문자열 타입의 6자리 인증코드
      */
+    private static final Random TOKEN_RANDOM = new SecureRandom();
+
     private String createToken() {
-        Random random = new Random();
         StringBuilder sb = new StringBuilder();
         int num = 0;
 
         // 각 자리별로 랜덤 숫자 생성
         for (int i=0; i<6; i++) {
-            num = random.nextInt(10); // 0 부터 9까지 난수 생성
+            num = TOKEN_RANDOM.nextInt(10); // 0 부터 9까지 난수 생성
             sb.append(num);
         }
 
