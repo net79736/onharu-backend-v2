@@ -65,7 +65,7 @@ public class StoreExcelFacade {
     // @Transactional(propagation = Propagation.REQUIRES_NEW)
     public int[] importStoresFromExcel(MultipartFile file, Long ownerId) {
         log.info("importStoresFromExcel: file={}, fileName={}, ownerId={}", file, file.getOriginalFilename(), ownerId);
-        if (file == null || file.isEmpty()) {
+        if (file.isEmpty()) {
             return new int[] {0, 0, 0};
         }
 
