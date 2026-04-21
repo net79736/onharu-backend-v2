@@ -18,8 +18,6 @@ public class ReviewCommand {
             Long reservationId,
             String content
     ) {
-        public CreateReviewCommand {
-        }
     }
 
     /**
@@ -31,8 +29,6 @@ public class ReviewCommand {
             Long reviewId,
             String content
     ) {
-        public UpdateReviewCommand {
-        }
     }
 
     /**
@@ -42,7 +38,5 @@ public class ReviewCommand {
     public record DeleteReviewCommand(
             Long reviewId
     ) {
-        public DeleteReviewCommand {
-        }
     }
 }

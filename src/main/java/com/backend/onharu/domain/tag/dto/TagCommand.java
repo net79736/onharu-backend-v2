@@ -7,11 +7,6 @@ public class TagCommand {
     public record CreateTagCommand(
             String name
     ) {
-        public CreateTagCommand {
-            // if (name == null || name.isBlank()) {
-            //     throw new CoreException(TAG_NAME_MUST_NOT_BE_BLANK);
-            // }
-        }
     }
 
     /**
@@ -21,14 +16,6 @@ public class TagCommand {
             Long id,
             String name
     ) {
-        public UpdateTagCommand {
-            // if (reservationId == null) {
-            //     throw new CoreException(TAG_ID_MUST_NOT_BE_NULL);
-            // }
-            // if (name == null || name.isBlank()) {
-            //     throw new CoreException(TAG_NAME_MUST_NOT_BE_BLANK);
-            // }
-        }
     }
 
     /**
@@ -37,10 +24,5 @@ public class TagCommand {
     public record DeleteTagCommand(
             Long id
     ) {
-        public DeleteTagCommand {
-            // if (reservationId == null) {
-            //     throw new CoreException(TAG_ID_MUST_NOT_BE_NULL);
-            // }
-        }
     }
 }

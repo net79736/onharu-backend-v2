@@ -50,11 +50,6 @@ public class StoreScheduleControllerDto {
             @Schema(description = "해당 날짜의 시간대 슬롯 목록")
             List<ScheduleSlot> scheduleSlots
     ) {
-        public DateSummary(LocalDate date, int availableSlots, List<ScheduleSlot> scheduleSlots) {
-            this.date = date;
-            this.availableSlots = availableSlots;
-            this.scheduleSlots = scheduleSlots;
-        }
     }
 
     /**

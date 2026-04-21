@@ -35,11 +35,6 @@ public class TagQuery {
     public record FindByIdsQuery(
             List<Long> tagIds
     ) {
-        public FindByIdsQuery {
-            // if (tagIds == null || tagIds.isEmpty()) {
-            //     throw new CoreException(TAG_ID_MUST_NOT_BE_NULL);
-            // }
-        }
     }
 
     /**
