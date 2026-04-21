@@ -18,10 +18,19 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+    # HikariCP: 기본 10 · 30s timeout 로는 k6 100 VU 부하테스트에서 풀이 즉시 포화되어
+    # clientInboundChannel 스레드가 getConnection 에서 30 s 대기하다 타임아웃 됨.
+    hikari:
+      maximum-pool-size: ${SPRING_DATASOURCE_HIKARI_MAX:30}
+      minimum-idle: ${SPRING_DATASOURCE_HIKARI_MIN_IDLE:10}
+      connection-timeout: ${SPRING_DATASOURCE_HIKARI_CONN_TIMEOUT:10000}
+      pool-name: OnharuHikari
 
   # JPA 설정
   jpa:
     hibernate:
+      # 개발 환경에서는 스키마 변경(예: 조회수 컬럼 추가)을 자동 반영할 수 있도록 update를 기본값으로 둡니다.
+      # 운영/CI에서는 환경변수(JPA_DDL_AUTO)로 validate 등을 강제하세요.
       ddl-auto: ${JPA_DDL_AUTO}
     properties:
       hibernate:
