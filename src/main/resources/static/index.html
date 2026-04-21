@@ -3,13 +3,415 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>온하루 API 테스트 (역할별)</title>
+  <title>온하루 API 테스트 · 백엔드 콘솔</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
   <script src="/js/onharu-chat-ui.js"></script>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
   <style>
+    :root {
+      --bg-app: #f6f7f9;
+      --bg-surface: #ffffff;
+      --bg-muted: #f1f5f9;
+      --bg-inset: #f8fafc;
+      --border-subtle: #e5e7eb;
+      --border-strong: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-tertiary: #64748b;
+      --text-muted: #94a3b8;
+      --accent: #047857;
+      --accent-hover: #065f46;
+      --accent-soft: #ecfdf5;
+      --accent-soft-border: #a7f3d0;
+      --info: #4f46e5;
+      --info-hover: #4338ca;
+      --info-soft: #eef2ff;
+      --info-soft-border: #c7d2fe;
+      --warn: #b45309;
+      --warn-soft: #fffbeb;
+      --warn-soft-border: #fde68a;
+      --danger: #e11d48;
+      --danger-hover: #be123c;
+      --danger-soft: #fff1f2;
+      --danger-soft-border: #fecdd3;
+      --role-child: #047857;
+      --role-owner: #b45309;
+      --role-admin: #6d28d9;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+      --shadow-lg: 0 14px 36px -8px rgba(15, 23, 42, 0.18), 0 6px 16px -6px rgba(15, 23, 42, 0.10);
+      --ease: cubic-bezier(.2,.6,.2,1);
+    }
+
+    html, body {
+      font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+      font-feature-settings: 'ss03';
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      color: var(--text-primary);
+      background: var(--bg-app);
+      letter-spacing: -0.005em;
+    }
+
+    code, pre, .font-mono, .tabular-nums {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace;
+    }
+
+    /* ---------- Surface / Card ---------- */
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xs);
+    }
+    .card-pad { padding: 20px; }
+    .card-pad-lg { padding: 24px; }
+    .card-divider { border-top: 1px solid var(--border-subtle); }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .section-subtitle {
+      font-size: 12.5px;
+      color: var(--text-tertiary);
+      line-height: 1.55;
+    }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: -0.005em;
+      transition: all 150ms var(--ease);
+      border: 1px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-info {
+      background: var(--info);
+      color: #fff;
+    }
+    .btn-info:hover:not(:disabled) { background: var(--info-hover); }
+    .btn-dark {
+      background: #0f172a;
+      color: #fff;
+    }
+    .btn-dark:hover:not(:disabled) { background: #1e293b; }
+    .btn-secondary {
+      background: var(--bg-surface);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--bg-muted);
+      border-color: #94a3b8;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+    }
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--bg-muted);
+      color: var(--text-primary);
+    }
+    .btn-danger {
+      background: var(--bg-surface);
+      border-color: var(--danger-soft-border);
+      color: var(--danger);
+    }
+    .btn-danger:hover:not(:disabled) {
+      background: var(--danger-soft);
+      border-color: var(--danger);
+    }
+    .btn-link {
+      background: transparent;
+      color: var(--info);
+      font-weight: 500;
+      text-decoration: none;
+      padding: 0;
+      height: auto;
+    }
+    .btn-link:hover { text-decoration: underline; }
+    .btn-role-owner {
+      background: #fff7ed;
+      border-color: #fdba74;
+      color: #9a3412;
+    }
+    .btn-role-owner:hover:not(:disabled) {
+      background: #ffedd5;
+      border-color: #fb923c;
+    }
+    .btn-sm { height: 30px; padding: 0 10px; font-size: 12px; border-radius: 8px; }
+    .btn-xs { height: 26px; padding: 0 8px; font-size: 11.5px; border-radius: 7px; }
+    .btn-lg { height: 46px; padding: 0 20px; font-size: 14.5px; border-radius: 12px; }
+    .btn-block { width: 100%; }
+
+    /* ---------- Inputs ---------- */
+    .input, .select, .textarea {
+      width: 100%;
+      height: 38px;
+      padding: 0 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      font-size: 13.5px;
+      color: var(--text-primary);
+      transition: border-color 150ms, box-shadow 150ms;
+      letter-spacing: -0.005em;
+    }
+    .textarea { height: auto; padding: 10px 12px; line-height: 1.5; }
+    .input:focus, .select:focus, .textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.12);
+    }
+    .input::placeholder, .textarea::placeholder { color: #94a3b8; }
+    .select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 20 20' fill='%2364748b'%3E%3Cpath d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 32px;
+    }
+    .label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      letter-spacing: -0.005em;
+    }
+    .helper {
+      font-size: 11.5px;
+      color: var(--text-tertiary);
+      line-height: 1.55;
+      margin-top: 6px;
+    }
+
+    /* ---------- Chips / Badges ---------- */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 500;
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+      line-height: 1;
+      transition: all 150ms;
+      cursor: default;
+    }
+    .chip-interactive { cursor: pointer; }
+    .chip-interactive:hover {
+      background: #e2e8f0;
+      color: var(--text-primary);
+      border-color: #cbd5e1;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+      line-height: 1;
+    }
+    .badge-role-child {
+      background: var(--accent-soft);
+      color: #065f46;
+      border: 1px solid var(--accent-soft-border);
+    }
+    .badge-role-owner {
+      background: var(--warn-soft);
+      color: #92400e;
+      border: 1px solid var(--warn-soft-border);
+    }
+    .badge-role-admin {
+      background: #f5f3ff;
+      color: #5b21b6;
+      border: 1px solid #ddd6fe;
+    }
+    .badge-neutral {
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* ---------- Segmented control (signup tabs) ---------- */
+    .segmented {
+      display: inline-flex;
+      padding: 3px;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+    }
+    .signup-tab {
+      padding: 6px 14px;
+      border-radius: 7px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      transition: all 150ms;
+      letter-spacing: -0.005em;
+    }
+    .signup-tab:not(.hidden):hover { color: var(--text-primary); }
+    .signup-tab.is-active,
+    .signup-tab[aria-selected="true"] {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-xs);
+    }
+
+    /* ---------- Store sort segmented ---------- */
+    .sort-group {
+      display: inline-flex;
+      padding: 3px;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+    }
+    .store-sort-btn {
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      transition: all 150ms;
+    }
+    .store-sort-btn:hover { color: var(--text-primary); }
+    .store-sort-btn.is-active {
+      background: var(--bg-surface);
+      color: var(--accent);
+      font-weight: 600;
+      box-shadow: var(--shadow-xs);
+    }
+
+    /* ---------- Slot buttons (reservation time picker) ---------- */
+    .slot-pick-btn {
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      cursor: pointer;
+      transition: all 150ms;
+    }
+    .slot-pick-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: #065f46;
+    }
+    .slot-pick-btn.is-active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .slot-pick-btn:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    /* ---------- Info / Alert boxes ---------- */
+    .alert {
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 12.5px;
+      line-height: 1.6;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-inset);
+      color: var(--text-secondary);
+    }
+    .alert-info {
+      background: var(--info-soft);
+      border-color: var(--info-soft-border);
+      color: #3730a3;
+    }
+    .alert-warn {
+      background: var(--warn-soft);
+      border-color: var(--warn-soft-border);
+      color: #92400e;
+    }
+    .alert-success {
+      background: var(--accent-soft);
+      border-color: var(--accent-soft-border);
+      color: #065f46;
+    }
+    .alert-muted {
+      background: var(--bg-muted);
+      border-color: var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    /* ---------- Modals (dialog) ---------- */
+    dialog.booking-modal {
+      padding: 0;
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+    }
     .booking-modal::backdrop {
-      background: rgb(15 23 42 / 0.5);
+      background: rgb(15 23 42 / 0.42);
+      backdrop-filter: blur(4px);
     }
     .booking-modal[open] {
       display: flex;
@@ -17,395 +419,590 @@
       margin: auto;
       overscroll-behavior: contain;
     }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-inset);
+      flex-shrink: 0;
+    }
+    .modal-header-emerald { background: var(--accent-soft); border-bottom-color: var(--accent-soft-border); }
+    .modal-header-amber { background: var(--warn-soft); border-bottom-color: var(--warn-soft-border); }
+    .modal-title { font-size: 15px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
+    .modal-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 20px;
+    }
+    .modal-footer {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-inset);
+    }
+
+    /* ---------- App chrome ---------- */
+    .appbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .appbar-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      min-height: 68px;
+    }
+    .brand-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+      box-shadow: var(--shadow-xs);
+      flex-shrink: 0;
+    }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.015em;
+    }
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+    .page-shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 24px 40px;
+    }
+
+    /* ---------- Calendar grid ---------- */
+    .cal-cell {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      font-size: 13px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 120ms;
+      background: transparent;
+      border: 1px solid transparent;
+    }
+    .cal-cell:hover:not(.is-disabled) {
+      background: var(--bg-muted);
+    }
+    .cal-cell.is-today { font-weight: 700; color: var(--accent); }
+    .cal-cell.is-selected {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .cal-cell.is-disabled { color: #cbd5e1; cursor: not-allowed; }
+    .cal-cell.has-slots::after {
+      content: '';
+      display: block;
+      position: absolute;
+      transform: translate(0, 12px);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.6;
+    }
+
+    /* ---------- Footer / API log ---------- */
+    .app-footer {
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+    }
+    .api-log-panel {
+      background: #0b1220;
+      color: #86efac;
+      font-size: 11px;
+      line-height: 1.65;
+      border-radius: 10px;
+      padding: 12px 14px;
+      max-height: 240px;
+      overflow: auto;
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace;
+    }
+
+    /* ---------- Misc polish ---------- */
+    summary::-webkit-details-marker { display: none; }
+    pre { white-space: pre-wrap; word-break: break-word; }
+    .divider-y > * + * { border-top: 1px solid var(--border-subtle); }
+
+    /* store cards rendered via JS — make sure hover lift works even with Tailwind classes on children */
+    #storeGrid > * {
+      transition: transform 180ms var(--ease), box-shadow 180ms var(--ease), border-color 180ms var(--ease);
+    }
+    #storeGrid > *:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+      border-color: #cbd5e1;
+    }
+
+    @media (max-width: 1023px) {
+      .appbar-inner, .page-shell { padding-left: 16px; padding-right: 16px; }
+    }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col">
-  <header class="bg-white border-b border-slate-200 shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-semibold text-slate-800">온하루 백엔드 테스트 UI</h1>
-        <p class="text-xs mt-1"><a href="#signup" class="text-indigo-600 hover:text-indigo-800 font-medium">로컬 회원가입</a> <span class="text-slate-300">·</span> <span class="text-slate-500">아래 좌측 패널에서 진행</span></p>
-        <p class="text-sm text-slate-500 mt-1">
-          인증: <strong>서버 세션 쿠키</strong>(<code class="bg-slate-100 px-1 rounded">POST /api/users/login</code>) —
-          이 프로젝트는 JWT를 발급하지 않습니다. 역할은 <code class="bg-slate-100 px-1 rounded">GET /api/users/me</code>의 <code>userType</code>으로 판별합니다.
-        </p>
-      </div>
-      <div id="authBar" class="flex flex-col items-end gap-1 text-sm">
-        <div class="flex items-center gap-2">
-          <span id="roleBadge" class="hidden text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700"></span>
-          <span id="authStatus" class="text-slate-600">로그인되지 않음</span>
-          <button type="button" id="btnOpenChat" class="hidden px-3 py-1.5 rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 text-sm font-medium">채팅</button>
-          <button type="button" id="btnLogout" class="hidden px-3 py-1.5 rounded-lg bg-slate-700 text-white hover:bg-slate-800 text-sm">로그아웃</button>
+<body class="min-h-screen flex flex-col">
+
+  <header class="appbar">
+    <div class="appbar-inner">
+      <div class="flex items-center gap-3 min-w-0">
+        <span class="brand-logo" aria-hidden="true">O</span>
+        <div class="min-w-0">
+          <div class="brand-title">온하루 백엔드 콘솔</div>
+          <div class="brand-subtitle">
+            <span class="text-slate-500">세션 인증</span>
+            <span class="mx-1.5 text-slate-300">·</span>
+            <a href="#signup" class="btn-link">로컬 회원가입</a>
+          </div>
         </div>
+      </div>
+
+      <div id="authBar" class="flex items-center gap-2.5 text-sm flex-wrap justify-end">
+        <span id="roleBadge" class="hidden badge badge-neutral"></span>
+        <span id="authStatus" class="text-slate-500 text-[12.5px]">로그인되지 않음</span>
+        <button type="button" id="btnOpenChat" class="hidden btn btn-sm btn-primary">채팅</button>
+        <button type="button" id="btnLogout" class="hidden btn btn-sm btn-secondary">로그아웃</button>
       </div>
     </div>
   </header>
 
-  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 space-y-6">
+  <main class="flex-1 page-shell">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <!-- 로그인 -->
-      <section class="lg:col-span-4 space-y-4">
-        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-          <h2 class="font-semibold text-slate-800 mb-3">1. 로그인 · 역할</h2>
-          <div id="loginFormWrap">
-            <form id="loginForm" class="space-y-3">
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1">아이디 (loginId)</label>
-                <input id="loginId" type="text" autocomplete="username" required
-                  placeholder="예: owner123@test.com"
-                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1">비밀번호</label>
-                <input id="password" type="password" autocomplete="current-password" required
-                  placeholder="Swagger 예시: password123!"
-                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-              </div>
-              <p class="text-[11px] text-slate-500 leading-relaxed">
-                <span class="font-medium text-slate-600">API 문서 예시</span> — 아동 <code class="bg-slate-100 px-1 rounded">child123@test.com</code>,
-                사장 <code class="bg-slate-100 px-1 rounded">owner123@test.com</code>, 공통 비밀번호 <code class="bg-slate-100 px-1 rounded">password123!</code>
-                (끝에 <code class="bg-amber-50 text-amber-900 px-0.5 rounded">!2</code> 등을 붙이면 &quot;아이디 또는 비밀번호가 잘못되었습니다&quot;가 납니다.)
-              </p>
-              <button type="submit" id="btnLoginSubmit" class="w-full py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700">로그인</button>
-            </form>
-          </div>
-          <div id="loggedInStub" class="hidden rounded-lg bg-slate-50 border border-slate-200 px-3 py-3 text-sm text-slate-700">
-            <span class="text-slate-500">로그인 중</span><br />
-            <span id="loggedInStubText" class="font-medium"></span>
-            <p class="text-xs text-slate-500 mt-2">로그아웃은 우측 상단 버튼을 사용하세요.</p>
-          </div>
-        </div>
 
-        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-          <h2 class="font-semibold text-slate-800 mb-2">내 정보 (GET /api/users/me)</h2>
-          <pre id="mePanel" class="text-xs bg-slate-50 border border-slate-100 rounded-lg p-3 overflow-x-auto text-slate-700 min-h-[4rem]">로그인하면 표시됩니다.</pre>
+      <!-- =================== LEFT COLUMN =================== -->
+      <section class="lg:col-span-4 space-y-5">
 
-          <!-- OWNER: 내 등급 + Redis 캐시 확인 (접기/펼치기) -->
-          <details id="ownerLevelDetails" class="hidden mt-3 rounded-xl border border-amber-100 bg-white/60">
-            <summary class="cursor-pointer list-none select-none px-3 py-2.5 text-sm font-semibold text-amber-950 flex items-center justify-between gap-2 [&::-webkit-details-marker]:hidden">
-              <span class="flex items-center gap-2">
-                <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-amber-200 bg-amber-50 text-[10px] text-amber-700" aria-hidden="true">▾</span>
-                내 등급 (캐시 확인)
-              </span>
-              <span id="ownerLevelMiniBadge" class="hidden text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200"></span>
-            </summary>
-            <div class="px-3 pb-3 pt-2 space-y-2">
-              <div class="text-xs text-slate-700">
-                <div class="flex flex-wrap items-center gap-2">
-                  <span class="font-medium text-slate-800">내 등급:</span>
-                  <span id="ownerLevelName" class="font-semibold text-amber-950">—</span>
-                  <span class="text-slate-400">·</span>
-                  <span class="text-slate-600">다음:</span>
-                  <span id="ownerNextLevelName" class="font-medium text-slate-800">—</span>
-                  <span class="text-slate-400">·</span>
-                  <span class="text-slate-600">남은 횟수:</span>
-                  <span id="ownerNextRemain" class="font-medium text-slate-800">—</span>
-                </div>
-              </div>
-
-              <div class="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <div class="text-xs font-semibold text-indigo-900">Redis 레벨 목록 캐시 워밍업</div>
-                  <button type="button" id="btnOwnerWarmupLevels" class="px-2.5 py-1 rounded-lg bg-indigo-700 text-white text-xs font-medium hover:bg-indigo-800">
-                    GET /api/levels 2회
-                  </button>
-                </div>
-                <div class="mt-1 text-[11px] text-indigo-900/80">
-                  <span class="font-medium">측정:</span> <span id="ownerLevelFetchStat">—</span>
-                </div>
-                <div class="mt-1 text-[11px] text-slate-600">
-                  Redis 키: <code class="bg-white/70 px-1 rounded border border-indigo-100">onharu:cache:level:list</code> (Hash field: <code class="bg-white/70 px-1 rounded border border-indigo-100">all</code>)
-                </div>
-              </div>
-
-              <p class="text-[11px] text-slate-500 leading-relaxed">
-                이 영역은 <strong class="text-slate-700">캐시 확인용</strong>이라 기본적으로 접혀있습니다. 필요할 때만 펼쳐서 확인하세요.
-              </p>
-            </div>
-          </details>
-        </div>
-
-        <!-- 아동 전용 -->
-        <div id="childOnlySection" class="hidden bg-white rounded-xl border border-emerald-200 p-5 shadow-sm ring-1 ring-emerald-100">
-          <h2 class="font-semibold text-emerald-900 mb-2">아동 · 내 예약</h2>
-          <p class="text-xs text-emerald-800 mb-3">Security: <code>/api/children/**</code> 외 공개 경로가 많으나, 예약 API는 세션의 아동 ID가 필요합니다.</p>
-          <button type="button" id="btnChildReservations" class="w-full py-2 rounded-lg bg-emerald-600 text-white text-sm hover:bg-emerald-700">내 예약 목록 불러오기</button>
-          <p class="mt-2 text-[11px] text-slate-500 leading-relaxed">
-            목록은 <strong class="text-slate-700">전체 화면에 가까운 모달</strong>로 열립니다. 작은 카드 안에서 스크롤하지 않습니다.
-          </p>
-        </div>
-
-        <!-- 사장 전용 (본 패널은 모달) -->
-        <div id="ownerOnlySection" class="hidden bg-white rounded-xl border border-amber-200 p-5 shadow-sm ring-1 ring-amber-100">
-          <h2 class="font-semibold text-amber-900 mb-2">사장 · 내 가게 & 스케줄</h2>
-          <p class="text-xs text-amber-800 mb-3">Security: <code>/api/owners/**</code> → <code>ROLE_OWNER</code> 필요.</p>
-          <button type="button" id="btnOpenOwnerScheduleModal" class="w-full py-2.5 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600">가게 · 스케줄 패널 열기</button>
-          <p class="mt-2 text-[11px] text-slate-500 leading-relaxed">
-            가게 선택, 스케줄 등록, 예약 목록은 <strong class="text-slate-700">넓은 모달</strong>에서 진행합니다.
-          </p>
-        </div>
-
-        <div id="adminHint" class="hidden bg-slate-100 border border-slate-200 rounded-xl p-4 text-sm text-slate-700">
-          <strong>ADMIN</strong> 계정은 이 페이지의 <code>/api/owners/**</code>·아동 예약 API와 역할이 다릅니다. 관리자 전용은 <code>/api/admins/**</code>를 참고하세요.
-        </div>
-
-        <!-- 로컬 회원가입 (onharu-frontend 플로우 참고: 이메일 인증 → 가입) -->
-        <div id="signupCard" class="bg-white rounded-xl border border-indigo-200 p-5 shadow-sm ring-1 ring-indigo-100 scroll-mt-6">
-          <h2 class="font-semibold text-indigo-950 mb-1" id="signup">로컬 회원가입</h2>
-          <p class="text-xs text-slate-500 mb-4 leading-relaxed">
-            <code class="bg-slate-100 px-1 rounded">POST /api/auth/email/send-code</code> ·
-            <code class="bg-slate-100 px-1 rounded">verify-code</code> 후
-            <code class="bg-slate-100 px-1 rounded">/api/users/signup/…</code> 호출합니다. 로그인 아이디는 <strong class="text-slate-700">이메일</strong>과 동일하게 둡니다.
-          </p>
-          <div class="flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 mb-4 w-full max-w-md" role="tablist" aria-label="가입 유형">
-            <button type="button" id="signupTabOwner" class="signup-tab flex-1 py-2 text-xs font-semibold rounded-md bg-indigo-600 text-white">매장 (사업자)</button>
-            <button type="button" id="signupTabChild" class="signup-tab flex-1 py-2 text-xs font-semibold rounded-md text-slate-600 hover:bg-white">아동</button>
-          </div>
-
-          <div class="grid gap-3 text-sm">
+        <!-- Login -->
+        <div class="card">
+          <div class="card-header">
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1" for="suEmail">이메일 (로그인 ID)</label>
-              <div class="flex flex-wrap gap-2 items-end">
-                <input id="suEmail" type="email" autocomplete="email" required placeholder="child@example.com"
-                  class="flex-1 min-w-[12rem] border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-                <button type="button" id="btnSuSendCode" class="shrink-0 px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 disabled:opacity-40">인증번호 전송</button>
-              </div>
+              <div class="section-label">Step 01</div>
+              <div class="section-title mt-0.5">로그인 · 역할</div>
             </div>
-            <div id="suCodeRow" class="hidden">
-              <label class="block text-xs font-medium text-slate-600 mb-1" for="suCode">인증번호</label>
-              <div class="flex flex-wrap gap-2 items-end">
-                <input id="suCode" type="text" inputmode="text" autocomplete="one-time-code" placeholder="메일로 받은 코드"
-                  class="flex-1 min-w-[12rem] border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-                <button type="button" id="btnSuVerify" class="shrink-0 px-3 py-2 rounded-lg border border-indigo-300 text-indigo-900 text-xs font-semibold hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed">인증 확인</button>
-              </div>
-              <p id="suTimer" class="text-[11px] text-rose-600 mt-1 font-mono hidden"></p>
+          </div>
+          <div class="card-pad">
+            <div id="loginFormWrap">
+              <form id="loginForm" class="space-y-3">
+                <div>
+                  <label class="label" for="loginId">아이디 (loginId)</label>
+                  <input id="loginId" type="text" autocomplete="username" required placeholder="예: owner123@test.com" class="input" />
+                </div>
+                <div>
+                  <label class="label" for="password">비밀번호</label>
+                  <input id="password" type="password" autocomplete="current-password" required placeholder="예: password123!" class="input" />
+                </div>
+                <div class="alert alert-muted">
+                  <div class="font-medium text-slate-700 mb-1">테스트 계정</div>
+                  <div class="text-[11.5px] leading-relaxed">
+                    아동 <code class="px-1 bg-white rounded border border-slate-200">child123@test.com</code> ·
+                    사장 <code class="px-1 bg-white rounded border border-slate-200">owner123@test.com</code><br />
+                    공통 비밀번호 <code class="px-1 bg-white rounded border border-slate-200">password123!</code>
+                  </div>
+                </div>
+                <button type="submit" id="btnLoginSubmit" class="btn btn-info btn-block">로그인</button>
+              </form>
             </div>
-            <p id="suEmailStatus" class="text-[11px] text-slate-600 hidden"></p>
+            <div id="loggedInStub" class="hidden alert alert-success">
+              <div class="text-[11.5px] text-emerald-700 mb-0.5">로그인 중</div>
+              <div id="loggedInStubText" class="font-semibold text-emerald-900"></div>
+              <p class="text-[11.5px] text-emerald-700/80 mt-2">로그아웃은 우측 상단 버튼을 사용하세요.</p>
+            </div>
+          </div>
+        </div>
 
-            <div class="grid sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1" for="suPassword">비밀번호</label>
-                <input id="suPassword" type="password" autocomplete="new-password" required
-                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1" for="suPassword2">비밀번호 확인</label>
-                <input id="suPassword2" type="password" autocomplete="new-password" required
-                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-              </div>
-            </div>
+        <!-- My info -->
+        <div class="card">
+          <div class="card-header">
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1" for="suPhone">휴대폰 (하이픈 없이)</label>
-              <input id="suPhone" type="tel" inputmode="numeric" required placeholder="01012345678"
-                class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              <div class="section-label">Profile</div>
+              <div class="section-title mt-0.5">내 정보</div>
+            </div>
+            <span class="chip">GET /api/users/me</span>
+          </div>
+          <div class="card-pad space-y-3">
+            <pre id="mePanel" class="text-[11.5px] bg-slate-900 text-emerald-200 rounded-lg p-3 overflow-x-auto min-h-[4rem] font-mono">로그인하면 표시됩니다.</pre>
+
+            <details id="ownerLevelDetails" class="hidden rounded-xl border border-amber-200 bg-amber-50/40">
+              <summary class="cursor-pointer list-none select-none px-3 py-2.5 text-[13px] font-semibold text-amber-900 flex items-center justify-between gap-2">
+                <span class="flex items-center gap-2">
+                  <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-amber-300 bg-white text-[10px] text-amber-700" aria-hidden="true">▾</span>
+                  내 등급 · 캐시 확인
+                </span>
+                <span id="ownerLevelMiniBadge" class="hidden badge badge-role-owner"></span>
+              </summary>
+              <div class="px-3 pb-3 pt-2 space-y-2">
+                <div class="text-[12.5px] text-slate-700">
+                  <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span class="text-slate-500">내 등급</span>
+                    <span id="ownerLevelName" class="font-semibold text-amber-900">—</span>
+                    <span class="text-slate-300">/</span>
+                    <span class="text-slate-500">다음</span>
+                    <span id="ownerNextLevelName" class="font-medium text-slate-800">—</span>
+                    <span class="text-slate-300">/</span>
+                    <span class="text-slate-500">남은</span>
+                    <span id="ownerNextRemain" class="font-medium text-slate-800">—</span>
+                  </div>
+                </div>
+
+                <div class="rounded-lg border border-indigo-200 bg-indigo-50/70 px-3 py-2.5">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="text-[12.5px] font-semibold text-indigo-900">Redis 레벨 목록 캐시 워밍업</div>
+                    <button type="button" id="btnOwnerWarmupLevels" class="btn btn-xs btn-info">GET /api/levels × 2</button>
+                  </div>
+                  <div class="mt-1.5 text-[11px] text-indigo-900/80">
+                    <span class="font-medium">측정</span>
+                    <span class="mx-1 text-indigo-400">·</span>
+                    <span id="ownerLevelFetchStat" class="font-mono">—</span>
+                  </div>
+                  <div class="mt-1 text-[11px] text-slate-500">
+                    Redis key <code class="bg-white/80 px-1 rounded border border-indigo-100">onharu:cache:level:list</code>
+                    (hash field <code class="bg-white/80 px-1 rounded border border-indigo-100">all</code>)
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- Child quick panel -->
+        <div id="childOnlySection" class="hidden card">
+          <div class="card-header" style="background: var(--accent-soft); border-bottom-color: var(--accent-soft-border);">
+            <div>
+              <div class="section-label text-emerald-700">CHILD ONLY</div>
+              <div class="section-title mt-0.5 text-emerald-900">아동 · 내 예약</div>
+            </div>
+            <span class="badge badge-role-child">CHILD</span>
+          </div>
+          <div class="card-pad space-y-3">
+            <p class="section-subtitle">
+              <code class="bg-slate-100 px-1 rounded border border-slate-200">/api/childrens/**</code>
+              경로는 세션의 아동 ID를 사용합니다.
+            </p>
+            <button type="button" id="btnChildReservations" class="btn btn-primary btn-block">내 예약 목록 열기</button>
+            <p class="helper">목록은 전체 화면에 가까운 모달로 열립니다.</p>
+          </div>
+        </div>
+
+        <!-- Owner quick panel -->
+        <div id="ownerOnlySection" class="hidden card">
+          <div class="card-header" style="background: var(--warn-soft); border-bottom-color: var(--warn-soft-border);">
+            <div>
+              <div class="section-label text-amber-700">OWNER ONLY</div>
+              <div class="section-title mt-0.5 text-amber-900">매장 · 스케줄</div>
+            </div>
+            <span class="badge badge-role-owner">OWNER</span>
+          </div>
+          <div class="card-pad space-y-3">
+            <p class="section-subtitle">
+              <code class="bg-slate-100 px-1 rounded border border-slate-200">/api/owners/**</code>
+              경로는 <code>ROLE_OWNER</code> 권한이 필요합니다.
+            </p>
+            <button type="button" id="btnOpenOwnerScheduleModal" class="btn btn-role-owner btn-block">매장 · 스케줄 패널 열기</button>
+            <p class="helper">가게 선택, 스케줄 등록, 예약 관리는 넓은 모달에서 진행합니다.</p>
+          </div>
+        </div>
+
+        <div id="adminHint" class="hidden alert alert-muted">
+          <strong class="text-slate-800">ADMIN</strong> 계정은 이 페이지의 owner/child 경로와 다릅니다.
+          관리자 전용은 <code>/api/admins/**</code>를 참고하세요.
+        </div>
+
+        <!-- Signup -->
+        <div id="signupCard" class="card scroll-mt-6">
+          <div class="card-header">
+            <div>
+              <div class="section-label">Sign up</div>
+              <div class="section-title mt-0.5" id="signup">로컬 회원가입</div>
+            </div>
+          </div>
+          <div class="card-pad space-y-4">
+            <p class="section-subtitle">
+              <code class="bg-slate-100 px-1 rounded border border-slate-200">POST /api/auth/email/send-code</code>
+              <span class="mx-1 text-slate-300">→</span>
+              <code class="bg-slate-100 px-1 rounded border border-slate-200">verify-code</code>
+              <span class="mx-1 text-slate-300">→</span>
+              <code class="bg-slate-100 px-1 rounded border border-slate-200">/api/users/signup/…</code>
+              — 로그인 아이디는 이메일과 동일합니다.
+            </p>
+
+            <div class="segmented" role="tablist" aria-label="가입 유형">
+              <button type="button" id="signupTabOwner" class="signup-tab is-active" aria-selected="true">매장 (사업자)</button>
+              <button type="button" id="signupTabChild" class="signup-tab" aria-selected="false">아동</button>
             </div>
 
-            <div id="suOwnerFields" class="grid gap-3">
+            <div class="grid gap-3">
               <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1" for="suStoreName">매장명</label>
-                <input id="suStoreName" type="text" required placeholder="따뜻한 식당"
-                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                <label class="label" for="suEmail">이메일 (로그인 ID)</label>
+                <div class="flex gap-2">
+                  <input id="suEmail" type="email" autocomplete="email" required placeholder="example@domain.com" class="input flex-1" />
+                  <button type="button" id="btnSuSendCode" class="btn btn-info">인증번호 전송</button>
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1" for="suBizNo">사업자등록번호 (10자리)</label>
-                <input id="suBizNo" type="text" inputmode="numeric" maxlength="10" required placeholder="1234567890"
-                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-              </div>
-            </div>
 
-            <div id="suChildFields" class="grid gap-3 hidden">
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1" for="suChildName">이름</label>
-                <input id="suChildName" type="text" placeholder="홍길동"
-                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              <div id="suCodeRow" class="hidden">
+                <label class="label" for="suCode">인증번호</label>
+                <div class="flex gap-2">
+                  <input id="suCode" type="text" inputmode="text" autocomplete="one-time-code" placeholder="메일로 받은 코드" class="input flex-1" />
+                  <button type="button" id="btnSuVerify" class="btn btn-secondary">인증 확인</button>
+                </div>
+                <p id="suTimer" class="hidden mt-1.5 text-[11.5px] text-rose-600 font-mono"></p>
               </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1" for="suNickname">닉네임</label>
-                <input id="suNickname" type="text" placeholder="온하루"
-                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1" for="suFileKey">증빙 fileKey (S3 객체 키)</label>
-                <input id="suFileKey" type="text" placeholder="images/certificate.pdf"
-                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1" for="suFilePath">증빙 filePath (전체 URL)</label>
-                <input id="suFilePath" type="url" placeholder="https://…/bucket/images/certificate.pdf"
-                  class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-              </div>
-              <p class="text-[11px] text-slate-500">아동 가입은 프론트처럼 업로드 후 URL 을 쓰면 됩니다. 로컬에서 MinIO URL 을 붙여 넣어 테스트하세요.</p>
-            </div>
+              <p id="suEmailStatus" class="hidden text-[11.5px] text-slate-600"></p>
 
-            <button type="button" id="btnSuSubmit" class="w-full py-2.5 rounded-lg bg-indigo-700 text-white text-sm font-semibold hover:bg-indigo-800 disabled:opacity-40" disabled>회원가입 요청</button>
-            <p id="suMsg" class="text-xs text-slate-600 min-h-[1rem]"></p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="label" for="suPassword">비밀번호</label>
+                  <input id="suPassword" type="password" autocomplete="new-password" required class="input" />
+                </div>
+                <div>
+                  <label class="label" for="suPassword2">비밀번호 확인</label>
+                  <input id="suPassword2" type="password" autocomplete="new-password" required class="input" />
+                </div>
+              </div>
+              <div>
+                <label class="label" for="suPhone">휴대폰 (하이픈 없이)</label>
+                <input id="suPhone" type="tel" inputmode="numeric" required placeholder="01012345678" class="input" />
+              </div>
+
+              <div id="suOwnerFields" class="grid gap-3">
+                <div>
+                  <label class="label" for="suStoreName">매장명</label>
+                  <input id="suStoreName" type="text" required placeholder="따뜻한 식당" class="input" />
+                </div>
+                <div>
+                  <label class="label" for="suBizNo">사업자등록번호 (10자리)</label>
+                  <input id="suBizNo" type="text" inputmode="numeric" maxlength="10" required placeholder="1234567890" class="input" />
+                </div>
+              </div>
+
+              <div id="suChildFields" class="grid gap-3 hidden">
+                <div>
+                  <label class="label" for="suChildName">이름</label>
+                  <input id="suChildName" type="text" placeholder="홍길동" class="input" />
+                </div>
+                <div>
+                  <label class="label" for="suNickname">닉네임</label>
+                  <input id="suNickname" type="text" placeholder="온하루" class="input" />
+                </div>
+                <div>
+                  <label class="label" for="suFileKey">증빙 fileKey (S3 객체 키)</label>
+                  <input id="suFileKey" type="text" placeholder="images/certificate.pdf" class="input" />
+                </div>
+                <div>
+                  <label class="label" for="suFilePath">증빙 filePath (전체 URL)</label>
+                  <input id="suFilePath" type="url" placeholder="https://…/bucket/images/certificate.pdf" class="input" />
+                </div>
+                <p class="helper">아동 가입은 업로드 완료된 파일의 URL을 붙여넣어 테스트합니다.</p>
+              </div>
+
+              <button type="button" id="btnSuSubmit" class="btn btn-info btn-block" disabled>회원가입 요청</button>
+              <p id="suMsg" class="text-[11.5px] text-slate-500 min-h-[1rem]"></p>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- 가게 탐색 -->
-      <section class="lg:col-span-8 space-y-4">
-        <div id="storeListSection" class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-          <div class="flex flex-wrap items-end justify-between gap-3 mb-4">
+      <!-- =================== RIGHT COLUMN =================== -->
+      <section class="lg:col-span-8 space-y-5">
+
+        <!-- Store list -->
+        <div id="storeListSection" class="card">
+          <div class="card-header">
             <div>
-              <h2 class="font-semibold text-slate-800">2. 가게 목록 (공통)</h2>
-              <!-- <p class="text-xs text-slate-500 mt-1">GET /api/stores · <code class="bg-slate-100 px-1 rounded">keyword</code> · <code class="bg-slate-100 px-1 rounded">categoryId</code> · <span class="text-slate-600">정렬</span> <code class="bg-slate-100 px-1 rounded">sortField</code> + <code class="bg-slate-100 px-1 rounded">sortDirection</code></p> -->
+              <div class="section-label">Step 02 · Public</div>
+              <div class="section-title mt-0.5">가게 목록</div>
             </div>
-            <button type="button" id="btnLoadStores" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-sm hover:bg-emerald-700">새로고침</button>
+            <button type="button" id="btnLoadStores" class="btn btn-sm btn-primary">새로고침</button>
           </div>
-          <form id="storeSearchForm" class="mb-4 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-3 space-y-2">
-            <!-- <p class="text-[11px] text-slate-500 leading-relaxed">
-              <span class="font-medium text-slate-600">검색</span> — 가게 이름 또는 태그 이름에 <code class="bg-white px-1 rounded border border-slate-100">keyword</code>가 포함된 매장, <code class="bg-white px-1 rounded border border-slate-100">categoryId</code>로 카테고리 필터 (둘 다 선택 사항).
-            </p> -->
-            <div class="flex flex-wrap items-end gap-2">
-              <div class="min-w-[10rem] flex-1">
-                <label for="storeKeywordInput" class="block text-[10px] font-medium text-slate-600 mb-0.5">키워드</label>
-                <input id="storeKeywordInput" type="search" autocomplete="off" placeholder="예: 빵, 카페, 가게명"
-                  class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+
+          <div class="card-pad space-y-4">
+            <form id="storeSearchForm" class="rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-3.5 space-y-3">
+              <div class="flex flex-wrap items-end gap-2">
+                <div class="flex-1 min-w-[12rem]">
+                  <label for="storeKeywordInput" class="label">키워드</label>
+                  <input id="storeKeywordInput" type="search" autocomplete="off" placeholder="가게명, 태그 예: 빵, 카페…" class="input" />
+                </div>
+                <div class="min-w-[9rem]">
+                  <label for="storeCategorySelect" class="label">카테고리</label>
+                  <select id="storeCategorySelect" class="select">
+                    <option value="">불러오는 중…</option>
+                  </select>
+                </div>
+                <button type="submit" id="btnStoreSearch" class="btn btn-dark">검색</button>
+                <button type="button" id="btnStoreSearchReset" class="btn btn-secondary">초기화</button>
               </div>
-              <div class="min-w-[8rem]">
-                <label for="storeCategorySelect" class="block text-[10px] font-medium text-slate-600 mb-0.5">카테고리</label>
-                <select id="storeCategorySelect" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                  <option value="">불러오는 중…</option>
-                </select>
+
+              <div id="storeRecentWrap" class="pt-2 border-t border-slate-200/80">
+                <div class="flex items-baseline justify-between mb-2">
+                  <span class="section-label">최근 검색어</span>
+                  <span class="text-[11px] text-slate-400">Redis List + Set · 계정/브라우저별</span>
+                </div>
+                <div id="storeRecentChips" class="flex flex-wrap gap-1.5 min-h-[1.5rem]"></div>
               </div>
-              <button type="submit" id="btnStoreSearch" class="px-3 py-1.5 rounded-lg bg-slate-800 text-white text-sm font-medium hover:bg-slate-900">검색</button>
-              <button type="button" id="btnStoreSearchReset" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm text-slate-700 hover:bg-white">초기화</button>
-            </div>
-            <div id="storeRecentWrap" class="mt-2 pt-2 border-t border-slate-100">
-              <p class="text-[10px] font-medium text-slate-500 mb-1.5">최근 검색어 <span class="font-normal text-slate-400">(Redis List+Set · 로그인 시 계정별, 비로그인 시 이 브라우저 ID)</span></p>
-              <div id="storeRecentChips" class="flex flex-wrap gap-1.5 min-h-[1.5rem] text-xs"></div>
-            </div>
-          </form>
-          <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="text-xs font-medium text-slate-600 shrink-0">정렬</span>
-              <div class="inline-flex flex-wrap rounded-lg border border-slate-200 p-0.5 bg-slate-50" id="storeSortGroup" role="group" aria-label="가게 목록 정렬">
-                <button type="button" data-store-sort="distance" class="store-sort-btn px-3 py-1.5 text-xs font-medium rounded-md transition">거리순</button>
-                <button type="button" data-store-sort="favoriteCount" class="store-sort-btn px-3 py-1.5 text-xs font-medium rounded-md transition">좋아요순</button>
-                <button type="button" data-store-sort="name" class="store-sort-btn px-3 py-1.5 text-xs font-medium rounded-md transition">이름순</button>
-              </div>
-            </div>
-            <div id="storeGeoRow" class="ml-auto flex items-center gap-2 rounded-lg border border-emerald-100 bg-emerald-50/50 px-3 py-2">
-              <div class="min-w-[9rem]">
-                <div class="text-[10px] font-medium text-slate-600 mb-0.5">현재 전송 좌표</div>
-                <div class="text-xs font-mono text-emerald-950 tabular-nums">
-                  <span class="text-slate-600">lat</span> <span id="storeLatText">—</span>
-                  <span class="mx-1 text-slate-300">·</span>
-                  <span class="text-slate-600">lng</span> <span id="storeLngText">—</span>
+            </form>
+
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5">
+                <span class="section-label">정렬</span>
+                <div id="storeSortGroup" class="sort-group" role="group" aria-label="가게 목록 정렬">
+                  <button type="button" data-store-sort="distance" class="store-sort-btn">거리순</button>
+                  <button type="button" data-store-sort="favoriteCount" class="store-sort-btn">좋아요순</button>
+                  <button type="button" data-store-sort="name" class="store-sort-btn">이름순</button>
                 </div>
               </div>
-              <span id="storeGeoStatus" class="hidden text-[11px] text-slate-500"></span>
-              <button type="button" id="btnStoreMyLocation" class="px-2.5 py-1 rounded-lg border border-emerald-300 bg-white text-emerald-900 text-xs font-medium hover:bg-emerald-50">내 위치</button>
+              <div id="storeGeoRow" class="flex items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50/70 px-3 py-2">
+                <div class="leading-tight">
+                  <div class="text-[10.5px] font-medium text-emerald-800 uppercase tracking-wider">현재 좌표</div>
+                  <div class="text-[12px] font-mono text-emerald-950 tabular-nums">
+                    <span class="text-emerald-700">lat</span> <span id="storeLatText">—</span>
+                    <span class="mx-1 text-emerald-300">·</span>
+                    <span class="text-emerald-700">lng</span> <span id="storeLngText">—</span>
+                  </div>
+                </div>
+                <span id="storeGeoStatus" class="hidden text-[11px] text-emerald-700"></span>
+                <button type="button" id="btnStoreMyLocation" class="btn btn-xs btn-secondary">내 위치</button>
+              </div>
             </div>
-          </div>
-          <div id="storeGrid" class="grid sm:grid-cols-2 gap-3"></div>
-          <div id="storePagination" class="flex flex-wrap items-center justify-between gap-3 mt-4 pt-4 border-t border-slate-100">
-            <p id="storePageInfo" class="text-xs text-slate-500"></p>
-            <div class="flex items-center gap-2">
-              <button type="button" id="btnStorePrev" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">이전</button>
-              <span id="storePageNum" class="text-sm text-slate-600 min-w-[5rem] text-center"></span>
-              <button type="button" id="btnStoreNext" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">다음</button>
+
+            <div id="storeGrid" class="grid sm:grid-cols-2 gap-3"></div>
+
+            <div id="storePagination" class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-200">
+              <p id="storePageInfo" class="text-[11.5px] text-slate-500"></p>
+              <div class="flex items-center gap-2">
+                <button type="button" id="btnStorePrev" class="btn btn-sm btn-secondary" disabled>이전</button>
+                <span id="storePageNum" class="text-[12.5px] text-slate-600 min-w-[5rem] text-center font-mono"></span>
+                <button type="button" id="btnStoreNext" class="btn btn-sm btn-secondary" disabled>다음</button>
+              </div>
             </div>
           </div>
         </div>
 
-        <div id="detailPanel" class="hidden bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4 scroll-mt-6">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <!-- Store detail -->
+        <div id="detailPanel" class="hidden card scroll-mt-6">
+          <div class="card-header">
             <div>
-              <h2 id="detailPanelHeading" class="text-lg font-semibold text-slate-900">매장 정보</h2>
-              <p class="text-xs text-slate-500 mt-0.5">가게 상세 · 예약</p>
+              <div class="section-label">Detail</div>
+              <div id="detailPanelHeading" class="section-title mt-0.5">매장 정보</div>
             </div>
-            <button type="button" id="btnBackToStoreList" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm text-slate-700 hover:bg-slate-50">← 목록으로</button>
+            <button type="button" id="btnBackToStoreList" class="btn btn-sm btn-secondary">← 목록으로</button>
           </div>
 
-          <div id="storeDetailGallery" class="hidden -mx-1"></div>
+          <div class="card-pad space-y-5">
+            <div id="storeDetailGallery" class="hidden"></div>
 
-          <div id="storeDetail" class="text-sm space-y-2"></div>
+            <div id="storeDetail" class="text-[13.5px] space-y-2"></div>
 
-          <!-- 리뷰(감사 리뷰) 섹션: 상세 카드와 분리된 별도 카드로 렌더링 -->
-          <div id="storeReviewSection" class="text-sm"></div>
+            <div id="storeReviewSection" class="text-[13.5px]"></div>
 
-          <button type="button" id="btnOpenReservationFlow" class="w-full py-3.5 rounded-xl bg-emerald-700 text-white text-sm font-semibold shadow-sm hover:bg-emerald-800 transition">
-            예약하기
-          </button>
+            <button type="button" id="btnOpenReservationFlow" class="btn btn-lg btn-primary btn-block">예약하기</button>
 
-          <div id="reservationFlowSection" class="hidden space-y-4 border-t border-slate-200 pt-5 mt-1">
-            <div class="flex items-center gap-2 text-slate-800">
-              <span class="text-emerald-600" aria-hidden="true">♥</span>
-              <h3 class="text-sm font-semibold">날짜와 시간을 선택해 주세요.</h3>
-            </div>
-
-            <div>
-              <div class="flex flex-wrap items-center justify-center gap-2 mb-3">
-                <button type="button" id="btnPrevMonth" class="px-2 py-1 rounded border border-slate-300 text-sm hover:bg-slate-50">◀</button>
-                <span id="monthLabel" class="text-sm font-semibold min-w-[9rem] text-center text-slate-800"></span>
-                <button type="button" id="btnNextMonth" class="px-2 py-1 rounded border border-slate-300 text-sm hover:bg-slate-50">▶</button>
-              </div>
-              <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-xs p-3 rounded-xl border border-slate-200 bg-slate-50/80"></div>
-            </div>
-
-            <div id="slotPanel" class="hidden">
-              <h3 class="text-sm font-medium text-slate-700 mb-2">시간 선택</h3>
-              <div id="slotList" class="flex flex-wrap gap-2"></div>
-            </div>
-
-            <div id="selectedScheduleBar" class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-center">
-              <span id="selectedScheduleText" class="text-slate-600">선택된 일정이 없습니다.</span>
-            </div>
-
-            <div id="childReserveHint" class="hidden text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-              예약 신청은 <strong>아동(CHILD)</strong> 계정으로 로그인한 경우에만 가능합니다.
-            </div>
-
-            <div id="reservePanel" class="hidden space-y-4">
-              <div class="flex items-center gap-2 text-slate-800">
-                <span class="text-emerald-600" aria-hidden="true">♥</span>
-                <h3 class="text-sm font-semibold">인원을 선택해 주세요.</h3>
+            <div id="reservationFlowSection" class="hidden space-y-5 pt-5 border-t border-slate-200">
+              <div class="flex items-center gap-2">
+                <span class="section-label">Step A</span>
+                <h3 class="text-[14px] font-semibold text-slate-900">날짜와 시간</h3>
               </div>
 
-              <div class="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
-                <div class="flex items-center justify-between gap-3">
-                  <div class="text-sm font-semibold text-slate-800">동시성(분산락) 확인</div>
-                  <span class="text-[11px] text-slate-500">동일 일정에 요청 N개를 동시에 전송</span>
+              <div class="rounded-xl border border-slate-200 bg-white p-4">
+                <div class="flex items-center justify-center gap-3 mb-3">
+                  <button type="button" id="btnPrevMonth" class="btn btn-sm btn-secondary">◀</button>
+                  <span id="monthLabel" class="text-[13.5px] font-semibold min-w-[9rem] text-center text-slate-800"></span>
+                  <button type="button" id="btnNextMonth" class="btn btn-sm btn-secondary">▶</button>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  <div class="sm:col-span-1">
-                    <label class="block text-xs font-medium text-slate-600 mb-1">요청 개수(N)</label>
-                    <input id="reserveConcurrencyN" type="number" min="2" value="10" class="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm bg-white" />
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-[12.5px]"></div>
+              </div>
+
+              <div id="slotPanel" class="hidden">
+                <div class="section-label mb-2">시간 선택</div>
+                <div id="slotList" class="flex flex-wrap gap-2"></div>
+              </div>
+
+              <div id="selectedScheduleBar" class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-center">
+                <span id="selectedScheduleText" class="text-[13px] text-slate-600">선택된 일정이 없습니다.</span>
+              </div>
+
+              <div id="childReserveHint" class="hidden alert alert-warn">
+                예약 신청은 <strong>아동(CHILD)</strong> 계정으로 로그인한 경우에만 가능합니다.
+              </div>
+
+              <div id="reservePanel" class="hidden space-y-4">
+                <div class="flex items-center gap-2">
+                  <span class="section-label">Step B</span>
+                  <h3 class="text-[14px] font-semibold text-slate-900">인원 선택</h3>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 space-y-3">
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="text-[13px] font-semibold text-slate-800">동시성 (분산락) 확인</div>
+                    <span class="text-[11px] text-slate-500">동일 일정에 요청 N개를 동시 전송</span>
                   </div>
-                  <div class="sm:col-span-2">
-                    <label class="block text-xs font-medium text-slate-600 mb-1">기대 결과</label>
-                    <div class="text-xs text-slate-600 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                      분산락 적용 후: <strong class="text-emerald-700">성공 1</strong>, 실패 N-1 (대개 <code class="bg-white px-1 rounded">이미 예약된 일정</code>)
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div>
+                      <label class="label" for="reserveConcurrencyN">요청 개수 (N)</label>
+                      <input id="reserveConcurrencyN" type="number" min="2" value="10" class="input" />
+                    </div>
+                    <div class="sm:col-span-2">
+                      <div class="label">기대 결과</div>
+                      <div class="alert alert-muted">
+                        <strong class="text-emerald-700">성공 1</strong>, 실패 N−1
+                        <span class="text-slate-500">(대부분 <code class="bg-white px-1 rounded border border-slate-200">이미 예약된 일정</code>)</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="flex flex-wrap items-center gap-2">
-                  <button type="button" id="btnReserveConcurrencyRun" class="px-3 py-2 rounded-lg bg-slate-900 text-white text-sm hover:bg-slate-800">
-                    동시 예약 요청 보내기
-                  </button>
-                  <button type="button" id="btnReserveConcurrencyClear" class="px-3 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm hover:bg-slate-50">
-                    결과 지우기
-                  </button>
-                  <span id="reserveConcurrencyStatus" class="text-xs text-slate-500"></span>
-                </div>
-                <pre id="reserveConcurrencyOut" class="hidden text-[12px] leading-5 whitespace-pre-wrap rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800"></pre>
-              </div>
-
-              <form id="reserveForm" class="space-y-4" novalidate>
-                <input type="hidden" id="pickedScheduleId" value="" />
-                <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-2">방문 예정 인원</label>
-                  <div class="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-1 py-1 shadow-sm">
-                    <button type="button" id="btnPeopleMinus" class="w-11 h-11 rounded-lg border border-slate-200 text-lg leading-none text-slate-700 hover:bg-slate-50">−</button>
-                    <input id="peopleCount" type="number" value="1" class="w-14 text-center border-0 font-semibold text-lg text-slate-900 p-0 focus:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none" />
-                    <button type="button" id="btnPeoplePlus" class="w-11 h-11 rounded-lg border border-slate-200 text-lg leading-none text-slate-700 hover:bg-slate-50">+</button>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" id="btnReserveConcurrencyRun" class="btn btn-sm btn-dark">동시 예약 전송</button>
+                    <button type="button" id="btnReserveConcurrencyClear" class="btn btn-sm btn-secondary">결과 지우기</button>
+                    <span id="reserveConcurrencyStatus" class="text-[11.5px] text-slate-500"></span>
                   </div>
+                  <pre id="reserveConcurrencyOut" class="hidden text-[11.5px] leading-5 whitespace-pre-wrap rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-800 font-mono"></pre>
                 </div>
-                <button type="submit" id="btnReserveSubmit" class="w-full py-3.5 rounded-xl bg-emerald-800 text-white text-sm font-semibold shadow hover:bg-emerald-900">예약하기</button>
-              </form>
-              <p class="text-[11px] text-slate-400 text-center">POST /api/childrens/stores/{storeId}/reservations</p>
+
+                <form id="reserveForm" class="space-y-4" novalidate>
+                  <input type="hidden" id="pickedScheduleId" value="" />
+                  <div>
+                    <label class="label">방문 예정 인원</label>
+                    <div class="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-1 py-1 shadow-xs">
+                      <button type="button" id="btnPeopleMinus" class="w-11 h-11 rounded-lg text-xl leading-none text-slate-700 hover:bg-slate-50">−</button>
+                      <input id="peopleCount" type="number" value="1" class="w-14 text-center border-0 font-semibold text-lg text-slate-900 p-0 focus:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none bg-transparent" />
+                      <button type="button" id="btnPeoplePlus" class="w-11 h-11 rounded-lg text-xl leading-none text-slate-700 hover:bg-slate-50">+</button>
+                    </div>
+                  </div>
+                  <button type="submit" id="btnReserveSubmit" class="btn btn-lg btn-primary btn-block">예약하기</button>
+                </form>
+                <p class="text-[11px] text-slate-400 text-center font-mono">POST /api/childrens/stores/{storeId}/reservations</p>
+              </div>
             </div>
           </div>
         </div>
@@ -413,104 +1010,115 @@
     </div>
   </main>
 
-  <!-- 아동: 내 예약 (모달) -->
-  <dialog id="childResModal" class="booking-modal w-[min(96vw,1200px)] max-w-full rounded-2xl border border-slate-200 p-0 shadow-2xl">
-    <div class="flex shrink-0 items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50/95 px-4 py-3">
-      <h3 class="pr-2 text-base font-semibold text-emerald-900">아동 · 내 예약 목록</h3>
-      <button type="button" id="btnChildResModalClose" class="shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-50">닫기</button>
+  <!-- ============ Child reservations modal ============ -->
+  <dialog id="childResModal" class="booking-modal w-[min(96vw,1200px)] max-w-full">
+    <div class="modal-header modal-header-emerald">
+      <h3 class="modal-title text-emerald-900">아동 · 내 예약 목록</h3>
+      <button type="button" id="btnChildResModalClose" class="btn btn-sm btn-secondary">닫기</button>
     </div>
-    <div id="childReservationsOut" class="min-h-[min(55vh,520px)] max-h-[calc(90vh-9rem)] overflow-x-auto overflow-y-auto overscroll-contain bg-white p-4 text-sm"></div>
-    <div id="childReservationsPager" class="hidden shrink-0 flex flex-wrap items-center justify-between gap-2 border-t border-emerald-100 bg-slate-50 px-4 py-3">
-      <p id="childResPageInfo" class="text-xs text-slate-500"></p>
+    <div id="childReservationsOut" class="modal-body min-h-[min(55vh,520px)] max-h-[calc(90vh-9rem)] bg-white text-[13.5px]"></div>
+    <div id="childReservationsPager" class="hidden modal-footer">
+      <p id="childResPageInfo" class="text-[11.5px] text-slate-500"></p>
       <div class="flex items-center gap-2">
-        <button type="button" id="btnChildResPrev" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">이전</button>
-        <span id="childResPageNum" class="text-xs text-slate-600 min-w-[4.5rem] text-center"></span>
-        <button type="button" id="btnChildResNext" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">다음</button>
+        <button type="button" id="btnChildResPrev" class="btn btn-xs btn-secondary" disabled>이전</button>
+        <span id="childResPageNum" class="text-[11.5px] text-slate-600 min-w-[4.5rem] text-center font-mono"></span>
+        <button type="button" id="btnChildResNext" class="btn btn-xs btn-secondary" disabled>다음</button>
       </div>
     </div>
   </dialog>
 
-  <!-- 사장: 가게 & 스케줄 (모달) -->
-  <dialog id="ownerScheduleModal" class="booking-modal min-h-0 max-h-[min(92vh,900px)] w-[min(96vw,640px)] max-w-full rounded-2xl border border-slate-200 p-0 shadow-2xl">
-    <div class="flex shrink-0 items-center justify-between gap-3 border-b border-amber-100 bg-amber-50/95 px-4 py-3">
-      <h3 class="pr-2 text-base font-semibold text-amber-950">사장 · 내 가게 & 스케줄</h3>
-      <button type="button" id="btnOwnerScheduleModalClose" class="shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-50">닫기</button>
+  <!-- ============ Owner schedule modal ============ -->
+  <dialog id="ownerScheduleModal" class="booking-modal min-h-0 max-h-[min(92vh,900px)] w-[min(96vw,640px)] max-w-full">
+    <div class="modal-header modal-header-amber">
+      <h3 class="modal-title text-amber-900">매장 · 스케줄</h3>
+      <button type="button" id="btnOwnerScheduleModalClose" class="btn btn-sm btn-secondary">닫기</button>
     </div>
-    <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-4 text-sm">
-      <button type="button" id="btnOwnerStores" class="w-full py-2.5 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600">내 가게 목록 불러오기</button>
+    <div class="modal-body space-y-5 text-[13.5px]">
+      <button type="button" id="btnOwnerStores" class="btn btn-role-owner btn-block">내 가게 목록 불러오기</button>
+
       <div>
-        <label class="block text-xs text-slate-600 mb-1">스케줄/예약을 볼 가게</label>
-        <select id="ownerStoreSelect" class="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm"></select>
+        <label class="label" for="ownerStoreSelect">스케줄/예약을 볼 가게</label>
+        <select id="ownerStoreSelect" class="select"></select>
       </div>
 
-      <div class="rounded-xl border border-slate-100 bg-slate-50/80 p-3">
-        <h3 class="text-sm font-medium text-slate-800 mb-2">예약 가능 시간대 생성</h3>
-        <p class="text-xs text-slate-500 mb-2">POST <code>/api/owners/stores/{storeId}/schedules</code></p>
-        <form id="ownerScheduleForm" class="space-y-2 text-sm">
+      <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 space-y-3">
+        <div>
+          <div class="section-label">Create</div>
+          <div class="section-title mt-0.5" style="font-size:14px">예약 가능 시간대 생성</div>
+          <p class="helper">POST <code>/api/owners/stores/{storeId}/schedules</code></p>
+        </div>
+        <form id="ownerScheduleForm" class="space-y-3">
           <div>
-            <label class="text-xs text-slate-600">날짜 (오늘 이후)</label>
-            <input id="osDate" type="date" required class="w-full border rounded-lg px-2 py-1.5 mt-0.5 bg-white" />
+            <label class="label" for="osDate">날짜 (오늘 이후)</label>
+            <input id="osDate" type="date" required class="input" />
           </div>
           <div>
-            <label class="text-xs text-slate-600">시작 시간 (클릭 선택 · 09:00~21:00)</label>
-            <div id="ownerTimeGrid" class="grid grid-cols-4 gap-2 mt-1.5"></div>
-            <p class="text-xs text-slate-500 mt-2">
-              종료 시간: <strong id="ownerEndTimeLabel" class="text-slate-700">—</strong>
-              <span class="text-slate-400">(시작 시각 + 1시간, 자동)</span>
+            <label class="label">시작 시간 <span class="text-slate-400 font-normal">(클릭 선택 · 09:00–21:00)</span></label>
+            <div id="ownerTimeGrid" class="grid grid-cols-4 gap-2"></div>
+            <p class="helper">
+              종료 시간 <strong id="ownerEndTimeLabel" class="text-slate-700">—</strong>
+              <span class="text-slate-400">(시작 +1시간 · 자동)</span>
             </p>
             <input type="hidden" id="osStart" value="" />
             <input type="hidden" id="osEnd" value="" />
           </div>
           <div>
-            <label class="text-xs text-slate-600">최대 인원</label>
-            <input id="osMax" type="number" min="1" value="10" required class="w-full border rounded-lg px-2 py-1.5 mt-0.5 bg-white" />
+            <label class="label" for="osMax">최대 인원</label>
+            <input id="osMax" type="number" min="1" value="10" required class="input" />
           </div>
-          <button type="submit" class="w-full py-2 rounded-lg bg-amber-600 text-white text-sm hover:bg-amber-700">스케줄 등록</button>
+          <button type="submit" class="btn btn-role-owner btn-block">스케줄 등록</button>
         </form>
       </div>
 
-      <div>
-        <h3 class="text-sm font-medium text-slate-800 mb-2">가게 예약 현황</h3>
-        <p class="text-xs text-slate-500 mb-2">GET <code>/api/owners/stores/{storeId}/reservations</code></p>
-        <button type="button" id="btnOwnerBookings" class="w-full py-2 rounded-lg border border-amber-300 text-amber-900 text-sm hover:bg-amber-50">선택 가게 예약 목록</button>
-        <p class="text-[11px] text-slate-500 mt-1">대기 → <strong>승인</strong> · 확정 → <strong>이용완료</strong> / <strong>취소</strong> (도메인: WAITING→CONFIRMED→COMPLETED)</p>
-        <p class="mt-2 text-[11px] text-slate-500">표는 별도 모달에서 넓게 열립니다.</p>
+      <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 space-y-2">
+        <div>
+          <div class="section-label">Status</div>
+          <div class="section-title mt-0.5" style="font-size:14px">가게 예약 현황</div>
+          <p class="helper">GET <code>/api/owners/stores/{storeId}/reservations</code></p>
+        </div>
+        <button type="button" id="btnOwnerBookings" class="btn btn-secondary btn-block">선택 가게 예약 목록</button>
+        <p class="text-[11.5px] text-slate-500">
+          대기 → <strong class="text-slate-700">승인</strong> ·
+          확정 → <strong class="text-slate-700">이용완료</strong> / <strong class="text-slate-700">취소</strong>
+          <span class="text-slate-400">(WAITING → CONFIRMED → COMPLETED)</span>
+        </p>
       </div>
     </div>
   </dialog>
 
-  <!-- 사장: 가게 예약 (모달) -->
-  <dialog id="ownerResModal" class="booking-modal w-[min(96vw,1200px)] max-w-full rounded-2xl border border-slate-200 p-0 shadow-2xl">
-    <div class="flex shrink-0 items-center justify-between gap-3 border-b border-amber-100 bg-amber-50/95 px-4 py-3">
-      <h3 class="pr-2 text-base font-semibold text-amber-950">가게 예약 현황</h3>
-      <button type="button" id="btnOwnerResModalClose" class="shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-50">닫기</button>
+  <!-- ============ Owner reservations modal ============ -->
+  <dialog id="ownerResModal" class="booking-modal w-[min(96vw,1200px)] max-w-full">
+    <div class="modal-header modal-header-amber">
+      <h3 class="modal-title text-amber-900">가게 예약 현황</h3>
+      <button type="button" id="btnOwnerResModalClose" class="btn btn-sm btn-secondary">닫기</button>
     </div>
-    <div id="ownerBookingsOut" class="min-h-[min(55vh,520px)] max-h-[calc(90vh-9rem)] overflow-x-auto overflow-y-auto overscroll-contain bg-white p-4 text-sm"></div>
-    <div id="ownerBookingsPager" class="hidden shrink-0 flex flex-wrap items-center justify-between gap-2 border-t border-amber-100 bg-slate-50 px-4 py-3">
-      <p id="ownerResPageInfo" class="text-xs text-slate-500"></p>
+    <div id="ownerBookingsOut" class="modal-body min-h-[min(55vh,520px)] max-h-[calc(90vh-9rem)] bg-white text-[13.5px]"></div>
+    <div id="ownerBookingsPager" class="hidden modal-footer">
+      <p id="ownerResPageInfo" class="text-[11.5px] text-slate-500"></p>
       <div class="flex items-center gap-2">
-        <button type="button" id="btnOwnerResPrev" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">이전</button>
-        <span id="ownerResPageNum" class="text-xs text-slate-600 min-w-[4.5rem] text-center"></span>
-        <button type="button" id="btnOwnerResNext" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">다음</button>
+        <button type="button" id="btnOwnerResPrev" class="btn btn-xs btn-secondary" disabled>이전</button>
+        <span id="ownerResPageNum" class="text-[11.5px] text-slate-600 min-w-[4.5rem] text-center font-mono"></span>
+        <button type="button" id="btnOwnerResNext" class="btn btn-xs btn-secondary" disabled>다음</button>
       </div>
     </div>
   </dialog>
 
-  <!-- 채팅 모달 마크업: partials/chat-modals.html 을 fetch 로 삽입 (js/onharu-chat-ui.js) -->
+  <!-- Chat modals (partial fetch target) -->
   <div id="onharu-chat-modals-host"></div>
 
-  <footer class="border-t border-slate-200 bg-white">
-    <div class="max-w-6xl mx-auto px-4 py-3">
-      <details id="apiLogDetails" class="group rounded-xl border border-slate-200 bg-slate-50/90 shadow-sm">
-        <summary class="cursor-pointer list-none px-3 py-2.5 text-sm font-semibold text-slate-800 select-none flex items-center gap-2 marker:content-[''] [&::-webkit-details-marker]:hidden">
+  <footer class="app-footer">
+    <div class="max-w-[1280px] mx-auto px-6 py-3">
+      <details id="apiLogDetails" class="group rounded-xl border border-slate-200 bg-slate-50/70">
+        <summary class="cursor-pointer list-none px-3.5 py-2.5 text-[12.5px] font-semibold text-slate-700 select-none flex items-center gap-2">
           <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-slate-300 bg-white text-[10px] text-slate-500 transition-transform duration-200 group-open:rotate-90" aria-hidden="true">▶</span>
-          <span>API 로그 (요청 헤더·바디 · 응답 코드·본문)</span>
+          <span>API 로그</span>
+          <span class="badge badge-neutral ml-1">요청/응답 추적</span>
         </summary>
-        <div class="border-t border-slate-200 px-3 pb-3 pt-2 space-y-2">
+        <div class="border-t border-slate-200 px-3.5 pb-3.5 pt-2.5 space-y-2">
           <div class="flex justify-end">
-            <button type="button" id="btnClearLog" class="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 rounded hover:bg-slate-200/80">비우기</button>
+            <button type="button" id="btnClearLog" class="btn btn-xs btn-ghost">비우기</button>
           </div>
-          <pre id="apiLog" class="text-[11px] leading-relaxed bg-slate-900 text-green-200 rounded-lg p-3 max-h-52 overflow-auto font-mono"></pre>
+          <pre id="apiLog" class="api-log-panel"></pre>
         </div>
       </details>
     </div>
