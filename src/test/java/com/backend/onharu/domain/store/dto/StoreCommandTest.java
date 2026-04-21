@@ -22,7 +22,7 @@ class StoreCommandTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateStoreCommand() {
+        void shouldCreateStoreCommand() {
             // given
             Long ownerId = 1L;
             Long categoryId = 1L;
@@ -56,7 +56,7 @@ class StoreCommandTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateUpdateStoreCommand() {
+        void shouldCreateUpdateStoreCommand() {
             // given
             Long id = 1L;
             Long categoryId = 2L;
@@ -90,7 +90,7 @@ class StoreCommandTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateDeleteStoreCommand() {
+        void shouldCreateDeleteStoreCommand() {
             // given
             Long id = 1L;
 
@@ -108,7 +108,7 @@ class StoreCommandTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateChangeOpenStatusCommand() {
+        void shouldCreateChangeOpenStatusCommand() {
             // given
             Long id = 1L;
             Boolean isOpen = true;

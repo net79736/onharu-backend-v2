@@ -33,7 +33,7 @@ class UserQueryServiceTest {
     private UserJpaRepository userJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         userJpaRepository.deleteAll();
     }
 
@@ -43,7 +43,7 @@ class UserQueryServiceTest {
 
         @Test
         @DisplayName("조회 실패 - 사용자 ID가 존재하지 않는 경우")
-        public void shouldThrowExceptionWhenUserIsNotFound() {
+        void shouldThrowExceptionWhenUserIsNotFound() {
             // given
             Long userId = 99L;
 
@@ -61,7 +61,7 @@ class UserQueryServiceTest {
         @Test
         @DisplayName("조회 성공")
         @Rollback(value = false)
-        public void shouldGetUser() {
+        void shouldGetUser() {
             // given
             User savedUser = userJpaRepository.save(
                     User.builder()
@@ -102,7 +102,7 @@ class UserQueryServiceTest {
         @Test
         @DisplayName("조회 성공 - 로그인 ID로 사용자 조회")
         @Rollback(value = false)
-        public void shouldGetUserByLoginId() {
+        void shouldGetUserByLoginId() {
             // given
             userJpaRepository.save(
                     User.builder()
@@ -135,7 +135,7 @@ class UserQueryServiceTest {
 
         @Test
         @DisplayName("조회 실패 - 존재하지 않는 로그인 ID")
-        public void shouldThrowExceptionWhenLoginIdNotFound() {
+        void shouldThrowExceptionWhenLoginIdNotFound() {
             // given
             String loginId = "non_existent_id";
 

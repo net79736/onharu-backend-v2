@@ -90,7 +90,7 @@ class ReservationQueryServiceTest {
     private TagJpaRepository tagJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
         reservationJpaRepository.deleteAll(); // reservations는 store_schedules를 참조
         storeScheduleJpaRepository.deleteAll(); // store_schedules는 stores를 참조
@@ -200,7 +200,7 @@ class ReservationQueryServiceTest {
 
         @Test
         @DisplayName("조회 실패 - 예약 ID가 존재하지 않는 경우")
-        public void shouldThrowExceptionWhenReservationIsNotFound() {
+        void shouldThrowExceptionWhenReservationIsNotFound() {
             // given
             Long reservationId = 99L;
 
@@ -218,7 +218,7 @@ class ReservationQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공")
-        public void shouldGetReservation() {
+        void shouldGetReservation() {
             // given
             Child savedChild = createTestChild("test_child_query", "테스트 아동 조회", "01055556666", "테스트닉네임", true);
 
@@ -262,7 +262,7 @@ class ReservationQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공 - 아동의 예약 목록 조회")
-        public void shouldGetReservationsByChildId() {
+        void shouldGetReservationsByChildId() {
             // given
             Child savedChild = createTestChild(
                     "test_child_list",
@@ -310,7 +310,7 @@ class ReservationQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공 - 가게 일정 ID로 예약 조회")
-        public void shouldGetReservationByStoreScheduleId() {
+        void shouldGetReservationByStoreScheduleId() {
             // given
             Child savedChild = createTestChild("test_child_schedule", "테스트 아동 일정", "01099990000", "테스트닉네임", true);
 
@@ -347,7 +347,7 @@ class ReservationQueryServiceTest {
 
         @Test
         @DisplayName("조회 실패 - 가게 일정 ID로 예약 조회")
-        public void shouldGetNullWhenReservationIsNotFound() {
+        void shouldGetNullWhenReservationIsNotFound() {
             // given
             Long storeScheduleId = 99L;
 
@@ -365,7 +365,7 @@ class ReservationQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공 - 상태로 예약 목록 조회")
-        public void shouldGetReservationsByStatus() {
+        void shouldGetReservationsByStatus() {
             // given
             Child savedChild1 = createTestChild("test_child_status1", "테스트 아동 상태1", "01011111111", "테스트닉네임1", true);
             Child savedChild2 = createTestChild("test_child_status2", "테스트 아동 상태2", "01022222222", "테스트닉네임2", true);
@@ -432,7 +432,7 @@ class ReservationQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공 - 아동 ID와 상태로 예약 목록 조회")
-        public void shouldGetReservationsByChildIdAndStatus() {
+        void shouldGetReservationsByChildIdAndStatus() {
             // given
             Child savedChild = createTestChild("test_child_filter", "테스트 아동 필터", "01033333333", "테스트 닉네임", true);
 

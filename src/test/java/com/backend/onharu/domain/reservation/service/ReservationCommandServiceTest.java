@@ -96,7 +96,7 @@ class ReservationCommandServiceTest {
     private NotificationJpaRepository notificationJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
         notificationHistoryJpaRepository.deleteAll();
         notificationJpaRepository.deleteAll();
@@ -216,7 +216,7 @@ class ReservationCommandServiceTest {
 
         @Test
         @DisplayName("예약 생성 성공")        
-        public void shouldCreateReservation() {
+        void shouldCreateReservation() {
             // given
             Child savedChild = createTestChild("test_child", "테스트 아동", "01012345678");
 
@@ -256,7 +256,7 @@ class ReservationCommandServiceTest {
 
         @Test
         @DisplayName("스케줄 예약 가능 판정 - 과거 일정은 예약 불가")
-        public void shouldThrowExceptionWhenScheduleTimeExpired() {
+        void shouldThrowExceptionWhenScheduleTimeExpired() {
             // given
             Owner savedOwner = createTestOwner("test_owner_expired_cmd", "테스트 사업자", "01011112222", "새싹", "1234567890");
             Category category = createTestCategory("식당");
@@ -284,7 +284,7 @@ class ReservationCommandServiceTest {
 
         @Test
         @DisplayName("예약 취소 성공")        
-        public void shouldCancelReservation() {
+        void shouldCancelReservation() {
             // given
             Child savedChild = createTestChild("test_child2", "테스트 아동2", "01087654321", "닉네임테스트", true);
 
@@ -329,7 +329,7 @@ class ReservationCommandServiceTest {
 
         @Test
         @DisplayName("예약 확정 성공 - WAITING → CONFIRMED")
-        public void shouldConfirmReservation() {
+        void shouldConfirmReservation() {
             // given
             Child savedChild = createTestChild("test_confirm_child", "테스트 아동", "01011112222", "닉네임테스트", true);
             Owner savedOwner = createTestOwner("test_confirm_owner", "테스트 사업자", "01033334444", "새싹", "3334567890");
@@ -363,7 +363,7 @@ class ReservationCommandServiceTest {
 
         @Test
         @DisplayName("예약 완료 처리 성공 - CONFIRMED → COMPLETED")
-        public void shouldCompleteReservation() {
+        void shouldCompleteReservation() {
             // given
             Child savedChild = createTestChild("test_child3", "테스트 아동3", "01011112222","닉네임테스트", true);
 
@@ -403,7 +403,7 @@ class ReservationCommandServiceTest {
 
         @Test
         @DisplayName("예약 상태 변경 성공")        
-        public void shouldChangeReservationStatus() {
+        void shouldChangeReservationStatus() {
             // given
             Child savedChild = createTestChild("test_child4", "테스트 아동4", "01033334444", "닉네임테스트", true);
 

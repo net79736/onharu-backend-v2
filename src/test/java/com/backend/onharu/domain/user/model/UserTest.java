@@ -159,7 +159,7 @@ class UserTest {
 
         @Test
         @DisplayName("LOCKED 상태를 가진 사용자 계정 검증시 예외 발생")
-        public void verifyStatus_fail_whenStatusTypeIsLOCKED() {
+        void verifyStatus_fail_whenStatusTypeIsLOCKED() {
             // GIVEN
             User lockedUser = User.builder()
                     .loginId("test12345@test.com")
@@ -176,7 +176,7 @@ class UserTest {
 
         @Test
         @DisplayName("BLOCKED 상태를 가진 사용자 계정 검증시 예외 발생")
-        public void verifyStatus_fail_whenStatusTypeIsBLOCKED() {
+        void verifyStatus_fail_whenStatusTypeIsBLOCKED() {
             // GIVEN
             User blockedUser = User.builder()
                     .loginId("test12346@test.com")

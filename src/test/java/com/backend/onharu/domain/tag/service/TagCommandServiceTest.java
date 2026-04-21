@@ -45,7 +45,7 @@ class TagCommandServiceTest {
     private StoreJpaRepository storeJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
         // StoreTag가 Tag를 참조하므로, Store를 먼저 삭제하면 StoreTag도 함께 삭제됨
         reservationJpaRepository.deleteAll();
@@ -61,7 +61,7 @@ class TagCommandServiceTest {
         @Test
         @DisplayName("태그 생성 성공")
         @Rollback(value = false)
-        public void shouldCreateTag() {
+        void shouldCreateTag() {
             // given
             String tagName = "커피";
 
@@ -90,7 +90,7 @@ class TagCommandServiceTest {
         @Test
         @DisplayName("태그 수정 성공")
         @Rollback(value = false)
-        public void shouldUpdateTag() {
+        void shouldUpdateTag() {
             // given
             Tag savedTag = tagJpaRepository.save(
                 Tag.builder()
@@ -124,7 +124,7 @@ class TagCommandServiceTest {
         @Test
         @DisplayName("태그 삭제 성공")
         @Rollback(value = false)
-        public void shouldDeleteTag() {
+        void shouldDeleteTag() {
             // given
             Tag savedTag = tagJpaRepository.save(
                 Tag.builder()

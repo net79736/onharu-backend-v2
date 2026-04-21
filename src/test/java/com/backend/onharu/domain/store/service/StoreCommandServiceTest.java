@@ -110,7 +110,7 @@ class StoreCommandServiceTest {
     private UserOAuthJpaRepository userOAuthJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         chatMessageJpaRepository.deleteAll();
         chatParticipantJpaRepository.deleteAll();
         chatRoomJpaRepository.deleteAll();
@@ -189,7 +189,7 @@ class StoreCommandServiceTest {
         @Test
         @DisplayName("가게 생성 성공")
         @Rollback(value = false)
-        public void shouldCreateStore() {
+        void shouldCreateStore() {
             // given
             Owner savedOwner = createTestOwner("test_owner", "테스트 사업자", "01012345678", "새싹", "1234567890");
             Category category = createTestCategory("식당");
@@ -246,7 +246,7 @@ class StoreCommandServiceTest {
         @Test
         @DisplayName("가게 정보 수정 성공")
         @Rollback(value = false)
-        public void shouldUpdateStore() {
+        void shouldUpdateStore() {
             // given
             Owner savedOwner = createTestOwner("test_owner2", "테스트 사업자2", "01087654321", "새싹", "0987654321");
             Category category1 = createTestCategory("식당");
@@ -310,7 +310,7 @@ class StoreCommandServiceTest {
         @Test
         @DisplayName("가게 영업 상태 변경 성공")
         @Rollback(value = false)
-        public void shouldChangeOpenStatus() {
+        void shouldChangeOpenStatus() {
             // given
             Owner savedOwner = createTestOwner("test_owner3", "테스트 사업자3", "01011112222", "새싹", "1111222233");
             Category category = createTestCategory("식당");

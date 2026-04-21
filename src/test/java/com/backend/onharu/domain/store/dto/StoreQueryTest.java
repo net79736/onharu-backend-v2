@@ -22,7 +22,7 @@ class StoreQueryTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateGetStoreByIdQuery() {
+        void shouldCreateGetStoreByIdQuery() {
             // given
             Long storeId = 1L;
 
@@ -40,7 +40,7 @@ class StoreQueryTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateSearchStoresQuery() {
+        void shouldCreateSearchStoresQuery() {
             // given
             Double latitude = 37.5665;
             Double longitude = 126.9780;
@@ -61,7 +61,7 @@ class StoreQueryTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateFindAllByOwnerIdQuery() {
+        void shouldCreateFindAllByOwnerIdQuery() {
             // given
             Long ownerId = 1L;
 
@@ -79,7 +79,7 @@ class StoreQueryTest {
 
         @Test
         @DisplayName("FindByOwnerIdQuery 생성 성공")
-        public void shouldCreateFindByOwnerIdQuery() {
+        void shouldCreateFindByOwnerIdQuery() {
             // given
             Long ownerId = 1L;
 
@@ -97,7 +97,7 @@ class StoreQueryTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateFindAllByCategoryIdQuery() {
+        void shouldCreateFindAllByCategoryIdQuery() {
             // given
             Long categoryId = 1L;
 
@@ -115,7 +115,7 @@ class StoreQueryTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateFindByNameQuery() {
+        void shouldCreateFindByNameQuery() {
             // given
             String name = "테스트 가게";
 

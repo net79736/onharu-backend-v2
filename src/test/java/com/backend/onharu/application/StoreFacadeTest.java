@@ -126,7 +126,7 @@ class StoreFacadeTest {
     private UserOAuthJpaRepository userOAuthJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // 전체 테스트 스위트 공유 DB에서 남은 FK 때문에 다른 테스트 데이터가 있으면 store 단독 deleteAll 이 실패할 수 있음.
         // OwnerFacadeTest / ReservationCommandServiceTest 등과 동일한 자식 → 부모 순서로 정리.
         chatMessageJpaRepository.deleteAll();
@@ -254,7 +254,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("가게 단건 조회 성공")
         @Rollback(value = false)
-        public void shouldGetStore() {
+        void shouldGetStore() {
             // given
             Owner owner = createTestOwner("test_owner_get_store", "테스트 사업자", "01012345678", "새싹", "1234567890");
             Category category = createTestCategory("식당");
@@ -283,7 +283,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("가게 목록 조회 성공")
         @Rollback(value = false)
-        public void shouldGetStores() {
+        void shouldGetStores() {
             // given
             Owner owner = createTestOwner("test_owner_get_stores", "테스트 사업자", "01012345678", "새싹", "1234567890");
             Category category = createTestCategory("식당");
@@ -307,7 +307,7 @@ class StoreFacadeTest {
 
         @Test
         @DisplayName("가게가 없을 때 빈 목록 반환")
-        public void shouldReturnEmptyListWhenNoStores() {
+        void shouldReturnEmptyListWhenNoStores() {
             // given
             Owner owner = createTestOwner("test_owner_empty_stores", "테스트 사업자", "01012345678", "새싹2", "1234567890");
             Pageable pageable = Pageable.ofSize(10);
@@ -328,7 +328,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("위도/경도 있을 때 - 위치 기반 검색으로 반경 내 가게만 조회")
         @Transactional
-        public void shouldSearchStoresWithLocation() {
+        void shouldSearchStoresWithLocation() {
             // given: 서울(37.5665, 126.9780) 근처에 가게 2개, 부산(35.1796, 129.0756)에 가게 1개
             Owner owner = createTestOwner("test_owner_search_loc", "테스트 사업자", "01012345678", "새싹2", "1234567890");
             Category category = createTestCategory("식당");
@@ -356,7 +356,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("위도/경도 없을 때 - 전체 가게 목록 조회")
         @Transactional
-        public void shouldSearchStoresWithoutLocation() {
+        void shouldSearchStoresWithoutLocation() {
             // given
             Owner owner = createTestOwner("test_owner_search_no_loc", "테스트 사업자", "01012345678", "새싹3", "1234567890");
             Category category = createTestCategory("식당");
@@ -380,7 +380,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("키워드 있을 때 - 가게 이름으로 검색")
         @Transactional
-        public void shouldSearchStoresByStoreName() {
+        void shouldSearchStoresByStoreName() {
             // given: 이름에 "스페셜커피"가 포함된 가게만 생성하여 키워드 검색 동작 검증
             Owner owner = createTestOwner("test_owner_search_keyword", "테스트 사업자", "01012345678", "새싹4", "1234567890");
             Category category = createTestCategory("식당");
@@ -402,7 +402,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("키워드 있을 때 - 해시태그(태그)로 검색")
         @Transactional
-        public void shouldSearchStoresByHashtag() {
+        void shouldSearchStoresByHashtag() {
             // given: 태그 "브런치스페셜"이 있는 가게만 생성하여 해시태그 검색 동작 검증
             Owner owner = createTestOwner("test_owner_search_hashtag", "테스트 사업자", "01012345678", "새싹5", "1234567890");
             Category category = createTestCategory("식당");
@@ -425,7 +425,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("키워드 없을 때 - 전체 가게 목록 조회")
         @Transactional
-        public void shouldSearchStoresWithoutKeyword() {
+        void shouldSearchStoresWithoutKeyword() {
             // given
             Owner owner = createTestOwner("test_owner_search_no_keyword", "테스트 사업자", "01012345678", "새싹6", "1234567890");
             Category category = createTestCategory("식당");
@@ -449,7 +449,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("sortField=favoriteCount - tie 시 페이지 중복 없이 조회")
         @Transactional
-        public void shouldNotReturnDuplicatedStoresBetweenPagesWhenSortingFavoriteCountTie() {
+        void shouldNotReturnDuplicatedStoresBetweenPagesWhenSortingFavoriteCountTie() {
             // given: 모든 가게의 favoriteCount가 동일한 상황 (favorites 없음 → 0)
             Owner owner = createTestOwner(
                     "test_owner_search_favorite_tie",
@@ -508,7 +508,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("위도/경도 + 키워드 동시 조건 - 위치 내에서 키워드 필터링")
         @Transactional
-        public void shouldSearchStoresWithLocationAndKeyword() {
+        void shouldSearchStoresWithLocationAndKeyword() {
             // given: 같은 반경 내에 "커피" 가게 1개, "식당" 가게 1개
             Owner owner = createTestOwner("test_owner_search_both", "테스트 사업자", "01012345678", "새싹7", "1234567890");
             Category category = createTestCategory("식당");
@@ -535,7 +535,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("가게 등록 성공")
         @Rollback(value = false)
-        public void shouldCreateStore() {
+        void shouldCreateStore() {
             // given
             String uniqueLoginId = "test_owner_create_" + UUID.randomUUID().toString().substring(0, 8);
             Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", "새싹8", "1234567890");
@@ -580,7 +580,7 @@ class StoreFacadeTest {
         @DisplayName("가게 등록 성공 - 태그와 함께 생성")
         @Transactional
         @Rollback(value = false)
-        public void shouldCreateStoreWithTags() {
+        void shouldCreateStoreWithTags() {
             // given
             String uniqueLoginId = "test_owner_tags_" + UUID.randomUUID().toString().substring(0, 8);
             Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", "새싹9", "1234567890");
@@ -636,7 +636,7 @@ class StoreFacadeTest {
         @DisplayName("가게 등록 성공 - 기존 태그 재사용")
         @Transactional
         @Rollback(value = false)
-        public void shouldCreateStoreWithExistingTags() {
+        void shouldCreateStoreWithExistingTags() {
             // given
             String uniqueLoginId = "test_owner_reuse_" + UUID.randomUUID().toString().substring(0, 8);
             Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", "새싹10", "1234567890");
@@ -711,7 +711,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("가게 정보 수정 성공")
         @Transactional
-        public void shouldUpdateStore() {
+        void shouldUpdateStore() {
             // given
             String uniqueLoginId = "owner_" + UUID.randomUUID().toString().substring(0, 8);
             Owner owner = createTestOwner(uniqueLoginId, "테스트 사업자", "01012345678", "새싹11", "1234567890");
@@ -757,7 +757,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("다른 사업자의 가게 수정 시 예외 발생")
         @Transactional
-        public void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
+        void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
             // given
             String uniqueLoginId1 = "owner_" + UUID.randomUUID().toString().substring(0, 8);
             String uniqueLoginId2 = "owner_" + UUID.randomUUID().toString().substring(0, 8);
@@ -799,7 +799,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("가게 카테고리 수정 성공")
         @Transactional
-        public void shouldUpdateCategory() {
+        void shouldUpdateCategory() {
             // given
             String uniqueLoginId1 = "owner_" + UUID.randomUUID().toString().substring(0, 8);
             Owner owner = createTestOwner(uniqueLoginId1, "테스트 사업자", "01012345678", "새싹14", "1234567890");
@@ -824,7 +824,7 @@ class StoreFacadeTest {
 
         @Test
         @DisplayName("다른 사업자의 가게 카테고리 수정 시 예외 발생")
-        public void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
+        void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
             // given
             String uniqueLoginId1 = "owner_" + UUID.randomUUID().toString().substring(0, 8);
             String uniqueLoginId2 = "owner_" + UUID.randomUUID().toString().substring(0, 8);
@@ -851,7 +851,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("가게 삭제 성공")
         @Rollback(value = false)
-        public void shouldDeleteStore() {
+        void shouldDeleteStore() {
             // given
             Owner owner = createTestOwner("test_owner_delete_store", "테스트 사업자", "01012345678", "새싹17", "1234567890");
             Category category = createTestCategory("식당");
@@ -870,7 +870,7 @@ class StoreFacadeTest {
 
         @Test
         @DisplayName("다른 사업자의 가게 삭제 시 예외 발생")
-        public void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
+        void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
             // given
             Owner owner1 = createTestOwner("test_owner1_delete", "테스트 사업자1", "01012345678", "새싹18", "1234567890");
             Owner owner2 = createTestOwner("test_owner2_delete", "테스트 사업자2", "01087654321", "새싹19", "2234567890");
@@ -894,7 +894,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("가게 영업 상태 변경 성공 - 영업 중으로 변경")
         @Rollback(value = false)
-        public void shouldChangeOpenStatusToOpen() {
+        void shouldChangeOpenStatusToOpen() {
             // given
             Owner owner = createTestOwner("test_owner_change_status", "테스트 사업자", "01012345678", "새싹20", "1234567890");
             Category category = createTestCategory("식당");
@@ -919,7 +919,7 @@ class StoreFacadeTest {
         @Test
         @DisplayName("가게 영업 상태 변경 성공 - 영업 종료로 변경")
         @Rollback(value = false)
-        public void shouldChangeOpenStatusToClosed() {
+        void shouldChangeOpenStatusToClosed() {
             // given
             Owner owner = createTestOwner("test_owner_change_status_closed", "테스트 사업자", "01012345678", "새싹21", "1234567890");
             Category category = createTestCategory("식당");
@@ -943,7 +943,7 @@ class StoreFacadeTest {
 
         @Test
         @DisplayName("다른 사업자의 가게 영업 상태 변경 시 예외 발생")
-        public void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
+        void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
             // given
             Owner owner1 = createTestOwner("test_owner1_status", "테스트 사업자1", "01012345678", "새싹22", "1234567890");
             Owner owner2 = createTestOwner("test_owner2_status", "테스트 사업자2", "01087654321", "새싹23", "2234567890");

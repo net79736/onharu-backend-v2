@@ -107,7 +107,7 @@ class UserFacadeTest {
     private UserOAuthJpaRepository userOAuthJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // 다른 통합 테스트가 남긴 데이터 때문에 FK 위반이 나지 않도록, 연관 테이블부터 삭제
         chatMessageJpaRepository.deleteAll();
         chatParticipantJpaRepository.deleteAll();
@@ -137,7 +137,7 @@ class UserFacadeTest {
         @Test
         @DisplayName("아동 회원가입 성공")
         @Rollback(value = false)
-        public void shouldSignUpChild() {
+        void shouldSignUpChild() {
 
             // given
             SignUpChildCommand command = new SignUpChildCommand(
@@ -178,7 +178,7 @@ class UserFacadeTest {
 
         @Test
         @DisplayName("아동 회원가입 실패 - 로그인 ID 중복")
-        public void shouldThrowExceptionWhenLoginIdAlreadyExists() {
+        void shouldThrowExceptionWhenLoginIdAlreadyExists() {
             // given
             userJpaRepository.save(
                 User.builder()
@@ -218,7 +218,7 @@ class UserFacadeTest {
 
         @Test
         @DisplayName("사업자 회원가입 성공")
-        public void shouldSignUpOwner() {
+        void shouldSignUpOwner() {
             // given
             // 기본 등급 저장
             levelJpaRepository.save(
@@ -267,7 +267,7 @@ class UserFacadeTest {
 
         @Test
         @DisplayName("사업자 회원가입 실패 - 로그인 ID 중복")
-        public void shouldThrowExceptionWhenLoginIdAlreadyExists() {
+        void shouldThrowExceptionWhenLoginIdAlreadyExists() {
             // given
             // 기본 등급 저장
             levelJpaRepository.save(

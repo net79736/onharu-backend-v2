@@ -74,7 +74,7 @@ class StoreTagCommandServiceTest {
     private LevelJpaRepository levelJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
         reservationJpaRepository.deleteAll();
         storeScheduleJpaRepository.deleteAll();
@@ -157,7 +157,7 @@ class StoreTagCommandServiceTest {
         @DisplayName("StoreTag 추가 성공 - Store에 Tag 추가")
         @Transactional
         @Rollback(value = false)
-        public void shouldAddStoreTag() {
+        void shouldAddStoreTag() {
             // given
             String uniqueLoginId = "test_owner_tag_" + System.currentTimeMillis();
             Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 태그", "01012345678", "비기너");
@@ -204,7 +204,7 @@ class StoreTagCommandServiceTest {
         @DisplayName("StoreTag 제거 성공 - Store에서 Tag 제거")
         @Transactional
         @Rollback(value = false)
-        public void shouldRemoveStoreTag() {
+        void shouldRemoveStoreTag() {
             // given
             String uniqueLoginId = "test_owner_remove_" + System.currentTimeMillis();
             Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 제거", "01087654321", "새싹");
@@ -259,7 +259,7 @@ class StoreTagCommandServiceTest {
         @DisplayName("OrphanRemoval 동작 확인 - Store 삭제 시 StoreTag도 자동 삭제")
         @Transactional
         @Rollback(value = false)
-        public void shouldDeleteStoreTagsWhenStoreIsDeleted() {
+        void shouldDeleteStoreTagsWhenStoreIsDeleted() {
             // given
             String uniqueLoginId = "test_owner_orphan_" + System.currentTimeMillis();
             Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 고아", "01011112222", "새싹4");
@@ -325,7 +325,7 @@ class StoreTagCommandServiceTest {
         @DisplayName("OrphanRemoval 동작 확인 - Store에서 StoreTag 리스트를 비우면 StoreTag 삭제")
         @Transactional
         @Rollback(value = false)
-        public void shouldDeleteStoreTagsWhenListIsCleared() {
+        void shouldDeleteStoreTagsWhenListIsCleared() {
             // given
             String uniqueLoginId = "test_owner_clear_" + System.currentTimeMillis();
             Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 클리어", "01033334444", "비기너");

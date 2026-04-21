@@ -67,7 +67,7 @@ class StoreScheduleCommandServiceTest {
     private LevelJpaRepository levelJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         storeScheduleJpaRepository.deleteAll();
         storeJpaRepository.deleteAll();
         categoryJpaRepository.deleteAll();
@@ -149,7 +149,7 @@ class StoreScheduleCommandServiceTest {
         @Test
         @DisplayName("가게 일정 생성 성공")
         @Rollback(value = false)
-        public void shouldCreateStoreSchedule() {
+        void shouldCreateStoreSchedule() {
             // given
             Owner savedOwner = createTestOwner("test_owner_schedule", "테스트 사업자 일정", "01012345678", "새싹", "1234567890");
             Category category = createTestCategory("식당");
@@ -207,7 +207,7 @@ class StoreScheduleCommandServiceTest {
         @Test
         @DisplayName("가게 일정 수정 성공")
         @Rollback(value = false)
-        public void shouldUpdateStoreSchedule() {
+        void shouldUpdateStoreSchedule() {
             // given
             Owner savedOwner = createTestOwner("test_owner_update", "테스트 사업자 수정", "01087654321", "새싹", "0987654321");
             Category category = createTestCategory("식당");
@@ -263,7 +263,7 @@ class StoreScheduleCommandServiceTest {
         @Test
         @DisplayName("가게 일정 삭제 성공")
         @Rollback(value = false)
-        public void shouldDeleteStoreSchedule() {
+        void shouldDeleteStoreSchedule() {
             // given
             Owner savedOwner = createTestOwner("test_owner_delete", "테스트 사업자 삭제", "01011112222", "새싹", "1111222233");
             Category category = createTestCategory("식당");

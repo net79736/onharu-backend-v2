@@ -22,7 +22,7 @@ class ReservationCommandTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateReservationCommand() {
+        void shouldCreateReservationCommand() {
             // given
             Long childId = 855L;
             Long storeScheduleId = 1L;
@@ -46,7 +46,7 @@ class ReservationCommandTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateCancelReservationCommand() {
+        void shouldCreateCancelReservationCommand() {
             // given
             Long id = 1L;
             String cancelReason = "일정 변경";
@@ -67,7 +67,7 @@ class ReservationCommandTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateCompleteReservationCommand() {
+        void shouldCreateCompleteReservationCommand() {
             // given
             Long id = 1L;
 
@@ -85,7 +85,7 @@ class ReservationCommandTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateChangeReservationStatusCommand() {
+        void shouldCreateChangeReservationStatusCommand() {
             // given
             Long id = 1L;
             ReservationType status = ReservationType.COMPLETED;

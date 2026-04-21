@@ -61,7 +61,7 @@ class StoreScheduleQueryServiceTest {
     private LevelJpaRepository levelJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         storeScheduleJpaRepository.deleteAll();
         storeJpaRepository.deleteAll();
         categoryJpaRepository.deleteAll();
@@ -142,7 +142,7 @@ class StoreScheduleQueryServiceTest {
         @Test
         @DisplayName("조회 성공")
         @Rollback(value = false)
-        public void shouldGetStoreScheduleById() {
+        void shouldGetStoreScheduleById() {
             // given
             Owner savedOwner = createTestOwner("test_owner_query_schedule", "테스트 사업자 조회 일정", "01055556666", "새싹", "5555666677");
             Category category = createTestCategory("식당");
@@ -188,7 +188,7 @@ class StoreScheduleQueryServiceTest {
         @Test
         @DisplayName("조회 성공 - 가게의 일정 목록 조회")
         @Rollback(value = false)
-        public void shouldGetStoreSchedulesByStoreId() {
+        void shouldGetStoreSchedulesByStoreId() {
             // given
             Owner savedOwner = createTestOwner(
                 "test_owner_list_schedule", 
@@ -226,7 +226,7 @@ class StoreScheduleQueryServiceTest {
         @Test
         @DisplayName("조회 성공 - 특정 날짜의 일정 목록 조회")
         @Rollback(value = false)
-        public void shouldGetStoreSchedulesByBusinessDay() {
+        void shouldGetStoreSchedulesByBusinessDay() {
             // given
             Owner savedOwner1 = createTestOwner("test_owner_date1", "테스트 사업자 날짜1", "01011111111", "비기너", "1111111111");
             Owner savedOwner2 = createTestOwner("test_owner_date2", "테스트 사업자 날짜2", "01022222222", "새싹1", "2222222222");

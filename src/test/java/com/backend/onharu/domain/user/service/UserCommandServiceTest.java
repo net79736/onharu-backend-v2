@@ -53,7 +53,7 @@ class UserCommandServiceTest {
     private StoreScheduleJpaRepository storeScheduleJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         storeScheduleJpaRepository.deleteAll();
         storeJpaRepository.deleteAll();
         ownerJpaRepository.deleteAll();
@@ -68,7 +68,7 @@ class UserCommandServiceTest {
         @Test
         @DisplayName("아동 회원가입 성공")
         @Rollback(value = false)
-        public void shouldSignUpChild() {
+        void shouldSignUpChild() {
             // given
             SignUpChildCommand command = new SignUpChildCommand(
                     "test_child",
@@ -107,7 +107,7 @@ class UserCommandServiceTest {
 
         @Test
         @DisplayName("아동 회원가입 실패 - 로그인 ID 중복")
-        public void shouldThrowExceptionWhenLoginIdAlreadyExists() {
+        void shouldThrowExceptionWhenLoginIdAlreadyExists() {
             // given
             userJpaRepository.save(
                     User.builder()
@@ -149,7 +149,7 @@ class UserCommandServiceTest {
         @Test
         @DisplayName("사업자 회원가입 성공")
         @Rollback(value = false)
-        public void shouldSignUpOwner() {
+        void shouldSignUpOwner() {
             // given
             SignUpOwnerCommand command = new SignUpOwnerCommand(
                     "test_owner",
@@ -187,7 +187,7 @@ class UserCommandServiceTest {
         @Test
         @DisplayName("사용자 생성 성공")
         @Rollback(value = false)
-        public void shouldCreateUser() {
+        void shouldCreateUser() {
             // given
             CreateUserCommand command = new CreateUserCommand(
                     "test_user",
