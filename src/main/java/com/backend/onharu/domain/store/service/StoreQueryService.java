@@ -79,7 +79,7 @@ public class StoreQueryService {
      *
      * @param query 가게 ID
      * @return 조회된 가게 상세 정보
-     * @return
+     * @deprecated {@link #getStoreDistanceByIdAndLocation(GetStoreQuery)}를 조합해서 사용하세요. 추후 제거됩니다.
      */
     @Deprecated(forRemoval = true)
     public StoreWithFavoriteCount getStoreDetailByIdAndLocation(GetStoreQuery query) {
