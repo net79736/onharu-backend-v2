@@ -82,10 +82,8 @@ public class StoreViewCountStrategy implements CountStrategy {
             storeCountJpaRepository.save(sc); // 저장
             storeCountJpaRepository.setViewCountIfGreater(id, count.viewCount()); // 조회수 Redis 값 반영
             storeCountJpaRepository.setFavoriteCount(id, Math.max(0L, count.favoriteCount())); // 좋아요 수 Redis 값 반영
-        } catch (DataIntegrityViolationException ignored) {
-            // 동시 생성/이미 존재 등: 무시
-        } catch (EntityNotFoundException ignored) {
-            // store 자체가 없으면 무시
+        } catch (DataIntegrityViolationException | EntityNotFoundException ignored) {
+            // 동시 생성/이미 존재, 또는 store 자체가 없는 경우: 무시
         }
     }
 }
