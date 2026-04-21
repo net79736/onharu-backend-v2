@@ -1,6 +1,5 @@
 package com.backend.onharu.domain.child.service;
 
-import com.backend.onharu.domain.child.dto.ChildCommand;
 import com.backend.onharu.domain.child.dto.ChildCommand.CreateChildCommand;
 import com.backend.onharu.domain.child.model.Child;
 import com.backend.onharu.domain.child.repository.ChildRepository;
