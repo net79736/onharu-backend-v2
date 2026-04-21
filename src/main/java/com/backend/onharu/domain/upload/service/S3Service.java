@@ -68,7 +68,7 @@ public class S3Service implements StorageService {
         verifyMimeType(contentType, fileName);
 
         // 폴더 (image or video) 설정
-        String feature = contentType.split("/")[0].toLowerCase().equals("image") ? "image" : "video";
+        String feature = contentType.split("/")[0].equalsIgnoreCase("image") ? "image" : "video";
 
         // 파일명은 고유하도록 UUID 설정
         String uniqueFileName = feature + "/" + UUID.randomUUID() + "-" + fileName;
