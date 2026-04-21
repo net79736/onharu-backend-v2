@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,6 +58,7 @@ import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
 import com.backend.onharu.infra.db.user.UserOAuthJpaRepository;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -70,6 +70,12 @@ class StoreFacadeTest {
 
     @Autowired
     private StoreQueryService storeQueryService;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private StoreJpaRepository storeJpaRepository;
@@ -127,26 +133,9 @@ class StoreFacadeTest {
 
     @BeforeEach
     void setUp() {
-        // 전체 테스트 스위트 공유 DB에서 남은 FK 때문에 다른 테스트 데이터가 있으면 store 단독 deleteAll 이 실패할 수 있음.
-        // OwnerFacadeTest / ReservationCommandServiceTest 등과 동일한 자식 → 부모 순서로 정리.
-        chatMessageJpaRepository.deleteAll();
-        chatParticipantJpaRepository.deleteAll();
-        chatRoomJpaRepository.deleteAll();
-        notificationHistoryJpaRepository.deleteAll();
-        notificationJpaRepository.deleteAll();
-        reviewJpaRepository.deleteAll();
-        favoriteJpaRepository.deleteAll();
-        reservationJpaRepository.deleteAll();
-        fileJpaRepository.deleteAll();
-        storeScheduleJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll();
-        tagJpaRepository.deleteAll();
-        categoryJpaRepository.deleteAll();
-        childJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        userOAuthJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-        levelJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     /**
@@ -253,7 +242,6 @@ class StoreFacadeTest {
 
         @Test
         @DisplayName("가게 단건 조회 성공")
-        @Rollback(value = false)
         void shouldGetStore() {
             // given
             Owner owner = createTestOwner("test_owner_get_store", "테스트 사업자", "01012345678", "새싹", "1234567890");
@@ -282,7 +270,6 @@ class StoreFacadeTest {
 
         @Test
         @DisplayName("가게 목록 조회 성공")
-        @Rollback(value = false)
         void shouldGetStores() {
             // given
             Owner owner = createTestOwner("test_owner_get_stores", "테스트 사업자", "01012345678", "새싹", "1234567890");
@@ -534,7 +521,6 @@ class StoreFacadeTest {
 
         @Test
         @DisplayName("가게 등록 성공")
-        @Rollback(value = false)
         void shouldCreateStore() {
             // given
             String uniqueLoginId = "test_owner_create_" + UUID.randomUUID().toString().substring(0, 8);
@@ -579,7 +565,6 @@ class StoreFacadeTest {
         @Test
         @DisplayName("가게 등록 성공 - 태그와 함께 생성")
         @Transactional
-        @Rollback(value = false)
         void shouldCreateStoreWithTags() {
             // given
             String uniqueLoginId = "test_owner_tags_" + UUID.randomUUID().toString().substring(0, 8);
@@ -635,7 +620,6 @@ class StoreFacadeTest {
         @Test
         @DisplayName("가게 등록 성공 - 기존 태그 재사용")
         @Transactional
-        @Rollback(value = false)
         void shouldCreateStoreWithExistingTags() {
             // given
             String uniqueLoginId = "test_owner_reuse_" + UUID.randomUUID().toString().substring(0, 8);
@@ -850,7 +834,6 @@ class StoreFacadeTest {
 
         @Test
         @DisplayName("가게 삭제 성공")
-        @Rollback(value = false)
         void shouldDeleteStore() {
             // given
             Owner owner = createTestOwner("test_owner_delete_store", "테스트 사업자", "01012345678", "새싹17", "1234567890");
@@ -893,7 +876,6 @@ class StoreFacadeTest {
 
         @Test
         @DisplayName("가게 영업 상태 변경 성공 - 영업 중으로 변경")
-        @Rollback(value = false)
         void shouldChangeOpenStatusToOpen() {
             // given
             Owner owner = createTestOwner("test_owner_change_status", "테스트 사업자", "01012345678", "새싹20", "1234567890");
@@ -918,7 +900,6 @@ class StoreFacadeTest {
 
         @Test
         @DisplayName("가게 영업 상태 변경 성공 - 영업 종료로 변경")
-        @Rollback(value = false)
         void shouldChangeOpenStatusToClosed() {
             // given
             Owner owner = createTestOwner("test_owner_change_status_closed", "테스트 사업자", "01012345678", "새싹21", "1234567890");

@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.backend.onharu.domain.common.enums.AttachmentType;
@@ -22,6 +21,7 @@ import com.backend.onharu.domain.file.dto.FileQuery.ListByRefQuery;
 import com.backend.onharu.domain.file.model.File;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.infra.db.file.FileJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @DisplayName("FileQueryService 단위 테스트")
@@ -32,11 +32,19 @@ class FileQueryServiceTest {
     private FileQueryService fileQueryService;
 
     @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
+
+    @Autowired
     private FileJpaRepository fileJpaRepository;
 
     @BeforeEach
     void setUp() {
-        fileJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     @Nested
@@ -55,7 +63,6 @@ class FileQueryServiceTest {
 
         @Test
         @DisplayName("표시 순서(displayOrder) 오름차순으로 반환")
-        @Rollback(value = false)
         void shouldReturnFilesOrderedByDisplayOrder() {
             // given: displayOrder 역순으로 저장
             Long refId = 100L;
@@ -114,7 +121,6 @@ class FileQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공")
-        @Rollback(value = false)
         void shouldGetFileById() {
             // given
             File saved = fileJpaRepository.save(
@@ -160,7 +166,6 @@ class FileQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공")
-        @Rollback(value = false)
         void shouldGetFileByFileKey() {
             // given
             String fileKey = "image/unique-key.jpg";

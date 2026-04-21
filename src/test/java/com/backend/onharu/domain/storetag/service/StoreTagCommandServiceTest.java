@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +33,7 @@ import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -48,6 +48,12 @@ class StoreTagCommandServiceTest {
 
     @Autowired
     private TagRepository tagRepository;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private StoreJpaRepository storeJpaRepository;
@@ -75,15 +81,9 @@ class StoreTagCommandServiceTest {
 
     @BeforeEach
     void setUp() {
-        // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
-        reservationJpaRepository.deleteAll();
-        storeScheduleJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll();
-        tagJpaRepository.deleteAll();
-        categoryJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-        levelJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     /**
@@ -156,7 +156,6 @@ class StoreTagCommandServiceTest {
         @Test
         @DisplayName("StoreTag 추가 성공 - Store에 Tag 추가")
         @Transactional
-        @Rollback(value = false)
         void shouldAddStoreTag() {
             // given
             String uniqueLoginId = "test_owner_tag_" + System.currentTimeMillis();
@@ -203,7 +202,6 @@ class StoreTagCommandServiceTest {
         @Test
         @DisplayName("StoreTag 제거 성공 - Store에서 Tag 제거")
         @Transactional
-        @Rollback(value = false)
         void shouldRemoveStoreTag() {
             // given
             String uniqueLoginId = "test_owner_remove_" + System.currentTimeMillis();
@@ -258,7 +256,6 @@ class StoreTagCommandServiceTest {
         @Test
         @DisplayName("OrphanRemoval 동작 확인 - Store 삭제 시 StoreTag도 자동 삭제")
         @Transactional
-        @Rollback(value = false)
         void shouldDeleteStoreTagsWhenStoreIsDeleted() {
             // given
             String uniqueLoginId = "test_owner_orphan_" + System.currentTimeMillis();
@@ -324,7 +321,6 @@ class StoreTagCommandServiceTest {
         @Test
         @DisplayName("OrphanRemoval 동작 확인 - Store에서 StoreTag 리스트를 비우면 StoreTag 삭제")
         @Transactional
-        @Rollback(value = false)
         void shouldDeleteStoreTagsWhenListIsCleared() {
             // given
             String uniqueLoginId = "test_owner_clear_" + System.currentTimeMillis();

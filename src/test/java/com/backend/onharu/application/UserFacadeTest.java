@@ -11,7 +11,6 @@ import org.junit.jupiter.api.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.child.model.Child;
@@ -43,6 +42,7 @@ import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
 import com.backend.onharu.infra.db.user.UserOAuthJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @Transactional
 @SpringBootTest
@@ -51,6 +51,12 @@ class UserFacadeTest {
 
     @Autowired
     private UserFacade userFacade;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private UserJpaRepository userJpaRepository;
@@ -108,25 +114,9 @@ class UserFacadeTest {
 
     @BeforeEach
     void setUp() {
-        // 다른 통합 테스트가 남긴 데이터 때문에 FK 위반이 나지 않도록, 연관 테이블부터 삭제
-        chatMessageJpaRepository.deleteAll();
-        chatParticipantJpaRepository.deleteAll();
-        chatRoomJpaRepository.deleteAll();
-        notificationHistoryJpaRepository.deleteAll();
-        notificationJpaRepository.deleteAll();
-        reviewJpaRepository.deleteAll();
-        favoriteJpaRepository.deleteAll();
-        reservationJpaRepository.deleteAll();
-        fileJpaRepository.deleteAll();
-        storeScheduleJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll();
-        tagJpaRepository.deleteAll();
-        categoryJpaRepository.deleteAll();
-        childJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        userOAuthJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-        levelJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     @Nested
@@ -136,7 +126,6 @@ class UserFacadeTest {
 
         @Test
         @DisplayName("아동 회원가입 성공")
-        @Rollback(value = false)
         void shouldSignUpChild() {
 
             // given

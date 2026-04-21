@@ -10,14 +10,13 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-
 import com.backend.onharu.domain.common.enums.AttachmentType;
 import com.backend.onharu.domain.file.dto.FileCommand.ImageMetadata;
 import com.backend.onharu.domain.file.dto.FileQuery.ListByRefQuery;
 import com.backend.onharu.domain.file.model.File;
 import com.backend.onharu.domain.file.service.FileQueryService;
 import com.backend.onharu.infra.db.file.FileJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @DisplayName("FileFacade 단위 테스트")
@@ -30,11 +29,19 @@ class FileFacadeTest {
     private FileQueryService fileQueryService;
 
     @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
+
+    @Autowired
     private FileJpaRepository fileJpaRepository;
 
     @BeforeEach
     void setUp() {
-        fileJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     @Nested
@@ -65,7 +72,6 @@ class FileFacadeTest {
 
         @Test
         @DisplayName("이미지 목록 등록 성공 - displayOrder 순서대로 저장됨")
-        @Rollback(value = false)
         void shouldRegisterFilesInOrder() {
             // given
             Long refId = 100L;
@@ -93,7 +99,6 @@ class FileFacadeTest {
 
         @Test
         @DisplayName("기존 첨부 없을 때 새 목록 등록 - 등록만 수행")
-        @Rollback(value = false)
         void shouldRegisterWhenNoExistingFiles() {
             // given
             Long refId = 200L;
@@ -112,7 +117,6 @@ class FileFacadeTest {
 
         @Test
         @DisplayName("기존 첨부 삭제 후 새 목록으로 교체")
-        @Rollback(value = false)
         void shouldReplaceExistingFilesWithNewList() {
             // given: 기존 파일 1개 등록
             Long refId = 300L;
@@ -137,7 +141,6 @@ class FileFacadeTest {
 
         @Test
         @DisplayName("빈 목록으로 교체 시 기존만 삭제하고 등록 없음")
-        @Rollback(value = false)
         void shouldDeleteOnlyWhenReplacingWithEmptyList() {
             // given
             Long refId = 400L;

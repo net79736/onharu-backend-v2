@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.backend.onharu.domain.common.enums.ProviderType;
@@ -33,6 +32,7 @@ import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -41,6 +41,12 @@ class StoreScheduleQueryServiceTest {
 
     @Autowired
     private StoreScheduleQueryService storeScheduleQueryService;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private StoreScheduleJpaRepository storeScheduleJpaRepository;
@@ -62,12 +68,9 @@ class StoreScheduleQueryServiceTest {
 
     @BeforeEach
     void setUp() {
-        storeScheduleJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll();
-        categoryJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-        levelJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     /**
@@ -141,7 +144,6 @@ class StoreScheduleQueryServiceTest {
         
         @Test
         @DisplayName("조회 성공")
-        @Rollback(value = false)
         void shouldGetStoreScheduleById() {
             // given
             Owner savedOwner = createTestOwner("test_owner_query_schedule", "테스트 사업자 조회 일정", "01055556666", "새싹", "5555666677");
@@ -187,7 +189,6 @@ class StoreScheduleQueryServiceTest {
         
         @Test
         @DisplayName("조회 성공 - 가게의 일정 목록 조회")
-        @Rollback(value = false)
         void shouldGetStoreSchedulesByStoreId() {
             // given
             Owner savedOwner = createTestOwner(
@@ -225,7 +226,6 @@ class StoreScheduleQueryServiceTest {
         
         @Test
         @DisplayName("조회 성공 - 특정 날짜의 일정 목록 조회")
-        @Rollback(value = false)
         void shouldGetStoreSchedulesByBusinessDay() {
             // given
             Owner savedOwner1 = createTestOwner("test_owner_date1", "테스트 사업자 날짜1", "01011111111", "비기너", "1111111111");

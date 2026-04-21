@@ -36,6 +36,7 @@ import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 /**
  * StoreControllerImpl의 가게 목록 조회 API 테스트
@@ -50,6 +51,12 @@ class StoreControllerImplTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private StoreJpaRepository storeJpaRepository;
@@ -71,13 +78,9 @@ class StoreControllerImplTest {
 
     @BeforeEach
     void setUp() {
-        // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
-        fileJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll();
-        categoryJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-        levelJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     /**

@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.backend.onharu.domain.common.enums.AttachmentType;
@@ -20,6 +19,7 @@ import com.backend.onharu.domain.file.dto.FileQuery.GetByIdQuery;
 import com.backend.onharu.domain.file.model.File;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.infra.db.file.FileJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @DisplayName("FileCommandService 단위 테스트")
@@ -33,11 +33,19 @@ class FileCommandServiceTest {
     private FileQueryService fileQueryService;
 
     @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
+
+    @Autowired
     private FileJpaRepository fileJpaRepository;
 
     @BeforeEach
     void setUp() {
-        fileJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     @Nested
@@ -46,7 +54,6 @@ class FileCommandServiceTest {
 
         @Test
         @DisplayName("파일 메타데이터 등록 성공")
-        @Rollback(value = false)
         void shouldRegisterFile() {
             // given
             RegisterFileCommand command = new RegisterFileCommand(
@@ -82,7 +89,6 @@ class FileCommandServiceTest {
 
         @Test
         @DisplayName("displayOrder가 null이면 0으로 저장됨")
-        @Rollback(value = false)
         void shouldUseZeroWhenDisplayOrderIsNull() {
             // given
             RegisterFileCommand command = new RegisterFileCommand(
@@ -110,7 +116,6 @@ class FileCommandServiceTest {
 
         @Test
         @DisplayName("파일 삭제 성공")
-        @Rollback(value = false)
         void shouldDeleteFile() {
             // given
             File saved = fileJpaRepository.save(

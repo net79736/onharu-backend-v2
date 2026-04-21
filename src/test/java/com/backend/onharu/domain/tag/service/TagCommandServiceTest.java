@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.backend.onharu.domain.tag.dto.TagCommand.CreateTagCommand;
@@ -20,6 +19,7 @@ import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.tag.TagJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @DisplayName("TagCommandService 단위 테스트")
@@ -31,6 +31,12 @@ class TagCommandServiceTest {
 
     @Autowired
     private TagQueryService tagQueryService;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private TagJpaRepository tagJpaRepository;
@@ -46,12 +52,9 @@ class TagCommandServiceTest {
 
     @BeforeEach
     void setUp() {
-        // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
-        // StoreTag가 Tag를 참조하므로, Store를 먼저 삭제하면 StoreTag도 함께 삭제됨
-        reservationJpaRepository.deleteAll();
-        storeScheduleJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll(); // Store 삭제 시 StoreTag도 자동 삭제됨
-        tagJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     @Nested
@@ -60,7 +63,6 @@ class TagCommandServiceTest {
         
         @Test
         @DisplayName("태그 생성 성공")
-        @Rollback(value = false)
         void shouldCreateTag() {
             // given
             String tagName = "커피";
@@ -89,7 +91,6 @@ class TagCommandServiceTest {
         
         @Test
         @DisplayName("태그 수정 성공")
-        @Rollback(value = false)
         void shouldUpdateTag() {
             // given
             Tag savedTag = tagJpaRepository.save(
@@ -123,7 +124,6 @@ class TagCommandServiceTest {
         
         @Test
         @DisplayName("태그 삭제 성공")
-        @Rollback(value = false)
         void shouldDeleteTag() {
             // given
             Tag savedTag = tagJpaRepository.save(

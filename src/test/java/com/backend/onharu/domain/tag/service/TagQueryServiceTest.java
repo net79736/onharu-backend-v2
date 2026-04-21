@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.backend.onharu.domain.support.error.CoreException;
@@ -24,6 +23,7 @@ import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.tag.TagJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @DisplayName("TagQueryService 단위 테스트")
@@ -32,6 +32,12 @@ class TagQueryServiceTest {
 
     @Autowired
     private TagQueryService tagQueryService;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private TagJpaRepository tagJpaRepository;
@@ -47,12 +53,9 @@ class TagQueryServiceTest {
 
     @BeforeEach
     void setUp() {
-        // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
-        // StoreTag가 Tag를 참조하므로, Store를 먼저 삭제하면 StoreTag도 함께 삭제됨
-        reservationJpaRepository.deleteAll();
-        storeScheduleJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll(); // Store 삭제 시 StoreTag도 자동 삭제됨
-        tagJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     @Nested
@@ -77,7 +80,6 @@ class TagQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공")
-        @Rollback(value = false)
         void shouldGetTag() {
             // given
             Tag savedTag = tagJpaRepository.save(
@@ -107,7 +109,6 @@ class TagQueryServiceTest {
         
         @Test
         @DisplayName("조회 성공 - 태그 이름으로 검색")
-        @Rollback(value = false)
         void shouldGetTagsByName() {
             // given
             tagJpaRepository.save(
@@ -146,7 +147,6 @@ class TagQueryServiceTest {
 
         @Test
         @DisplayName("조회 실패 - 태그 이름으로 검색")
-        @Rollback(value = false)
         void shouldGetTagsByNameNotFound() {
             // given
             tagJpaRepository.save(
@@ -191,7 +191,6 @@ class TagQueryServiceTest {
         
         @Test
         @DisplayName("조회 성공 - ID 리스트로 태그 목록 조회")
-        @Rollback(value = false)
         void shouldGetTagsByIds() {
             // given
             List<Tag> savedTags = saveDummyTags();

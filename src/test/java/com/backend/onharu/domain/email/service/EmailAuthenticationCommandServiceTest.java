@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 import static com.backend.onharu.domain.email.dto.EmailAuthenticationCommand.CompleteEmailAuthenticationCommand;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,11 +28,19 @@ class EmailAuthenticationCommandServiceTest {
     private EmailAuthenticationCommandService emailAuthenticationCommandService;
 
     @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
+
+    @Autowired
     private EmailAuthenticationJpaRepository emailAuthenticationJpaRepository;
 
     @BeforeEach
     void setUp() {
-        emailAuthenticationJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     @Nested

@@ -23,6 +23,7 @@ import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.infra.db.notification.NotificationHistoryJpaRepository;
 import com.backend.onharu.infra.db.notification.NotificationJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -31,6 +32,12 @@ class NotificationFacadeTest {
 
     @Autowired
     private NotificationFacade notificationFacade;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private NotificationHistoryJpaRepository notificationHistoryJpaRepository;
@@ -43,9 +50,9 @@ class NotificationFacadeTest {
 
     @BeforeEach
     void setUp() {
-        notificationHistoryJpaRepository.deleteAll();
-        notificationJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     private User createTestUser(String loginIdSuffix) {

@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +34,7 @@ import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -46,6 +46,12 @@ class StoreTagQueryServiceTest {
 
     @Autowired
     private StoreQueryService storeQueryService;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private StoreJpaRepository storeJpaRepository;
@@ -73,15 +79,9 @@ class StoreTagQueryServiceTest {
 
     @BeforeEach
     void setUp() {
-        // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
-        reservationJpaRepository.deleteAll();
-        storeScheduleJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll();
-        tagJpaRepository.deleteAll();
-        categoryJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-        levelJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     /**
@@ -153,7 +153,6 @@ class StoreTagQueryServiceTest {
         @Test
         @DisplayName("조회 성공 - Store를 통해 StoreTag 목록 조회")
         @Transactional
-        @Rollback(value = false)
         void shouldGetStoreTags() {
             // given
             String uniqueLoginId = "test_owner_query_" + System.currentTimeMillis();
@@ -207,7 +206,6 @@ class StoreTagQueryServiceTest {
         @Test
         @DisplayName("조회 성공 - 태그가 없는 Store의 StoreTag 목록 조회")
         @Transactional
-        @Rollback(value = false)
         void shouldGetEmptyStoreTags() {
             // given
             String uniqueLoginId = "test_owner_empty_" + System.currentTimeMillis();
@@ -244,7 +242,6 @@ class StoreTagQueryServiceTest {
         @Test
         @DisplayName("조회 성공 - 여러 Store의 StoreTag 조회")
         @Transactional
-        @Rollback(value = false)
         void shouldGetStoreTagsFromMultipleStores() {
             // given
             long timestamp = System.currentTimeMillis();

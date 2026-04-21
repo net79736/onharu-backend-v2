@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.backend.onharu.domain.common.enums.ProviderType;
@@ -38,6 +37,7 @@ import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.db.store.CategoryJpaRepository;
 import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -46,6 +46,12 @@ class StoreQueryServiceTest {
 
     @Autowired
     private StoreQueryService storeQueryService;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private StoreJpaRepository storeJpaRepository;
@@ -64,11 +70,9 @@ class StoreQueryServiceTest {
 
     @BeforeEach
     void setUp() {
-        storeJpaRepository.deleteAll();
-        categoryJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-        levelJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     /**
@@ -144,7 +148,6 @@ class StoreQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공")
-        @Rollback(value = false)
         void shouldGetStore() {
             // given
             Owner savedOwner = createTestOwner("test_owner_query", "테스트 사업자 조회", "01055556666", "새싹", "5555666677");
@@ -189,7 +192,6 @@ class StoreQueryServiceTest {
         
         @Test
         @DisplayName("조회 성공 - 사업자의 가게 목록 조회")
-        @Rollback(value = false)
         void shouldGetStoresByOwnerId() {
             // given
             Owner savedOwner = createTestOwner("test_owner_list", "테스트 사업자 목록", "01077778888", "새싹", "7777888899");
@@ -223,7 +225,6 @@ class StoreQueryServiceTest {
         
         @Test
         @DisplayName("조회 성공 - 카테고리별 가게 목록 조회")
-        @Rollback(value = false)
         void shouldGetStoresByCategoryId() {
             // given
             Owner savedOwner1 = createTestOwner("test_owner_cat1", "테스트 사업자 카테고리1", "01011111111", "비기너", "1111111111");
@@ -288,7 +289,6 @@ class StoreQueryServiceTest {
         
         @Test
         @DisplayName("조회 성공 - 가게 이름으로 검색")
-        @Rollback(value = false)
         void shouldGetStoresByName() {
             // given
             Owner savedOwner = createTestOwner("test_owner_search", "테스트 사업자 검색", "01033333333", "비기너", "9999999990");

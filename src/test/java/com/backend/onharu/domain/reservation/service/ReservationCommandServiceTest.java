@@ -45,6 +45,7 @@ import com.backend.onharu.infra.db.store.StoreJpaRepository;
 import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @DisplayName("ReservationCommandService 단위 테스트")
@@ -56,6 +57,12 @@ class ReservationCommandServiceTest {
 
     @Autowired
     private ReservationQueryService reservationQueryService;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private ReservationJpaRepository reservationJpaRepository;
@@ -97,20 +104,9 @@ class ReservationCommandServiceTest {
 
     @BeforeEach
     void setUp() {
-        // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
-        notificationHistoryJpaRepository.deleteAll();
-        notificationJpaRepository.deleteAll();
-        reservationJpaRepository.deleteAll(); // reservations는 store_schedules를 참조
-        storeScheduleJpaRepository.deleteAll(); // store_schedules는 stores를 참조
-        fileJpaRepository.deleteAll(); // files는 stores를 참조하므로 stores 삭제 전에 삭제
-        favoriteJpaRepository.deleteAll(); // favorites는 stores를 참조하므로 stores 삭제 전에 삭제
-        storeJpaRepository.deleteAll(); // stores 삭제
-        tagJpaRepository.deleteAll(); // tags는 store_tags가 삭제된 후에 삭제 가능
-        categoryJpaRepository.deleteAll();
-        childJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-        levelJpaRepository.deleteAll(); // levels는 owners를 참조하므로 owners 삭제 후에 삭제
+
+        testDataHelper.cleanAll();
+
     }
 
     /**

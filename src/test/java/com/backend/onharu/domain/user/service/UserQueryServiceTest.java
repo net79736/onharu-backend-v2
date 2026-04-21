@@ -12,9 +12,9 @@ import com.backend.onharu.infra.db.user.UserJpaRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 import static com.backend.onharu.domain.user.dto.UserQuery.GetUserByNameAndPhoneQuery;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,11 +30,19 @@ class UserQueryServiceTest {
     private UserQueryService userQueryService;
 
     @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
+
+    @Autowired
     private UserJpaRepository userJpaRepository;
 
     @BeforeEach
     void setUp() {
-        userJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     @Nested
@@ -60,7 +68,6 @@ class UserQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공")
-        @Rollback(value = false)
         void shouldGetUser() {
             // given
             User savedUser = userJpaRepository.save(
@@ -101,7 +108,6 @@ class UserQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공 - 로그인 ID로 사용자 조회")
-        @Rollback(value = false)
         void shouldGetUserByLoginId() {
             // given
             userJpaRepository.save(

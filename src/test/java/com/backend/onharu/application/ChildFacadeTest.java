@@ -18,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.backend.onharu.domain.child.model.Child;
@@ -52,6 +51,7 @@ import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
 import com.backend.onharu.interfaces.api.common.util.PageableUtil;
 import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -60,6 +60,12 @@ class ChildFacadeTest {
 
     @Autowired
     private ChildFacade childFacade;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private ChildJpaRepository childJpaRepository;
@@ -96,17 +102,9 @@ class ChildFacadeTest {
 
     @BeforeEach
     void setUp() {
-        // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
-        notificationHistoryJpaRepository.deleteAll();
-        notificationJpaRepository.deleteAll();
-        favoriteJpaRepository.deleteAll();
-        reservationJpaRepository.deleteAll();
-        storeScheduleJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll();
-        categoryJpaRepository.deleteAll();
-        childJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     /**
@@ -236,7 +234,6 @@ class ChildFacadeTest {
         
         @Test
         @DisplayName("예약 생성 성공")
-        @Rollback(value = false)
         void shouldCreateReservation() {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
@@ -379,7 +376,6 @@ class ChildFacadeTest {
         
         @Test
         @DisplayName("예약 취소 성공")
-        @Rollback(value = false)
         void shouldCancelReservation() {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
@@ -463,7 +459,6 @@ class ChildFacadeTest {
         
         @Test
         @DisplayName("내가 신청한 예약 목록 조회 성공")
-        @Rollback(value = false)
         void shouldGetMyBookings() {
             // given
             Child child1 = createTestChild("test_child1", "테스트 아동1", "01012345678");
@@ -552,7 +547,6 @@ class ChildFacadeTest {
         
         @Test
         @DisplayName("내가 신청한 특정 예약의 상세 정보 조회 성공")
-        @Rollback(value = false)
         void shouldGetMyBooking() {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
@@ -616,7 +610,6 @@ class ChildFacadeTest {
 
         @Test
         @DisplayName("동일 스케줄에 취소+재예약 시 각 아동이 자기 예약만 조회")
-        @Rollback(value = false)
         void shouldGetOwnReservationsWhenSameScheduleHasCanceledAndWaiting() {
             // given: schedule에 child1 CANCELED → child2 WAITING (취소 후 재예약)
             Child child1 = createTestChild("test_child_canceled", "취소한 아동", "01011111111");

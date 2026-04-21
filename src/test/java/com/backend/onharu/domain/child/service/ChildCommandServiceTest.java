@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 import static com.backend.onharu.domain.child.dto.ChildCommand.CreateChildCommand;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,6 +30,12 @@ class ChildCommandServiceTest {
     private ChildCommandService childCommandService;
 
     @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
+
+    @Autowired
     private ChildJpaRepository childJpaRepository;
 
     @Autowired
@@ -36,8 +43,9 @@ class ChildCommandServiceTest {
 
     @BeforeEach
     public void setUp() {
-        childJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     /**

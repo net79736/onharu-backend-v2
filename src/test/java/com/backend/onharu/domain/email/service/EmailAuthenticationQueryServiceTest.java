@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 import static com.backend.onharu.domain.email.dto.EmailAuthenticationQuery.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,11 +30,19 @@ class EmailAuthenticationQueryServiceTest {
     private EmailAuthenticationQueryService emailAuthenticationQueryService;
 
     @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
+
+    @Autowired
     private EmailAuthenticationJpaRepository emailAuthenticationJpaRepository;
 
     @BeforeEach
     void setUp() {
-        emailAuthenticationJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     @Nested

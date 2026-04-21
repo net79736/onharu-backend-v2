@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.backend.onharu.domain.common.enums.ProviderType;
@@ -43,6 +42,7 @@ import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
 import com.backend.onharu.infra.db.tag.TagJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
 import com.backend.onharu.infra.db.user.UserOAuthJpaRepository;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -54,6 +54,12 @@ class StoreCommandServiceTest {
 
     @Autowired
     private StoreQueryService storeQueryService;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private StoreJpaRepository storeJpaRepository;
@@ -111,24 +117,9 @@ class StoreCommandServiceTest {
 
     @BeforeEach
     void setUp() {
-        chatMessageJpaRepository.deleteAll();
-        chatParticipantJpaRepository.deleteAll();
-        chatRoomJpaRepository.deleteAll();
-        notificationHistoryJpaRepository.deleteAll();
-        notificationJpaRepository.deleteAll();
-        reviewJpaRepository.deleteAll();
-        favoriteJpaRepository.deleteAll();
-        reservationJpaRepository.deleteAll();
-        fileJpaRepository.deleteAll();
-        storeScheduleJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll();
-        tagJpaRepository.deleteAll();
-        categoryJpaRepository.deleteAll();
-        childJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        userOAuthJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-        levelJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     /**
@@ -188,7 +179,6 @@ class StoreCommandServiceTest {
 
         @Test
         @DisplayName("가게 생성 성공")
-        @Rollback(value = false)
         void shouldCreateStore() {
             // given
             Owner savedOwner = createTestOwner("test_owner", "테스트 사업자", "01012345678", "새싹", "1234567890");
@@ -245,7 +235,6 @@ class StoreCommandServiceTest {
 
         @Test
         @DisplayName("가게 정보 수정 성공")
-        @Rollback(value = false)
         void shouldUpdateStore() {
             // given
             Owner savedOwner = createTestOwner("test_owner2", "테스트 사업자2", "01087654321", "새싹", "0987654321");
@@ -309,7 +298,6 @@ class StoreCommandServiceTest {
 
         @Test
         @DisplayName("가게 영업 상태 변경 성공")
-        @Rollback(value = false)
         void shouldChangeOpenStatus() {
             // given
             Owner savedOwner = createTestOwner("test_owner3", "테스트 사업자3", "01011112222", "새싹", "1111222233");

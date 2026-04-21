@@ -20,9 +20,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-
 import java.util.List;
+import com.backend.onharu.domain.common.TestDataHelper;
 
 import static com.backend.onharu.domain.support.error.ErrorType.User.USER_ID_ALREADY_EXISTS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +35,12 @@ class UserCommandServiceTest {
 
     @Autowired
     private UserQueryService userQueryService;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
 
     @Autowired
     private UserJpaRepository userJpaRepository;
@@ -54,11 +59,9 @@ class UserCommandServiceTest {
 
     @BeforeEach
     void setUp() {
-        storeScheduleJpaRepository.deleteAll();
-        storeJpaRepository.deleteAll();
-        ownerJpaRepository.deleteAll();
-        childJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
+
+        testDataHelper.cleanAll();
+
     }
 
     @Nested
@@ -67,7 +70,6 @@ class UserCommandServiceTest {
 
         @Test
         @DisplayName("아동 회원가입 성공")
-        @Rollback(value = false)
         void shouldSignUpChild() {
             // given
             SignUpChildCommand command = new SignUpChildCommand(
@@ -148,7 +150,6 @@ class UserCommandServiceTest {
 
         @Test
         @DisplayName("사업자 회원가입 성공")
-        @Rollback(value = false)
         void shouldSignUpOwner() {
             // given
             SignUpOwnerCommand command = new SignUpOwnerCommand(
@@ -186,7 +187,6 @@ class UserCommandServiceTest {
 
         @Test
         @DisplayName("사용자 생성 성공")
-        @Rollback(value = false)
         void shouldCreateUser() {
             // given
             CreateUserCommand command = new CreateUserCommand(
