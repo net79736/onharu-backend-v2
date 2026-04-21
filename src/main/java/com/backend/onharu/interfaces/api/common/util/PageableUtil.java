@@ -20,7 +20,10 @@ import org.springframework.data.jpa.domain.JpaSort;
  * ## 기본값 사용
  * Pageable pageable = PageableUtil.ofDefault();
  */
-public class PageableUtil {
+public final class PageableUtil {
+
+    private PageableUtil() {
+    }
 
     private static final int DEFAULT_PAGE = 1;
     private static final int DEFAULT_SIZE = 10;
