@@ -160,7 +160,7 @@ public class StoreExcelFacade {
             }
         } catch (IOException e) {
             // 전체 파일 읽기 실패 시 런타임 예외로 래핑
-            throw new RuntimeException("엑셀 파일을 처리하는 중 오류가 발생했습니다.", e);
+            throw new CoreException(ErrorType.FileOperation.CSV_PROCESSING_ERROR, e);
         }
 
         return new int[] {totalCount, successCount, failureCount};

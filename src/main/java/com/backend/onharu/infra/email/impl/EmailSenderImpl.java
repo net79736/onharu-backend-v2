@@ -1,5 +1,7 @@
 package com.backend.onharu.infra.email.impl;
 
+import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.infra.email.EmailSender;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -46,10 +48,8 @@ public class EmailSenderImpl implements EmailSender {
             helper.setText(content, true);
 
             javaMailSender.send(mimeMessage);
-        } catch (MessagingException e) {
-            throw new RuntimeException("이메일 전송에 실패했습니다.", e);
-        } catch (MailException e) {
-            throw new RuntimeException("이메일 전송에 실패했습니다.", e);
+        } catch (MessagingException | MailException e) {
+            throw new CoreException(ErrorType.INTERNAL_SERVER_ERROR, e);
         }
     }
 
