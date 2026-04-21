@@ -12,17 +12,6 @@ public class ReservationCommand {
             Long storeScheduleId,
             Integer people
     ) {
-        public CreateReservationCommand {
-            // if (childId == null) {
-            //     throw new CoreException(BAD_REQUEST);
-            // }
-            // if (storeScheduleId == null) {
-            //     throw new CoreException(BAD_REQUEST);
-            // }
-            // if (people == null || people <= 0) {
-            //     throw new CoreException(BAD_REQUEST);
-            // }
-        }
     }
 
     /**
@@ -33,11 +22,6 @@ public class ReservationCommand {
             UserType cancelRequestedBy,
             String cancelReason
     ) {
-        public CancelReservationCommand {
-            // if (reservationId == null) {
-            //     throw new CoreException(BAD_REQUEST);
-            // }
-        }
     }
 
     /**
@@ -54,11 +38,6 @@ public class ReservationCommand {
     public record CompleteReservationCommand(
             Long reservationId
     ) {
-        public CompleteReservationCommand {
-            // if (reservationId == null) {
-            //     throw new CoreException(BAD_REQUEST);
-            // }
-        }
     }
 
     /**
@@ -68,13 +47,5 @@ public class ReservationCommand {
             Long reservationId,
             ReservationType status
     ) {
-        public ChangeReservationStatusCommand {
-            // if (reservationId == null) {
-            //     throw new CoreException(BAD_REQUEST);
-            // }
-            // if (status == null) {
-            //     throw new CoreException(BAD_REQUEST);
-            // }
-        }
     }
 }

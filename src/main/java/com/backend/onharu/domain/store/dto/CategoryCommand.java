@@ -7,9 +7,6 @@ public class CategoryCommand {
     public record CreateCategoryCommand(
             String name
     ) {
-        public CreateCategoryCommand {
-
-        }
     }
 
     /**
@@ -19,8 +16,6 @@ public class CategoryCommand {
             Long id,
             String name
     ) {
-        public UpdateCategoryCommand {
-        }
     }
 
     /**
@@ -29,7 +24,5 @@ public class CategoryCommand {
     public record DeleteCategoryCommand(
             Long id
     ) {
-        public DeleteCategoryCommand {
-        }
     }
 }
