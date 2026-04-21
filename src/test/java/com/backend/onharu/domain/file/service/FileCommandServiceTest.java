@@ -73,7 +73,7 @@ class FileCommandServiceTest {
             assertThat(file.getFileSize()).isEqualTo(1024L);
             assertThat(file.getRefType()).isEqualTo(AttachmentType.STORE);
             assertThat(file.getRefId()).isEqualTo(1L);
-            assertThat(file.getDisplayOrder()).isEqualTo(0);
+            assertThat(file.getDisplayOrder()).isZero();
 
             // DB에 저장되었는지 확인
             File saved = fileQueryService.getById(new GetByIdQuery(file.getId()));
@@ -100,7 +100,7 @@ class FileCommandServiceTest {
             File file = fileCommandService.register(command);
 
             // then
-            assertThat(file.getDisplayOrder()).isEqualTo(0);
+            assertThat(file.getDisplayOrder()).isZero();
         }
     }
 

@@ -516,7 +516,7 @@ class ChildFacadeTest {
 
             // then
             assertThat(myBookings).isNotNull();
-            assertThat(myBookings.size()).isEqualTo(2);
+            assertThat(myBookings).hasSize(2);
             assertThat(myBookings).allMatch(r -> r.getChild().getId().equals(child1.getId()));
             
             System.out.println("✅ 내가 신청한 예약 목록 조회 성공");

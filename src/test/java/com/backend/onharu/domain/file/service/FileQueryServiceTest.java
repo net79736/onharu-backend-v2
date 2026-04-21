@@ -85,7 +85,7 @@ class FileQueryServiceTest {
 
             // then
             assertThat(list).hasSize(2);
-            assertThat(list.get(0).getDisplayOrder()).isEqualTo(0);
+            assertThat(list.get(0).getDisplayOrder()).isZero();
             assertThat(list.get(0).getFileKey()).isEqualTo("image/first.jpg");
             assertThat(list.get(1).getDisplayOrder()).isEqualTo(1);
             assertThat(list.get(1).getFileKey()).isEqualTo("image/second.jpg");
