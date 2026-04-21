@@ -55,7 +55,7 @@ public class StoreRecentSearchControllerImpl implements IStoreRecentSearchContro
         if (owner == null) {
             throw new CoreException(ErrorType.BAD_REQUEST);
         }
-        recentSearchService.record(owner, request.keyword());
+        recentSearchService.saveRecord(owner, request.keyword());
         return ResponseEntity.ok(ResponseDTO.success(null));
     }
 }
