@@ -278,7 +278,7 @@ public class OwnerControllerImpl implements IOwnerController {
         List<Long> storeIds = storePage.getContent().stream()
         .map(StoreWithFavoriteCount::store)
         .map(Store::getId)
-        .collect(Collectors.toList());
+        .toList();
 
         // 배치로 이미지 파일 목록 조회 (N+1 문제 방지)
         List<File> allFiles = storeIds.isEmpty() 
@@ -326,7 +326,7 @@ public class OwnerControllerImpl implements IOwnerController {
                             storePageObject.favoriteCount()
                     );
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         GetMyStoresResponse response = new GetMyStoresResponse(
             storeResponses,
@@ -370,7 +370,7 @@ public class OwnerControllerImpl implements IOwnerController {
         Page<Reservation> page = ownerFacade.getStoreBookings(ownerId, storeId, request.effectiveStatusFilter(), pageable);
         List<ReservationResponse> reservationResponses = page.getContent().stream()
                 .map(ReservationResponse::new)
-                .collect(Collectors.toList());
+                .toList();
         GetStoreBookingListResponse response = GetStoreBookingListResponse.of(
                 reservationResponses,
                 page.getTotalElements(),

@@ -183,7 +183,7 @@ public class StoreControllerImpl implements IStoreController {
         List<Long> storeIds = storePage.getContent().stream()
                 .map(StoreWithFavoriteCount::store)
                 .map(Store::getId)
-                .collect(Collectors.toList());
+                .toList();
 
         // 예약 가능한 가게 ID 집합 조회
         Set<Long> validScheduleStoreIds = storeIds.isEmpty()
@@ -232,7 +232,7 @@ public class StoreControllerImpl implements IStoreController {
                             storePageObject.favoriteCount()
                     );
                 })
-                .collect(Collectors.toList());
+                .toList();
         
         SearchStoresResponse response = new SearchStoresResponse(
                 storeResponses,
@@ -286,7 +286,7 @@ public class StoreControllerImpl implements IStoreController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.success(categories.stream()
                         .map(c -> new CategoryResponse(c.id(), c.name()))
-                        .collect(Collectors.toList())));
+                        .toList()));
     }
 
     /**
