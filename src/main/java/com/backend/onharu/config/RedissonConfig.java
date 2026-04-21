@@ -9,7 +9,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Profile("!test")
 @Configuration
 public class RedissonConfig {
@@ -23,9 +25,9 @@ public class RedissonConfig {
 
     @PostConstruct
     public void init() {
-        System.out.println("RedissonConfiguration 이 실행되었습니다.");
-        System.out.println("host: " + host);
-        System.out.println("port: " + port);
+        log.info("RedissonConfiguration 이 실행되었습니다.");
+        log.info("host: {}", host);
+        log.info("port: {}", port);
     }
 
     @Bean(destroyMethod = "shutdown")
