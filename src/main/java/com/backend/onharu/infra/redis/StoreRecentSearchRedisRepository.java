@@ -29,7 +29,7 @@ public class StoreRecentSearchRedisRepository {
      * @param maxItems 최근 검색어 최대 개수
      * @param ttl 최근 검색어 유지 시간
      */
-    public void record(String listKey, String setKey, String keyword, int maxItems, Duration ttl) {
+    public void saveRecord(String listKey, String setKey, String keyword, int maxItems, Duration ttl) {
         if (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(setKey, keyword))) {
             redisTemplate.opsForList().remove(listKey, 0, keyword);
         }

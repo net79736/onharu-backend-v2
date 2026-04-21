@@ -45,7 +45,7 @@ public class StoreRecentSearchService {
      * @param ownerKey u:[:user_id]
      * @param rawKeyword 원본 검색어
      */
-    public void record(String ownerKey, String rawKeyword) {
+    public void saveRecord(String ownerKey, String rawKeyword) {
         String kw = normalize(rawKeyword);
         if (kw.isEmpty()) {
             return;
@@ -53,7 +53,7 @@ public class StoreRecentSearchService {
         String setKey = StoreRecentSearchRedisKeyUtil.setKey(ownerKey); // onharu:store:recent:set:u:[:user_id]
         String listKey = StoreRecentSearchRedisKeyUtil.listKey(ownerKey); // onharu:store:recent:list:u:[:user_id]
         Duration ttl = Duration.ofSeconds(Math.max(1, ttlSeconds));
-        repository.record(listKey, setKey, kw, Math.max(1, maxItems), ttl);
+        repository.saveRecord(listKey, setKey, kw, Math.max(1, maxItems), ttl);
     }
 
     /**
