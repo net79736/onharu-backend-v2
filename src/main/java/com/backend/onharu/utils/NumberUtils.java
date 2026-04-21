@@ -19,7 +19,7 @@ public final class NumberUtils {
         if (value == null || Double.isNaN(value)) {
             return 0.0;
         }
-        return (double) value.longValue();
+        return value.longValue();
     }
 
     /**
