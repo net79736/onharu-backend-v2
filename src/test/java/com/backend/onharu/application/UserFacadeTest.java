@@ -157,11 +157,11 @@ class UserFacadeTest {
             assertNotNull(user);
             assertNotNull(user.getId());
             assertEquals(user.getLoginId(), loginId);
-            assertEquals(user.getName(), "테스트 아동");
-            assertEquals(user.getPhone(), "01012345678");
-            assertEquals(user.getUserType(), UserType.CHILD);
-            assertEquals(user.getProviderType(), ProviderType.LOCAL);
-            assertEquals(user.getStatusType(), StatusType.PENDING);
+            assertEquals("테스트 아동", user.getName());
+            assertEquals("01012345678", user.getPhone());
+            assertEquals(UserType.CHILD, user.getUserType());
+            assertEquals(ProviderType.LOCAL, user.getProviderType());
+            assertEquals(StatusType.PENDING, user.getStatusType());
 
             // Child 엔티티도 생성되었는지 확인
             Child child = childJpaRepository.findByUser_Id(user.getId()).orElse(null);
@@ -208,7 +208,7 @@ class UserFacadeTest {
                 () -> userFacade.signUpChild(command)
             );
 
-            assertEquals(exception.getErrorType(), ErrorType.User.USER_ID_ALREADY_EXISTS);
+            assertEquals(ErrorType.User.USER_ID_ALREADY_EXISTS, exception.getErrorType());
         }
     }
 
