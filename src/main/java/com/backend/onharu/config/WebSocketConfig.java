@@ -65,15 +65,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
 
-        // 1. [메시지 배달 경로 설정] 
+        // 1. [메시지 배달 경로 설정]
         // 서버가 사용자에게 메시지를 쏠 때, 어떤 "채널"을 사용할지 정의합니다.
         // 프론트엔드는 이 주소를 '구독'해서 실시간 데이터를 받습니다.
-
         // - /topic : 단체 채널. (예: 식당의 실시간 예약 현황 업데이트, 전체 공지)
         // - /queue : 개인 채널. (예: 특정 아이에게 전송되는 '예약 확정' 알림, 1:1 문의 답변)
-        // registry.enableSimpleBroker(ChatStompDestination.BROKER_PREFIX_TOPIC, ChatStompDestination.BROKER_PREFIX_QUEUE);
-
-        // 1. [도착 지점] 인메모리 SimpleBroker 또는 외부 브로커(RabbitMQ STOMP 등) 릴레이
+        //
+        // [도착 지점] 인메모리 SimpleBroker 또는 외부 브로커(RabbitMQ STOMP 등) 릴레이
         if (stompRelayEnabled) {
             var relay = registry
                     .enableStompBrokerRelay(
