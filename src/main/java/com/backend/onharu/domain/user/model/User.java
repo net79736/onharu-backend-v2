@@ -180,7 +180,7 @@ public class User extends BaseEntity {
             throw new CoreException(PHONE_MUST_NOT_BE_BLANK);
         }
 
-        if (!phone.matches("^01(?:0|[1-9])(?:\\d{3}|\\d{4})\\d{4}$")) {
+        if (!phone.matches("^01[0-9](?:\\d{3,4})\\d{4}$")) {
             throw new CoreException(PHONE_INVALID_FORMAT);
         }
     }
