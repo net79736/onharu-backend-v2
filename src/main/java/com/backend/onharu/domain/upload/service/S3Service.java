@@ -47,6 +47,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 public class S3Service implements StorageService {
 
     private static final String S3_KEY_DELIMITER = "/";
+    private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
     private final S3Client awsS3Client;
     private final S3Presigner awsS3Presigner;
@@ -181,7 +182,7 @@ public class S3Service implements StorageService {
      * 파일의 Content-Type 조회
      * 
      * S3에 저장된 파일의 MIME 타입을 조회합니다.
-     * 파일이 존재하지 않으면 기본값으로 "application/octet-stream"을 반환합니다.
+     * 파일이 존재하지 않으면 기본값으로 DEFAULT_CONTENT_TYPE을 반환합니다.
      * 
      * @param fileName 조회할 파일의 전체 경로 (예: "image/uuid-photo.jpg")
      * @return 파일의 MIME 타입 (예: "image/jpeg")
@@ -190,7 +191,7 @@ public class S3Service implements StorageService {
     public String getContentType(String fileName) {
         if (fileName == null || fileName.isBlank()) {
             log.warn("Content-Type 조회 요청이 들어왔지만, fileName이 null 또는 빈 문자열입니다.");
-            return "application/octet-stream";
+            return DEFAULT_CONTENT_TYPE;
         }
 
         try {
@@ -204,7 +205,7 @@ public class S3Service implements StorageService {
             
             // Content-Type이 없으면 기본값 반환
             if (contentType == null || contentType.isBlank()) {
-                contentType = "application/octet-stream";
+                contentType = DEFAULT_CONTENT_TYPE;
             }
             
             log.debug("S3 파일 Content-Type 조회 - fileName: {}, contentType: {}", fileName, contentType);
@@ -212,10 +213,10 @@ public class S3Service implements StorageService {
         } catch (S3Exception e) {
             log.warn("S3 파일 Content-Type 조회 실패: {}, 기본값 반환", e.awsErrorDetails().errorMessage());
             // 파일이 존재하지 않거나 조회 실패 시 기본값 반환
-            return "application/octet-stream";
+            return DEFAULT_CONTENT_TYPE;
         } catch (Exception e) {
             log.warn("Content-Type 조회 중 예외 발생: {}, 기본값 반환", e.getMessage());
-            return "application/octet-stream";
+            return DEFAULT_CONTENT_TYPE;
         }
     }
 
