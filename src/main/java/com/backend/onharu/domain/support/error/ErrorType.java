@@ -24,7 +24,7 @@ public enum ErrorType implements IErrorType {
     private final LogLevel logLevel;
 
     static final class Messages {
-        static final String USER_ID_REQUIRED = Messages.USER_ID_REQUIRED;
+        static final String USER_ID_REQUIRED = "사용자 ID는 필수입니다.";
 
         private Messages() {
         }
