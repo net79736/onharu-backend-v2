@@ -155,6 +155,9 @@ public class User extends BaseEntity {
             case DELETED -> throw new CoreException(USER_STATUS_DELETED);
             case LOCKED -> throw new CoreException(USER_STATUS_LOCKED);
             case BLOCKED -> throw new CoreException(USER_STATUS_BLOCKED);
+            default -> {
+                // 정상 상태: 별도 검증 없음
+            }
         }
     }
 
