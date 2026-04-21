@@ -5,12 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.chat.dto.ChatParticipantCommand.CreateChatParticipantCommand;
 import com.backend.onharu.domain.chat.dto.ChatParticipantCommand.DeleteChatParticipantCommand;
@@ -31,8 +31,12 @@ import com.backend.onharu.infra.db.chat.ChatParticipantJpaRepository;
 import com.backend.onharu.infra.db.chat.ChatRoomJpaRepository;
 import com.backend.onharu.infra.db.user.UserJpaRepository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 @DisplayName("ChatParticipantCommandService 통합 테스트")
 class ChatParticipantCommandServiceTest {
 
@@ -60,13 +64,10 @@ class ChatParticipantCommandServiceTest {
     @Autowired
     private UserJpaRepository userJpaRepository;
 
-    @BeforeEach
-    void setUp() {
-        chatMessageJpaRepository.deleteAll();
-        chatParticipantJpaRepository.deleteAll();
-        chatRoomJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-    }
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    // @Transactional 클래스 레벨 적용으로 각 테스트가 자동 롤백되므로 명시적 cleanup 불필요.
 
     private User createUser(String suffix) {
         return userJpaRepository.save(
@@ -147,6 +148,9 @@ class ChatParticipantCommandServiceTest {
         chatParticipantCommandService.updateLastReadMessage(
                 new UpdateLastReadMessageCommand(room.getId(), user.getId(), m1.getId())); // 더 작은 값 — 무시되어야
 
+        // @Modifying JPQL UPDATE 는 1차 캐시를 건드리지 않아서 재조회 전에 clear 필요
+        entityManager.flush();
+        entityManager.clear();
         ChatParticipant reloaded = chatParticipantRepository.findByChatRoomIdAndUserId(
                 new FindByChatRoomIdAndUserIdParam(room.getId(), user.getId()));
         assertThat(reloaded.getLastReadMessageId()).isEqualTo(m2.getId());
