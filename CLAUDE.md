@@ -1,0 +1,71 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Build / Run / Test
+
+Gradle wrapper with Java 17 (Spring Boot 3.3.4).
+
+```bash
+./gradlew build                         # Full build (runs tests + jacocoTestReport)
+./gradlew bootRun                       # Run locally (profile = dev by default)
+./gradlew test                          # Tests only — forces spring.profiles.active=test (H2 + embedded-redis)
+./gradlew test --tests "FQCN"           # Single test class
+./gradlew test --tests "FQCN.method"    # Single test method
+./gradlew jacocoTestReport              # HTML at build/reports/jacoco/test/html/index.html
+./gradlew sonarqube                     # Requires SONAR_HOST_URL, SONAR_TOKEN env
+```
+
+Infrastructure (MySQL, Redis, RabbitMQ, Kafka+ZK, MinIO, SonarQube, Jenkins) via `docker-compose up -d`. MySQL is exposed on **3307** in dev (`application-dev.yaml`), not the compose-default 3306 — only start the service you need from compose or override `SPRING_DATASOURCE_URL`.
+
+k6 load tests live under `load-test/` — `./load-test/run.sh`. Without `K6_COOKIE`/`K6_BEARER_TOKEN` it runs the public smoke script; with either it runs the authenticated domain script and opens `report-last.html`.
+
+## Architecture
+
+Hexagonal-ish layering under `com.backend.onharu`:
+
+- `interfaces/api/controller/` — split into `I*Controller` interface + `impl/*ControllerImpl`. All REST paths are `/api/...`. Global exception handling in `interfaces/api/support/ApiControllerAdvice` maps `CoreException` (via `ErrorType`) to 400/401/403/404/409/500.
+- `application/*Facade.java` — transactional use-case composition across multiple domain services. Controllers call facades, not domain services directly.
+- `domain/<aggregate>/` — entities, enums, domain services (`*CommandService` / `*QueryService`), and repository **interfaces** (ports). Entities extend `common/BaseEntity`. Errors via `support.error.CoreException` + `ErrorType`.
+- `infra/` — adapters: `db/` (JPA entities + `*RepositoryImpl`), `redis/`, `security/` (OAuth2 + session), `kafka/`, `rabbitmq/`, `websocket/`, `email/`, `nts/`.
+- `event/` — in-process `ApplicationEventPublisher` flow (reservation notifications etc.). Separate from `domain/event/` which holds **messaging ports** (`ChatKafkaOutboxPort`, `ChatRabbitPublishPort`).
+- `interfaces/shceduler/` — `@Scheduled` entry points. The package name misspelling (`shceduler`) is intentional/load-bearing; don't "fix" it without also moving references.
+
+### Messaging — both Kafka and RabbitMQ are optional
+
+Both brokers are gated by flags so the app can boot without them:
+
+- `onharu.kafka.enabled` (default **false**) — when `false`, `KafkaAutoConfiguration` is excluded and `config.KafkaConfig` doesn't register. `application-kafka.yaml` is `optional:` imported in dev.
+- `onharu.rabbitmq.enabled` (default **true** per `application-rabbitmq.yaml`, but compose/env default **false**) — when `false`, `RabbitAutoConfiguration` is excluded and `config.RabbitMqConfig` / `infra.rabbitmq` don't load.
+- `onharu.stomp.relay.enabled` — when `true`, WebSocket uses the RabbitMQ STOMP broker relay (port 61613) instead of the in-memory SimpleBroker. Flipping this **requires** RabbitMQ up with the STOMP plugin.
+
+Chat events have two paths controlled by `onharu.kafka.outbox.enabled`:
+
+1. `false` → STOMP handler publishes directly through `KafkaProducer`.
+2. `true` → events are inserted into `outbox_events` (see `domain/outbox/`, `infra/kafka/outbox/`) and a scheduler relays them to Kafka. Use this when you need atomicity with the DB write.
+
+### Security / auth
+
+- **Session-based auth only.** `infra/security/jwt` is empty — there is no JWT token flow. REST identifies users via Spring Security session cookies (see `SecurityConfig`, `SessionConfig`, `LocalUser`/`SocialUser`).
+- `SecurityConfig` is `@Profile("!test")` — test profile uses its own chain.
+- Most `/api/**` paths are in `PUBLIC_PATH`; role enforcement is selective (`ROLE_CHILD_PATH`, `ROLE_OWNER_PATH`, `ROLE_ADMIN_PATH`). When adding a protected endpoint, update these arrays rather than relying on defaults.
+
+### Persistence + caching
+
+- MySQL 8 in prod/dev, H2 (`MODE=MYSQL`) for tests. `ddl-auto=update` in dev — schema drift is silently accepted. In prod/CI override `JPA_DDL_AUTO=validate`.
+- P6Spy is on the runtime classpath; SQL logging is controlled via `application-jpa-logging.yaml` profile include.
+- Redis is **required** for app startup in dev (recent-search Redis repo wires at context init). Redisson provides distributed locks via `infra/redis/lock/DistributeLockExecutor`.
+- Spring Cache uses Redis as the backing store with Jackson + `jackson-datatype-hibernate6` to handle JPA proxies.
+
+### View / template
+
+- Thymeleaf MVC views are **disabled** (`spring.thymeleaf.enabled: false`). Thymeleaf is wired only through `ThymeleafMailConfig` for email HTML in `resources/templates/mail/`. Don't add view controllers expecting Thymeleaf rendering.
+- Swagger UI at `/swagger-ui/index.html`, OpenAPI JSON at `/api-docs/json` — only when the `swagger` profile is included (default in `application.yaml`).
+
+## Profiles
+
+`application.yaml` sets `spring.profiles.active=dev, include=swagger`. `application-dev.yaml` then imports `smtp`, `oauth`, `nts`, `jpa-logging` (required) and `kafka`, `rabbitmq` (optional). When adding a new profile YAML, follow the `optional:` prefix convention if the corresponding backing service is gated by an `enabled` flag.
+
+## Further docs
+
+Domain-level references live in `docs/` — `PROJECT_STRUCTURE.md`, `DOMAIN_ARCHITECTURE.md`, `ERD.md`, `API_SPEC.md`, `SEQUENCE_DIAGRAM.md`, `STOMP.md`, `RABBITMQ.md`, `TROUBLE_SHOOTING.md`.
