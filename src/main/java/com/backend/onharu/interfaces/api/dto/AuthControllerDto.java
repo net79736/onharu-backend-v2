@@ -79,22 +79,4 @@ public class AuthControllerDto {
             String password
     ) {
     }
-
-//    public record SendSmsCodeRequest(
-//            @Schema(description = "전화번호", example = "010-1234-5678")
-//            String phoneNumber,
-//
-//            @Schema(description = "인증 목적", example = "SIGNUP")
-//            String purpose
-//    ) {
-//    }
-
-//    public record VerifySmsCodeRequest(
-//            @Schema(description = "전화번호", example = "010-1234-5678")
-//            String phoneNumber,
-//
-//            @Schema(description = "인증 코드", example = "123456")
-//            String verificationCode
-//    ) {
-//    }
 }

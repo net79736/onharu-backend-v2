@@ -9,11 +9,6 @@ public class TagQuery {
     public record GetTagByIdQuery(
             Long tagId
     ) {
-        // public GetTagByIdQuery {
-        //     if (tagId == null) {
-        //         throw new CoreException(TAG_ID_MUST_NOT_BE_NULL);
-        //     }
-        // }
     }
 
     /**
@@ -22,11 +17,6 @@ public class TagQuery {
     public record FindByNameQuery(
             String name
     ) {
-        // public FindTagsByNameQuery {
-        //     if (name == null || name.isBlank()) {
-        //         throw new CoreException(TAG_NAME_MUST_NOT_BE_BLANK);
-        //     }
-        // }
     }
 
     /**
