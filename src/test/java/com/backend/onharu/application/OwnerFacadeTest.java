@@ -586,7 +586,7 @@ class OwnerFacadeTest {
             // then
             List<StoreSchedule> schedules = storeScheduleJpaRepository.findByStoreId(store.getId());
             assertThat(schedules).isNotNull();
-            assertThat(schedules.size()).isEqualTo(2);
+            assertThat(schedules).hasSize(2);
             assertThat(schedules).allMatch(s -> s.getStore().getId().equals(store.getId()));
 
             System.out.println("✅ 예약 가능한 날짜 생성 성공");

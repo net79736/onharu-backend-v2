@@ -81,7 +81,7 @@ class FileFacadeTest {
             List<File> list = fileQueryService.listByRef(new ListByRefQuery(AttachmentType.STORE, refId));
             assertThat(list).hasSize(2);
             assertThat(list.get(0).getFileKey()).isEqualTo("image/uuid-a.jpg");
-            assertThat(list.get(0).getDisplayOrder()).isEqualTo(0);
+            assertThat(list.get(0).getDisplayOrder()).isZero();
             assertThat(list.get(1).getFileKey()).isEqualTo("image/uuid-b.png");
             assertThat(list.get(1).getDisplayOrder()).isEqualTo(1);
         }

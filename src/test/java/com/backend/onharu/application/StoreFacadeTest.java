@@ -502,7 +502,7 @@ class StoreFacadeTest {
             }
 
             // then
-            assertThat(seenStoreIds.size()).isEqualTo(totalElements);
+            assertThat(seenStoreIds).hasSize((int) totalElements);
         }
 
         @Test
@@ -612,14 +612,14 @@ class StoreFacadeTest {
             // 태그 확인 (트랜잭션 내에서 조회)
             List<StoreTag> storeTags = store.getStoreTags();
             assertThat(storeTags).isNotNull();
-            assertThat(storeTags.size()).isEqualTo(3);
+            assertThat(storeTags).hasSize(3);
             assertThat(storeTags).extracting(st -> st.getTag().getName())
                     .containsExactlyInAnyOrder("커피", "디저트", "브런치");
 
             // 태그가 DB에 저장되었는지 확인 (StoreQueryService를 통해 다시 조회)
             Store savedStore = storeQueryService.getStoreById(new GetStoreByIdQuery(store.getId()));
             assertThat(savedStore).isNotNull();
-            assertThat(savedStore.getStoreTags().size()).isEqualTo(3);
+            assertThat(savedStore.getStoreTags()).hasSize(3);
             assertThat(savedStore.getStoreTags()).extracting(st -> st.getTag().getName())
                     .containsExactlyInAnyOrder("커피", "디저트", "브런치");
 
@@ -674,7 +674,7 @@ class StoreFacadeTest {
             // 태그 확인 (트랜잭션 내에서 조회)
             List<StoreTag> storeTags = store.getStoreTags();
             assertThat(storeTags).isNotNull();
-            assertThat(storeTags.size()).isEqualTo(2);
+            assertThat(storeTags).hasSize(2);
 
             // 기존 태그가 재사용되었는지 확인 (같은 Tag 엔티티 사용)
             StoreTag coffeeTag = storeTags.stream()
@@ -694,7 +694,7 @@ class StoreFacadeTest {
 
             // DB에서 다시 조회하여 확인
             Store savedStore = storeQueryService.getStoreById(new GetStoreByIdQuery(store.getId()));
-            assertThat(savedStore.getStoreTags().size()).isEqualTo(2);
+            assertThat(savedStore.getStoreTags()).hasSize(2);
 
             System.out.println("✅ 가게 등록 성공 (기존 태그 재사용)");
             System.out.println("   - 가게 ID: " + store.getId());
