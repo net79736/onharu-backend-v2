@@ -28,23 +28,25 @@ public class DistributeLockExecutor {
     public <T> T execute(Supplier<T> supplier, String lockName, long waitMs, long leaseMs) {
         RLock rLock = redissonClient.getLock(lockName);
         logger.info("🐧 락 획득 시도 lockName={}", lockName);
+        printLockStatus(rLock, lockName);
 
+        boolean acquired;
         try {
-            printLockStatus(rLock, lockName);
-            boolean available = rLock.tryLock(waitMs, leaseMs, TimeUnit.MILLISECONDS);
-            if (!available) {
-                throw new IllegalStateException(
-                        ("[" + lockName + "] lock 획득 실패🔐🔐 (waitMs: %d, leaseMs: %d)")
-                                .formatted(waitMs, leaseMs));
-            }
-            return supplier.get();
+            acquired = rLock.tryLock(waitMs, leaseMs, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("[" + lockName + "] 락 획득 중 인터럽트가 발생했습니다.", e);
+        }
+        if (!acquired) {
+            throw new IllegalStateException(
+                    ("[" + lockName + "] lock 획득 실패🔐🔐 (waitMs: %d, leaseMs: %d)")
+                            .formatted(waitMs, leaseMs));
+        }
+
+        try {
+            return supplier.get();
         } finally {
-            if (rLock.isLocked() && rLock.isHeldByCurrentThread()) {
-                rLock.unlock();
-            }
+            rLock.unlock();
         }
     }
 
