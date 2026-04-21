@@ -8,7 +8,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.infra.db.child.ChildJpaRepository;
+import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
 import com.backend.onharu.infra.security.LocalUser;
 import com.backend.onharu.infra.security.oauth.SocialUser;
 
@@ -44,23 +47,71 @@ public final class SecurityUtils implements ApplicationContextAware {
     public static Long getCurrentUserId() {
         Authentication authentication = getCurrentAuthentication();
 
-        if (authentication == null || !authentication.isAuthenticated()
+        if (authentication == null || !authentication.isAuthenticated() 
                 || authentication.getPrincipal().equals(ANONYMOUS_USER)) {
             log.info("authentication: {}", authentication);
             log.info("authentication이 null 또는 익명 사용자");
             return null;
         }
-
+        
+        User user = null;
+        
+        // LocalUser 처리 (일반 로그인)
         if (authentication.getPrincipal() instanceof LocalUser localUser) {
-            log.info("localUser: {}, domainId: {}", localUser.getUser(), localUser.getDomainId());
-            return localUser.getDomainId();
+            log.info("localUser: {}", localUser.getUser());
+            user = localUser.getUser();
+        } 
+        // SocialUser 처리 (OAuth2 로그인)
+        else if (authentication.getPrincipal() instanceof SocialUser socialUser) {
+            log.info("socialUser: {}", socialUser.getUser());
+            user = socialUser.getUser();
         }
-        if (authentication.getPrincipal() instanceof SocialUser socialUser) {
-            log.info("socialUser: {}, domainId: {}", socialUser.getUser(), socialUser.getDomainId());
-            return socialUser.getDomainId();
+        
+        if (user == null) {
+            log.info("user가 null");
+            return null;
+        }
+        
+        // 사용자 타입에 따라 도메인 ID 반환
+        UserType userType = user.getUserType();
+        log.info("사용자 타입: {}, 사용자 ID: {}", userType, user.getId());
+        
+        // ApplicationContext가 초기화되지 않은 경우 null 반환
+        if (applicationContext == null) {
+            log.info("applicationContext가 초기화되지 않음");
+            return null;
+        }
+        
+        if (userType == UserType.CHILD) {
+            log.info("아동인 경우 아동 ID 조회 시작 (User ID: {})", user.getId());
+            ChildJpaRepository childRepository = applicationContext.getBean(ChildJpaRepository.class);
+        
+            return childRepository.findByUser_Id(user.getId())
+                    .map(child -> {
+                        log.info("찾은 아동 ID: {}", child.getId());
+                        return child.getId();
+                    })
+                    .orElseGet(() -> {
+                        log.warn("DB에 해당 User ID를 가진 아동 정보가 없습니다. UserType: {}", userType);
+                        return null;
+                    });
+        }
+        else if (userType == UserType.OWNER) {
+            log.info("사장인 경우 사장 ID 조회 시작 (User ID: {})", user.getId());
+            OwnerJpaRepository ownerRepository = applicationContext.getBean(OwnerJpaRepository.class);
+            return ownerRepository.findByUser_Id(user.getId())
+                    .map(owner -> {
+                        log.info("찾은 사장 ID: {}", owner.getId());
+                        return owner.getId();
+                    })
+                    .orElseGet(() -> {
+                        log.warn("DB에 해당 User ID를 가진 사장 정보가 없습니다. UserType: {}", userType);
+                        return null;
+                    });
         }
 
-        log.warn("인증된 사용자이지만 지원되지 않는 principal 입니다: {}", authentication.getPrincipal());
+        // ADMIN이나 NONE인 경우 null 반환
+        log.warn("DB에 해당 User ID({})를 가진 아동 또는 사장 정보가 없습니다. UserType: {}", user.getId(), userType);
         return null;
     }
 
