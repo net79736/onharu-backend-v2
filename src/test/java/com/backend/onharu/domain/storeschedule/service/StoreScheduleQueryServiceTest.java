@@ -246,7 +246,7 @@ class StoreScheduleQueryServiceTest {
             ); // 영업일로 가게 일정 목록 조회
 
             // then
-            assertThat(schedules.size()).isGreaterThanOrEqualTo(0); // 가게 일정 개수 조회
+            assertThat(schedules.size()).isNotNegative(); // 가게 일정 개수 조회
             assertThat(schedules).allMatch(s -> s.getScheduleDate().equals(targetDate)); // 영업일이 일치하는 가게 일정 조회
             
             System.out.println("✅ 영업일로 가게 일정 목록 조회 성공");

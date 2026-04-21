@@ -134,7 +134,7 @@ class TagQueryServiceTest {
             );
 
             // then
-            assertThat(tags.size()).isGreaterThanOrEqualTo(0);
+            assertThat(tags.size()).isNotNegative();
             
             System.out.println("✅ 태그 이름으로 검색 성공");
             System.out.println("   - 검색어: 커피");

@@ -494,7 +494,7 @@ class StoreFacadeTest {
                         .collect(java.util.stream.Collectors.toSet());
 
                 // 페이지 내부 중복 방지(안전장치)
-                assertThat(pageIds.size()).isEqualTo(page.getContent().size());
+                assertThat(pageIds).hasSameSizeAs(page.getContent());
 
                 // 페이지 간 중복 방지(핵심)
                 assertThat(seenStoreIds).doesNotContainAnyElementsOf(pageIds);

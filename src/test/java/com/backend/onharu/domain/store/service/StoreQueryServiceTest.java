@@ -274,7 +274,7 @@ class StoreQueryServiceTest {
 
             // then
             // category1에 속한 가게는 2개
-            assertThat(stores.size()).isGreaterThanOrEqualTo(0);
+            assertThat(stores.size()).isNotNegative();
             
             System.out.println("✅ 카테고리 ID로 가게 목록 조회 성공");
             System.out.println("   - 카테고리 ID: " + category1.getId());
@@ -334,7 +334,7 @@ class StoreQueryServiceTest {
             );
 
             // then
-            assertThat(stores.size()).isGreaterThanOrEqualTo(0); // 이름 검색은 대소문자 무시
+            assertThat(stores.size()).isNotNegative(); // 이름 검색은 대소문자 무시
             
             System.out.println("✅ 가게 이름으로 검색 성공");
             System.out.println("   - 검색어: 따뜻한");
