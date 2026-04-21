@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    public static final String[] PUBLIC_PATH = {
+    protected static final String[] PUBLIC_PATH = {
             "/",
             "/index.html",
             "/oauth2/**", "/login/oauth2/**", "/signup/**",
@@ -57,19 +57,19 @@ public class SecurityConfig {
             "/ws-chat", "/ws-chat/**", // 웹소켓 관련 경로
     };
 
-    public static final String[] AUTHENTICATE_PATH = {
+    protected static final String[] AUTHENTICATE_PATH = {
             "/api/users/logout/**", "/api/users/me/**", "/api/users", "/api/users/search"
     };
 
-    public static final String[] ROLE_CHILD_PATH = {
+    protected static final String[] ROLE_CHILD_PATH = {
             "/api/children/**"
     };
 
-    public static final String[] ROLE_OWNER_PATH = {
+    protected static final String[] ROLE_OWNER_PATH = {
             "/api/owners/**"
     };
 
-    public static final String[] ROLE_ADMIN_PATH = {
+    protected static final String[] ROLE_ADMIN_PATH = {
             "/api/admins/**"
     };
 
