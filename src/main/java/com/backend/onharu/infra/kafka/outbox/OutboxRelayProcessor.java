@@ -77,7 +77,10 @@ public class OutboxRelayProcessor {
                     "outboxEventId", outboxEventId
             ));
             onharuKafkaTemplate.send(systemTopic, body).get(10, TimeUnit.SECONDS);
-        } catch (JsonProcessingException | ExecutionException | InterruptedException | TimeoutException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("시스템 토픽 알림 실패 (인터럽트) outboxEventId={}: {}", outboxEventId, e.getMessage());
+        } catch (JsonProcessingException | ExecutionException | TimeoutException e) {
             log.warn("시스템 토픽 알림 실패 outboxEventId={}: {}", outboxEventId, e.getMessage());
         }
     }
