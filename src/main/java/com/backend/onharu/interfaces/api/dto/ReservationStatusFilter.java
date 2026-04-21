@@ -43,6 +43,6 @@ public enum ReservationStatusFilter {
         }
         return filters.stream()
                 .flatMap(f -> f.toReservationType().stream())
-                .collect(Collectors.toList());
+                .toList();
     }    
 }

@@ -71,9 +71,9 @@ public class StoreScheduleFacade {
                                         schedule,
                                         storeScheduleValidator.isAvailable(schedule, reservedScheduleIds)
                                 ))
-                                .collect(Collectors.toList())
+                                .toList()
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -97,7 +97,7 @@ public class StoreScheduleFacade {
                         schedule,
                         storeScheduleValidator.isAvailable(schedule, reservedScheduleIds)
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**

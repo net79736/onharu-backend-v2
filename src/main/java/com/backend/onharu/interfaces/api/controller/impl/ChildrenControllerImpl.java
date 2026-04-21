@@ -343,7 +343,7 @@ public class ChildrenControllerImpl implements IChildrenController {
                         reservation,
                         reviewedReservationIds.contains(reservation.getId()) // 리뷰가 작성된 예약 ID 목록에 포함되어 있는지 여부
                 ))
-                .collect(Collectors.toList());
+                .toList();
 
         GetMyBookingListResponse response = new GetMyBookingListResponse(
             reservationResponses,

@@ -83,7 +83,7 @@ public final class StoreRequestMapperDto {
                     bh.getOpenTime(),
                     bh.getCloseTime()
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
