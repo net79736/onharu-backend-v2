@@ -29,14 +29,10 @@ public class OAuthAttributes {
      */
     public static OAuthAttributes parserProvider(ProviderType providerType, Map<String, Object> attributes) {
 
-        switch (providerType) {
-            case KAKAO -> {
-                return kakao(attributes);
-            }
-            default -> {
-                throw new CoreException(ErrorType.UserOAuth.UNSUPPORTED_PROVIDER);
-            }
+        if (providerType == ProviderType.KAKAO) {
+            return kakao(attributes);
         }
+        throw new CoreException(ErrorType.UserOAuth.UNSUPPORTED_PROVIDER);
     }
 
     /**
