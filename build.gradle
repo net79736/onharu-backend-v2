@@ -114,12 +114,21 @@ jacocoTestReport {
         html.required = true
     }
     afterEvaluate {
-        // 커버리지에서 제외: 진입점, Spring 설정, 주석만 있는 REST 인터페이스.
-        // dto/record/getter 는 통합 테스트에서 실제로 호출되므로 포함시킴.
+        // 커버리지에서 제외:
+        // - 진입점/Spring 설정
+        // - 주석만 있는 REST 인터페이스(I*)
+        // - @Profile("prod") 서비스 (test 프로파일에서 로드되지 않음)
+        // - 순수 Jackson 직렬화용 Cache DTO / Request Mapper
         def coverageExcludes = [
             'com/backend/onharu/OnharuApplication.class',
             'com/backend/onharu/config/**',
             'com/backend/onharu/interfaces/api/controller/I*.class',
+            'com/backend/onharu/domain/upload/service/S3Service.class',
+            'com/backend/onharu/domain/upload/service/S3Service$*.class',
+            'com/backend/onharu/domain/store/dto/StoreCacheDto.class',
+            'com/backend/onharu/domain/store/dto/StoreCacheDto$*.class',
+            'com/backend/onharu/interfaces/api/dto/StoreRequestMapperDto.class',
+            'com/backend/onharu/interfaces/api/dto/StoreRequestMapperDto$*.class',
         ]
         classDirectories.setFrom(
             files(classDirectories.files.collect {
@@ -152,11 +161,15 @@ sonarqube {
 		// Jacoco 커버리지 리포트 경로 설정. buildDir: 빌드 결과물이 저장되는 디렉토리 경로(build/reports/jacoco/test/jacocoTestReport.xml)
 		property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
 
-		// 커버리지 계산에서 제외할 파일 — Spring 진입점/설정/주석만 있는 REST 인터페이스만 제외.
+		// 커버리지 계산에서 제외 (JaCoCo excludes 와 동일한 의도):
+		// 진입점/Spring 설정/REST 인터페이스/prod 전용 서비스/Cache DTO·Request Mapper
 		property "sonar.coverage.exclusions", [
 			"src/main/java/com/backend/onharu/OnharuApplication.java",
 			"src/main/java/com/backend/onharu/config/**",
 			"src/main/java/com/backend/onharu/interfaces/api/controller/I*.java",
+			"src/main/java/com/backend/onharu/domain/upload/service/S3Service.java",
+			"src/main/java/com/backend/onharu/domain/store/dto/StoreCacheDto.java",
+			"src/main/java/com/backend/onharu/interfaces/api/dto/StoreRequestMapperDto.java",
 		].join(",")
     }
 }
