@@ -45,6 +45,8 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 @Profile({"dev", "test"})
 public class LocalS3Service implements StorageService {
 
+    private static final String S3_KEY_DELIMITER = "/";
+
     private final S3Client minioClient;
     private final S3Presigner minioS3Presigner;
     
@@ -70,7 +72,7 @@ public class LocalS3Service implements StorageService {
         String feature = contentType.split("/")[0].equalsIgnoreCase("image") ? "image" : "video";
 
         // 파일명은 고유하도록 UUID 설정
-        String uniqueFileName = feature + "/" + UUID.randomUUID() + "-" + fileName;
+        String uniqueFileName = feature + S3_KEY_DELIMITER + UUID.randomUUID() + "-" + fileName;
 
         try {
             // Presigned URL 요청 생성
