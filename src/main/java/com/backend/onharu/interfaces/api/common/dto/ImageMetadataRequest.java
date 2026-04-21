@@ -1,5 +1,6 @@
 package com.backend.onharu.interfaces.api.common.dto;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.backend.onharu.domain.file.dto.FileCommand.ImageMetadata;
@@ -33,14 +34,14 @@ public record ImageMetadataRequest(
 
     /**
      * API 이미지 메타데이터 목록을 도메인 ImageMetadata 목록으로 변환.
-     * null 또는 빈 목록이면 null을 반환합니다.
+     * null 또는 빈 목록이면 빈 목록을 반환합니다.
      *
      * @param images API 요청의 이미지 메타데이터 목록
-     * @return 도메인 ImageMetadata 목록, 입력이 null 또는 비어 있으면 null
+     * @return 도메인 ImageMetadata 목록, 입력이 null 또는 비어 있으면 빈 목록
      */
     public static List<ImageMetadata> toImageMetadataList(List<ImageMetadataRequest> images) {
         if (images == null || images.isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
         return images.stream()
                 .map(img -> new ImageMetadata(img.fileKey(), img.filePath(), img.displayOrder()))
