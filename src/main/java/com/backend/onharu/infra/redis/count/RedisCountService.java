@@ -25,6 +25,7 @@ public class RedisCountService {
     // 스케줄러 동기화 주기(예: 5분)보다 충분히 길게 설정하여 데이터 유실 방지
     private static final Duration TTL = Duration.ofHours(2);
     private static final String FIELD_VIEW = StoreViewCountStrategy.FIELD_VIEW;
+    private static final String UNSUPPORTED_DOMAIN_LOG = "⚠️ [RedisCountService] 지원하지 않는 도메인 타입: {}";
     private static final String FIELD_FAVORITE = StoreViewCountStrategy.FIELD_FAVORITE;
 
     private final RedisTemplate<String, String> redisTemplate;
@@ -40,7 +41,7 @@ public class RedisCountService {
     public long getViewCount(ServiceType type, DomainType content, long contentId) {
         CountStrategy strategy = strategyFactory.getStrategy(content);
         if (strategy == null) {
-            log.warn("⚠️ [RedisCountService] 지원하지 않는 도메인 타입: {}", content);
+            log.warn(UNSUPPORTED_DOMAIN_LOG, content);
             return 0L;
         }
 
@@ -76,7 +77,7 @@ public class RedisCountService {
     public long getFavoriteCount(DomainType content, long contentId) {
         CountStrategy strategy = strategyFactory.getStrategy(content);
         if (strategy == null) {
-            log.warn("⚠️ [RedisCountService] 지원하지 않는 도메인 타입: {}", content);
+            log.warn(UNSUPPORTED_DOMAIN_LOG, content);
             return 0L;
         }
         String key = strategy.getRedisKey(contentId);
@@ -89,7 +90,7 @@ public class RedisCountService {
     public long changeFavoriteCount(DomainType content, long contentId, long delta) {
         CountStrategy strategy = strategyFactory.getStrategy(content);
         if (strategy == null) {
-            log.warn("⚠️ [RedisCountService] 지원하지 않는 도메인 타입: {}", content);
+            log.warn(UNSUPPORTED_DOMAIN_LOG, content);
             return 0L;
         }
         String key = strategy.getRedisKey(contentId);
