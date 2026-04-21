@@ -63,7 +63,7 @@ class StoreQueryServiceTest {
     private LevelJpaRepository levelJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         storeJpaRepository.deleteAll();
         categoryJpaRepository.deleteAll();
         ownerJpaRepository.deleteAll();
@@ -128,7 +128,7 @@ class StoreQueryServiceTest {
         
         @Test
         @DisplayName("조회 실패 - 가게 ID가 존재하지 않는 경우")
-        public void shouldThrowExceptionWhenStoreIsNotFound() {
+        void shouldThrowExceptionWhenStoreIsNotFound() {
             // given
             Long storeId = 99L;
 
@@ -145,7 +145,7 @@ class StoreQueryServiceTest {
         @Test
         @DisplayName("조회 성공")
         @Rollback(value = false)
-        public void shouldGetStore() {
+        void shouldGetStore() {
             // given
             Owner savedOwner = createTestOwner("test_owner_query", "테스트 사업자 조회", "01055556666", "새싹", "5555666677");
             Category category = createTestCategory("식당");
@@ -190,7 +190,7 @@ class StoreQueryServiceTest {
         @Test
         @DisplayName("조회 성공 - 사업자의 가게 목록 조회")
         @Rollback(value = false)
-        public void shouldGetStoresByOwnerId() {
+        void shouldGetStoresByOwnerId() {
             // given
             Owner savedOwner = createTestOwner("test_owner_list", "테스트 사업자 목록", "01077778888", "새싹", "7777888899");
             Category category = createTestCategory("식당");
@@ -224,7 +224,7 @@ class StoreQueryServiceTest {
         @Test
         @DisplayName("조회 성공 - 카테고리별 가게 목록 조회")
         @Rollback(value = false)
-        public void shouldGetStoresByCategoryId() {
+        void shouldGetStoresByCategoryId() {
             // given
             Owner savedOwner1 = createTestOwner("test_owner_cat1", "테스트 사업자 카테고리1", "01011111111", "비기너", "1111111111");
             Owner savedOwner2 = createTestOwner("test_owner_cat2", "테스트 사업자 카테고리2", "01022222222", "새싹", "2222222222");
@@ -289,7 +289,7 @@ class StoreQueryServiceTest {
         @Test
         @DisplayName("조회 성공 - 가게 이름으로 검색")
         @Rollback(value = false)
-        public void shouldGetStoresByName() {
+        void shouldGetStoresByName() {
             // given
             Owner savedOwner = createTestOwner("test_owner_search", "테스트 사업자 검색", "01033333333", "비기너", "9999999990");
             Category category = createTestCategory("식당");
@@ -351,7 +351,7 @@ class StoreQueryServiceTest {
 
         @Test
         @DisplayName("조회 성공 - 사업자 ID 가게 조회")
-        public void shouldGEtStoresByOwnerId() {
+        void shouldGEtStoresByOwnerId() {
             // given
             Owner savedOwner = createTestOwner("testOwner1234@test.com", "사업자명1", "01022220001", "새싹", "3333333333");
             Category category = createTestCategory("식당");

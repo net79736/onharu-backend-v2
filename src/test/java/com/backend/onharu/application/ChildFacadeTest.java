@@ -95,7 +95,7 @@ class ChildFacadeTest {
     private NotificationJpaRepository notificationJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
         notificationHistoryJpaRepository.deleteAll();
         notificationJpaRepository.deleteAll();
@@ -237,7 +237,7 @@ class ChildFacadeTest {
         @Test
         @DisplayName("예약 생성 성공")
         @Rollback(value = false)
-        public void shouldCreateReservation() {
+        void shouldCreateReservation() {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
             Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "비기너", "1234567890");
@@ -271,7 +271,7 @@ class ChildFacadeTest {
 
         @Test
         @DisplayName("예약 생성 실패 - 이미 예약된 일정")
-        public void shouldThrowExceptionWhenScheduleAlreadyReserved() {
+        void shouldThrowExceptionWhenScheduleAlreadyReserved() {
             // given
             Child child1 = createTestChild("test_child1", "테스트 아동1", "01012345678");
             Child child2 = createTestChild("test_child2", "테스트 아동2", "01087654321");
@@ -306,7 +306,7 @@ class ChildFacadeTest {
 
         @Test
         @DisplayName("예약 생성 실패 - 최대 인원 초과")
-        public void shouldThrowExceptionWhenPeopleExceedsMaxPeople() {
+        void shouldThrowExceptionWhenPeopleExceedsMaxPeople() {
             // given: maxPeople=5인 일정에 10명 예약 시도
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
             Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹3", "1234567890");
@@ -339,7 +339,7 @@ class ChildFacadeTest {
 
         @Test
         @DisplayName("예약 생성 실패 - 이미 시간이 지난 일정")
-        public void shouldThrowExceptionWhenScheduleTimeExpired() {
+        void shouldThrowExceptionWhenScheduleTimeExpired() {
             // given
             Child child = createTestChild("test_child_expired", "테스트 아동", "01012345678");
             Owner owner = createTestOwner("test_owner_expired", "테스트 사업자", "01011112222", "새싹_expired", "1234567890");
@@ -380,7 +380,7 @@ class ChildFacadeTest {
         @Test
         @DisplayName("예약 취소 성공")
         @Rollback(value = false)
-        public void shouldCancelReservation() {
+        void shouldCancelReservation() {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
             Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹4", "1234567890");
@@ -421,7 +421,7 @@ class ChildFacadeTest {
 
         @Test
         @DisplayName("예약 취소 실패 - 다른 아동의 예약")
-        public void shouldThrowExceptionWhenReservationBelongsToOtherChild() {
+        void shouldThrowExceptionWhenReservationBelongsToOtherChild() {
             // given
             Child child1 = createTestChild("test_child1", "테스트 아동1", "01012345678"); // 아동1 생성
             Child child2 = createTestChild("test_child2", "테스트 아동2", "01087654321"); // 아동2 생성
@@ -464,7 +464,7 @@ class ChildFacadeTest {
         @Test
         @DisplayName("내가 신청한 예약 목록 조회 성공")
         @Rollback(value = false)
-        public void shouldGetMyBookings() {
+        void shouldGetMyBookings() {
             // given
             Child child1 = createTestChild("test_child1", "테스트 아동1", "01012345678");
             Child child2 = createTestChild("test_child2", "테스트 아동2", "01087654321");
@@ -526,7 +526,7 @@ class ChildFacadeTest {
 
         @Test
         @DisplayName("예약이 없을 때 빈 목록 반환")
-        public void shouldReturnEmptyListWhenNoReservations() {
+        void shouldReturnEmptyListWhenNoReservations() {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
 
@@ -553,7 +553,7 @@ class ChildFacadeTest {
         @Test
         @DisplayName("내가 신청한 특정 예약의 상세 정보 조회 성공")
         @Rollback(value = false)
-        public void shouldGetMyBooking() {
+        void shouldGetMyBooking() {
             // given
             Child child = createTestChild("test_child", "테스트 아동", "01012345678");
             Owner owner = createTestOwner("test_owner", "테스트 사업자", "01011112222", "새싹7", "1234567890");
@@ -587,7 +587,7 @@ class ChildFacadeTest {
 
         @Test
         @DisplayName("다른 아동의 예약 조회 시 예외 발생")
-        public void shouldThrowExceptionWhenReservationBelongsToOtherChild() {
+        void shouldThrowExceptionWhenReservationBelongsToOtherChild() {
             // given
             Child child1 = createTestChild("test_child1", "테스트 아동1", "01012345678"); // 아동1 생성
             Child child2 = createTestChild("test_child2", "테스트 아동2", "01087654321"); // 아동2 생성
@@ -617,7 +617,7 @@ class ChildFacadeTest {
         @Test
         @DisplayName("동일 스케줄에 취소+재예약 시 각 아동이 자기 예약만 조회")
         @Rollback(value = false)
-        public void shouldGetOwnReservationsWhenSameScheduleHasCanceledAndWaiting() {
+        void shouldGetOwnReservationsWhenSameScheduleHasCanceledAndWaiting() {
             // given: schedule에 child1 CANCELED → child2 WAITING (취소 후 재예약)
             Child child1 = createTestChild("test_child_canceled", "취소한 아동", "01011111111");
             Child child2 = createTestChild("test_child_rebooked", "재예약한 아동", "01022222222");

@@ -72,7 +72,7 @@ class StoreTagQueryServiceTest {
     private LevelJpaRepository levelJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
         reservationJpaRepository.deleteAll();
         storeScheduleJpaRepository.deleteAll();
@@ -154,7 +154,7 @@ class StoreTagQueryServiceTest {
         @DisplayName("조회 성공 - Store를 통해 StoreTag 목록 조회")
         @Transactional
         @Rollback(value = false)
-        public void shouldGetStoreTags() {
+        void shouldGetStoreTags() {
             // given
             String uniqueLoginId = "test_owner_query_" + System.currentTimeMillis();
             Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 조회", "01055556666", "비기너");
@@ -208,7 +208,7 @@ class StoreTagQueryServiceTest {
         @DisplayName("조회 성공 - 태그가 없는 Store의 StoreTag 목록 조회")
         @Transactional
         @Rollback(value = false)
-        public void shouldGetEmptyStoreTags() {
+        void shouldGetEmptyStoreTags() {
             // given
             String uniqueLoginId = "test_owner_empty_" + System.currentTimeMillis();
             Owner savedOwner = createTestOwner(uniqueLoginId, "테스트 사업자 빈", "01077778888", "새싹");
@@ -245,7 +245,7 @@ class StoreTagQueryServiceTest {
         @DisplayName("조회 성공 - 여러 Store의 StoreTag 조회")
         @Transactional
         @Rollback(value = false)
-        public void shouldGetStoreTagsFromMultipleStores() {
+        void shouldGetStoreTagsFromMultipleStores() {
             // given
             long timestamp = System.currentTimeMillis();
             Owner savedOwner1 = createTestOwner("test_owner_multi1_" + timestamp, "테스트 사업자 다중1", "01011111111", "새싹2");

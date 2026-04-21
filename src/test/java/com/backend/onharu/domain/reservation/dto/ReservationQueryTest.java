@@ -26,7 +26,7 @@ class ReservationQueryTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateGetReservationByIdQuery() {
+        void shouldCreateGetReservationByIdQuery() {
             // given
             Long reservationId = 1L;
 
@@ -44,7 +44,7 @@ class ReservationQueryTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateFindAllByChildIdQuery() {
+        void shouldCreateFindAllByChildIdQuery() {
             // given
             Long childId = 855L;
 
@@ -62,7 +62,7 @@ class ReservationQueryTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateFindAllByStoreScheduleIdQuery() {
+        void shouldCreateFindAllByStoreScheduleIdQuery() {
             // given
             Long storeScheduleId = 1L;
 
@@ -80,7 +80,7 @@ class ReservationQueryTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateFindAllByStoreIdQuery() {
+        void shouldCreateFindAllByStoreIdQuery() {
             // given
             Long storeId = 1L;
 
@@ -98,7 +98,7 @@ class ReservationQueryTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateFindAllByStatusQuery() {
+        void shouldCreateFindAllByStatusQuery() {
             // given
             ReservationType status = ReservationType.WAITING;
 
@@ -116,7 +116,7 @@ class ReservationQueryTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateFindAllByChildIdAndStatusQuery() {
+        void shouldCreateFindAllByChildIdAndStatusQuery() {
             // given
             Long childId = 855L;
             ReservationType status = ReservationType.WAITING;
@@ -136,7 +136,7 @@ class ReservationQueryTest {
         
         @Test
         @DisplayName("생성자 생성 성공")
-        public void shouldCreateFindAllByStoreIdAndStatusQuery() {
+        void shouldCreateFindAllByStoreIdAndStatusQuery() {
             // given
             Long storeId = 1L;
             ReservationType status = ReservationType.WAITING;

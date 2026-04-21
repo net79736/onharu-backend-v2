@@ -209,7 +209,7 @@ class FavoriteCommandServiceTest {
 
         @Test
         @DisplayName("찜하기 삭제 성공")
-        public void deleteFavorite() {
+        void deleteFavorite() {
             //GIVEN
             Child child = createTestChild(
                     "favoriteChild2@test.com",

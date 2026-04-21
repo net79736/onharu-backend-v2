@@ -112,7 +112,7 @@ class OwnerFacadeTest {
     private ChatParticipantJpaRepository chatParticipantJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
         chatMessageJpaRepository.deleteAll();
         chatParticipantJpaRepository.deleteAll();
@@ -249,7 +249,7 @@ class OwnerFacadeTest {
         @Test
         @DisplayName("사업자의 가게 목록 조회 성공")
         @Rollback(value = false)
-        public void shouldGetMyStores() {
+        void shouldGetMyStores() {
             // given
             Owner owner = createTestOwner("test_owner_get_stores", "테스트 사업자", "01012345678", "비기너", "1234567890"); // 사업자 생성
             Category category = createTestCategory("식당");
@@ -274,7 +274,7 @@ class OwnerFacadeTest {
 
         @Test
         @DisplayName("가게가 없을 때 빈 목록 반환")
-        public void shouldReturnEmptyListWhenNoStores() {
+        void shouldReturnEmptyListWhenNoStores() {
             // given
             Owner owner = createTestOwner("test_owner_empty_stores", "테스트 사업자", "01012345678", "새싹2", "1234567890");
             Pageable pageable = Pageable.ofSize(10);
@@ -295,7 +295,7 @@ class OwnerFacadeTest {
         @Test
         @DisplayName("사업자 가게의 예약 목록 조회 성공")
         @Transactional
-        public void shouldGetStoreBookings() {
+        void shouldGetStoreBookings() {
             // given
             Owner owner = createTestOwner("test_owner_get_bookings", "테스트 사업자", "01012345678", "새싹3", "1234567890"); // 사업자 생성
             Category category = createTestCategory("식당");
@@ -358,7 +358,7 @@ class OwnerFacadeTest {
         @Test
         @DisplayName("다른 사업자의 가게 예약 조회 시 예외 발생")
         @Transactional
-        public void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
+        void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
             // given
             String uniqueLoginId1 = "test_owner1_bookings_" + UUID.randomUUID().toString().substring(0, 8);
             String uniqueLoginId2 = "test_owner2_bookings_" + UUID.randomUUID().toString().substring(0, 8);
@@ -379,7 +379,7 @@ class OwnerFacadeTest {
         @Test
         @DisplayName("동일 스케줄에 취소+재예약 시 목록·단건 조회 모두 최신 예약 1건만 반환")
         @Transactional
-        public void shouldGetLatestReservationOnlyWhenSameScheduleHasCanceledAndWaiting() {
+        void shouldGetLatestReservationOnlyWhenSameScheduleHasCanceledAndWaiting() {
             // given: schedule에 child1 CANCELED → child2 WAITING (취소 후 재예약)
             Child child1 = createTestChild("test_child_canceled", "취소한 아동", "01011111111");
             Child child2 = createTestChild("test_child_rebooked", "재예약한 아동", "01022222222");
@@ -429,7 +429,7 @@ class OwnerFacadeTest {
         @Test
         @DisplayName("성공: 사업자가 가게 주인이고, 예약이 해당 가게의 예약인 경우")
         @Transactional
-        public void shouldGetStoreBooking_WhenOwnerIsStoreOwnerAndReservationBelongsToStore() {
+        void shouldGetStoreBooking_WhenOwnerIsStoreOwnerAndReservationBelongsToStore() {
             // given: 사업자 O → 가게 O → 예약 O (모두 일치)
             Owner owner = createTestOwner("test_owner_get_booking", "테스트 사업자", "01012345678", "새싹7", "1234567890");
             Category category = createTestCategory("식당");
@@ -459,7 +459,7 @@ class OwnerFacadeTest {
         @Test
         @DisplayName("실패: 사업자가 가게 주인이 아닌 경우")
         @Transactional
-        public void shouldThrowException_WhenOwnerIsNotStoreOwner() {
+        void shouldThrowException_WhenOwnerIsNotStoreOwner() {
             // given: owner1의 가게, owner2가 조회 시도
             String uniqueLoginId1 = "test_owner1_booking_" + UUID.randomUUID().toString().substring(0, 8);
             String uniqueLoginId2 = "test_owner2_booking_" + UUID.randomUUID().toString().substring(0, 8);
@@ -490,7 +490,7 @@ class OwnerFacadeTest {
         @Test
         @DisplayName("실패: 예약이 해당 가게의 예약이 아닌 경우")
         @Transactional
-        public void shouldThrowException_WhenReservationBelongsToOtherStore() {
+        void shouldThrowException_WhenReservationBelongsToOtherStore() {
             // given: 사업자 O, 가게1 O, 예약은 가게2에 속함
             Owner owner = createTestOwner("test_owner_get_booking_other", "테스트 사업자", "01012345678", "새싹10", "1234567890");
             Category category = createTestCategory("식당");
@@ -520,7 +520,7 @@ class OwnerFacadeTest {
         @Test
         @DisplayName("실패: 사업자가 가게 주인이 아니고, 예약도 해당 가게의 예약이 아닌 경우")
         @Transactional
-        public void shouldThrowException_WhenOwnerIsNotStoreOwnerAndReservationBelongsToOtherStore() {
+        void shouldThrowException_WhenOwnerIsNotStoreOwnerAndReservationBelongsToOtherStore() {
             // given: owner1의 가게1, owner2의 가게2, 예약은 가게1에 속함
             // owner2가 가게1의 예약을 storeId=가게1로 조회 시도 → store.belongsTo(owner)에서 먼저 실패
             String uniqueLoginId1 = "test_owner1_booking_both_" + UUID.randomUUID().toString().substring(0, 8);
@@ -557,7 +557,7 @@ class OwnerFacadeTest {
         @Test
         @DisplayName("예약 가능한 날짜 생성 성공")
         @Transactional
-        public void shouldSetAvailableDates() {
+        void shouldSetAvailableDates() {
             // given
             Owner owner = createTestOwner("test_owner_set_dates", "테스트 사업자", "01012345678", "새싹13_" + UUID.randomUUID().toString().substring(0, 8), "1234567890");
             Category category = createTestCategory("식당");
@@ -596,7 +596,7 @@ class OwnerFacadeTest {
 
         @Test
         @DisplayName("예약 가능한 날짜 생성 실패 - 오늘의 시작 시간이 지남")
-        public void shouldThrowExceptionWhenSetAvailableDatesTimeExpiredToday() {
+        void shouldThrowExceptionWhenSetAvailableDatesTimeExpiredToday() {
             // given
             Owner owner = createTestOwner("test_owner_set_dates_expired", "테스트 사업자", "01012345678", "새싹13_" + UUID.randomUUID().toString().substring(0, 8), "1234567890");
             Category category = createTestCategory("식당");
@@ -624,7 +624,7 @@ class OwnerFacadeTest {
 
         @Test
         @DisplayName("다른 사업자의 가게에 일정 생성 시 예외 발생")
-        public void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
+        void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
             // given
             String uniqueLoginId1 = "test_owner1_dates_" + UUID.randomUUID().toString().substring(0, 8);
             String uniqueLoginId2 = "test_owner2_dates_" + UUID.randomUUID().toString().substring(0, 8);
@@ -661,7 +661,7 @@ class OwnerFacadeTest {
         @Test
         @DisplayName("예약 가능한 날짜 삭제 성공")
         @Rollback(value = false)
-        public void shouldRemoveAvailableDates() {
+        void shouldRemoveAvailableDates() {
             // given
             Owner owner = createTestOwner("test_owner_remove_dates", "테스트 사업자", "01012345678", "새싹16", "1234567890");
             Category category = createTestCategory("식당");
@@ -688,7 +688,7 @@ class OwnerFacadeTest {
 
         @Test
         @DisplayName("다른 사업자의 가게 일정 삭제 시 예외 발생")
-        public void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
+        void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
             // given
             String uniqueLoginId1 = "test_owner1_remove_" + UUID.randomUUID().toString().substring(0, 8);
             String uniqueLoginId2 = "test_owner2_remove_" + UUID.randomUUID().toString().substring(0, 8);
@@ -714,7 +714,7 @@ class OwnerFacadeTest {
 
         @Test
         @DisplayName("아동이 예약한 일정은 사업자가 삭제할 수 없음")
-        public void shouldThrowWhenRemovingScheduleWithActiveChildReservation() {
+        void shouldThrowWhenRemovingScheduleWithActiveChildReservation() {
             Owner owner = createTestOwner("test_owner_remove_blocked", "테스트 사업자", "01044445555", "새싹19", "4444555566");
             Category category = createTestCategory("식당");
             Store store = createTestStore("예약 걸린 가게", owner, category);
@@ -744,7 +744,7 @@ class OwnerFacadeTest {
         @Test
         @DisplayName("예약 건이 없는 일정은 사업자가 삭제할 수 있음")
         @Rollback(value = false)
-        public void shouldRemoveScheduleWhenNoReservations() {
+        void shouldRemoveScheduleWhenNoReservations() {
             Owner owner = createTestOwner("test_owner_remove_empty", "테스트 사업자", "01055556666", "새싹20", "5555666677");
             Category category = createTestCategory("식당");
             Store store = createTestStore("예약 없는 가게", owner, category);
@@ -761,7 +761,7 @@ class OwnerFacadeTest {
         @Test
         @DisplayName("취소된 예약만 남은 일정은 사업자가 삭제할 수 있음")
         @Rollback(value = false)
-        public void shouldRemoveScheduleWhenOnlyCanceledReservation() {
+        void shouldRemoveScheduleWhenOnlyCanceledReservation() {
             Owner owner = createTestOwner("test_owner_remove_canceled_only", "테스트 사업자", "01066667777", "새싹21", "6666777788");
             Category category = createTestCategory("식당");
             Store store = createTestStore("취소만 있는 가게", owner, category);

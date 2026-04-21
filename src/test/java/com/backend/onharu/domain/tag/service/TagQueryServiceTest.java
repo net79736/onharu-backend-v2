@@ -46,7 +46,7 @@ class TagQueryServiceTest {
     private StoreJpaRepository storeJpaRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // 외래 키 제약 조건을 고려한 삭제 순서 (자식 → 부모)
         // StoreTag가 Tag를 참조하므로, Store를 먼저 삭제하면 StoreTag도 함께 삭제됨
         reservationJpaRepository.deleteAll();
@@ -61,7 +61,7 @@ class TagQueryServiceTest {
         
         @Test
         @DisplayName("조회 실패 - 태그 ID가 존재하지 않는 경우")
-        public void shouldThrowExceptionWhenTagIsNotFound() {
+        void shouldThrowExceptionWhenTagIsNotFound() {
             // given
             Long tagId = 99L;
 
@@ -78,7 +78,7 @@ class TagQueryServiceTest {
         @Test
         @DisplayName("조회 성공")
         @Rollback(value = false)
-        public void shouldGetTag() {
+        void shouldGetTag() {
             // given
             Tag savedTag = tagJpaRepository.save(
                 Tag.builder()
@@ -108,7 +108,7 @@ class TagQueryServiceTest {
         @Test
         @DisplayName("조회 성공 - 태그 이름으로 검색")
         @Rollback(value = false)
-        public void shouldGetTagsByName() {
+        void shouldGetTagsByName() {
             // given
             tagJpaRepository.save(
                 Tag.builder()
@@ -147,7 +147,7 @@ class TagQueryServiceTest {
         @Test
         @DisplayName("조회 실패 - 태그 이름으로 검색")
         @Rollback(value = false)
-        public void shouldGetTagsByNameNotFound() {
+        void shouldGetTagsByNameNotFound() {
             // given
             tagJpaRepository.save(
                 Tag.builder()
@@ -192,7 +192,7 @@ class TagQueryServiceTest {
         @Test
         @DisplayName("조회 성공 - ID 리스트로 태그 목록 조회")
         @Rollback(value = false)
-        public void shouldGetTagsByIds() {
+        void shouldGetTagsByIds() {
             // given
             List<Tag> savedTags = saveDummyTags();
             List<Long> tagIds = savedTags.stream()
