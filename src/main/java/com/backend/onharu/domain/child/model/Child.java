@@ -39,7 +39,7 @@ public class Child extends BaseEntity {
     public Child(User user, String nickname, Boolean isVerified) {
         this.user = user;
         this.nickname = nickname;
-        this.isVerified = isVerified != null ? isVerified : false; // 승인 여부가 비어 있을 경우 false
+        this.isVerified = Boolean.TRUE.equals(isVerified); // 승인 여부가 비어 있을 경우 false
     }
 
     /**
