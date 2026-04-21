@@ -1,0 +1,37 @@
+#!/bin/sh
+# Require at least one Hangul syllable in the commit message (Korean).
+# Enable: git config core.hooksPath githooks && chmod +x githooks/commit-msg
+# Bypass: SKIP_COMMIT_MSG_HOOK=1 git commit ...
+
+set -e
+
+[ -n "${SKIP_COMMIT_MSG_HOOK:-}" ] && exit 0
+
+msg_file=${1:-}
+[ -n "$msg_file" ] && [ -f "$msg_file" ] || exit 0
+
+first=$(grep -v '^#' "$msg_file" | sed '/^$/d' | head -n1 || true)
+case "$first" in
+"Merge "*|"Squashed commit of the following changes"*)
+	exit 0
+	;;
+esac
+
+if command -v python3 >/dev/null 2>&1; then
+	if python3 -c "
+import re, sys
+path = sys.argv[1]
+with open(path, 'r', encoding='utf-8', errors='replace') as f:
+    text = f.read()
+sys.exit(0 if re.search(r'[\uac00-\ud7af]', text) else 1)
+" "$msg_file"; then
+		exit 0
+	fi
+else
+	echo "commit-msg hook: python3 not found; cannot validate Korean commit message." >&2
+	exit 1
+fi
+
+echo "커밋 메시지에 한글(가~힣)이 최소 한 글자 이상 포함되어야 합니다." >&2
+echo "예: 채팅: 참가자 조회 N+1 쿼리 제거" >&2
+exit 1
