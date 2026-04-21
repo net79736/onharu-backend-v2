@@ -1,6 +1,6 @@
 package com.backend.onharu.infra.redis.count;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +18,7 @@ public class CountStrategyFactory {
      * @param strategyList
      */
     public CountStrategyFactory(List<CountStrategy> strategyList) {
-        strategies = new HashMap<>();
+        strategies = new EnumMap<>(DomainType.class);
         for (CountStrategy strategy : strategyList) {
             strategies.put(strategy.getSupportedDomain(), strategy);
         }
