@@ -113,6 +113,20 @@ jacocoTestReport {
         csv.required = false
         html.required = true
     }
+    afterEvaluate {
+        // 커버리지에서 제외: 진입점, Spring 설정, 주석만 있는 REST 인터페이스.
+        // dto/record/getter 는 통합 테스트에서 실제로 호출되므로 포함시킴.
+        def coverageExcludes = [
+            'com/backend/onharu/OnharuApplication.class',
+            'com/backend/onharu/config/**',
+            'com/backend/onharu/interfaces/api/controller/I*.class',
+        ]
+        classDirectories.setFrom(
+            files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: coverageExcludes)
+            })
+        )
+    }
 }
 
 /**
@@ -137,6 +151,13 @@ sonarqube {
 		property "sonar.gradle.skipCompile", "true" // 분석 전 중복 컴파일 방지 (성능 최적화 및 경고 제거)
 		// Jacoco 커버리지 리포트 경로 설정. buildDir: 빌드 결과물이 저장되는 디렉토리 경로(build/reports/jacoco/test/jacocoTestReport.xml)
 		property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+
+		// 커버리지 계산에서 제외할 파일 — Spring 진입점/설정/주석만 있는 REST 인터페이스만 제외.
+		property "sonar.coverage.exclusions", [
+			"src/main/java/com/backend/onharu/OnharuApplication.java",
+			"src/main/java/com/backend/onharu/config/**",
+			"src/main/java/com/backend/onharu/interfaces/api/controller/I*.java",
+		].join(",")
     }
 }
 
