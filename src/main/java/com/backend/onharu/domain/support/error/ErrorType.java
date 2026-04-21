@@ -22,7 +22,14 @@ public enum ErrorType implements IErrorType {
     private final ErrorCode code;
     private final String message;
     private final LogLevel logLevel;
-    
+
+    static final class Messages {
+        static final String USER_ID_REQUIRED = Messages.USER_ID_REQUIRED;
+
+        private Messages() {
+        }
+    }
+
     /**
      * 파일 업로드/다운로드 관련 에러 타입
      */
@@ -97,7 +104,7 @@ public enum ErrorType implements IErrorType {
     public enum User implements IErrorType {
         USER_NOT_FOUND(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다.", LogLevel.ERROR),
         USER_MUST_NOT_BE_NULL(ErrorCode.NOT_FOUND, "사용자 정보는 필수입니다.", LogLevel.ERROR),
-        USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 ID는 필수입니다.", LogLevel.ERROR),
+        USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, Messages.USER_ID_REQUIRED, LogLevel.ERROR),
         LOGIN_ID_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "로그인 ID는 필수입니다.", LogLevel.ERROR),
         USER_ID_ALREADY_EXISTS(ErrorCode.CONFLICT, "이미 존재하는 사용자 ID입니다.", LogLevel.WARN),
         PASSWORD_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "비밀번호는 필수입니다.", LogLevel.ERROR),
@@ -151,7 +158,7 @@ public enum ErrorType implements IErrorType {
         LEVEL_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "등급 ID는 필수입니다.", LogLevel.ERROR),
         STORE_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "매장명은 필수입니다.", LogLevel.ERROR),
         SAME_LEVEL_CAN_NOT_BE_ASSIGNED(ErrorCode.BAD_REQUEST, "이미 동일한 등급입니다.", LogLevel.ERROR),
-        OWNER_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 ID는 필수입니다.", LogLevel.ERROR),
+        OWNER_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, Messages.USER_ID_REQUIRED, LogLevel.ERROR),
         ;
 
         private final ErrorCode code;
@@ -187,7 +194,7 @@ public enum ErrorType implements IErrorType {
         NICKNAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "닉네임은 필수입니다.", LogLevel.ERROR),
         NICKNAME_INVALID_FORMAT(ErrorCode.BAD_REQUEST, "닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.", LogLevel.ERROR),
         NICKNAME_MUST_BE_NO_MORE_THAN_100_CHARACTERS_LONG(ErrorCode.BAD_REQUEST, "닉네임은 100자 이내여야 합니다.", LogLevel.ERROR),
-        CHILD_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 ID는 필수입니다.", LogLevel.ERROR)
+        CHILD_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, Messages.USER_ID_REQUIRED, LogLevel.ERROR)
         ;
 
         private final ErrorCode code;
@@ -478,7 +485,7 @@ public enum ErrorType implements IErrorType {
     @AllArgsConstructor
     public enum Notification implements IErrorType {
         NOTIFICATION_NOT_FOUND(ErrorCode.NOT_FOUND, "알림 정보를 찾을 수 없습니다.", LogLevel.ERROR),
-        NOTIFICATION_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 ID는 필수입니다.", LogLevel.ERROR),
+        NOTIFICATION_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, Messages.USER_ID_REQUIRED, LogLevel.ERROR),
         NOTIFICATION_HISTORY_NOT_FOUND(ErrorCode.NOT_FOUND, "알림 히스토리를 찾을 수 없습니다.", LogLevel.ERROR),
         NOTIFICATION_HISTORY_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "알림 히스토리 ID는 필수입니다.", LogLevel.ERROR),
         NOTIFICATION_HISTORY_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "알림 히스토리 수신자 ID는 필수입니다.", LogLevel.ERROR),
