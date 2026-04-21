@@ -20,12 +20,12 @@ public class CoreException extends RuntimeException {
     /**
      * 에러 타입 정보를 담고 있는 객체
      */
-    private final IErrorType errorType;
-    
+    private final transient IErrorType errorType;
+
     /**
      * 에러와 관련된 추가 데이터 (선택적)
      */
-    private final Object data;
+    private final transient Object data;
 
     /**
      * 에러 타입과 추가 데이터를 포함하여 예외를 생성합니다.
