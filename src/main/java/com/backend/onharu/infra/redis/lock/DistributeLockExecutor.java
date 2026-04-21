@@ -41,7 +41,7 @@ public class DistributeLockExecutor {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("🐧 락 획득 실패 InterruptedException lockName={}", lockName, e);
-            throw new RuntimeException(e);
+            throw new IllegalStateException("[" + lockName + "] 락 획득 중 인터럽트가 발생했습니다.", e);
         } finally {
             if (rLock.isLocked() && rLock.isHeldByCurrentThread()) {
                 rLock.unlock();
