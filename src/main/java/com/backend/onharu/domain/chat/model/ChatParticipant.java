@@ -1,12 +1,22 @@
 package com.backend.onharu.domain.chat.model;
 
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import com.backend.onharu.domain.common.base.BaseEntity;
 import com.backend.onharu.domain.user.model.User;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
  * 채팅 참여자 엔티티
@@ -69,6 +79,26 @@ public class ChatParticipant extends BaseEntity {
      */
     public void updateLastReadMessageId(Long messageId) {
         this.lastReadMessageId = messageId;
+    }
+
+    /**
+     * 마지막으로 읽은 메시지 ID를 "더 최신일 때만" 갱신한다.
+     * - 기존 값이 null 이면(아직 한 번도 읽지 않음) 최초 갱신
+     * - 기존 값보다 messageId 가 더 큰 경우에만 갱신(과거 메시지로 역행 방지)
+     * 동시성/경쟁 상황에서 오래된 읽음 커서가 최신 커서를 덮어쓰는 것을 방지하기 위한 도메인 규칙.
+     *
+     * @param messageId 새로 읽은 메시지 ID (null 이면 no-op)
+     * @return 실제로 값이 갱신되었으면 true, 아니면 false
+     */
+    public boolean advanceLastReadMessageId(Long messageId) {
+        if (messageId == null) {
+            return false;
+        }
+        if (this.lastReadMessageId != null && this.lastReadMessageId >= messageId) {
+            return false;
+        }
+        updateLastReadMessageId(messageId);
+        return true;
     }
 
     /**

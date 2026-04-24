@@ -70,4 +70,15 @@ public interface ChatParticipantRepository {
      * @return 채팅 참가자 목록
      */
     List<ChatParticipant> findChatParticipantByChatRoomId(FindChatParticipantByChatRoomIdParam param);
+
+    /**
+     * 특정 채팅방에 참여 중인 사용자의 마지막 읽은 메시지 ID 를 원자적으로 갱신합니다 (단조 증가).
+     * 엔티티 조회 없이 단일 UPDATE 로 수행하므로 읽기-쓰기 사이의 경합을 제거합니다.
+     *
+     * @param chatRoomId 채팅방 ID
+     * @param userId 사용자 ID
+     * @param messageId 갱신할 메시지 ID
+     * @return UPDATE 된 row 수
+     */
+    int bumpLastReadMessage(Long chatRoomId, Long userId, Long messageId);
 }

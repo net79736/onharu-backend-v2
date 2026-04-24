@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +21,6 @@ import com.backend.onharu.domain.chat.dto.ChatMessageQuery.FindChatMessageQuery;
 import com.backend.onharu.domain.chat.dto.ChatMessageQueryService;
 import com.backend.onharu.domain.chat.dto.ChatParticipantCommand.CreateChatParticipantCommand;
 import com.backend.onharu.domain.chat.dto.ChatParticipantCommand.UpdateLastReadMessageCommand;
-import com.backend.onharu.domain.chat.dto.ChatParticipantCommand.updateChatParticipantCommand;
 import com.backend.onharu.domain.chat.dto.ChatParticipantQuery.GetChatParticipantQuery;
 import com.backend.onharu.domain.chat.dto.ChatParticipantQuery.GetChatParticipantsQuery;
 import com.backend.onharu.domain.chat.dto.ChatParticipantQuery.GetChatRoomSummaryQuery;
@@ -42,7 +42,6 @@ import com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
 import com.backend.onharu.domain.child.service.ChildQueryService;
 import com.backend.onharu.domain.common.enums.UserType;
 import com.backend.onharu.domain.event.ChatKafkaOutboxPort;
-import com.backend.onharu.domain.event.ChatRabbitPublishPort;
 import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByUserIdQuery;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.service.OwnerQueryService;
@@ -54,6 +53,7 @@ import com.backend.onharu.domain.support.error.ErrorType;
 import com.backend.onharu.domain.user.dto.UserQuery.GetUserByIdQuery;
 import com.backend.onharu.domain.user.model.User;
 import com.backend.onharu.domain.user.service.UserQueryService;
+import com.backend.onharu.event.model.ChatMessagePublishedEvent;
 import com.backend.onharu.infra.db.chat.ChatRoomSummary;
 import com.backend.onharu.infra.websocket.ChatMessageResponse;
 import com.backend.onharu.interfaces.api.dto.ChatControllerDto.ChatRoomMessageResponse;
@@ -83,8 +83,8 @@ public class ChatFacade {
     /** Kafka 아웃박스 활성 시에만 빈이 주입됩니다. */
     private final ObjectProvider<ChatKafkaOutboxPort> chatKafkaOutboxPort;
 
-    /** RabbitMQ 활성 시에만 빈이 주입됩니다. */
-    private final ObjectProvider<ChatRabbitPublishPort> chatRabbitPublishPort;
+    /** AFTER_COMMIT 단계로 채팅방 마지막 메시지 갱신 및 외부 브로커 발행을 분리하기 위한 in-process 이벤트 publisher. */
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 채팅방 생성(일대일 채팅방, 참여자까지 생성)
@@ -158,7 +158,11 @@ public class ChatFacade {
 
 
     /**
-     * 채팅 메시지 생성
+     * 채팅 메시지 생성.
+     * 메인 트랜잭션에는 chat_messages INSERT 와 chat_participants 읽음 갱신만 남기고,
+     * 동일 chat_rooms 행에 대한 UPDATE 및 외부 브로커 발행(RabbitMQ)은 {@link ChatMessagePublishedEvent} 로 분리해
+     * AFTER_COMMIT 단계에서 별도 트랜잭션으로 처리합니다. 이를 통해 chat_messages INSERT 의 FK S-lock 과
+     * chat_rooms UPDATE 의 X-lock 이 같은 트랜잭션에서 겹치며 발생하던 데드락을 근본 제거합니다.
      */
     @Transactional
     public ChatMessageResponse createChatMessage(CreateChatMessageCommand command) {
@@ -180,10 +184,7 @@ public class ChatFacade {
                         command.content())
         );
 
-        // 채팅방의 마지막으로 읽은 메시지 업데이트
-        chatRoom.updateLastMessage(chatMessage.getId());
-
-        // 사용자 읽음 처리
+        // 보낸 사람이 마지막으로 읽은 메시지를 업데이트 함
         chatParticipantCommandService.updateLastReadMessage(
                 new UpdateLastReadMessageCommand(
                         chatRoom.getId(),
@@ -200,19 +201,20 @@ public class ChatFacade {
                 chatMessage.getCreatedAt()
         );
 
-        // 아웃 박스 활성 시 Kafka 발행용 페이로드를 아웃박스에 적재
-        // ChatKafkaOutboxAdapter 구현체가 주입
-        chatKafkaOutboxPort.ifAvailable(port -> port.enqueueChatMessagePublished(
-                command.chatRoomId(),
-                chatMessage.getId(),
-                sender.getId(),
-                chatMessage.getContent(),
-                chatMessage.getCreatedAt()
-        ));
+        // 아웃박스 활성 시 Kafka 발행용 페이로드를 아웃박스에 적재 (원자성 보장 위해 메인 트랜잭션 내부 유지)
+        // chatKafkaOutboxPort.ifAvailable(port -> port.enqueueChatMessagePublished(
+        //         command.chatRoomId(),
+        //         chatMessage.getId(),
+        //         sender.getId(),
+        //         chatMessage.getContent(),
+        //         chatMessage.getCreatedAt()
+        // ));
 
-        // RabbitMQ 활성 시 RabbitMQ 발행용 페이로드를 RabbitMQ 큐로 전송
-        // ChatRabbitPublishAdapter 구현체가 주입
-        chatRabbitPublishPort.ifAvailable(port -> port.publishChatMessagePublished(
+        
+        // chat_rooms.last_message_id 갱신과 RabbitMQ 발행은 AFTER_COMMIT 리스너에서 처리
+        // ChatMessagePublishedListener > handleChatMessagePublished 에서 처리
+        // chat_rooms.last_message_id 를 최신 값으로 업데이트
+        eventPublisher.publishEvent(new ChatMessagePublishedEvent(
                 command.chatRoomId(),
                 chatMessage.getId(),
                 sender.getId(),
@@ -370,9 +372,6 @@ public class ChatFacade {
 
         // 마지막 메시지 갱신
         chatParticipant.updateLastReadMessageId(command.messageId());
-
-        // DB 에 수정사항 반영
-        chatParticipantCommandService.updateChatParticipant(new updateChatParticipantCommand(chatParticipant));
     }
 
     /**

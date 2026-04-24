@@ -127,7 +127,8 @@ public class RabbitMqConfig {
             @Value("${onharu.rabbitmq.chat-events-queue:onharu.chat.events}") String name
     ) {
         // durable=true: RabbitMQ 서버가 꺼졌다가 다시 켜져도 이 큐를 삭제하지 않고 그대로 유지하겠다는 뜻
-        return QueueBuilder.durable(name) // 설정파일에서 이름을 가져오도록 변경
+        return QueueBuilder
+                .durable(name) // 설정파일에서 이름을 가져오도록 변경
                 .withArgument("x-dead-letter-exchange", "onharu.chat.dlx")
                 .withArgument("x-dead-letter-routing-key", "dead-letter-key")
                 .build();

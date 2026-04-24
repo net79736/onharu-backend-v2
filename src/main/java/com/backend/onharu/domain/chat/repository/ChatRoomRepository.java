@@ -40,4 +40,14 @@ public interface ChatRoomRepository {
      * @return 채팅방 엔티티
      */
     ChatRoom findById(FindChatRoomByIdParam param);
+
+    /**
+     * 채팅방의 마지막 메시지 ID 를 원자적으로 갱신 (단조 증가 보장).
+     * 엔티티 조회 없이 단일 UPDATE 로 수행하므로 동일 트랜잭션 내 FK S-lock 경합에 의한 데드락을 피합니다.
+     *
+     * @param chatRoomId 채팅방 ID
+     * @param messageId 새 마지막 메시지 ID
+     * @return UPDATE 된 row 수
+     */
+    int bumpLastMessageId(Long chatRoomId, Long messageId);
 }

@@ -45,6 +45,14 @@ public class SecurityAuditorAware implements AuditorAware<String> {
      */
     @Override
     public Optional<String> getCurrentAuditor() {
+        // TODO: Spring Security 연동 시 현재 로그인한 사용자 정보 반환
+        // 현재는 시스템에서 자동 생성되는 경우를 위해 "system" 반환
+        
+        // Spring Security 연동 예시:
+        // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // if (authentication != null && authentication.isAuthenticated()) {
+        //     return Optional.ofNullable(authentication.getName());
+        // }
         return Optional.of("system");
     }
 }
