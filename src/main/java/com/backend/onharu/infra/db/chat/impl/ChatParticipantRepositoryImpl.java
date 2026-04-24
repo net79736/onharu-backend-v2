@@ -1,19 +1,25 @@
 package com.backend.onharu.infra.db.chat.impl;
 
+import static com.backend.onharu.domain.support.error.ErrorType.Chat.CHAT_PARTICIPANTS_NOT_FOUND;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Repository;
+
+import com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.FindByChatRoomIdAndUserIdParam;
+import com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.FindChatParticipantByChatRoomIdParam;
+import com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.FindChatParticipantByIdParam;
+import com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.FindSortedChatRoomsParam;
+import com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.GetChatRoomSummaryParam;
 import com.backend.onharu.domain.chat.model.ChatParticipant;
 import com.backend.onharu.domain.chat.model.ChatRoom;
 import com.backend.onharu.domain.chat.repository.ChatParticipantRepository;
 import com.backend.onharu.domain.support.error.CoreException;
 import com.backend.onharu.infra.db.chat.ChatParticipantJpaRepository;
 import com.backend.onharu.infra.db.chat.ChatRoomSummary;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
-
-import static com.backend.onharu.domain.chat.dto.ChatParticipantRepositoryParam.*;
-import static com.backend.onharu.domain.support.error.ErrorType.Chat.CHAT_PARTICIPANTS_NOT_FOUND;
 
 @Repository
 @RequiredArgsConstructor
