@@ -133,4 +133,37 @@ public class RabbitMqConfig {
                 .withArgument("x-dead-letter-routing-key", "dead-letter-key")
                 .build();
     }
+
+    // ===== Reservation (예약) Queue =====
+
+    @Bean
+    public DirectExchange reservationDeadLetterExchange() {
+        return new DirectExchange("onharu.reservation.dlx");
+    }
+
+    @Bean
+    public Queue reservationDeadLetterQueue() {
+        return new Queue("onharu.reservation.dead-letter");
+    }
+
+    @Bean
+    public Binding reservationDeadLetterBinding() {
+        return BindingBuilder.bind(reservationDeadLetterQueue())
+                .to(reservationDeadLetterExchange())
+                .with("dead-letter-key");
+    }
+
+    /**
+     * 예약 요청 큐 (producer가 기본 exchange("")로 publish 하는 것을 권장합니다)
+     */
+    @Bean
+    public Queue reservationRequestsQueue(
+            @Value("${onharu.rabbitmq.reservation-requests-queue:onharu.reservation.requests}") String name
+    ) {
+        return QueueBuilder
+                .durable(name)
+                .withArgument("x-dead-letter-exchange", "onharu.reservation.dlx")
+                .withArgument("x-dead-letter-routing-key", "dead-letter-key")
+                .build();
+    }
 }
