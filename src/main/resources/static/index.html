@@ -495,6 +495,96 @@
       color: var(--text-tertiary);
       margin-top: 2px;
     }
+
+    /* ---------- Notifications (bell + popover) ---------- */
+    .notif-bell-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.6);
+      color: var(--text-secondary);
+      transition: all 150ms var(--ease);
+    }
+    .notif-bell-btn:hover { background: var(--bg-muted); color: var(--text-primary); border-color: var(--border-strong); }
+    .notif-bell-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .notif-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 6px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--danger);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: var(--shadow-xs);
+    }
+    .notif-popover {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: min(420px, calc(100vw - 28px));
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      z-index: 70;
+    }
+    .notif-popover-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(248, 250, 252, 0.7);
+    }
+    .notif-popover-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+    .notif-popover-actions { display: inline-flex; gap: 6px; }
+    .notif-list {
+      max-height: 360px;
+      overflow: auto;
+      overscroll-behavior: contain;
+    }
+    .notif-item {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.75);
+      cursor: pointer;
+      transition: background 120ms var(--ease);
+    }
+    .notif-item:hover { background: rgba(241, 245, 249, 0.7); }
+    .notif-item.unread { background: rgba(236, 253, 245, 0.6); }
+    .notif-item.unread:hover { background: rgba(236, 253, 245, 0.85); }
+    .notif-item-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .notif-item-title { font-size: 12.5px; font-weight: 700; color: var(--text-primary); }
+    .notif-item-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+    .notif-item-msg { font-size: 12px; color: var(--text-secondary); line-height: 1.45; }
+    .notif-empty {
+      padding: 22px 14px;
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 12.5px;
+    }
     .page-shell {
       max-width: 1280px;
       margin: 0 auto;
@@ -593,6 +683,29 @@
       <div id="authBar" class="flex items-center gap-2.5 text-sm flex-wrap justify-end">
         <span id="roleBadge" class="hidden badge badge-neutral"></span>
         <span id="authStatus" class="text-slate-500 text-[12.5px]">로그인되지 않음</span>
+        <div id="notifBellWrap" class="relative hidden">
+          <button type="button" id="btnNotifBell" class="notif-bell-btn" aria-label="알림 열기" title="알림">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path fill="currentColor" d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm6-6V11a6 6 0 1 0-12 0v5L4 18v1h16v-1l-2-2zm-2 .8 1 1.2H7l1-1.2V11a4 4 0 0 1 8 0v5.8z"/>
+            </svg>
+            <span id="notifBadge" class="notif-badge hidden">0</span>
+          </button>
+          <div id="notifPopover" class="notif-popover hidden" role="dialog" aria-label="알림 목록">
+            <div class="notif-popover-header">
+              <div class="flex items-center gap-2">
+                <span class="notif-popover-title">알림</span>
+                <span id="notifMiniCount" class="text-[11.5px] text-slate-500"></span>
+              </div>
+              <div class="notif-popover-actions">
+                <button type="button" id="btnNotifRefresh" class="btn btn-xs btn-secondary">새로고침</button>
+                <button type="button" id="btnNotifMarkAllRead" class="btn btn-xs btn-primary">모두 읽음</button>
+              </div>
+            </div>
+            <div id="notifList" class="notif-list">
+              <div class="notif-empty">로그인 후 알림을 확인할 수 있어요.</div>
+            </div>
+          </div>
+        </div>
         <button type="button" id="btnOpenChat" class="hidden btn btn-sm btn-primary">채팅</button>
         <button type="button" id="btnLogout" class="hidden btn btn-sm btn-secondary">로그아웃</button>
       </div>
@@ -1456,6 +1569,7 @@
       mePanel.textContent = '로그인하면 표시됩니다.';
     }
     applyRoleUi();
+    syncNotificationAuthUi(!!me);
 
     // OWNER 로그인 시: "내 등급" 미니 정보만 세팅 (불필요한 목록은 표시하지 않음)
     if (ownerLevelDetails) {
@@ -1464,6 +1578,257 @@
     if (me && me.userType === 'OWNER') {
       loadOwnerLevelMini();
     }
+  }
+
+  // ---------- Notifications (REST: /api/notifications/*) ----------
+  var notifPollTimer = null;
+  var notifLastRows = [];
+  var notifIsOpen = false;
+  var notifIsBusy = false;
+  var notifPageNum = 1;
+  var notifPerPage = 20;
+  var notifTotalPages = 1;
+  var notifAllRows = [];
+
+  function formatNotifTime(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    var diff = Date.now() - d.getTime();
+    if (diff < 60_000) return '방금';
+    if (diff < 3_600_000) return Math.floor(diff / 60_000) + '분 전';
+    if (diff < 86_400_000) return Math.floor(diff / 3_600_000) + '시간 전';
+    return d.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function getNotifEls() {
+    return {
+      wrap: document.getElementById('notifBellWrap'),
+      btnBell: document.getElementById('btnNotifBell'),
+      badge: document.getElementById('notifBadge'),
+      popover: document.getElementById('notifPopover'),
+      list: document.getElementById('notifList'),
+      miniCount: document.getElementById('notifMiniCount'),
+      btnRefresh: document.getElementById('btnNotifRefresh'),
+      btnMarkAll: document.getElementById('btnNotifMarkAllRead'),
+    };
+  }
+
+  function setNotifOpen(open) {
+    notifIsOpen = !!open;
+    var el = getNotifEls();
+    if (!el.popover) return;
+    el.popover.classList.toggle('hidden', !notifIsOpen);
+    if (notifIsOpen) {
+      // UX: 팝오버 열면 전체 읽음 처리 요구사항 반영
+      markAllNotificationsReadBestEffort();
+      refreshNotifications();
+    }
+  }
+
+  function updateNotifBadge(rows) {
+    var el = getNotifEls();
+    if (!el.badge) return;
+    var unread = (rows || []).reduce(function (acc, r) { return acc + (!r || r.isRead ? 0 : 1); }, 0);
+    if (unread <= 0) {
+      el.badge.classList.add('hidden');
+      el.badge.textContent = '0';
+      if (el.miniCount) el.miniCount.textContent = '';
+      return;
+    }
+    el.badge.classList.remove('hidden');
+    el.badge.textContent = unread > 99 ? '99+' : String(unread);
+    if (el.miniCount) el.miniCount.textContent = '미읽음 ' + unread + '개';
+  }
+
+  function renderNotifications(rows) {
+    var el = getNotifEls();
+    if (!el.list) return;
+    var arr = Array.isArray(rows) ? rows : [];
+    if (!arr.length) {
+      el.list.innerHTML = '<div class="notif-empty">새 알림이 없습니다.</div>';
+      return;
+    }
+    el.list.innerHTML = arr.map(function (r) {
+      var unread = r && r.isRead === false;
+      var title = escapeHtml(r && r.title ? r.title : '(제목 없음)');
+      var msg = escapeHtml(r && r.message ? r.message : '');
+      var time = escapeHtml(formatNotifTime(r && r.createdAt));
+      var type = escapeHtml(String(r && r.type ? r.type : ''));
+      var id = r && r.id != null ? String(r.id) : '';
+      return (
+        '<div class="notif-item ' + (unread ? 'unread' : '') + '" data-hid="' + id + '">' +
+          '<div class="notif-item-top">' +
+            '<div class="notif-item-title">' + title + (type ? (' <span class="ml-1 text-[10.5px] font-semibold text-slate-500">(' + type + ')</span>') : '') + '</div>' +
+            '<div class="notif-item-time">' + time + '</div>' +
+          '</div>' +
+          (msg ? ('<div class="notif-item-msg">' + msg + '</div>') : '') +
+        '</div>'
+      );
+    }).join('');
+  }
+
+  function buildNotifQuery(pageNum) {
+    var p = pageNum != null ? pageNum : 1;
+    return '?pageNum=' + encodeURIComponent(String(p)) +
+      '&perPage=' + encodeURIComponent(String(notifPerPage)) +
+      '&sortField=createdAt&sortDirection=desc';
+  }
+
+  function resetNotificationsPagination() {
+    notifPageNum = 1;
+    notifTotalPages = 1;
+    notifAllRows = [];
+  }
+
+  async function loadNotificationsPage(pageNum, append) {
+    if (!currentUser) return;
+    if (notifIsBusy) return;
+    notifIsBusy = true;
+    try {
+      var q = buildNotifQuery(pageNum);
+      var data = await apiJson('GET', '/api/notifications/histories' + q);
+      var rows = data && data.histories ? data.histories : [];
+      notifTotalPages = data && data.totalPages ? Number(data.totalPages) : 1;
+      notifPageNum = data && data.currentPage ? Number(data.currentPage) : Number(pageNum || 1);
+
+      if (append) {
+        notifAllRows = notifAllRows.concat(rows);
+      } else {
+        notifAllRows = rows;
+      }
+      notifLastRows = notifAllRows;
+      updateNotifBadge(notifAllRows);
+      if (notifIsOpen) renderNotifications(notifAllRows);
+    } catch (e) {
+      // 배지는 유지, 팝오버만 에러 표시
+      if (notifIsOpen) {
+        var el = getNotifEls();
+        if (el.list) el.list.innerHTML = '<div class="notif-empty text-rose-700">알림 로딩 실패: ' + escapeHtml(e.message || e) + '</div>';
+      }
+    } finally {
+      notifIsBusy = false;
+    }
+  }
+
+  async function refreshNotifications() {
+    if (!currentUser) return;
+    resetNotificationsPagination();
+    await loadNotificationsPage(1, false);
+  }
+
+  async function markNotificationRead(historyId) {
+    var hid = String(historyId || '').trim();
+    if (!hid) return;
+    await apiJson('PUT', '/api/notifications/histories/' + encodeURIComponent(hid) + '/read', undefined);
+  }
+
+  async function markAllNotificationsRead() {
+    await apiJson('PUT', '/api/notifications/histories/read/all', undefined);
+  }
+
+  function markAllNotificationsReadBestEffort() {
+    if (!currentUser) return;
+    // UI 즉시 반영(요구: 클릭 시 다 읽음 처리). 실패해도 다음 refresh 에서 정합성 회복.
+    try {
+      updateNotifBadge([]);
+    } catch (e) {}
+    markAllNotificationsRead().catch(function (e) {
+      console.warn('[notif] markAll failed', e);
+    });
+  }
+
+  function ensureNotifHandlersBoundOnce() {
+    var el = getNotifEls();
+    if (!el.btnBell || el.btnBell.__bound) return;
+    el.btnBell.__bound = true;
+    el.btnBell.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      setNotifOpen(!notifIsOpen);
+    });
+    if (el.btnRefresh) {
+      el.btnRefresh.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        refreshNotifications();
+      });
+    }
+    if (el.btnMarkAll) {
+      el.btnMarkAll.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        markAllNotificationsReadBestEffort();
+        refreshNotifications();
+      });
+    }
+
+    // 이벤트 위임: 항목 클릭 → 단건 읽음 처리
+    if (el.list && !el.list.__boundClick) {
+      el.list.__boundClick = true;
+      el.list.addEventListener('click', async function (ev) {
+        var target = ev && ev.target ? ev.target : null;
+        if (!target) return;
+        var item = target.closest ? target.closest('.notif-item') : null;
+        if (!item) return;
+        var hid = item.getAttribute('data-hid');
+        if (!hid) return;
+        try {
+          await markNotificationRead(hid);
+          // 목록 유지(페이지 1로 리셋하지 않음): 로컬 상태만 즉시 반영
+          notifAllRows = (notifAllRows || []).map(function (r) {
+            if (!r || String(r.id) !== String(hid)) return r;
+            var copy = Object.assign({}, r);
+            copy.isRead = true;
+            return copy;
+          });
+          updateNotifBadge(notifAllRows);
+          if (notifIsOpen) renderNotifications(notifAllRows);
+        } catch (e) {
+          alert('알림 읽음 처리 실패: ' + (e.message || e));
+        }
+      });
+    }
+
+    // 무한 스크롤: 하단 근접 시 다음 페이지 로드
+    if (el.list && !el.list.__boundScroll) {
+      el.list.__boundScroll = true;
+      el.list.addEventListener('scroll', function () {
+        if (!notifIsOpen) return;
+        if (notifIsBusy) return;
+        if (!notifTotalPages || notifPageNum >= notifTotalPages) return;
+        var node = el.list;
+        var nearBottom = (node.scrollTop + node.clientHeight) >= (node.scrollHeight - 40);
+        if (!nearBottom) return;
+        loadNotificationsPage(notifPageNum + 1, true);
+      }, { passive: true });
+    }
+
+    document.addEventListener('click', function (ev) {
+      var wrap = getNotifEls().wrap;
+      if (!notifIsOpen || !wrap) return;
+      if (wrap.contains(ev.target)) return;
+      setNotifOpen(false);
+    });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && notifIsOpen) setNotifOpen(false);
+    });
+  }
+
+  function syncNotificationAuthUi(isLoggedIn) {
+    var el = getNotifEls();
+    if (!el.wrap) return;
+    ensureNotifHandlersBoundOnce();
+    el.wrap.classList.toggle('hidden', !isLoggedIn);
+    setNotifOpen(false);
+    notifLastRows = [];
+    updateNotifBadge([]);
+    if (notifPollTimer) {
+      clearInterval(notifPollTimer);
+      notifPollTimer = null;
+    }
+    if (!isLoggedIn) return;
+    // 로그인 직후 배지 즉시 로딩 + 이후 주기적 갱신
+    refreshNotifications();
+    notifPollTimer = setInterval(function () {
+      refreshNotifications();
+    }, 20_000);
   }
 
   if (btnOwnerWarmupLevels) {
