@@ -29,11 +29,32 @@ public final class NumberUtils {
      * @return
      */
     public static long toLong(Object value) {
-        if (value == null) return 0L;
+        return toLong(value, 0L);
+    }
+
+    /**
+     * 카운트 값을 Long으로 변환(변환 실패 시 fallback 반환)
+     *
+     * @param value    원본 값 (null 가능)
+     * @param fallback 변환 실패 시 반환할 기본값
+     * @return 변환 성공 시 long, 실패/null이면 fallback
+     */
+    public static long toLong(Object value, long fallback) {
+        Long parsed = tryParseLong(value);
+        return parsed != null ? parsed : fallback;
+    }
+
+    /**
+     * Long 변환을 시도하고 실패 시 null 반환
+     *
+     * <p>호출 측에서 실패 케이스를 로깅/모니터링하고 싶을 때 사용합니다.</p>
+     */
+    public static Long tryParseLong(Object value) {
+        if (value == null) return null;
         try {
             return Long.parseLong(String.valueOf(value));
         } catch (NumberFormatException e) {
-            return 0L;
+            return null;
         }
     }
 }

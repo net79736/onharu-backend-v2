@@ -1,7 +1,6 @@
 package com.backend.onharu.interfaces.shceduler;
 
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.onharu.domain.reservation.service.ReservationCommandService;
@@ -9,8 +8,9 @@ import com.backend.onharu.domain.reservation.service.ReservationCommandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@Deprecated
 @Slf4j
-@Component
+// @Component
 @RequiredArgsConstructor
 public class ReservationScheduler {
 

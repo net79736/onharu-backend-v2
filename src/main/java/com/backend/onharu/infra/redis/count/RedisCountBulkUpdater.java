@@ -6,6 +6,8 @@ import java.util.Set;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import com.backend.onharu.utils.NumberUtils;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,12 +34,15 @@ public class RedisCountBulkUpdater {
     private final CountStrategyFactory strategyFactory;
 
     public void bulkUpdate(DomainType type) {
+        // 1. 전략 조회 
+        // 현재 StoreViewCountStrategy 하나만 존재함
         CountStrategy strategy = strategyFactory.getStrategy(type);
         if (strategy == null) {
             log.warn("⚠️ [RedisCountBulkUpdater] 지원하지 않는 도메인 타입: {}", type);
             return;
         }
 
+        // 2. Redis 키 패턴 조회
         log.info("🔄 [RedisCountBulkUpdater] 벌크 업데이트 시작 - type: {}", type);
         String pattern = strategy.getRedisPattern();
 
@@ -63,8 +68,8 @@ public class RedisCountBulkUpdater {
                     continue;
                 }
 
-                long viewCount = safeParseLong(redisHash.get(StoreViewCountStrategy.FIELD_VIEW), 0L);
-                long favoriteCount = safeParseLong(redisHash.get(StoreViewCountStrategy.FIELD_FAVORITE), 0L);
+                long viewCount = NumberUtils.toLong(redisHash.get(StoreViewCountStrategy.FIELD_VIEW), 0L);
+                long favoriteCount = NumberUtils.toLong(redisHash.get(StoreViewCountStrategy.FIELD_FAVORITE), 0L);
 
                 // DB 업데이트(전략에서 절대값으로 반영)
                 strategy.updateToDatabase(id, new CommonCount(viewCount, favoriteCount));
@@ -78,15 +83,5 @@ public class RedisCountBulkUpdater {
         }
 
         log.info("✅ [RedisCountBulkUpdater] 벌크 업데이트 완료 - type: {}", type);
-    }
-
-    private long safeParseLong(Object redisValue, long fallback) {
-        if (redisValue == null) return fallback;
-        try {
-            return Long.parseLong(redisValue.toString());
-        } catch (NumberFormatException e) {
-            log.warn("⚠️ [RedisCountBulkUpdater] 숫자 파싱 실패 - value: {} (fallback: {})", redisValue, fallback);
-            return fallback;
-        }
     }
 }
