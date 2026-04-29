@@ -5,6 +5,7 @@ onharu:
     enabled: ${ONHARU_RABBITMQ_ENABLED:true}
     chat-events-queue: ${ONHARU_RABBITMQ_CHAT_QUEUE:onharu.chat.events}
     reservation-requests-queue: ${ONHARU_RABBITMQ_RESERVATION_QUEUE:onharu.reservation.requests}
+    reservation-notifications-queue: ${ONHARU_RABBITMQ_RESERVATION_NOTIFICATIONS_QUEUE:onharu.reservation.notifications}
   # WebSocket STOMP — RabbitMQ STOMP 플러그인(기본 61613)과 연동 시 true (브로커 미기동 시 앱 기동 실패 가능)
   stomp:
     relay:

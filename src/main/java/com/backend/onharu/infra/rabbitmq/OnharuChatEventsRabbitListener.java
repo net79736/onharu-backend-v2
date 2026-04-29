@@ -7,13 +7,8 @@ import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -21,11 +16,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 @ConditionalOnProperty(name = "onharu.rabbitmq.enabled", havingValue = "true")
 public class OnharuChatEventsRabbitListener {
-
-    private final ObjectMapper objectMapper;
 
     @RabbitListener(queues = "${onharu.rabbitmq.chat-events-queue:onharu.chat.events}")
     public void onChatEvent(
@@ -34,29 +26,14 @@ public class OnharuChatEventsRabbitListener {
             @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag
     ) throws IOException {
         try {
-            log.info("rabbit chat event received payload={}, channel={}, deliveryTag={}", payload, channel, deliveryTag);
-            processChatEventPayload(payload);
-        } catch (JsonProcessingException e) {
-            log.warn("RabbitMQ 채팅 이벤트 JSON 파싱 불가 — 재큐잉하지 않음: {}", e.getMessage());
-            channel.basicNack(deliveryTag, false, false);
-            return;
+            // 브로드캐스트(SYSTEM_BROADCAST) 처리 경로는 제거했습니다.
+            // 현재는 레거시 이벤트 큐를 "수신 확인 + 로그" 수준으로만 유지합니다.
+            log.info("RabbitMQ 채팅 이벤트 수신 payloadLength={}", payload == null ? 0 : payload.length());
         } catch (Exception e) {
             log.error("RabbitMQ 채팅 이벤트 처리 실패 — 재큐잉: {}", e.getMessage(), e);
             channel.basicNack(deliveryTag, false, true);
             return;
         }
         channel.basicAck(deliveryTag, false);
-    }
-
-    /**
-     * DB 저장 등 부가 처리가 생기면 이 메서드 안에서 트랜잭션으로 끝낸 뒤 상위에서 basicAck 되도록 합니다.
-     */
-    private void processChatEventPayload(String payload) throws JsonProcessingException {
-        JsonNode root = objectMapper.readTree(payload);
-        log.info(
-            "rabbit chat event received chatRoomId={} chatMessageId={}",
-            root.path("chatRoomId").asText(),
-            root.path("chatMessageId").asText()
-        );
     }
 }

@@ -166,4 +166,18 @@ public class RabbitMqConfig {
                 .withArgument("x-dead-letter-routing-key", "dead-letter-key")
                 .build();
     }
+
+    /**
+     * 예약 알림 큐 (커밋 후 이벤트를 메시지로 분리).
+     */
+    @Bean
+    public Queue reservationNotificationsQueue(
+            @Value("${onharu.rabbitmq.reservation-notifications-queue:onharu.reservation.notifications}") String name
+    ) {
+        return QueueBuilder
+                .durable(name)
+                .withArgument("x-dead-letter-exchange", "onharu.reservation.dlx")
+                .withArgument("x-dead-letter-routing-key", "dead-letter-key")
+                .build();
+    }
 }

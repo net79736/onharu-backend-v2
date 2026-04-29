@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +40,6 @@ import com.backend.onharu.domain.chat.service.ChatRoomQueryService;
 import com.backend.onharu.domain.child.dto.ChildQuery.GetChildByUserIdQuery;
 import com.backend.onharu.domain.child.service.ChildQueryService;
 import com.backend.onharu.domain.common.enums.UserType;
-import com.backend.onharu.domain.event.ChatKafkaOutboxPort;
 import com.backend.onharu.domain.owner.dto.OwnerQuery.GetOwnerByUserIdQuery;
 import com.backend.onharu.domain.owner.model.Owner;
 import com.backend.onharu.domain.owner.service.OwnerQueryService;
@@ -81,7 +79,7 @@ public class ChatFacade {
     private final OwnerQueryService ownerQueryService;
 
     /** Kafka 아웃박스 활성 시에만 빈이 주입됩니다. */
-    private final ObjectProvider<ChatKafkaOutboxPort> chatKafkaOutboxPort;
+    // private final ObjectProvider<ChatKafkaOutboxPort> chatKafkaOutboxPort;
 
     /** AFTER_COMMIT 단계로 채팅방 마지막 메시지 갱신 및 외부 브로커 발행을 분리하기 위한 in-process 이벤트 publisher. */
     private final ApplicationEventPublisher eventPublisher;
