@@ -1,5 +1,7 @@
 package com.backend.onharu.infra.redis.count;
 
+import java.util.Map;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.backend.onharu.domain.store.model.Store;
 import com.backend.onharu.domain.store.model.StoreCount;
 import com.backend.onharu.infra.db.store.StoreCountJpaRepository;
+import com.backend.onharu.utils.NumberUtils;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -53,6 +56,14 @@ public class StoreViewCountStrategy implements CountStrategy {
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    @Override
+    public CommonCount readFromRedisHash(Map<Object, Object> redisHash) {
+        if (redisHash == null || redisHash.isEmpty()) return new CommonCount(0L, 0L);
+        long viewCount = NumberUtils.toLong(redisHash.get(FIELD_VIEW), 0L);
+        long favoriteCount = NumberUtils.toLong(redisHash.get(FIELD_FAVORITE), 0L);
+        return new CommonCount(viewCount, favoriteCount);
     }
 
     @Override

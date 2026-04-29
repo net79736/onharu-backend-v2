@@ -6,8 +6,6 @@ import java.util.Set;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import com.backend.onharu.utils.NumberUtils;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,33 +53,46 @@ public class RedisCountBulkUpdater {
         log.info("📊 [RedisCountBulkUpdater] 업데이트 대상: {}개 - type: {}", keys.size(), type);
 
         for (String key : keys) {
-            try {
-                Long id = strategy.extractIdFromKey(key);
-                if (id == null) {
-                    redisTemplate.delete(key);
-                    continue;
-                }
-
-                Map<Object, Object> redisHash = redisTemplate.opsForHash().entries(key);
-                if (redisHash == null || redisHash.isEmpty()) {
-                    redisTemplate.delete(key);
-                    continue;
-                }
-
-                long viewCount = NumberUtils.toLong(redisHash.get(StoreViewCountStrategy.FIELD_VIEW), 0L);
-                long favoriteCount = NumberUtils.toLong(redisHash.get(StoreViewCountStrategy.FIELD_FAVORITE), 0L);
-
-                // DB 업데이트(전략에서 절대값으로 반영)
-                strategy.updateToDatabase(id, new CommonCount(viewCount, favoriteCount));
-
-                redisTemplate.delete(key);
-
-                log.info("✅ [RedisCountBulkUpdater] DB 저장 완료 - type: {}, id: {}, view: {}, favorite: {}", type, id, viewCount, favoriteCount);
-            } catch (Exception e) {
-                log.error("❌ [RedisCountBulkUpdater] 저장 실패 - key: {}, 이유: {}", key, e.getMessage(), e);
-            }
+            processKey(type, strategy, key);
         }
 
         log.info("✅ [RedisCountBulkUpdater] 벌크 업데이트 완료 - type: {}", type);
+    }
+
+    private void processKey(DomainType type, CountStrategy strategy, String key) {
+        try {
+            // 1. 사전 검증 및 잘못된 데이터 삭제 (분리된 함수 호출)
+            if (isInvalidAndDeleted(key, strategy)) {
+                return;
+            }
+    
+            // 2. 본 작업 (이제 데이터가 안전하다는 것을 알고 진행)
+            Long id = strategy.extractIdFromKey(key);
+            Map<Object, Object> redisHash = redisTemplate.opsForHash().entries(key);
+            
+            CommonCount count = strategy.readFromRedisHash(redisHash);
+            strategy.updateToDatabase(id, count);
+            
+            redisTemplate.delete(key); // 작업 성공 후 삭제
+    
+            log.info("✅ [RedisCountBulkUpdater] DB 저장 완료 - type: {}, id: {}", type, id);
+        } catch (Exception e) {
+            log.error("❌ [RedisCountBulkUpdater] 저장 실패 - key: {}, 이유: {}", key, e.getMessage());
+        }
+    }
+    
+    /**
+     * 키가 유효하지 않거나 데이터가 없으면 Redis에서 삭제하고 true를 반환합니다.
+     */
+    private boolean isInvalidAndDeleted(String key, CountStrategy strategy) {
+        Long id = strategy.extractIdFromKey(key);
+        Map<Object, Object> redisHash = redisTemplate.opsForHash().entries(key);
+    
+        if (id == null || redisHash == null || redisHash.isEmpty()) {
+            redisTemplate.delete(key);
+            return true;
+        }
+        
+        return false;
     }
 }
