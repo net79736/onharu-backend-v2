@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import com.backend.onharu.domain.event.ReservationNotificationRabbitPublishPort;
 import com.backend.onharu.event.model.ReservationEvent;
-import com.backend.onharu.infra.rabbitmq.ReservationNotificationRabbitPublisher;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,14 +15,14 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class ReservationEventListner {
-    private final ObjectProvider<ReservationNotificationRabbitPublisher> reservationNotificationRabbitPublisherProvider; // RabbitMQ 발행 서비스 제공자
+    private final ObjectProvider<ReservationNotificationRabbitPublishPort> reservationNotificationRabbitPublisherProvider; // RabbitMQ 발행 서비스 제공자
     private final ReservationNotificationHistoryHandler reservationNotificationHistoryHandler; // 알림 히스토리 저장 핸들러
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleReservationEvent(ReservationEvent event) {
-        ReservationNotificationRabbitPublisher publisher = reservationNotificationRabbitPublisherProvider.getIfAvailable();
-        if (publisher != null) {
-            publisher.publishReservationNotification(event);
+        ReservationNotificationRabbitPublishPort port = reservationNotificationRabbitPublisherProvider.getIfAvailable();
+        if (port != null) {
+            port.publishReservationNotification(event);
             return;
         }
 

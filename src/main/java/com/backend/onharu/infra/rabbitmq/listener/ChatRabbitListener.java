@@ -1,4 +1,4 @@
-package com.backend.onharu.infra.rabbitmq;
+package com.backend.onharu.infra.rabbitmq.listener;
 
 import java.io.IOException;
 
@@ -7,6 +7,7 @@ import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
+
 import com.rabbitmq.client.Channel;
 
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "onharu.rabbitmq.enabled", havingValue = "true")
-public class OnharuChatEventsRabbitListener {
+public class ChatRabbitListener {
 
     @RabbitListener(queues = "${onharu.rabbitmq.chat-events-queue:onharu.chat.events}")
     public void onChatEvent(
@@ -37,3 +38,4 @@ public class OnharuChatEventsRabbitListener {
         channel.basicAck(deliveryTag, false);
     }
 }
+

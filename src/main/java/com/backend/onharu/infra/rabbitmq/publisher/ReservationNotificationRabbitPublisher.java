@@ -1,4 +1,4 @@
-package com.backend.onharu.infra.rabbitmq;
+package com.backend.onharu.infra.rabbitmq.publisher;
 
 import java.util.Map;
 
@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import com.backend.onharu.domain.event.ReservationNotificationRabbitPublishPort;
 import com.backend.onharu.event.model.ReservationEvent;
+import com.backend.onharu.event.model.ReservationMessageType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -23,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "onharu.rabbitmq.enabled", havingValue = "true")
-public class ReservationNotificationRabbitPublisher {
+public class ReservationNotificationRabbitPublisher implements ReservationNotificationRabbitPublishPort {
 
     private final RabbitTemplate rabbitTemplate;
     private final ObjectMapper objectMapper;
@@ -31,12 +33,13 @@ public class ReservationNotificationRabbitPublisher {
     @Value("${onharu.rabbitmq.reservation-notifications-queue:onharu.reservation.notifications}")
     private String reservationNotificationsQueue;
 
+    @Override
     public void publishReservationNotification(ReservationEvent event) {
         String correlationId = buildCorrelationId(event);
         try {
             String payload = objectMapper.writeValueAsString(
                     Map.of(
-                            "type", "RESERVATION_NOTIFICATION",
+                            "type", ReservationMessageType.RESERVATION_NOTIFICATION.value(),
                             "reservationId", event.reservationId(),
                             "ownerId", event.ownerId(),
                             "childId", event.childId(),

@@ -1,4 +1,4 @@
-package com.backend.onharu.infra.rabbitmq;
+package com.backend.onharu.infra.rabbitmq.publisher;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -15,6 +15,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.backend.onharu.domain.common.enums.NotificationHistoryType;
 import com.backend.onharu.event.model.ReservationEvent;
+import com.backend.onharu.event.model.ReservationMessageType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -46,7 +47,7 @@ class ReservationNotificationRabbitPublisherTest {
         verify(rabbitTemplate).convertAndSend(eq(""), eq("onharu.reservation.notifications"), body.capture());
 
         JsonNode root = objectMapper.readTree(body.getValue());
-        assertThat(root.path("type").asText()).isEqualTo("RESERVATION_NOTIFICATION");
+        assertThat(root.path("type").asText()).isEqualTo(ReservationMessageType.RESERVATION_NOTIFICATION.value());
         assertThat(root.path("reservationId").asLong()).isEqualTo(1L);
         assertThat(root.path("ownerId").asLong()).isEqualTo(10L);
         assertThat(root.path("childId").asLong()).isEqualTo(100L);

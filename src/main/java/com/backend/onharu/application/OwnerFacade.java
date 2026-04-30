@@ -337,12 +337,14 @@ public class OwnerFacade {
         // 예약 확정
         reservationCommandService.confirmReservation(new ConfirmReservationCommand(reservation.getId()));
 
-        applicationEventPublisher.publishEvent(new ReservationEvent(
+        applicationEventPublisher.publishEvent(
+            new ReservationEvent(
                 reservation.getId(),
                 owner.getId(),
                 reservation.getChild().getId(),
                 NotificationHistoryType.RESERVATION_CONFIRMED
-        ));
+            )
+        );
     }
 
     /**
@@ -366,12 +368,14 @@ public class OwnerFacade {
         // 예약 완료
         reservationCommandService.completeReservation(new CompleteReservationCommand(reservation.getId()));
 
-        applicationEventPublisher.publishEvent(new ReservationEvent(
+        applicationEventPublisher.publishEvent(
+            new ReservationEvent(
                 reservation.getId(),
                 owner.getId(),
                 reservation.getChild().getId(),
                 NotificationHistoryType.RESERVATION_COMPLETED
-        ));
+            )
+        );
 
         // 사업자(Owner) 의 나눔횟수 증가
         owner.increaseDistribution(1);
@@ -413,12 +417,14 @@ public class OwnerFacade {
         // 예약 취소
         reservationCommandService.cancelReservation(new CancelReservationCommand(reservation.getId(), UserType.OWNER, request.cancelReason()));
 
-        applicationEventPublisher.publishEvent(new ReservationEvent(
-            reservation.getId(),
-            owner.getId(),
-            reservation.getChild().getId(),
-            NotificationHistoryType.RESERVATION_REJECTED
-        ));
+        applicationEventPublisher.publishEvent(
+            new ReservationEvent(
+                reservation.getId(),
+                owner.getId(),
+                reservation.getChild().getId(),
+                NotificationHistoryType.RESERVATION_CANCELED
+            )
+        );
     }
 
     /**

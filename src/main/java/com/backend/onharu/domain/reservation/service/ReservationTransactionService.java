@@ -76,11 +76,13 @@ public class ReservationTransactionService {
         Reservation saved = reservationCommandService.createReservation(command, storeSchedule, child);
 
         // 예약 생성 이벤트 발행
-        applicationEventPublisher.publishEvent(new ReservationEvent(
+        applicationEventPublisher.publishEvent(
+            new ReservationEvent(
                 saved.getId(),
                 owner.getId(),
                 child.getId(),
                 RESERVATION_CREATED
-        ));
+            )
+        );
     }
 }

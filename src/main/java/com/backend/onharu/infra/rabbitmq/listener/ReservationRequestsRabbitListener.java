@@ -1,4 +1,4 @@
-package com.backend.onharu.infra.rabbitmq;
+package com.backend.onharu.infra.rabbitmq.listener;
 
 import java.io.IOException;
 
@@ -130,3 +130,4 @@ public class ReservationRequestsRabbitListener {
     ) {
     }
 }
+

@@ -1,4 +1,4 @@
-package com.backend.onharu.infra.rabbitmq;
+package com.backend.onharu.infra.rabbitmq.publisher;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -16,13 +16,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 채팅 이벤트 JSON 을 RabbitMQ 큐로 전송합니다.
+ * 채팅 이벤트 JSON 을 RabbitMQ 큐로 발행합니다.
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "onharu.rabbitmq.enabled", havingValue = "true")
-public class ChatRabbitPublishAdapter implements ChatRabbitPublishPort {
+public class ChatRabbitPublisher implements ChatRabbitPublishPort {
 
     private final RabbitTemplate rabbitTemplate;
     private final ObjectMapper objectMapper;
@@ -30,15 +30,6 @@ public class ChatRabbitPublishAdapter implements ChatRabbitPublishPort {
     @Value("${onharu.rabbitmq.chat-events-queue:onharu.chat.events}")
     private String chatEventsQueue; // RabbitMQ 채팅 이벤트 큐 이름. default: onharu.chat.events
 
-    /**
-     * 채팅 메시지 저장 직후 RabbitMQ 큐로 이벤트 전송
-     * 
-     * @param chatRoomId 채팅방 ID
-     * @param chatMessageId 채팅 메시지 ID
-     * @param senderId 채팅 메시지 발신자 ID
-     * @param content 채팅 메시지 내용
-     * @param createdAt 채팅 메시지 생성 시간
-     */
     @Override
     public void publishChatMessagePublished(
             long chatRoomId,
@@ -61,3 +52,4 @@ public class ChatRabbitPublishAdapter implements ChatRabbitPublishPort {
         }
     }
 }
+

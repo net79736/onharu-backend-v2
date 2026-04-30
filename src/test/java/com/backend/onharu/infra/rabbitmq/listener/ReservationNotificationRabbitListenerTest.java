@@ -1,4 +1,4 @@
-package com.backend.onharu.infra.rabbitmq;
+package com.backend.onharu.infra.rabbitmq.listener;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;

@@ -107,12 +107,14 @@ public class ChildFacade {
         reservationCommandService.cancelReservation(command);
 
         // 예약 취소 이벤트 발행
-        applicationEventPublisher.publishEvent(new ReservationEvent(
+        applicationEventPublisher.publishEvent(
+            new ReservationEvent(
                 command.reservationId(),
                 owner.getId(),
                 SecurityUtils.getCurrentUserId(),
                 RESERVATION_CANCELED
-        ));
+            )
+        );
     }
 
     /**

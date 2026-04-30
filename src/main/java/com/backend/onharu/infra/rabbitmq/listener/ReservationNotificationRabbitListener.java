@@ -1,4 +1,4 @@
-package com.backend.onharu.infra.rabbitmq;
+package com.backend.onharu.infra.rabbitmq.listener;
 
 import java.io.IOException;
 
@@ -44,18 +44,6 @@ public class ReservationNotificationRabbitListener {
     private final ObjectMapper objectMapper;
     private final ReservationNotificationHistoryHandler reservationNotificationHistoryHandler;
 
-    /**
-     * 이 메서드는 예약 알림 관련 메시지가 RabbitMQ 큐
-     * ({@code ${onharu.rabbitmq.reservation-notifications-queue:onharu.reservation.notifications}})
-     * 에 도착할 때마다 실행됩니다.
-     * 즉, 새로운 예약 상태 알림 이벤트가 큐에 쌓이면 자동으로 호출되어
-     * 메시지 파싱 및 예약 알림 처리 후 수동으로 ack/nack 처리합니다.
-     * 
-     * @param payload
-     * @param channel
-     * @param deliveryTag
-     * @throws IOException
-     */
     @RabbitListener(queues = "${onharu.rabbitmq.reservation-notifications-queue:onharu.reservation.notifications}")
     public void onReservationNotification(
             String payload,
@@ -67,8 +55,8 @@ public class ReservationNotificationRabbitListener {
 
         try {
             Parsed parsed = parse(payload);
-            event = parsed.event; // 예약 이벤트 객체 (ex: ReservationEvent(1L, 10L, 100L, NotificationHistoryType.RESERVATION_CREATED))
-            correlationId = parsed.correlationId; // 상관 관계 ID (ex: "reservation-1-RESERVATION_CREATED")
+            event = parsed.event;
+            correlationId = parsed.correlationId;
 
             log.info("rabbit reservation notification received correlationId={} reservationId={} notificationType={}", correlationId, event.reservationId(), event.type());
 
@@ -78,12 +66,10 @@ public class ReservationNotificationRabbitListener {
             channel.basicNack(deliveryTag, false, false);
             return;
         } catch (CoreException e) {
-            // 도메인 예외(검증/존재하지 않는 참조 등)는 재시도해도 계속 실패할 가능성이 높음 → DLQ.
             log.warn("RabbitMQ 예약 알림 처리 실패(CoreException) — DLQ로 이동: {}", e.getMessage());
             channel.basicNack(deliveryTag, false, false);
             return;
         } catch (Exception e) {
-            // 일시 장애(락/DB 순간 오류 등) 가능성을 고려해 재큐잉.
             log.error("RabbitMQ 예약 알림 처리 실패 — 재큐잉: {}", e.getMessage(), e);
             channel.basicNack(deliveryTag, false, true);
             return;
