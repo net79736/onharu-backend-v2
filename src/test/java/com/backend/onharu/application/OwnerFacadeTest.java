@@ -1,0 +1,777 @@
+package com.backend.onharu.application;
+
+import static com.backend.onharu.domain.support.error.ErrorType.Reservation.RESERVATION_STORE_ID_MISMATCH;
+import static com.backend.onharu.domain.support.error.ErrorType.Store.STORE_OWNER_MISMATCH;
+import static com.backend.onharu.domain.support.error.ErrorType.StoreSchedule.STORE_SCHEDULE_CANNOT_DELETE_HAS_RESERVATIONS;
+import static com.backend.onharu.domain.support.error.ErrorType.StoreSchedule.STORE_SCHEDULE_TIME_EXPIRED;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.backend.onharu.domain.child.model.Child;
+import com.backend.onharu.domain.common.enums.ProviderType;
+import com.backend.onharu.domain.common.enums.ReservationType;
+import com.backend.onharu.domain.common.enums.StatusType;
+import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.domain.level.model.Level;
+import com.backend.onharu.domain.owner.model.Owner;
+import com.backend.onharu.domain.reservation.model.Reservation;
+import com.backend.onharu.domain.store.dto.StoreWithFavoriteCount;
+import com.backend.onharu.domain.store.model.Category;
+import com.backend.onharu.domain.store.model.Store;
+import com.backend.onharu.domain.storeschedule.model.StoreSchedule;
+import com.backend.onharu.domain.support.error.CoreException;
+import com.backend.onharu.domain.user.model.User;
+import com.backend.onharu.infra.db.chat.ChatMessageJpaRepository;
+import com.backend.onharu.infra.db.chat.ChatParticipantJpaRepository;
+import com.backend.onharu.infra.db.chat.ChatRoomJpaRepository;
+import com.backend.onharu.infra.db.child.ChildJpaRepository;
+import com.backend.onharu.infra.db.favorite.FavoriteJpaRepository;
+import com.backend.onharu.infra.db.level.LevelJpaRepository;
+import com.backend.onharu.infra.db.notification.NotificationHistoryJpaRepository;
+import com.backend.onharu.infra.db.notification.NotificationJpaRepository;
+import com.backend.onharu.infra.db.owner.OwnerJpaRepository;
+import com.backend.onharu.infra.db.reservation.ReservationJpaRepository;
+import com.backend.onharu.infra.db.review.ReviewJpaRepository;
+import com.backend.onharu.infra.db.store.CategoryJpaRepository;
+import com.backend.onharu.infra.db.store.StoreJpaRepository;
+import com.backend.onharu.infra.db.storeschedule.StoreScheduleJpaRepository;
+import com.backend.onharu.infra.db.user.UserJpaRepository;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.RemoveAvailableDatesRequest;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.SetAvailableDatesRequest;
+import com.backend.onharu.interfaces.api.dto.OwnerControllerDto.StoreScheduleRequest;
+import com.backend.onharu.interfaces.api.dto.ReservationStatusFilter;
+import com.backend.onharu.domain.common.TestDataHelper;
+
+@SpringBootTest
+@ActiveProfiles("test")
+@DisplayName("OwnerFacade 단위 테스트")
+class OwnerFacadeTest {
+
+    @Autowired
+    private OwnerFacade ownerFacade;
+
+    @Autowired
+
+
+    private TestDataHelper testDataHelper;
+
+
+    @Autowired
+    private OwnerJpaRepository ownerJpaRepository;
+
+    @Autowired
+    private UserJpaRepository userJpaRepository;
+
+    @Autowired
+    private CategoryJpaRepository categoryJpaRepository;
+
+    @Autowired
+    private StoreJpaRepository storeJpaRepository;
+
+    @Autowired
+    private StoreScheduleJpaRepository storeScheduleJpaRepository;
+
+    @Autowired
+    private ReservationJpaRepository reservationJpaRepository;
+
+    @Autowired
+    private ChildJpaRepository childJpaRepository;
+
+    @Autowired
+    private FavoriteJpaRepository favoriteJpaRepository;
+
+    @Autowired
+    private LevelJpaRepository levelJpaRepository;
+
+    @Autowired
+    private NotificationHistoryJpaRepository notificationHistoryJpaRepository;
+
+    @Autowired
+    private NotificationJpaRepository notificationJpaRepository;
+
+    @Autowired
+    private ReviewJpaRepository reviewJpaRepository;
+
+    @Autowired
+    private ChatMessageJpaRepository chatMessageJpaRepository;
+
+    @Autowired
+    private ChatRoomJpaRepository chatRoomJpaRepository;
+
+    @Autowired
+    private ChatParticipantJpaRepository chatParticipantJpaRepository;
+
+    @BeforeEach
+    void setUp() {
+
+        testDataHelper.cleanAll();
+
+    }
+
+    /**
+     * 테스트용 User 생성 헬퍼 메서드 (사업자용)
+     */
+    private User createTestUserForOwner(String loginId, String name, String phone) {
+        return userJpaRepository.save(
+                User.builder()
+                        .loginId(loginId)
+                        .password("password123")
+                        .name(name)
+                        .phone(phone)
+                        .userType(UserType.OWNER)
+                        .providerType(ProviderType.LOCAL)
+                        .statusType(StatusType.ACTIVE)
+                        .build()
+        );
+    }
+
+    /**
+     * 테스트용 Level 생성 헬퍼 메서드
+     */
+    private Level createTestLevel(String levelName) {
+        return levelJpaRepository.save(
+                Level.builder()
+                        .name(levelName)
+                        .build()
+        );
+    }
+
+    /**
+     * 테스트용 Owner 생성 헬퍼 메서드 (User, Level 과 함께 생성)
+     */
+    private Owner createTestOwner(String loginId, String name, String phone, String levelName, String businessNumber) {
+        User user = createTestUserForOwner(loginId, name, phone);
+        Level level = createTestLevel(levelName);
+
+        return ownerJpaRepository.save(
+                Owner.builder()
+                        .user(user)
+                        .level(level)
+                        .businessNumber(businessNumber)
+                        .build()
+        );
+    }
+
+    /**
+     * 테스트용 Category 생성 헬퍼 메서드
+     */
+    private Category createTestCategory(String name) {
+        return categoryJpaRepository.save(Category.builder().name(name).build());
+    }
+
+    /**
+     * 테스트용 Store 생성 헬퍼 메서드
+     */
+    private Store createTestStore(String name, Owner owner, Category category) {
+        return storeJpaRepository.save(Store.builder()
+                .name(name)
+                .owner(owner)
+                .category(category)
+                .address("서울시 강남구")
+                .phone("0212345678")
+                .isOpen(true)
+                .build());
+    }
+
+    /**
+     * 테스트용 StoreSchedule 생성 헬퍼 메서드
+     */
+    private StoreSchedule createTestStoreSchedule(Store store, int startHour, int endHour) {
+        return storeScheduleJpaRepository.save(
+                StoreSchedule.builder()
+                        .store(store)
+                        .scheduleDate(LocalDate.now().plusDays(1))
+                        .startTime(LocalTime.of(startHour, 0))
+                        .endTime(LocalTime.of(endHour, 0))
+                        .maxPeople(10)
+                        .build()
+        );
+    }
+
+    /**
+     * 테스트용 User 생성 헬퍼 메서드 (아동용)
+     */
+    private User createTestUserForChild(String loginId, String name, String phone) {
+        return userJpaRepository.save(
+                User.builder()
+                        .loginId(loginId)
+                        .password("password123")
+                        .name(name)
+                        .phone(phone)
+                        .providerType(ProviderType.LOCAL)
+                        .userType(UserType.CHILD)
+                        .statusType(StatusType.ACTIVE)
+                        .build()
+        );
+    }
+
+    /**
+     * 테스트용 Child 생성 헬퍼 메서드 (User와 함께 생성)
+     */
+    private Child createTestChild(String loginId, String name, String phone) {
+        User user = createTestUserForChild(loginId, name, phone);
+        return childJpaRepository.save(
+                Child.builder()
+                        .user(user)
+                        .nickname(name + "테스트 닉네임")
+                        .isVerified(true)
+                        .build()
+        );
+    }
+
+    @Nested
+    @DisplayName("사업자의 가게 목록 조회 테스트")
+    class GetMyStoresTest {
+
+        @Test
+        @DisplayName("사업자의 가게 목록 조회 성공")
+        void shouldGetMyStores() {
+            // given
+            Owner owner = createTestOwner("test_owner_get_stores", "테스트 사업자", "01012345678", "비기너", "1234567890"); // 사업자 생성
+            Category category = createTestCategory("식당");
+            Store store1 = createTestStore("테스트 가게1", owner, category); // 가게1 생성
+            Store store2 = createTestStore("테스트 가게2", owner, category); // 가게2 생성
+            Pageable pageable = Pageable.ofSize(10);
+
+            // when
+            Page<StoreWithFavoriteCount> stores = ownerFacade.getMyStores(owner.getId(), pageable); // 사업자의 가게 목록 조회
+
+            // then
+            assertThat(stores).isNotNull();
+            assertThat(stores.getTotalElements()).isEqualTo(2); // 가게 2개 조회되어야 함
+            assertThat(stores).allMatch(s -> s.store().getOwner().getId().equals(owner.getId())); // 사업자 ID와 일치하는지 확인
+            // 조회된 가게 목록에 생성한 가게들이 포함되어 있는지 확인
+            assertThat(stores.getContent()).extracting(StoreWithFavoriteCount::store).extracting(Store::getId).contains(store1.getId(), store2.getId());
+
+            System.out.println("✅ 사업자의 가게 목록 조회 성공");
+            System.out.println("   - 사업자 ID: " + owner.getId());
+            System.out.println("   - 가게 개수: " + stores.getTotalElements());
+        }
+
+        @Test
+        @DisplayName("가게가 없을 때 빈 목록 반환")
+        void shouldReturnEmptyListWhenNoStores() {
+            // given
+            Owner owner = createTestOwner("test_owner_empty_stores", "테스트 사업자", "01012345678", "새싹2", "1234567890");
+            Pageable pageable = Pageable.ofSize(10);
+
+            // when
+            Page<StoreWithFavoriteCount> stores = ownerFacade.getMyStores(owner.getId(), pageable);
+
+            // then
+            assertThat(stores).isNotNull();
+            assertThat(stores).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("사업자 가게의 예약 목록 조회 테스트")
+    class GetStoreBookingsTest {
+
+        @Test
+        @DisplayName("사업자 가게의 예약 목록 조회 성공")
+        @Transactional
+        void shouldGetStoreBookings() {
+            // given
+            Owner owner = createTestOwner("test_owner_get_bookings", "테스트 사업자", "01012345678", "새싹3", "1234567890"); // 사업자 생성
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category); // 가게 생성
+            StoreSchedule schedule1 = createTestStoreSchedule(store, 10, 11); // 가게 일정1 생성
+            StoreSchedule schedule2 = createTestStoreSchedule(store, 14, 15); // 가게 일정2 생성
+
+            Child child1 = createTestChild("test_child_get_bookings_1", "테스트 아동1", "01011112222"); // 아동1 생성
+            Child child2 = createTestChild("test_child_get_bookings_2", "테스트 아동2", "01033334444"); // 아동2 생성
+
+            reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(child1)
+                            .storeSchedule(schedule1)
+                            .people(2)
+                            .status(ReservationType.WAITING)
+                            .build()
+            );
+            reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(child2)
+                            .storeSchedule(schedule2)
+                            .people(3)
+                            .status(ReservationType.WAITING)
+                            .build()
+            );
+
+            // when
+            Page<Reservation> bookings = ownerFacade.getStoreBookings(owner.getId(), store.getId(), ReservationStatusFilter.WAITING, Pageable.ofSize(10));
+
+            // then
+            assertThat(bookings).isNotNull();
+            assertThat(bookings.getTotalElements()).isEqualTo(2);
+            assertThat(bookings).allMatch(r -> r.getStoreSchedule().getStore().getId().equals(store.getId()));
+
+            // 예약 상세 정보 확인
+            Reservation booking1 = bookings.stream()
+                    .filter(r -> r.getStoreSchedule().getId().equals(schedule1.getId()))
+                    .findFirst()
+                    .orElse(null);
+            assertThat(booking1).isNotNull();
+            assertThat(booking1.getChild().getId()).isEqualTo(child1.getId());
+            assertThat(booking1.getPeople()).isEqualTo(2);
+
+            Reservation booking2 = bookings.stream()
+                    .filter(r -> r.getStoreSchedule().getId().equals(schedule2.getId()))
+                    .findFirst()
+                    .orElse(null);
+            assertThat(booking2).isNotNull();
+            assertThat(booking2.getChild().getId()).isEqualTo(child2.getId());
+            assertThat(booking2.getPeople()).isEqualTo(3);
+
+            System.out.println("✅ 사업자 가게의 예약 목록 조회 성공");
+            System.out.println("   - 가게 ID: " + store.getId());
+            System.out.println("   - 예약 개수: " + bookings.getTotalElements());
+            System.out.println("   - 예약1: 아동 ID " + booking1.getChild().getId() + ", 인원 " + booking1.getPeople());
+            System.out.println("   - 예약2: 아동 ID " + booking2.getChild().getId() + ", 인원 " + booking2.getPeople());
+        }
+
+        @Test
+        @DisplayName("다른 사업자의 가게 예약 조회 시 예외 발생")
+        @Transactional
+        void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
+            // given
+            String uniqueLoginId1 = "test_owner1_bookings_" + UUID.randomUUID().toString().substring(0, 8);
+            String uniqueLoginId2 = "test_owner2_bookings_" + UUID.randomUUID().toString().substring(0, 8);
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹4", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹5", "2234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner1, category);
+
+            // when & then
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> ownerFacade.getStoreBookings(owner2.getId(), store.getId(), ReservationStatusFilter.WAITING, Pageable.ofSize(10))
+            );
+
+            assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
+        }
+
+        @Test
+        @DisplayName("동일 스케줄에 취소+재예약 시 목록·단건 조회 모두 최신 예약 1건만 반환")
+        @Transactional
+        void shouldGetLatestReservationOnlyWhenSameScheduleHasCanceledAndWaiting() {
+            // given: schedule에 child1 CANCELED → child2 WAITING (취소 후 재예약)
+            Child child1 = createTestChild("test_child_canceled", "취소한 아동", "01011111111");
+            Child child2 = createTestChild("test_child_rebooked", "재예약한 아동", "01022222222");
+            Owner owner = createTestOwner("test_owner_latest", "테스트 사업자", "01033334444", "새싹6", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category);
+            StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
+
+            reservationJpaRepository.save(
+                Reservation.builder()
+                    .child(child1)
+                    .storeSchedule(storeSchedule)
+                    .people(2)
+                    .status(ReservationType.CANCELED)
+                    .build()
+            );
+            Reservation latestReservation = reservationJpaRepository.save(
+                Reservation.builder()
+                    .child(child2)
+                    .storeSchedule(storeSchedule)
+                    .people(3)
+                    .status(ReservationType.WAITING)
+                    .build()
+            );
+
+            // when
+            Page<Reservation> bookings = ownerFacade.getStoreBookings(owner.getId(), store.getId(), ReservationStatusFilter.WAITING, Pageable.ofSize(10)); // 예약 목록 조회
+            Reservation singleBooking = ownerFacade.getStoreBooking(latestReservation.getId(), owner.getId(), store.getId()); // 예약 단건 조회
+
+            // then: 목록 조회 - store_schedule당 최신 1건만
+            assertThat(bookings).hasSize(1);
+            assertThat(bookings.getContent().get(0).getId()).isEqualTo(latestReservation.getId()); // 예약 ID 일치
+            assertThat(bookings.getContent().get(0).getStatus()).isEqualTo(ReservationType.WAITING); // 예약 상태 일치
+            assertThat(bookings.getContent().get(0).getChild().getId()).isEqualTo(child2.getId()); // 아동 ID 일치
+
+            // then: 단건 조회 - 목록에서 반환된 최신 건으로 상세 조회 가능
+            assertThat(singleBooking.getId()).isEqualTo(latestReservation.getId()); // 예약 ID 일치
+            assertThat(singleBooking.getStatus()).isEqualTo(ReservationType.WAITING); // 예약 상태 일치
+            assertThat(singleBooking.getChild().getId()).isEqualTo(child2.getId()); // 아동 ID 일치
+        }
+    }
+
+    @Nested
+    @DisplayName("사업자의 특정 예약의 상세 정보 조회 테스트")
+    class GetStoreBookingTest {
+
+        @Test
+        @DisplayName("성공: 사업자가 가게 주인이고, 예약이 해당 가게의 예약인 경우")
+        @Transactional
+        void shouldGetStoreBooking_WhenOwnerIsStoreOwnerAndReservationBelongsToStore() {
+            // given: 사업자 O → 가게 O → 예약 O (모두 일치)
+            Owner owner = createTestOwner("test_owner_get_booking", "테스트 사업자", "01012345678", "새싹7", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category);
+            StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
+            Child child = createTestChild("test_child_get_booking", "테스트 아동", "01011112222");
+
+            Reservation reservation = reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(child)
+                            .storeSchedule(storeSchedule)
+                            .people(2)
+                            .status(ReservationType.WAITING)
+                            .build()
+            );
+
+            // when
+            Reservation result = ownerFacade.getStoreBooking(reservation.getId(), owner.getId(), store.getId());
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.getId()).isEqualTo(reservation.getId());
+            assertThat(result.getStoreSchedule().getStore().getId()).isEqualTo(store.getId());
+            assertThat(result.getPeople()).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("실패: 사업자가 가게 주인이 아닌 경우")
+        @Transactional
+        void shouldThrowException_WhenOwnerIsNotStoreOwner() {
+            // given: owner1의 가게, owner2가 조회 시도
+            String uniqueLoginId1 = "test_owner1_booking_" + UUID.randomUUID().toString().substring(0, 8);
+            String uniqueLoginId2 = "test_owner2_booking_" + UUID.randomUUID().toString().substring(0, 8);
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹8", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹9", "2234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner1, category);
+            StoreSchedule storeSchedule = createTestStoreSchedule(store, 10, 11);
+            Child child = createTestChild("test_child_booking_other_owner", "테스트 아동", "01011112222");
+
+            Reservation reservation = reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(child)
+                            .storeSchedule(storeSchedule)
+                            .people(2)
+                            .status(ReservationType.WAITING)
+                            .build()
+            );
+
+            // when & then: owner2가 owner1의 가게 예약 조회 시도 → STORE_OWNER_MISMATCH
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> ownerFacade.getStoreBooking(reservation.getId(), owner2.getId(), store.getId())
+            );
+            assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
+        }
+
+        @Test
+        @DisplayName("실패: 예약이 해당 가게의 예약이 아닌 경우")
+        @Transactional
+        void shouldThrowException_WhenReservationBelongsToOtherStore() {
+            // given: 사업자 O, 가게1 O, 예약은 가게2에 속함
+            Owner owner = createTestOwner("test_owner_get_booking_other", "테스트 사업자", "01012345678", "새싹10", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store1 = createTestStore("테스트 가게1", owner, category);
+            Store store2 = createTestStore("테스트 가게2", owner, category);
+            StoreSchedule storeSchedule2 = createTestStoreSchedule(store2, 14, 15);
+            Child child = createTestChild("test_child_get_booking_other_store", "테스트 아동", "01011112222");
+
+            // 예약은 store2에 속함
+            Reservation reservation = reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(child)
+                            .storeSchedule(storeSchedule2)
+                            .people(2)
+                            .status(ReservationType.WAITING)
+                            .build()
+            );
+
+            // when & then: store1의 예약으로 조회 시도 → RESERVATION_STORE_ID_MISMATCH
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> ownerFacade.getStoreBooking(reservation.getId(), owner.getId(), store1.getId())
+            );
+            assertThat(exception.getErrorType()).isEqualTo(RESERVATION_STORE_ID_MISMATCH);
+        }
+
+        @Test
+        @DisplayName("실패: 사업자가 가게 주인이 아니고, 예약도 해당 가게의 예약이 아닌 경우")
+        @Transactional
+        void shouldThrowException_WhenOwnerIsNotStoreOwnerAndReservationBelongsToOtherStore() {
+            // given: owner1의 가게1, owner2의 가게2, 예약은 가게1에 속함
+            // owner2가 가게1의 예약을 storeId=가게1로 조회 시도 → store.belongsTo(owner)에서 먼저 실패
+            String uniqueLoginId1 = "test_owner1_booking_both_" + UUID.randomUUID().toString().substring(0, 8);
+            String uniqueLoginId2 = "test_owner2_booking_both_" + UUID.randomUUID().toString().substring(0, 8);
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹11", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹12", "2234567890");
+            Category category = createTestCategory("식당");
+            Store store1 = createTestStore("테스트 가게1", owner1, category);
+            StoreSchedule storeSchedule1 = createTestStoreSchedule(store1, 10, 11);
+            Child child = createTestChild("test_child_booking_both_mismatch", "테스트 아동", "01011112222");
+
+            Reservation reservation = reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(child)
+                            .storeSchedule(storeSchedule1)
+                            .people(2)
+                            .status(ReservationType.WAITING)
+                            .build()
+            );
+
+            // when & then: owner2가 가게1의 예약 조회 시도 → store 검증에서 먼저 STORE_OWNER_MISMATCH
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> ownerFacade.getStoreBooking(reservation.getId(), owner2.getId(), store1.getId())
+            );
+            assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
+        }
+    }
+
+    @Nested
+    @DisplayName("예약 가능한 날짜 생성 테스트")
+    class SetAvailableDatesTest {
+
+        @Test
+        @DisplayName("예약 가능한 날짜 생성 성공")
+        @Transactional
+        void shouldSetAvailableDates() {
+            // given
+            Owner owner = createTestOwner("test_owner_set_dates", "테스트 사업자", "01012345678", "새싹13_" + UUID.randomUUID().toString().substring(0, 8), "1234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category);
+
+            List<StoreScheduleRequest> scheduleRequests = List.of(
+                    new StoreScheduleRequest(
+                            LocalDate.now().plusDays(1),
+                            LocalTime.of(10, 0),
+                            LocalTime.of(11, 0),
+                            10
+                    ),
+                    new StoreScheduleRequest(
+                            LocalDate.now().plusDays(2),
+                            LocalTime.of(14, 0),
+                            LocalTime.of(15, 0),
+                            15
+                    )
+            );
+
+            SetAvailableDatesRequest request = new SetAvailableDatesRequest(scheduleRequests);
+
+            // when
+            ownerFacade.setAvailableDates(store.getId(), owner.getId(), request);
+
+            // then
+            List<StoreSchedule> schedules = storeScheduleJpaRepository.findByStoreId(store.getId());
+            assertThat(schedules).isNotNull();
+            assertThat(schedules).hasSize(2);
+            assertThat(schedules).allMatch(s -> s.getStore().getId().equals(store.getId()));
+
+            System.out.println("✅ 예약 가능한 날짜 생성 성공");
+            System.out.println("   - 가게 ID: " + store.getId());
+            System.out.println("   - 일정 개수: " + schedules.size());
+        }
+
+        @Test
+        @DisplayName("예약 가능한 날짜 생성 실패 - 오늘의 시작 시간이 지남")
+        void shouldThrowExceptionWhenSetAvailableDatesTimeExpiredToday() {
+            // given
+            Owner owner = createTestOwner("test_owner_set_dates_expired", "테스트 사업자", "01012345678", "새싹13_" + UUID.randomUUID().toString().substring(0, 8), "1234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category);
+
+            List<StoreScheduleRequest> scheduleRequests = List.of(
+                    new StoreScheduleRequest(
+                            LocalDate.now(),
+                            LocalTime.of(0, 0),
+                            LocalTime.of(1, 0),
+                            10
+                    )
+            );
+
+            SetAvailableDatesRequest request = new SetAvailableDatesRequest(scheduleRequests);
+
+            // when & then
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> ownerFacade.setAvailableDates(store.getId(), owner.getId(), request)
+            );
+
+            assertThat(exception.getErrorType()).isEqualTo(STORE_SCHEDULE_TIME_EXPIRED);
+        }
+
+        @Test
+        @DisplayName("다른 사업자의 가게에 일정 생성 시 예외 발생")
+        void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
+            // given
+            String uniqueLoginId1 = "test_owner1_dates_" + UUID.randomUUID().toString().substring(0, 8);
+            String uniqueLoginId2 = "test_owner2_dates_" + UUID.randomUUID().toString().substring(0, 8);
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹14", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹15", "2234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner1, category);
+
+            List<StoreScheduleRequest> scheduleRequests = List.of(
+                    new StoreScheduleRequest(
+                            LocalDate.now().plusDays(1),
+                            LocalTime.of(10, 0),
+                            LocalTime.of(11, 0),
+                            10
+                    )
+            );
+
+            SetAvailableDatesRequest request = new SetAvailableDatesRequest(scheduleRequests);
+
+            // when & then
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> ownerFacade.setAvailableDates(store.getId(), owner2.getId(), request)
+            );
+
+            assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
+        }
+    }
+
+    @Nested
+    @DisplayName("예약 가능한 날짜 삭제 테스트")
+    class RemoveAvailableDatesTest {
+
+        @Test
+        @DisplayName("예약 가능한 날짜 삭제 성공")
+        void shouldRemoveAvailableDates() {
+            // given
+            Owner owner = createTestOwner("test_owner_remove_dates", "테스트 사업자", "01012345678", "새싹16", "1234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner, category);
+
+            StoreSchedule schedule1 = createTestStoreSchedule(store, 10, 11);
+            StoreSchedule schedule2 = createTestStoreSchedule(store, 14, 15);
+
+            RemoveAvailableDatesRequest request = new RemoveAvailableDatesRequest(
+                    List.of(schedule1.getId(), schedule2.getId())
+            );
+
+            // when
+            ownerFacade.removeAvailableDates(store.getId(), owner.getId(), request);
+
+            // then
+            List<StoreSchedule> remainingSchedules = storeScheduleJpaRepository.findByStoreId(store.getId());
+            assertThat(remainingSchedules).isEmpty();
+
+            System.out.println("✅ 예약 가능한 날짜 삭제 성공");
+            System.out.println("   - 가게 ID: " + store.getId());
+            System.out.println("   - 삭제된 일정 개수: 2");
+        }
+
+        @Test
+        @DisplayName("다른 사업자의 가게 일정 삭제 시 예외 발생")
+        void shouldThrowExceptionWhenStoreBelongsToOtherOwner() {
+            // given
+            String uniqueLoginId1 = "test_owner1_remove_" + UUID.randomUUID().toString().substring(0, 8);
+            String uniqueLoginId2 = "test_owner2_remove_" + UUID.randomUUID().toString().substring(0, 8);
+            Owner owner1 = createTestOwner(uniqueLoginId1, "테스트 사업자1", "01012345678", "새싹17", "1234567890");
+            Owner owner2 = createTestOwner(uniqueLoginId2, "테스트 사업자2", "01087654321", "새싹18", "2234567890");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("테스트 가게", owner1, category);
+
+            StoreSchedule schedule = createTestStoreSchedule(store, 10, 11);
+
+            RemoveAvailableDatesRequest request = new RemoveAvailableDatesRequest(
+                    List.of(schedule.getId())
+            );
+
+            // when & then
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> ownerFacade.removeAvailableDates(store.getId(), owner2.getId(), request)
+            );
+
+            assertThat(exception.getErrorType()).isEqualTo(STORE_OWNER_MISMATCH);
+        }
+
+        @Test
+        @DisplayName("아동이 예약한 일정은 사업자가 삭제할 수 없음")
+        void shouldThrowWhenRemovingScheduleWithActiveChildReservation() {
+            Owner owner = createTestOwner("test_owner_remove_blocked", "테스트 사업자", "01044445555", "새싹19", "4444555566");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("예약 걸린 가게", owner, category);
+            StoreSchedule schedule = createTestStoreSchedule(store, 10, 11);
+            Child child = createTestChild("test_child_schedule_delete", "예약 아동", "01077776666");
+
+            reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(child)
+                            .storeSchedule(schedule)
+                            .people(2)
+                            .status(ReservationType.WAITING)
+                            .build()
+            );
+
+            RemoveAvailableDatesRequest request = new RemoveAvailableDatesRequest(List.of(schedule.getId()));
+
+            CoreException exception = Assertions.assertThrows(
+                    CoreException.class,
+                    () -> ownerFacade.removeAvailableDates(store.getId(), owner.getId(), request)
+            );
+
+            assertThat(exception.getErrorType()).isEqualTo(STORE_SCHEDULE_CANNOT_DELETE_HAS_RESERVATIONS);
+            assertThat(storeScheduleJpaRepository.findById(schedule.getId())).isPresent();
+        }
+
+        @Test
+        @DisplayName("예약 건이 없는 일정은 사업자가 삭제할 수 있음")
+        void shouldRemoveScheduleWhenNoReservations() {
+            Owner owner = createTestOwner("test_owner_remove_empty", "테스트 사업자", "01055556666", "새싹20", "5555666677");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("예약 없는 가게", owner, category);
+            StoreSchedule schedule = createTestStoreSchedule(store, 10, 11);
+
+            RemoveAvailableDatesRequest request = new RemoveAvailableDatesRequest(List.of(schedule.getId()));
+
+            ownerFacade.removeAvailableDates(store.getId(), owner.getId(), request);
+
+            assertThat(storeScheduleJpaRepository.findByStoreId(store.getId())).isEmpty();
+            assertThat(storeScheduleJpaRepository.findById(schedule.getId())).isEmpty();
+        }
+
+        @Test
+        @DisplayName("취소된 예약만 남은 일정은 사업자가 삭제할 수 있음")
+        void shouldRemoveScheduleWhenOnlyCanceledReservation() {
+            Owner owner = createTestOwner("test_owner_remove_canceled_only", "테스트 사업자", "01066667777", "새싹21", "6666777788");
+            Category category = createTestCategory("식당");
+            Store store = createTestStore("취소만 있는 가게", owner, category);
+            StoreSchedule schedule = createTestStoreSchedule(store, 10, 11);
+            Child child = createTestChild("test_child_canceled_only_slot", "취소 아동", "01088889999");
+
+            reservationJpaRepository.save(
+                    Reservation.builder()
+                            .child(child)
+                            .storeSchedule(schedule)
+                            .people(2)
+                            .status(ReservationType.CANCELED)
+                            .build()
+            );
+
+            RemoveAvailableDatesRequest request = new RemoveAvailableDatesRequest(List.of(schedule.getId()));
+
+            ownerFacade.removeAvailableDates(store.getId(), owner.getId(), request);
+
+            assertThat(storeScheduleJpaRepository.findByStoreId(store.getId())).isEmpty();
+            assertThat(storeScheduleJpaRepository.findById(schedule.getId())).isEmpty();
+        }
+    }
+}

@@ -1,0 +1,62 @@
+spring:
+  application:
+    is-secure: false
+    front-domain: localhost
+
+  datasource:
+    url: jdbc:h2:mem:onharu-test;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+
+  sql:
+    init:
+      mode: never
+
+  mail:
+    host: localhost
+    port: 25
+    username: test
+    password: test
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+logging:
+  level:
+    org.hibernate.sql: debug
+    org.hibernate.type.descriptor.sql: trace
+
+minio:
+  url: http://localhost:9000
+  access-key: test-access-key
+  secret-key: test-secret-key
+  region: us-east-1
+  bucket: test-bucket
+
+SMTP_HOST: localhost
+SMTP_PORT: 25
+SMTP_USERNAME: test
+SMTP_PASSWORD: test
+
+# 국세청 API 호출 테스트용
+external:
+  nts:
+    base-url: https://api.odcloud.kr/api/nts-businessman/v1/status
+    serviceKey: test
+    connect-timeout: 5000
+    read-timeout: 5000

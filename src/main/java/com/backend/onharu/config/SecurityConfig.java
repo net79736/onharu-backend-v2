@@ -1,0 +1,144 @@
+package com.backend.onharu.config;
+
+import java.util.List;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import com.backend.onharu.domain.common.enums.UserType;
+import com.backend.onharu.infra.security.oauth.SocialUserService;
+import com.backend.onharu.infra.security.oauth.handler.OAuth2FailureHandler;
+import com.backend.onharu.infra.security.oauth.handler.OAuth2SuccessHandler;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Profile("!test")
+@Slf4j
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    protected static final String[] PUBLIC_PATH = {
+            "/",
+            "/index.html",
+            "/oauth2/**", "/login/oauth2/**", "/signup/**",
+            "/js/**", // 채팅 UI 자바스크립트
+            "/partials/**", // 채팅 UI 파트
+            "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**",
+            "/error", "/favicon.ico",
+            "/api/users/login/**", "/api/users/signup/**",
+            "/api/users/logout/**", "/api/users/profile/**",
+            "/api/levels/**", // 레벨 관련 API
+            "/api/childrens/**", // 결식 아동 관련 API
+            "/api/owners/**", // 사업자 관련 API
+            "/api/admins/**", // 관리자 관련 API
+            "/api/stores/**", // 가게 관련 API
+            "/api/store-schedules/**", // 가게 스케줄 관련 API
+            "/api/reviews/**", // 가게리뷰 관련 API,
+            "/api/favorites/**", // 찜 관련 API,
+            "/api/upload/**", // S3 파일 업로드 관련 API
+            "/api/auth/**", // 인증 관련 API
+            "/api/files/**", // 파일(첨부) 메타데이터 API
+            "/api/notifications/**", // 알림 관련 API
+            "/api/chats/**",   // 채팅 관련 API
+            "/ws-chat", "/ws-chat/**", // 웹소켓 관련 경로
+    };
+
+    protected static final String[] AUTHENTICATE_PATH = {
+            "/api/users/logout/**", "/api/users/me/**", "/api/users", "/api/users/search"
+    };
+
+    protected static final String[] ROLE_CHILD_PATH = {
+            "/api/children/**"
+    };
+
+    protected static final String[] ROLE_OWNER_PATH = {
+            "/api/owners/**"
+    };
+
+    protected static final String[] ROLE_ADMIN_PATH = {
+            "/api/admins/**"
+    };
+
+    private static final String PORT_FRONT_LOCAL = "http://localhost:3000";
+    private static final String PORT_BACK_LOCAL = "http://localhost:8080";
+
+    private final SocialUserService socialUserService;
+    private final SessionConfig sessionConfig;
+    private final ServerUrlProperties serverUrlProperties;
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(List.of(PORT_FRONT_LOCAL, PORT_BACK_LOCAL, serverUrlProperties.getFront(), serverUrlProperties.getBack()));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(List.of("Set-Cookie"));
+        configuration.setMaxAge(6000L); // 100분
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, OAuth2SuccessHandler oAuth2SuccessHandler, OAuth2FailureHandler oAuth2FailureHandler) throws Exception {
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+        ;
+
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PUBLIC_PATH).permitAll()
+                        .requestMatchers(AUTHENTICATE_PATH).authenticated()
+                        .requestMatchers(ROLE_CHILD_PATH).hasRole(UserType.CHILD.name())
+                        .requestMatchers(ROLE_OWNER_PATH).hasRole(UserType.OWNER.name())
+                        .requestMatchers(ROLE_ADMIN_PATH).hasRole(UserType.ADMIN.name())
+                )
+        ;
+
+        http
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(socialUserService)
+                        )
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
+                )
+        ;
+
+        http
+                .sessionManagement(session -> session
+                        .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::changeSessionId)
+                        .maximumSessions(5) // 최대 세션 제한 (동시 로그인 5개 제한)
+                        .maxSessionsPreventsLogin(false) // 최대 세션 초과시, 가장 오래된 세션을 종료하고 새 세션 생성
+                        .sessionRegistry(sessionConfig.sessionRegistry())
+                )
+        ;
+        return http.build();
+    }
+}

@@ -1,7 +1,9 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.5.9'
+	id 'org.springframework.boot' version '3.3.4'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id "org.sonarqube" version "4.4.1.3373"
+	id 'jacoco' // Jacoco 플러그인 추가
 }
 
 group = 'com.backend'
@@ -12,6 +14,10 @@ java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
 	}
+}
+
+bootJar {
+	enabled = true
 }
 
 configurations {
@@ -26,13 +32,150 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	// Apache POI (Excel 처리)
+	implementation 'org.apache.poi:poi-ooxml:5.2.5'
+	
+	// Swagger
+	implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.1.0'
+
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
+	// P6Spy
+	runtimeOnly 'p6spy:p6spy:3.9.1'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// 테스트용 인메모리 DB(H2)
+	testRuntimeOnly 'com.h2database:h2'
+
+    // commons-io 파일 처리 라이브러리
+    implementation 'commons-io:commons-io:2.14.0'
+
+    // Apache Commons 의존성 추가
+    implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation 'org.apache.commons:commons-lang3:3.17.0'
+
+	// AWS S3 SDK 의존성 추가
+	implementation platform('software.amazon.awssdk:bom:2.20.26')
+	implementation 'software.amazon.awssdk:s3'
+	implementation 'software.amazon.awssdk:auth'
+
+	// Validation 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// Redis (최근 검색어 등)
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	// Spring Cache Abstraction (Redis CacheManager)
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	// Redis 캐시 JSON 직렬화 시 JPA/Hibernate 프록시·지연 로딩 처리
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate6'
+	// Redisson (분산락)
+	implementation 'org.redisson:redisson-spring-boot-starter:3.16.4'
+	// 임베디드 Redis: TestRedisConfiguration 은 src/test/java + AutoConfiguration.imports 로만 로드
+	testImplementation 'com.github.codemonstur:embedded-redis:1.4.3'
+
+	// OAuth2
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	// Security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	testImplementation 'org.springframework.security:spring-security-test'
+
+	// SMTP 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	
+	// 이메일 HTML 템플릿 (Thymeleaf — MVC 뷰는 비활성화하고 메일 전용 엔진만 사용)
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+	// WebSocket(STOMP) + STOMP broker relay(RabbitMQ 등) 시 Reactor Netty TCP 클라이언트 필요
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.springframework.boot:spring-boot-starter-reactor-netty'
+
+	// Kafka (로컬 개발: application-kafka.yaml + onharu.kafka.enabled=true, coupon/movie 패턴)
+	implementation 'org.springframework.kafka:spring-kafka'
+	// RabbitMQ (로컬: docker-compose rabbitmq + application-rabbitmq.yaml + onharu.rabbitmq.enabled=true)
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+	testImplementation 'org.springframework.kafka:spring-kafka-test'
+	testImplementation 'org.awaitility:awaitility:4.2.2'
+}
+
+// 2. Jacoco 설정
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+// 3. 테스트 리포트 설정 (소나큐브가 읽을 수 있도록 XML 형태 생성)
+jacocoTestReport {
+    reports {
+        xml.required = true
+        csv.required = false
+        html.required = true
+    }
+    afterEvaluate {
+        // 커버리지에서 제외:
+        // - 진입점/Spring 설정
+        // - 주석만 있는 REST 인터페이스(I*)
+        // - @Profile("prod") 서비스 (test 프로파일에서 로드되지 않음)
+        // - 순수 Jackson 직렬화용 Cache DTO / Request Mapper
+        def coverageExcludes = [
+            'com/backend/onharu/OnharuApplication.class',
+            'com/backend/onharu/config/**',
+            'com/backend/onharu/interfaces/api/controller/I*.class',
+            'com/backend/onharu/domain/upload/service/S3Service.class',
+            'com/backend/onharu/domain/upload/service/S3Service$*.class',
+            'com/backend/onharu/domain/store/dto/StoreCacheDto.class',
+            'com/backend/onharu/domain/store/dto/StoreCacheDto$*.class',
+            'com/backend/onharu/interfaces/api/dto/StoreRequestMapperDto.class',
+            'com/backend/onharu/interfaces/api/dto/StoreRequestMapperDto$*.class',
+        ]
+        classDirectories.setFrom(
+            files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: coverageExcludes)
+            })
+        )
+    }
+}
+
+/**
+ * SonarQube 설정
+ */
+sonarqube {
+    properties {
+        property "sonar.projectKey", "onharu-backend"
+        property "sonar.projectName", "OnHaru-Backend"
+        
+        // 실행 환경에 따른 호스트 URL 설정 (시스템 환경변수 우선)
+        property "sonar.host.url", System.getenv("SONAR_HOST_URL") ?: "http://localhost:9002"
+        
+        property "sonar.language", "java"
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.sources", "src/main/java"
+        property "sonar.tests", "src/test/java"
+
+		// 시스템 환경 변수 'SONAR_TOKEN'이 있으면 그걸 쓰고, 없으면 무시 (명령어로 넘길 때 사용)
+        property "sonar.token", System.getenv("SONAR_TOKEN") ?: ""
+
+		property "sonar.gradle.skipCompile", "true" // 분석 전 중복 컴파일 방지 (성능 최적화 및 경고 제거)
+		// Jacoco 커버리지 리포트 경로 설정. buildDir: 빌드 결과물이 저장되는 디렉토리 경로(build/reports/jacoco/test/jacocoTestReport.xml)
+		property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+
+		// 커버리지 계산에서 제외 (JaCoCo excludes 와 동일한 의도):
+		// 진입점/Spring 설정/REST 인터페이스/prod 전용 서비스/Cache DTO·Request Mapper
+		property "sonar.coverage.exclusions", [
+			"src/main/java/com/backend/onharu/OnharuApplication.java",
+			"src/main/java/com/backend/onharu/config/**",
+			"src/main/java/com/backend/onharu/interfaces/api/controller/I*.java",
+			"src/main/java/com/backend/onharu/domain/upload/service/S3Service.java",
+			"src/main/java/com/backend/onharu/domain/store/dto/StoreCacheDto.java",
+			"src/main/java/com/backend/onharu/interfaces/api/dto/StoreRequestMapperDto.java",
+		].join(",")
+    }
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+	systemProperty "spring.profiles.active", "test"
+	finalizedBy jacocoTestReport
 }

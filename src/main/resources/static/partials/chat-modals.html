@@ -1,0 +1,71 @@
+<!-- 채팅 UI 조각 — index.html 에서 fetch 후 #onharu-chat-modals-host 에 삽입 -->
+<dialog id="chatModal" class="booking-modal w-[min(96vw,960px)] max-w-full h-[min(90vh,720px)]">
+  <div class="flex h-full min-h-0">
+    <div id="chatListPane" class="w-72 shrink-0 flex flex-col border-r border-slate-200 bg-slate-50/60">
+      <div class="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-3.5 bg-white">
+        <div>
+          <div class="section-label">Inbox</div>
+          <h3 class="text-[14px] font-semibold text-slate-900 mt-0.5">채팅</h3>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button type="button" id="btnNewChat" class="btn btn-xs btn-primary">+ 새 채팅</button>
+          <button type="button" id="btnChatModalClose" class="btn btn-xs btn-secondary">닫기</button>
+        </div>
+      </div>
+      <div id="chatRoomList" class="flex-1 overflow-y-auto overscroll-contain"></div>
+    </div>
+
+    <div id="chatRoomPane" class="flex-1 flex flex-col min-w-0 bg-white">
+      <div id="chatEmpty" class="flex-1 flex items-center justify-center">
+        <div class="text-center space-y-2">
+          <div class="w-14 h-14 rounded-2xl mx-auto bg-emerald-50 border border-emerald-100 flex items-center justify-center text-2xl">💬</div>
+          <p class="text-[13px] text-slate-500">채팅방을 선택해 주세요</p>
+        </div>
+      </div>
+
+      <div id="chatActive" class="hidden flex-1 flex flex-col min-h-0">
+        <div id="chatHeader" class="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div id="chatHeaderAvatar" class="w-9 h-9 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-800 text-sm font-bold shrink-0">?</div>
+            <span id="chatHeaderName" class="text-[14px] font-semibold text-slate-900 truncate">—</span>
+          </div>
+          <button type="button" id="btnLeaveChat" class="btn btn-xs btn-danger">나가기</button>
+        </div>
+        <div id="chatMessages" class="flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-1 bg-slate-50/40"></div>
+        <div id="chatInputArea" class="border-t border-slate-200 px-4 py-3 bg-white">
+          <div class="flex items-end gap-2">
+            <textarea id="chatInput" rows="1" placeholder="메시지를 입력하세요…" class="textarea flex-1 max-h-24 overflow-y-auto resize-none" disabled></textarea>
+            <button type="button" id="btnChatSend" class="btn btn-primary" disabled>전송</button>
+          </div>
+          <p id="chatConnStatus" class="hidden text-[11px] text-slate-400 mt-1.5 font-mono"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="newChatModal" class="booking-modal w-[min(90vw,420px)]">
+  <div class="modal-header modal-header-emerald">
+    <h3 class="modal-title text-emerald-900">새 채팅방 만들기</h3>
+    <button type="button" id="btnNewChatClose" class="btn btn-sm btn-secondary">닫기</button>
+  </div>
+  <div class="px-5 py-5 space-y-4">
+    <div class="relative">
+      <label class="label" for="newChatLoginSearch">상대방 (로그인 아이디 검색)</label>
+      <input id="newChatLoginSearch" type="text" autocomplete="off" placeholder="이메일 일부를 입력하면 목록이 뜹니다" class="input" />
+      <div id="newChatSuggest" class="hidden absolute z-[60] left-0 right-0 mt-1 max-h-52 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg"></div>
+      <input type="hidden" id="newChatTargetId" value="" />
+      <p id="newChatSelected" class="hidden mt-2 text-[12px] text-emerald-800 rounded-lg border border-emerald-200 bg-emerald-50/80 px-3 py-2"></p>
+    </div>
+    <div>
+      <label class="label" for="newChatRoomName">채팅방 이름</label>
+      <input id="newChatRoomName" type="text" placeholder="비우면 자동으로 제목이 붙습니다" class="input" />
+    </div>
+    <p class="helper">
+      ↑↓로 항목 이동 · <strong class="text-slate-700">Enter</strong>로 선택 ·
+      선택 후 <strong class="text-slate-700">채팅방 생성</strong>을 누르세요.
+    </p>
+    <button type="button" id="btnNewChatSubmit" class="btn btn-primary btn-block">채팅방 생성</button>
+    <p id="newChatMsg" class="text-[11.5px] text-slate-500 min-h-[1rem]"></p>
+  </div>
+</dialog>

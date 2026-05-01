@@ -1,0 +1,32 @@
+# Kafka — dev 프로필에서만 import (coupon-issue-v3 / movie 와 동일한 키 구조)
+# 브로커 없이 앱만 띄우려면: onharu.kafka.enabled=false 또는 환경변수 ONHARU_KAFKA_ENABLED=false
+onharu:
+  kafka:
+    enabled: ${ONHARU_KAFKA_ENABLED:true}
+    # 채팅 메시지는 outbox_events 에 적재 후 스케줄러가 Kafka 로 전송 (false 이면 STOMP 핸들러에서 KafkaProducer 즉시 발행)
+    outbox:
+      enabled: ${ONHARU_KAFKA_OUTBOX_ENABLED:true}
+      relay-delay-ms: ${ONHARU_KAFKA_OUTBOX_RELAY_MS:500}
+    # 두 번째 컨슈머(아웃박스 릴레이 알림 등)
+    system-topic: ${ONHARU_KAFKA_SYSTEM_TOPIC:onharu-system-events}
+    system-consumer-group: ${ONHARU_KAFKA_SYSTEM_CONSUMER_GROUP:onharu-system-group}
+
+spring:
+  kafka:
+    template:
+      default-topic: onharu-chat
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    properties:
+      retry.backoff.ms: 5000
+      request.timeout.ms: 30000
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:onharu-group}
+      enable-auto-commit: true
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    listener:
+      auto-startup: ${KAFKA_LISTENER_AUTO_STARTUP:true}

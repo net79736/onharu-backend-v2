@@ -1,0 +1,3786 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>온하루 API 테스트 · 백엔드 콘솔</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+  <script src="/js/onharu-chat-ui.js"></script>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <style>
+    :root {
+      --bg-app: #f6f7f9;
+      --bg-surface: #ffffff;
+      --bg-muted: #f1f5f9;
+      --bg-inset: #f8fafc;
+      --border-subtle: #e5e7eb;
+      --border-strong: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-tertiary: #64748b;
+      --text-muted: #94a3b8;
+      --accent: #047857;
+      --accent-hover: #065f46;
+      --accent-soft: #ecfdf5;
+      --accent-soft-border: #a7f3d0;
+      --info: #4f46e5;
+      --info-hover: #4338ca;
+      --info-soft: #eef2ff;
+      --info-soft-border: #c7d2fe;
+      --warn: #b45309;
+      --warn-soft: #fffbeb;
+      --warn-soft-border: #fde68a;
+      --danger: #e11d48;
+      --danger-hover: #be123c;
+      --danger-soft: #fff1f2;
+      --danger-soft-border: #fecdd3;
+      --role-child: #047857;
+      --role-owner: #b45309;
+      --role-admin: #6d28d9;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+      --shadow-lg: 0 14px 36px -8px rgba(15, 23, 42, 0.18), 0 6px 16px -6px rgba(15, 23, 42, 0.10);
+      --ease: cubic-bezier(.2,.6,.2,1);
+    }
+
+    html, body {
+      font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+      font-feature-settings: 'ss03';
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      color: var(--text-primary);
+      background: var(--bg-app);
+      letter-spacing: -0.005em;
+    }
+
+    code, pre, .font-mono, .tabular-nums {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace;
+    }
+
+    /* ---------- Surface / Card ---------- */
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xs);
+    }
+    .card-pad { padding: 20px; }
+    .card-pad-lg { padding: 24px; }
+    .card-divider { border-top: 1px solid var(--border-subtle); }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .section-subtitle {
+      font-size: 12.5px;
+      color: var(--text-tertiary);
+      line-height: 1.55;
+    }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: -0.005em;
+      transition: all 150ms var(--ease);
+      border: 1px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-info {
+      background: var(--info);
+      color: #fff;
+    }
+    .btn-info:hover:not(:disabled) { background: var(--info-hover); }
+    .btn-dark {
+      background: #0f172a;
+      color: #fff;
+    }
+    .btn-dark:hover:not(:disabled) { background: #1e293b; }
+    .btn-secondary {
+      background: var(--bg-surface);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--bg-muted);
+      border-color: #94a3b8;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+    }
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--bg-muted);
+      color: var(--text-primary);
+    }
+    .btn-danger {
+      background: var(--bg-surface);
+      border-color: var(--danger-soft-border);
+      color: var(--danger);
+    }
+    .btn-danger:hover:not(:disabled) {
+      background: var(--danger-soft);
+      border-color: var(--danger);
+    }
+    .btn-link {
+      background: transparent;
+      color: var(--info);
+      font-weight: 500;
+      text-decoration: none;
+      padding: 0;
+      height: auto;
+    }
+    .btn-link:hover { text-decoration: underline; }
+    .btn-role-owner {
+      background: #fff7ed;
+      border-color: #fdba74;
+      color: #9a3412;
+    }
+    .btn-role-owner:hover:not(:disabled) {
+      background: #ffedd5;
+      border-color: #fb923c;
+    }
+    .btn-sm { height: 30px; padding: 0 10px; font-size: 12px; border-radius: 8px; }
+    .btn-xs { height: 26px; padding: 0 8px; font-size: 11.5px; border-radius: 7px; }
+    .btn-lg { height: 46px; padding: 0 20px; font-size: 14.5px; border-radius: 12px; }
+    .btn-block { width: 100%; }
+
+    /* ---------- Inputs ---------- */
+    .input, .select, .textarea {
+      width: 100%;
+      height: 38px;
+      padding: 0 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      font-size: 13.5px;
+      color: var(--text-primary);
+      transition: border-color 150ms, box-shadow 150ms;
+      letter-spacing: -0.005em;
+    }
+    .textarea { height: auto; padding: 10px 12px; line-height: 1.5; }
+    .input:focus, .select:focus, .textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.12);
+    }
+    .input::placeholder, .textarea::placeholder { color: #94a3b8; }
+    .select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 20 20' fill='%2364748b'%3E%3Cpath d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 32px;
+    }
+    .label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      letter-spacing: -0.005em;
+    }
+    .helper {
+      font-size: 11.5px;
+      color: var(--text-tertiary);
+      line-height: 1.55;
+      margin-top: 6px;
+    }
+
+    /* ---------- Chips / Badges ---------- */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 500;
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+      line-height: 1;
+      transition: all 150ms;
+      cursor: default;
+    }
+    .chip-interactive { cursor: pointer; }
+    .chip-interactive:hover {
+      background: #e2e8f0;
+      color: var(--text-primary);
+      border-color: #cbd5e1;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+      line-height: 1;
+    }
+    .badge-role-child {
+      background: var(--accent-soft);
+      color: #065f46;
+      border: 1px solid var(--accent-soft-border);
+    }
+    .badge-role-owner {
+      background: var(--warn-soft);
+      color: #92400e;
+      border: 1px solid var(--warn-soft-border);
+    }
+    .badge-role-admin {
+      background: #f5f3ff;
+      color: #5b21b6;
+      border: 1px solid #ddd6fe;
+    }
+    .badge-neutral {
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* ---------- Segmented control (signup tabs) ---------- */
+    .segmented {
+      display: inline-flex;
+      padding: 3px;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+    }
+    .signup-tab {
+      padding: 6px 14px;
+      border-radius: 7px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      transition: all 150ms;
+      letter-spacing: -0.005em;
+    }
+    .signup-tab:not(.hidden):hover { color: var(--text-primary); }
+    .signup-tab.is-active,
+    .signup-tab[aria-selected="true"] {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-xs);
+    }
+
+    /* ---------- Store sort segmented ---------- */
+    .sort-group {
+      display: inline-flex;
+      padding: 3px;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+    }
+    .store-sort-btn {
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      transition: all 150ms;
+    }
+    .store-sort-btn:hover { color: var(--text-primary); }
+    .store-sort-btn.is-active {
+      background: var(--bg-surface);
+      color: var(--accent);
+      font-weight: 600;
+      box-shadow: var(--shadow-xs);
+    }
+
+    /* ---------- Slot buttons (reservation time picker) ---------- */
+    .slot-pick-btn {
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      cursor: pointer;
+      transition: all 150ms;
+    }
+    .slot-pick-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: #065f46;
+    }
+    .slot-pick-btn.is-active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .slot-pick-btn:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    /* ---------- Info / Alert boxes ---------- */
+    .alert {
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 12.5px;
+      line-height: 1.6;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-inset);
+      color: var(--text-secondary);
+    }
+    .alert-info {
+      background: var(--info-soft);
+      border-color: var(--info-soft-border);
+      color: #3730a3;
+    }
+    .alert-warn {
+      background: var(--warn-soft);
+      border-color: var(--warn-soft-border);
+      color: #92400e;
+    }
+    .alert-success {
+      background: var(--accent-soft);
+      border-color: var(--accent-soft-border);
+      color: #065f46;
+    }
+    .alert-muted {
+      background: var(--bg-muted);
+      border-color: var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    /* ---------- Modals (dialog) ---------- */
+    dialog.booking-modal {
+      padding: 0;
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+    }
+    .booking-modal::backdrop {
+      background: rgb(15 23 42 / 0.42);
+      backdrop-filter: blur(4px);
+    }
+    .booking-modal[open] {
+      display: flex;
+      flex-direction: column;
+      margin: auto;
+      overscroll-behavior: contain;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-inset);
+      flex-shrink: 0;
+    }
+    .modal-header-emerald { background: var(--accent-soft); border-bottom-color: var(--accent-soft-border); }
+    .modal-header-amber { background: var(--warn-soft); border-bottom-color: var(--warn-soft-border); }
+    .modal-title { font-size: 15px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
+    .modal-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 20px;
+    }
+    .modal-footer {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-inset);
+    }
+
+    /* ---------- App chrome ---------- */
+    .appbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .appbar-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      min-height: 68px;
+    }
+    .brand-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+      box-shadow: var(--shadow-xs);
+      flex-shrink: 0;
+    }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.015em;
+    }
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    /* ---------- Notifications (bell + popover) ---------- */
+    .notif-bell-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.6);
+      color: var(--text-secondary);
+      transition: all 150ms var(--ease);
+    }
+    .notif-bell-btn:hover { background: var(--bg-muted); color: var(--text-primary); border-color: var(--border-strong); }
+    .notif-bell-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .notif-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 6px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--danger);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: var(--shadow-xs);
+    }
+    .notif-popover {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: min(420px, calc(100vw - 28px));
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      z-index: 70;
+    }
+    .notif-popover-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(248, 250, 252, 0.7);
+    }
+    .notif-popover-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+    .notif-popover-actions { display: inline-flex; gap: 6px; }
+    .notif-list {
+      max-height: 360px;
+      overflow: auto;
+      overscroll-behavior: contain;
+    }
+    .notif-item {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.75);
+      cursor: pointer;
+      transition: background 120ms var(--ease);
+    }
+    .notif-item:hover { background: rgba(241, 245, 249, 0.7); }
+    .notif-item.unread { background: rgba(236, 253, 245, 0.6); }
+    .notif-item.unread:hover { background: rgba(236, 253, 245, 0.85); }
+    .notif-item-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .notif-item-title { font-size: 12.5px; font-weight: 700; color: var(--text-primary); }
+    .notif-item-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+    .notif-item-msg { font-size: 12px; color: var(--text-secondary); line-height: 1.45; }
+    .notif-empty {
+      padding: 22px 14px;
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 12.5px;
+    }
+    .page-shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 24px 40px;
+    }
+
+    /* ---------- Calendar grid ---------- */
+    .cal-cell {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      font-size: 13px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 120ms;
+      background: transparent;
+      border: 1px solid transparent;
+    }
+    .cal-cell:hover:not(.is-disabled) {
+      background: var(--bg-muted);
+    }
+    .cal-cell.is-today { font-weight: 700; color: var(--accent); }
+    .cal-cell.is-selected {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .cal-cell.is-disabled { color: #cbd5e1; cursor: not-allowed; }
+    .cal-cell.has-slots::after {
+      content: '';
+      display: block;
+      position: absolute;
+      transform: translate(0, 12px);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.6;
+    }
+
+    /* ---------- Footer / API log ---------- */
+    .app-footer {
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+    }
+    .api-log-panel {
+      background: #0b1220;
+      color: #86efac;
+      font-size: 11px;
+      line-height: 1.65;
+      border-radius: 10px;
+      padding: 12px 14px;
+      max-height: 240px;
+      overflow: auto;
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace;
+    }
+
+    /* ---------- Misc polish ---------- */
+    summary::-webkit-details-marker { display: none; }
+    pre { white-space: pre-wrap; word-break: break-word; }
+    .divider-y > * + * { border-top: 1px solid var(--border-subtle); }
+
+    /* store cards rendered via JS — make sure hover lift works even with Tailwind classes on children */
+    #storeGrid > * {
+      transition: transform 180ms var(--ease), box-shadow 180ms var(--ease), border-color 180ms var(--ease);
+    }
+    #storeGrid > *:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+      border-color: #cbd5e1;
+    }
+
+    @media (max-width: 1023px) {
+      .appbar-inner, .page-shell { padding-left: 16px; padding-right: 16px; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <header class="appbar">
+    <div class="appbar-inner">
+      <div class="flex items-center gap-3 min-w-0">
+        <span class="brand-logo" aria-hidden="true">O</span>
+        <div class="min-w-0">
+          <div class="brand-title">온하루 백엔드 콘솔</div>
+          <div class="brand-subtitle">
+            <span class="text-slate-500">세션 인증</span>
+            <span class="mx-1.5 text-slate-300">·</span>
+            <a href="#signup" class="btn-link">로컬 회원가입</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="authBar" class="flex items-center gap-2.5 text-sm flex-wrap justify-end">
+        <span id="roleBadge" class="hidden badge badge-neutral"></span>
+        <span id="authStatus" class="text-slate-500 text-[12.5px]">로그인되지 않음</span>
+        <div id="notifBellWrap" class="relative hidden">
+          <button type="button" id="btnNotifBell" class="notif-bell-btn" aria-label="알림 열기" title="알림">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path fill="currentColor" d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm6-6V11a6 6 0 1 0-12 0v5L4 18v1h16v-1l-2-2zm-2 .8 1 1.2H7l1-1.2V11a4 4 0 0 1 8 0v5.8z"/>
+            </svg>
+            <span id="notifBadge" class="notif-badge hidden">0</span>
+          </button>
+          <div id="notifPopover" class="notif-popover hidden" role="dialog" aria-label="알림 목록">
+            <div class="notif-popover-header">
+              <div class="flex items-center gap-2">
+                <span class="notif-popover-title">알림</span>
+                <span id="notifMiniCount" class="text-[11.5px] text-slate-500"></span>
+              </div>
+              <div class="notif-popover-actions">
+                <button type="button" id="btnNotifRefresh" class="btn btn-xs btn-secondary">새로고침</button>
+                <button type="button" id="btnNotifMarkAllRead" class="btn btn-xs btn-primary">모두 읽음</button>
+              </div>
+            </div>
+            <div id="notifList" class="notif-list">
+              <div class="notif-empty">로그인 후 알림을 확인할 수 있어요.</div>
+            </div>
+          </div>
+        </div>
+        <button type="button" id="btnOpenChat" class="hidden btn btn-sm btn-primary">채팅</button>
+        <button type="button" id="btnLogout" class="hidden btn btn-sm btn-secondary">로그아웃</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 page-shell">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- =================== LEFT COLUMN =================== -->
+      <section class="lg:col-span-4 space-y-5">
+
+        <!-- Login -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="section-label">Step 01</div>
+              <div class="section-title mt-0.5">로그인 · 역할</div>
+            </div>
+          </div>
+          <div class="card-pad">
+            <div id="loginFormWrap">
+              <form id="loginForm" class="space-y-3">
+                <div>
+                  <label class="label" for="loginId">아이디 (loginId)</label>
+                  <input id="loginId" type="text" autocomplete="username" required placeholder="예: owner123@test.com" class="input" />
+                </div>
+                <div>
+                  <label class="label" for="password">비밀번호</label>
+                  <input id="password" type="password" autocomplete="current-password" required placeholder="예: password123!" class="input" />
+                </div>
+                <div class="alert alert-muted">
+                  <div class="font-medium text-slate-700 mb-1">테스트 계정</div>
+                  <div class="text-[11.5px] leading-relaxed">
+                    아동 <code class="px-1 bg-white rounded border border-slate-200">child123@test.com</code> ·
+                    사장 <code class="px-1 bg-white rounded border border-slate-200">owner123@test.com</code><br />
+                    공통 비밀번호 <code class="px-1 bg-white rounded border border-slate-200">password123!</code>
+                  </div>
+                </div>
+                <button type="submit" id="btnLoginSubmit" class="btn btn-info btn-block">로그인</button>
+              </form>
+            </div>
+            <div id="loggedInStub" class="hidden alert alert-success">
+              <div class="text-[11.5px] text-emerald-700 mb-0.5">로그인 중</div>
+              <div id="loggedInStubText" class="font-semibold text-emerald-900"></div>
+              <p class="text-[11.5px] text-emerald-700/80 mt-2">로그아웃은 우측 상단 버튼을 사용하세요.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- My info -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="section-label">Profile</div>
+              <div class="section-title mt-0.5">내 정보</div>
+            </div>
+            <span class="chip">GET /api/users/me</span>
+          </div>
+          <div class="card-pad space-y-3">
+            <pre id="mePanel" class="text-[11.5px] bg-slate-900 text-emerald-200 rounded-lg p-3 overflow-x-auto min-h-[4rem] font-mono">로그인하면 표시됩니다.</pre>
+
+            <details id="ownerLevelDetails" class="hidden rounded-xl border border-amber-200 bg-amber-50/40">
+              <summary class="cursor-pointer list-none select-none px-3 py-2.5 text-[13px] font-semibold text-amber-900 flex items-center justify-between gap-2">
+                <span class="flex items-center gap-2">
+                  <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-amber-300 bg-white text-[10px] text-amber-700" aria-hidden="true">▾</span>
+                  내 등급 · 캐시 확인
+                </span>
+                <span id="ownerLevelMiniBadge" class="hidden badge badge-role-owner"></span>
+              </summary>
+              <div class="px-3 pb-3 pt-2 space-y-2">
+                <div class="text-[12.5px] text-slate-700">
+                  <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span class="text-slate-500">내 등급</span>
+                    <span id="ownerLevelName" class="font-semibold text-amber-900">—</span>
+                    <span class="text-slate-300">/</span>
+                    <span class="text-slate-500">다음</span>
+                    <span id="ownerNextLevelName" class="font-medium text-slate-800">—</span>
+                    <span class="text-slate-300">/</span>
+                    <span class="text-slate-500">남은</span>
+                    <span id="ownerNextRemain" class="font-medium text-slate-800">—</span>
+                  </div>
+                </div>
+
+                <div class="rounded-lg border border-indigo-200 bg-indigo-50/70 px-3 py-2.5">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="text-[12.5px] font-semibold text-indigo-900">Redis 레벨 목록 캐시 워밍업</div>
+                    <button type="button" id="btnOwnerWarmupLevels" class="btn btn-xs btn-info">GET /api/levels × 2</button>
+                  </div>
+                  <div class="mt-1.5 text-[11px] text-indigo-900/80">
+                    <span class="font-medium">측정</span>
+                    <span class="mx-1 text-indigo-400">·</span>
+                    <span id="ownerLevelFetchStat" class="font-mono">—</span>
+                  </div>
+                  <div class="mt-1 text-[11px] text-slate-500">
+                    Redis key <code class="bg-white/80 px-1 rounded border border-indigo-100">onharu:cache:level:list</code>
+                    (hash field <code class="bg-white/80 px-1 rounded border border-indigo-100">all</code>)
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- Child quick panel -->
+        <div id="childOnlySection" class="hidden card">
+          <div class="card-header" style="background: var(--accent-soft); border-bottom-color: var(--accent-soft-border);">
+            <div>
+              <div class="section-label text-emerald-700">CHILD ONLY</div>
+              <div class="section-title mt-0.5 text-emerald-900">아동 · 내 예약</div>
+            </div>
+            <span class="badge badge-role-child">CHILD</span>
+          </div>
+          <div class="card-pad space-y-3">
+            <p class="section-subtitle">
+              <code class="bg-slate-100 px-1 rounded border border-slate-200">/api/childrens/**</code>
+              경로는 세션의 아동 ID를 사용합니다.
+            </p>
+            <button type="button" id="btnChildReservations" class="btn btn-primary btn-block">내 예약 목록 열기</button>
+            <p class="helper">목록은 전체 화면에 가까운 모달로 열립니다.</p>
+          </div>
+        </div>
+
+        <!-- Owner quick panel -->
+        <div id="ownerOnlySection" class="hidden card">
+          <div class="card-header" style="background: var(--warn-soft); border-bottom-color: var(--warn-soft-border);">
+            <div>
+              <div class="section-label text-amber-700">OWNER ONLY</div>
+              <div class="section-title mt-0.5 text-amber-900">매장 · 스케줄</div>
+            </div>
+            <span class="badge badge-role-owner">OWNER</span>
+          </div>
+          <div class="card-pad space-y-3">
+            <p class="section-subtitle">
+              <code class="bg-slate-100 px-1 rounded border border-slate-200">/api/owners/**</code>
+              경로는 <code>ROLE_OWNER</code> 권한이 필요합니다.
+            </p>
+            <button type="button" id="btnOpenOwnerScheduleModal" class="btn btn-role-owner btn-block">매장 · 스케줄 패널 열기</button>
+            <p class="helper">가게 선택, 스케줄 등록, 예약 관리는 넓은 모달에서 진행합니다.</p>
+          </div>
+        </div>
+
+        <div id="adminHint" class="hidden alert alert-muted">
+          <strong class="text-slate-800">ADMIN</strong> 계정은 이 페이지의 owner/child 경로와 다릅니다.
+          관리자 전용은 <code>/api/admins/**</code>를 참고하세요.
+        </div>
+
+        <!-- Signup -->
+        <div id="signupCard" class="card scroll-mt-6">
+          <div class="card-header">
+            <div>
+              <div class="section-label">Sign up</div>
+              <div class="section-title mt-0.5" id="signup">로컬 회원가입</div>
+            </div>
+          </div>
+          <div class="card-pad space-y-4">
+            <p class="section-subtitle">
+              <code class="bg-slate-100 px-1 rounded border border-slate-200">POST /api/auth/email/send-code</code>
+              <span class="mx-1 text-slate-300">→</span>
+              <code class="bg-slate-100 px-1 rounded border border-slate-200">verify-code</code>
+              <span class="mx-1 text-slate-300">→</span>
+              <code class="bg-slate-100 px-1 rounded border border-slate-200">/api/users/signup/…</code>
+              — 로그인 아이디는 이메일과 동일합니다.
+            </p>
+
+            <div class="segmented" role="tablist" aria-label="가입 유형">
+              <button type="button" id="signupTabOwner" class="signup-tab is-active" aria-selected="true">매장 (사업자)</button>
+              <button type="button" id="signupTabChild" class="signup-tab" aria-selected="false">아동</button>
+            </div>
+
+            <div class="grid gap-3">
+              <div>
+                <label class="label" for="suEmail">이메일 (로그인 ID)</label>
+                <div class="flex gap-2">
+                  <input id="suEmail" type="email" autocomplete="email" required placeholder="example@domain.com" class="input flex-1" />
+                  <button type="button" id="btnSuSendCode" class="btn btn-info">인증번호 전송</button>
+                </div>
+              </div>
+
+              <div id="suCodeRow" class="hidden">
+                <label class="label" for="suCode">인증번호</label>
+                <div class="flex gap-2">
+                  <input id="suCode" type="text" inputmode="text" autocomplete="one-time-code" placeholder="메일로 받은 코드" class="input flex-1" />
+                  <button type="button" id="btnSuVerify" class="btn btn-secondary">인증 확인</button>
+                </div>
+                <p id="suTimer" class="hidden mt-1.5 text-[11.5px] text-rose-600 font-mono"></p>
+              </div>
+              <p id="suEmailStatus" class="hidden text-[11.5px] text-slate-600"></p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="label" for="suPassword">비밀번호</label>
+                  <input id="suPassword" type="password" autocomplete="new-password" required class="input" />
+                </div>
+                <div>
+                  <label class="label" for="suPassword2">비밀번호 확인</label>
+                  <input id="suPassword2" type="password" autocomplete="new-password" required class="input" />
+                </div>
+              </div>
+              <div>
+                <label class="label" for="suPhone">휴대폰 (하이픈 없이)</label>
+                <input id="suPhone" type="tel" inputmode="numeric" required placeholder="01012345678" class="input" />
+              </div>
+
+              <div id="suOwnerFields" class="grid gap-3">
+                <div>
+                  <label class="label" for="suStoreName">매장명</label>
+                  <input id="suStoreName" type="text" required placeholder="따뜻한 식당" class="input" />
+                </div>
+                <div>
+                  <label class="label" for="suBizNo">사업자등록번호 (10자리)</label>
+                  <input id="suBizNo" type="text" inputmode="numeric" maxlength="10" required placeholder="1234567890" class="input" />
+                </div>
+              </div>
+
+              <div id="suChildFields" class="grid gap-3 hidden">
+                <div>
+                  <label class="label" for="suChildName">이름</label>
+                  <input id="suChildName" type="text" placeholder="홍길동" class="input" />
+                </div>
+                <div>
+                  <label class="label" for="suNickname">닉네임</label>
+                  <input id="suNickname" type="text" placeholder="온하루" class="input" />
+                </div>
+                <div>
+                  <label class="label" for="suFileKey">증빙 fileKey (S3 객체 키)</label>
+                  <input id="suFileKey" type="text" placeholder="images/certificate.pdf" class="input" />
+                </div>
+                <div>
+                  <label class="label" for="suFilePath">증빙 filePath (전체 URL)</label>
+                  <input id="suFilePath" type="url" placeholder="https://…/bucket/images/certificate.pdf" class="input" />
+                </div>
+                <p class="helper">아동 가입은 업로드 완료된 파일의 URL을 붙여넣어 테스트합니다.</p>
+              </div>
+
+              <button type="button" id="btnSuSubmit" class="btn btn-info btn-block" disabled>회원가입 요청</button>
+              <p id="suMsg" class="text-[11.5px] text-slate-500 min-h-[1rem]"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== RIGHT COLUMN =================== -->
+      <section class="lg:col-span-8 space-y-5">
+
+        <!-- Store list -->
+        <div id="storeListSection" class="card">
+          <div class="card-header">
+            <div>
+              <div class="section-label">Step 02 · Public</div>
+              <div class="section-title mt-0.5">가게 목록</div>
+            </div>
+            <button type="button" id="btnLoadStores" class="btn btn-sm btn-primary">새로고침</button>
+          </div>
+
+          <div class="card-pad space-y-4">
+            <form id="storeSearchForm" class="rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-3.5 space-y-3">
+              <div class="flex flex-wrap items-end gap-2">
+                <div class="flex-1 min-w-[12rem]">
+                  <label for="storeKeywordInput" class="label">키워드</label>
+                  <input id="storeKeywordInput" type="search" autocomplete="off" placeholder="가게명, 태그 예: 빵, 카페…" class="input" />
+                </div>
+                <div class="min-w-[9rem]">
+                  <label for="storeCategorySelect" class="label">카테고리</label>
+                  <select id="storeCategorySelect" class="select">
+                    <option value="">불러오는 중…</option>
+                  </select>
+                </div>
+                <button type="submit" id="btnStoreSearch" class="btn btn-dark">검색</button>
+                <button type="button" id="btnStoreSearchReset" class="btn btn-secondary">초기화</button>
+              </div>
+
+              <div id="storeRecentWrap" class="pt-2 border-t border-slate-200/80">
+                <div class="flex items-baseline justify-between mb-2">
+                  <span class="section-label">최근 검색어</span>
+                  <span class="text-[11px] text-slate-400">Redis List + Set · 계정/브라우저별</span>
+                </div>
+                <div id="storeRecentChips" class="flex flex-wrap gap-1.5 min-h-[1.5rem]"></div>
+              </div>
+            </form>
+
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5">
+                <span class="section-label">정렬</span>
+                <div id="storeSortGroup" class="sort-group" role="group" aria-label="가게 목록 정렬">
+                  <button type="button" data-store-sort="distance" class="store-sort-btn">거리순</button>
+                  <button type="button" data-store-sort="favoriteCount" class="store-sort-btn">좋아요순</button>
+                  <button type="button" data-store-sort="name" class="store-sort-btn">이름순</button>
+                </div>
+              </div>
+              <div id="storeGeoRow" class="flex items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50/70 px-3 py-2">
+                <div class="leading-tight">
+                  <div class="text-[10.5px] font-medium text-emerald-800 uppercase tracking-wider">현재 좌표</div>
+                  <div class="text-[12px] font-mono text-emerald-950 tabular-nums">
+                    <span class="text-emerald-700">lat</span> <span id="storeLatText">—</span>
+                    <span class="mx-1 text-emerald-300">·</span>
+                    <span class="text-emerald-700">lng</span> <span id="storeLngText">—</span>
+                  </div>
+                </div>
+                <span id="storeGeoStatus" class="hidden text-[11px] text-emerald-700"></span>
+                <button type="button" id="btnStoreMyLocation" class="btn btn-xs btn-secondary">내 위치</button>
+              </div>
+            </div>
+
+            <div id="storeGrid" class="grid sm:grid-cols-2 gap-3"></div>
+
+            <div id="storePagination" class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-200">
+              <p id="storePageInfo" class="text-[11.5px] text-slate-500"></p>
+              <div class="flex items-center gap-2">
+                <button type="button" id="btnStorePrev" class="btn btn-sm btn-secondary" disabled>이전</button>
+                <span id="storePageNum" class="text-[12.5px] text-slate-600 min-w-[5rem] text-center font-mono"></span>
+                <button type="button" id="btnStoreNext" class="btn btn-sm btn-secondary" disabled>다음</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Store detail -->
+        <div id="detailPanel" class="hidden card scroll-mt-6">
+          <div class="card-header">
+            <div>
+              <div class="section-label">Detail</div>
+              <div id="detailPanelHeading" class="section-title mt-0.5">매장 정보</div>
+            </div>
+            <button type="button" id="btnBackToStoreList" class="btn btn-sm btn-secondary">← 목록으로</button>
+          </div>
+
+          <div class="card-pad space-y-5">
+            <div id="storeDetailGallery" class="hidden"></div>
+
+            <div id="storeDetail" class="text-[13.5px] space-y-2"></div>
+
+            <div id="storeReviewSection" class="text-[13.5px]"></div>
+
+            <button type="button" id="btnOpenReservationFlow" class="btn btn-lg btn-primary btn-block">예약하기</button>
+
+            <div id="reservationFlowSection" class="hidden space-y-5 pt-5 border-t border-slate-200">
+              <div class="flex items-center gap-2">
+                <span class="section-label">Step A</span>
+                <h3 class="text-[14px] font-semibold text-slate-900">날짜와 시간</h3>
+              </div>
+
+              <div class="rounded-xl border border-slate-200 bg-white p-4">
+                <div class="flex items-center justify-center gap-3 mb-3">
+                  <button type="button" id="btnPrevMonth" class="btn btn-sm btn-secondary">◀</button>
+                  <span id="monthLabel" class="text-[13.5px] font-semibold min-w-[9rem] text-center text-slate-800"></span>
+                  <button type="button" id="btnNextMonth" class="btn btn-sm btn-secondary">▶</button>
+                </div>
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-[12.5px]"></div>
+              </div>
+
+              <div id="slotPanel" class="hidden">
+                <div class="section-label mb-2">시간 선택</div>
+                <div id="slotList" class="flex flex-wrap gap-2"></div>
+              </div>
+
+              <div id="selectedScheduleBar" class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-center">
+                <span id="selectedScheduleText" class="text-[13px] text-slate-600">선택된 일정이 없습니다.</span>
+              </div>
+
+              <div id="childReserveHint" class="hidden alert alert-warn">
+                예약 신청은 <strong>아동(CHILD)</strong> 계정으로 로그인한 경우에만 가능합니다.
+              </div>
+
+              <div id="reservePanel" class="hidden space-y-4">
+                <div class="flex items-center gap-2">
+                  <span class="section-label">Step B</span>
+                  <h3 class="text-[14px] font-semibold text-slate-900">인원 선택</h3>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 space-y-3">
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="text-[13px] font-semibold text-slate-800">동시성 (분산락) 확인</div>
+                    <span class="text-[11px] text-slate-500">동일 일정에 요청 N개를 동시 전송</span>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div>
+                      <label class="label" for="reserveConcurrencyN">요청 개수 (N)</label>
+                      <input id="reserveConcurrencyN" type="number" min="2" value="10" class="input" />
+                    </div>
+                    <div class="sm:col-span-2">
+                      <div class="label">기대 결과</div>
+                      <div class="alert alert-muted">
+                        <strong class="text-emerald-700">성공 1</strong>, 실패 N−1
+                        <span class="text-slate-500">(대부분 <code class="bg-white px-1 rounded border border-slate-200">이미 예약된 일정</code>)</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" id="btnReserveConcurrencyRun" class="btn btn-sm btn-dark">동시 예약 전송</button>
+                    <button type="button" id="btnReserveConcurrencyClear" class="btn btn-sm btn-secondary">결과 지우기</button>
+                    <span id="reserveConcurrencyStatus" class="text-[11.5px] text-slate-500"></span>
+                  </div>
+                  <pre id="reserveConcurrencyOut" class="hidden text-[11.5px] leading-5 whitespace-pre-wrap rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-800 font-mono"></pre>
+                </div>
+
+                <form id="reserveForm" class="space-y-4" novalidate>
+                  <input type="hidden" id="pickedScheduleId" value="" />
+                  <div>
+                    <label class="label">방문 예정 인원</label>
+                    <div class="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-1 py-1 shadow-xs">
+                      <button type="button" id="btnPeopleMinus" class="w-11 h-11 rounded-lg text-xl leading-none text-slate-700 hover:bg-slate-50">−</button>
+                      <input id="peopleCount" type="number" value="1" class="w-14 text-center border-0 font-semibold text-lg text-slate-900 p-0 focus:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none bg-transparent" />
+                      <button type="button" id="btnPeoplePlus" class="w-11 h-11 rounded-lg text-xl leading-none text-slate-700 hover:bg-slate-50">+</button>
+                    </div>
+                  </div>
+                  <button type="submit" id="btnReserveSubmit" class="btn btn-lg btn-primary btn-block">예약하기</button>
+                </form>
+                <p class="text-[11px] text-slate-400 text-center font-mono">POST /api/childrens/stores/{storeId}/reservations</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ============ Child reservations modal ============ -->
+  <dialog id="childResModal" class="booking-modal w-[min(96vw,1200px)] max-w-full">
+    <div class="modal-header modal-header-emerald">
+      <h3 class="modal-title text-emerald-900">아동 · 내 예약 목록</h3>
+      <button type="button" id="btnChildResModalClose" class="btn btn-sm btn-secondary">닫기</button>
+    </div>
+    <div id="childReservationsOut" class="modal-body min-h-[min(55vh,520px)] max-h-[calc(90vh-9rem)] bg-white text-[13.5px]"></div>
+    <div id="childReservationsPager" class="hidden modal-footer">
+      <p id="childResPageInfo" class="text-[11.5px] text-slate-500"></p>
+      <div class="flex items-center gap-2">
+        <button type="button" id="btnChildResPrev" class="btn btn-xs btn-secondary" disabled>이전</button>
+        <span id="childResPageNum" class="text-[11.5px] text-slate-600 min-w-[4.5rem] text-center font-mono"></span>
+        <button type="button" id="btnChildResNext" class="btn btn-xs btn-secondary" disabled>다음</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ============ Owner schedule modal ============ -->
+  <dialog id="ownerScheduleModal" class="booking-modal min-h-0 max-h-[min(92vh,900px)] w-[min(96vw,640px)] max-w-full">
+    <div class="modal-header modal-header-amber">
+      <h3 class="modal-title text-amber-900">매장 · 스케줄</h3>
+      <button type="button" id="btnOwnerScheduleModalClose" class="btn btn-sm btn-secondary">닫기</button>
+    </div>
+    <div class="modal-body space-y-5 text-[13.5px]">
+      <button type="button" id="btnOwnerStores" class="btn btn-role-owner btn-block">내 가게 목록 불러오기</button>
+
+      <div>
+        <label class="label" for="ownerStoreSelect">스케줄/예약을 볼 가게</label>
+        <select id="ownerStoreSelect" class="select"></select>
+      </div>
+
+      <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 space-y-3">
+        <div>
+          <div class="section-label">Create</div>
+          <div class="section-title mt-0.5" style="font-size:14px">예약 가능 시간대 생성</div>
+          <p class="helper">POST <code>/api/owners/stores/{storeId}/schedules</code></p>
+        </div>
+        <form id="ownerScheduleForm" class="space-y-3">
+          <div>
+            <label class="label" for="osDate">날짜 (오늘 이후)</label>
+            <input id="osDate" type="date" required class="input" />
+          </div>
+          <div>
+            <label class="label">시작 시간 <span class="text-slate-400 font-normal">(클릭 선택 · 09:00–21:00)</span></label>
+            <div id="ownerTimeGrid" class="grid grid-cols-4 gap-2"></div>
+            <p class="helper">
+              종료 시간 <strong id="ownerEndTimeLabel" class="text-slate-700">—</strong>
+              <span class="text-slate-400">(시작 +1시간 · 자동)</span>
+            </p>
+            <input type="hidden" id="osStart" value="" />
+            <input type="hidden" id="osEnd" value="" />
+          </div>
+          <div>
+            <label class="label" for="osMax">최대 인원</label>
+            <input id="osMax" type="number" min="1" value="10" required class="input" />
+          </div>
+          <button type="submit" class="btn btn-role-owner btn-block">스케줄 등록</button>
+        </form>
+      </div>
+
+      <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 space-y-2">
+        <div>
+          <div class="section-label">Status</div>
+          <div class="section-title mt-0.5" style="font-size:14px">가게 예약 현황</div>
+          <p class="helper">GET <code>/api/owners/stores/{storeId}/reservations</code></p>
+        </div>
+        <button type="button" id="btnOwnerBookings" class="btn btn-secondary btn-block">선택 가게 예약 목록</button>
+        <p class="text-[11.5px] text-slate-500">
+          대기 → <strong class="text-slate-700">승인</strong> ·
+          확정 → <strong class="text-slate-700">이용완료</strong> / <strong class="text-slate-700">취소</strong>
+          <span class="text-slate-400">(WAITING → CONFIRMED → COMPLETED)</span>
+        </p>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ============ Owner reservations modal ============ -->
+  <dialog id="ownerResModal" class="booking-modal w-[min(96vw,1200px)] max-w-full">
+    <div class="modal-header modal-header-amber">
+      <h3 class="modal-title text-amber-900">가게 예약 현황</h3>
+      <button type="button" id="btnOwnerResModalClose" class="btn btn-sm btn-secondary">닫기</button>
+    </div>
+    <div id="ownerBookingsOut" class="modal-body min-h-[min(55vh,520px)] max-h-[calc(90vh-9rem)] bg-white text-[13.5px]"></div>
+    <div id="ownerBookingsPager" class="hidden modal-footer">
+      <p id="ownerResPageInfo" class="text-[11.5px] text-slate-500"></p>
+      <div class="flex items-center gap-2">
+        <button type="button" id="btnOwnerResPrev" class="btn btn-xs btn-secondary" disabled>이전</button>
+        <span id="ownerResPageNum" class="text-[11.5px] text-slate-600 min-w-[4.5rem] text-center font-mono"></span>
+        <button type="button" id="btnOwnerResNext" class="btn btn-xs btn-secondary" disabled>다음</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Chat modals (partial fetch target) -->
+  <div id="onharu-chat-modals-host"></div>
+
+  <footer class="app-footer">
+    <div class="max-w-[1280px] mx-auto px-6 py-3">
+      <details id="apiLogDetails" class="group rounded-xl border border-slate-200 bg-slate-50/70">
+        <summary class="cursor-pointer list-none px-3.5 py-2.5 text-[12.5px] font-semibold text-slate-700 select-none flex items-center gap-2">
+          <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-slate-300 bg-white text-[10px] text-slate-500 transition-transform duration-200 group-open:rotate-90" aria-hidden="true">▶</span>
+          <span>API 로그</span>
+          <span class="badge badge-neutral ml-1">요청/응답 추적</span>
+        </summary>
+        <div class="border-t border-slate-200 px-3.5 pb-3.5 pt-2.5 space-y-2">
+          <div class="flex justify-end">
+            <button type="button" id="btnClearLog" class="btn btn-xs btn-ghost">비우기</button>
+          </div>
+          <pre id="apiLog" class="api-log-panel"></pre>
+        </div>
+      </details>
+    </div>
+  </footer>
+
+  <script>
+(function () {
+  const LS_ME = 'onharu_user_me';
+  const LS_TOKEN = 'onharu_access_token';
+  /** 비로그인 시 최근 검색어 Redis 키 구분용 (서버 X-Client-Id) */
+  const LS_RECENT_CLIENT = 'onharu_recent_search_client_id';
+  const WEEK_ORDER = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+  const apiLogEl = document.getElementById('apiLog');
+  const logs = [];
+  const MAX_LOG = 100;
+
+  function logLine(type, msg) {
+    const t = new Date().toISOString();
+    const line = '[' + t + '] ' + type + ' ' + (typeof msg === 'string' ? msg : JSON.stringify(msg, null, 2));
+    logs.push(line);
+    while (logs.length > MAX_LOG) logs.shift();
+    apiLogEl.textContent = logs.join('\n\n');
+    apiLogEl.scrollTop = apiLogEl.scrollHeight;
+  }
+
+  function headersToObject(headers) {
+    if (!headers) return {};
+    if (typeof headers.forEach === 'function') {
+      const o = {};
+      headers.forEach(function (v, k) { o[k] = v; });
+      return o;
+    }
+    return headers;
+  }
+
+  function buildAuthHeaders(extra) {
+    const h = Object.assign({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }, extra || {});
+    const token = localStorage.getItem(LS_TOKEN);
+    if (token) h['Authorization'] = 'Bearer ' + token;
+    return h;
+  }
+
+  document.getElementById('btnClearLog').addEventListener('click', function () {
+    logs.length = 0;
+    apiLogEl.textContent = '';
+  });
+
+  const origFetch = window.fetch.bind(window);
+  window.fetch = async function (input, init) {
+    const url = typeof input === 'string' ? input : input.url;
+    const method = (init && init.method) || 'GET';
+    const mergedInit = init ? Object.assign({}, init) : {};
+    const hdrs = buildAuthHeaders(headersToObject(mergedInit.headers));
+    mergedInit.headers = hdrs;
+    mergedInit.credentials = mergedInit.credentials || 'include';
+
+    let bodyPreview = '';
+    if (mergedInit.body) {
+      try {
+        bodyPreview = typeof mergedInit.body === 'string' ? mergedInit.body : JSON.stringify(mergedInit.body);
+      } catch (e) {
+        bodyPreview = '[body]';
+      }
+    }
+    logLine('→', method + ' ' + url + '\nHeaders: ' + JSON.stringify(hdrs, null, 2) + (bodyPreview ? '\nBody: ' + bodyPreview : ''));
+
+    const res = await origFetch(typeof input === 'string' ? url : input, mergedInit);
+    const clone = res.clone();
+    let text = '';
+    try {
+      text = await clone.text();
+    } catch (e) {
+      text = '[읽기 실패]';
+    }
+    let parsed = text;
+    try {
+      parsed = JSON.parse(text);
+    } catch (_) {}
+    logLine('←', res.status + ' ' + res.statusText + '\n' + (typeof parsed === 'string' ? parsed : JSON.stringify(parsed, null, 2)));
+    return res;
+  };
+
+  async function readJson(res) {
+    const text = await res.text();
+    if (text == null) return null;
+    const trimmed = String(text).trim();
+    if (trimmed === '') return null;
+    let data;
+    try {
+      data = JSON.parse(trimmed);
+    } catch (e) {
+      throw new Error('JSON 파싱 실패: ' + trimmed.slice(0, 200));
+    }
+    return data;
+  }
+
+  function unwrapResponse(dto) {
+    if (dto && dto.success === true && 'data' in dto) return dto.data;
+    return dto;
+  }
+
+  function getOrCreateRecentClientId() {
+    try {
+      var id = localStorage.getItem(LS_RECENT_CLIENT);
+      if (!id || id.length < 8) {
+        id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+        localStorage.setItem(LS_RECENT_CLIENT, id);
+      }
+      return id;
+    } catch (e) {
+      return 'fallback-' + String(Date.now());
+    }
+  }
+
+  function recentSearchHeaders() {
+    return { 'X-Client-Id': getOrCreateRecentClientId() };
+  }
+
+  async function apiJson(method, path, body, extraHeaders) {
+    const opts = {
+      method,
+      credentials: 'include',
+      headers: buildAuthHeaders(extraHeaders || {})
+    };
+    if (body !== undefined) opts.body = JSON.stringify(body);
+    const res = await fetch(path, opts);
+    const raw = await readJson(res);
+    if (!res.ok) {
+      let msg;
+      if (raw && (raw.message || raw.code)) msg = String(raw.message || raw.code);
+      else if (raw != null) msg = JSON.stringify(raw);
+      else msg = 'HTTP ' + res.status;
+      if (res.status === 403) msg = '권한이 없습니다. ' + msg;
+      if (res.status === 401) msg = '인증이 필요합니다. ' + msg;
+      throw new Error(msg);
+    }
+    if (raw == null) return null;
+    return unwrapResponse(raw);
+  }
+
+  function sortSlots(slots) {
+    if (!slots || !slots.length) return [];
+    return slots.slice().sort(function (a, b) {
+      const ta = String(a.startTime || '');
+      const tb = String(b.startTime || '');
+      if (ta !== tb) return ta.localeCompare(tb);
+      return (a.id || 0) - (b.id || 0);
+    });
+  }
+
+  function sortBusinessHours(rows) {
+    if (!rows || !rows.length) return [];
+    return rows.slice().sort(function (a, b) {
+      const ia = WEEK_ORDER.indexOf(String(a.businessDay || ''));
+      const ib = WEEK_ORDER.indexOf(String(b.businessDay || ''));
+      const va = ia < 0 ? 99 : ia;
+      const vb = ib < 0 ? 99 : ib;
+      if (va !== vb) return va - vb;
+      return String(a.openTime || '').localeCompare(String(b.openTime || ''));
+    });
+  }
+
+  function sortByScheduleDateTime(rows) {
+    if (!rows || !rows.length) return [];
+    return rows.slice().sort(function (a, b) {
+      const da = String(a.scheduleDate || '');
+      const db = String(b.scheduleDate || '');
+      if (da !== db) return da.localeCompare(db);
+      return String(a.startTime || '').localeCompare(String(b.startTime || ''));
+    });
+  }
+
+  let currentUser = null;
+  let selectedStoreId = null;
+  // CHILD 로그인 시, 내가 찜한 storeId 집합 (하트 UI에 사용)
+  let myFavoriteStoreIds = new Set();
+  // 마지막으로 받아온 가게 목록 응답(하트 싱크를 위해 재렌더링에 사용)
+  let lastStoreListData = null;
+  let viewYear = new Date().getFullYear();
+  let viewMonth = new Date().getMonth() + 1;
+  let selectedDay = null;
+  let monthlySummaries = [];
+  let lastDailySlots = [];
+
+  const STORE_PER_PAGE = 10;
+  let storePageNum = 1;
+  let storeTotalPages = 1;
+  let storeTotalCount = 0;
+  /** 'distance' | 'favoriteCount' | 'name' — GET /api/stores 의 sortField 와 대응 */
+  let storeSortMode = 'name';
+  // "내 위치"를 편집 입력 없이도 전달/표시하기 위한 내부 상태
+  let storeGeoLat = '';
+  let storeGeoLng = '';
+
+  function setStoreGeo(lat, lng) {
+    storeGeoLat = lat ? String(lat).trim() : '';
+    storeGeoLng = lng ? String(lng).trim() : '';
+    var latText = document.getElementById('storeLatText');
+    var lngText = document.getElementById('storeLngText');
+    if (latText) latText.textContent = storeGeoLat || '—';
+    if (lngText) lngText.textContent = storeGeoLng || '—';
+    syncStoreSortUi();
+  }
+
+  function setStoreGeoStatus(text, kind) {
+    var el = document.getElementById('storeGeoStatus');
+    if (!el) return;
+    var t = text ? String(text).trim() : '';
+    if (!t) {
+      el.classList.add('hidden');
+      el.textContent = '';
+      el.className = 'hidden text-[11px] text-slate-500';
+      return;
+    }
+    el.classList.remove('hidden');
+    el.textContent = t;
+    var k = kind ? String(kind) : '';
+    if (k === 'error') {
+      el.className = 'text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md';
+    } else if (k === 'loading') {
+      el.className = 'text-[11px] font-medium text-slate-700 bg-white/80 border border-slate-200 px-2 py-0.5 rounded-md';
+    } else {
+      el.className = 'text-[11px] font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md';
+    }
+  }
+
+  const CHILD_RES_PER_PAGE = 10;
+  let childResPageNum = 1;
+  let childResTotalPages = 1;
+  let childResTotalCount = 0;
+
+  const OWNER_RES_PER_PAGE = 10;
+  let ownerResPageNum = 1;
+  let ownerResTotalPages = 1;
+  let ownerResTotalCount = 0;
+
+  const authStatus = document.getElementById('authStatus');
+  const roleBadge = document.getElementById('roleBadge');
+  const btnLogout = document.getElementById('btnLogout');
+  const mePanel = document.getElementById('mePanel');
+  const childOnlySection = document.getElementById('childOnlySection');
+  const ownerOnlySection = document.getElementById('ownerOnlySection');
+  const adminHint = document.getElementById('adminHint');
+  const childReserveHint = document.getElementById('childReserveHint');
+  const loginFormWrap = document.getElementById('loginFormWrap');
+  const loggedInStub = document.getElementById('loggedInStub');
+  const loggedInStubText = document.getElementById('loggedInStubText');
+  const ownerLevelDetails = document.getElementById('ownerLevelDetails');
+  const ownerLevelMiniBadge = document.getElementById('ownerLevelMiniBadge');
+  const ownerLevelName = document.getElementById('ownerLevelName');
+  const ownerNextLevelName = document.getElementById('ownerNextLevelName');
+  const ownerNextRemain = document.getElementById('ownerNextRemain');
+  const ownerLevelFetchStat = document.getElementById('ownerLevelFetchStat');
+  const btnOwnerWarmupLevels = document.getElementById('btnOwnerWarmupLevels');
+
+  async function warmupLevelsTwice() {
+    if (!ownerLevelFetchStat) return;
+    ownerLevelFetchStat.textContent = '불러오는 중…';
+    try {
+      var t0 = performance.now();
+      await apiJson('GET', '/api/levels');
+      var t1 = performance.now();
+      await apiJson('GET', '/api/levels');
+      var t2 = performance.now();
+      ownerLevelFetchStat.textContent =
+        '1차 ' + Math.round(t1 - t0) + 'ms · 2차 ' + Math.round(t2 - t1) + 'ms (2차는 캐시 히트 기대)';
+    } catch (e) {
+      ownerLevelFetchStat.textContent = '실패: ' + String(e && e.message ? e.message : e);
+    }
+  }
+
+  async function loadOwnerLevelMini() {
+    if (!currentUser || currentUser.userType !== 'OWNER') return;
+    if (!ownerLevelName || !ownerNextLevelName || !ownerNextRemain) return;
+    ownerLevelName.textContent = '—';
+    ownerNextLevelName.textContent = '—';
+    ownerNextRemain.textContent = '—';
+    if (ownerLevelMiniBadge) ownerLevelMiniBadge.classList.add('hidden');
+
+    try {
+      var prof = await apiJson('GET', '/api/users/profile/owner');
+      var levelName = prof && prof.levelName ? String(prof.levelName) : '—';
+      var nextLevel = prof && prof.nextLevelName ? String(prof.nextLevelName) : '—';
+      var remain = (prof && prof.nextToConditionNumber != null) ? String(prof.nextToConditionNumber) : '—';
+      ownerLevelName.textContent = levelName;
+      ownerNextLevelName.textContent = nextLevel;
+      ownerNextRemain.textContent = remain;
+      if (ownerLevelMiniBadge) {
+        ownerLevelMiniBadge.textContent = levelName;
+        ownerLevelMiniBadge.classList.remove('hidden');
+      }
+    } catch (e) {
+      ownerLevelName.textContent = '(조회 실패)';
+    }
+  }
+
+  function applyRoleUi() {
+    const t = currentUser && currentUser.userType;
+    childOnlySection.classList.toggle('hidden', t !== 'CHILD');
+    ownerOnlySection.classList.toggle('hidden', t !== 'OWNER');
+    adminHint.classList.toggle('hidden', t !== 'ADMIN');
+    roleBadge.classList.toggle('hidden', !t);
+    if (t) {
+      roleBadge.textContent = 'Role: ' + t;
+    }
+    updateReserveVisibility();
+  }
+
+  function setAuthUi(me) {
+    currentUser = me;
+    var btnOpenChat = document.getElementById('btnOpenChat');
+    if (me) {
+      try {
+        localStorage.setItem(LS_ME, JSON.stringify(me));
+      } catch (e) {}
+      authStatus.textContent = me.loginId;
+      btnLogout.classList.remove('hidden');
+      if (btnOpenChat) btnOpenChat.classList.remove('hidden');
+      loginFormWrap.classList.add('hidden');
+      loggedInStub.classList.remove('hidden');
+      loggedInStubText.textContent = me.loginId + ' · ' + me.userType;
+      mePanel.textContent = JSON.stringify(me, null, 2);
+    } else {
+      try {
+        localStorage.removeItem(LS_ME);
+      } catch (e) {}
+      authStatus.textContent = '로그인되지 않음';
+      btnLogout.classList.add('hidden');
+      if (btnOpenChat) btnOpenChat.classList.add('hidden');
+      loginFormWrap.classList.remove('hidden');
+      loggedInStub.classList.add('hidden');
+      mePanel.textContent = '로그인하면 표시됩니다.';
+    }
+    applyRoleUi();
+    syncNotificationAuthUi(!!me);
+
+    // OWNER 로그인 시: "내 등급" 미니 정보만 세팅 (불필요한 목록은 표시하지 않음)
+    if (ownerLevelDetails) {
+      ownerLevelDetails.classList.toggle('hidden', !(me && me.userType === 'OWNER'));
+    }
+    if (me && me.userType === 'OWNER') {
+      loadOwnerLevelMini();
+    }
+  }
+
+  // ---------- Notifications (REST: /api/notifications/*) ----------
+  var notifPollTimer = null;
+  var notifLastRows = [];
+  var notifIsOpen = false;
+  var notifIsBusy = false;
+  var notifPageNum = 1;
+  var notifPerPage = 20;
+  var notifTotalPages = 1;
+  var notifAllRows = [];
+
+  function formatNotifTime(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    var diff = Date.now() - d.getTime();
+    if (diff < 60_000) return '방금';
+    if (diff < 3_600_000) return Math.floor(diff / 60_000) + '분 전';
+    if (diff < 86_400_000) return Math.floor(diff / 3_600_000) + '시간 전';
+    return d.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function getNotifEls() {
+    return {
+      wrap: document.getElementById('notifBellWrap'),
+      btnBell: document.getElementById('btnNotifBell'),
+      badge: document.getElementById('notifBadge'),
+      popover: document.getElementById('notifPopover'),
+      list: document.getElementById('notifList'),
+      miniCount: document.getElementById('notifMiniCount'),
+      btnRefresh: document.getElementById('btnNotifRefresh'),
+      btnMarkAll: document.getElementById('btnNotifMarkAllRead'),
+    };
+  }
+
+  function setNotifOpen(open) {
+    notifIsOpen = !!open;
+    var el = getNotifEls();
+    if (!el.popover) return;
+    el.popover.classList.toggle('hidden', !notifIsOpen);
+    if (notifIsOpen) {
+      // UX: 팝오버 열면 전체 읽음 처리 요구사항 반영
+      markAllNotificationsReadBestEffort();
+      refreshNotifications();
+    }
+  }
+
+  function updateNotifBadge(rows) {
+    var el = getNotifEls();
+    if (!el.badge) return;
+    var unread = (rows || []).reduce(function (acc, r) { return acc + (!r || r.isRead ? 0 : 1); }, 0);
+    if (unread <= 0) {
+      el.badge.classList.add('hidden');
+      el.badge.textContent = '0';
+      if (el.miniCount) el.miniCount.textContent = '';
+      return;
+    }
+    el.badge.classList.remove('hidden');
+    el.badge.textContent = unread > 99 ? '99+' : String(unread);
+    if (el.miniCount) el.miniCount.textContent = '미읽음 ' + unread + '개';
+  }
+
+  function renderNotifications(rows) {
+    var el = getNotifEls();
+    if (!el.list) return;
+    var arr = Array.isArray(rows) ? rows : [];
+    if (!arr.length) {
+      el.list.innerHTML = '<div class="notif-empty">새 알림이 없습니다.</div>';
+      return;
+    }
+    el.list.innerHTML = arr.map(function (r) {
+      var unread = r && r.isRead === false;
+      var title = escapeHtml(r && r.title ? r.title : '(제목 없음)');
+      var msg = escapeHtml(r && r.message ? r.message : '');
+      var time = escapeHtml(formatNotifTime(r && r.createdAt));
+      var type = escapeHtml(String(r && r.type ? r.type : ''));
+      var id = r && r.id != null ? String(r.id) : '';
+      return (
+        '<div class="notif-item ' + (unread ? 'unread' : '') + '" data-hid="' + id + '">' +
+          '<div class="notif-item-top">' +
+            '<div class="notif-item-title">' + title + (type ? (' <span class="ml-1 text-[10.5px] font-semibold text-slate-500">(' + type + ')</span>') : '') + '</div>' +
+            '<div class="notif-item-time">' + time + '</div>' +
+          '</div>' +
+          (msg ? ('<div class="notif-item-msg">' + msg + '</div>') : '') +
+        '</div>'
+      );
+    }).join('');
+  }
+
+  function buildNotifQuery(pageNum) {
+    var p = pageNum != null ? pageNum : 1;
+    return '?pageNum=' + encodeURIComponent(String(p)) +
+      '&perPage=' + encodeURIComponent(String(notifPerPage)) +
+      '&sortField=createdAt&sortDirection=desc';
+  }
+
+  function resetNotificationsPagination() {
+    notifPageNum = 1;
+    notifTotalPages = 1;
+    notifAllRows = [];
+  }
+
+  async function loadNotificationsPage(pageNum, append) {
+    if (!currentUser) return;
+    if (notifIsBusy) return;
+    notifIsBusy = true;
+    try {
+      var q = buildNotifQuery(pageNum);
+      var data = await apiJson('GET', '/api/notifications/histories' + q);
+      var rows = data && data.histories ? data.histories : [];
+      notifTotalPages = data && data.totalPages ? Number(data.totalPages) : 1;
+      notifPageNum = data && data.currentPage ? Number(data.currentPage) : Number(pageNum || 1);
+
+      if (append) {
+        notifAllRows = notifAllRows.concat(rows);
+      } else {
+        notifAllRows = rows;
+      }
+      notifLastRows = notifAllRows;
+      updateNotifBadge(notifAllRows);
+      if (notifIsOpen) renderNotifications(notifAllRows);
+    } catch (e) {
+      // 배지는 유지, 팝오버만 에러 표시
+      if (notifIsOpen) {
+        var el = getNotifEls();
+        if (el.list) el.list.innerHTML = '<div class="notif-empty text-rose-700">알림 로딩 실패: ' + escapeHtml(e.message || e) + '</div>';
+      }
+    } finally {
+      notifIsBusy = false;
+    }
+  }
+
+  async function refreshNotifications() {
+    if (!currentUser) return;
+    resetNotificationsPagination();
+    await loadNotificationsPage(1, false);
+  }
+
+  async function markNotificationRead(historyId) {
+    var hid = String(historyId || '').trim();
+    if (!hid) return;
+    await apiJson('PUT', '/api/notifications/histories/' + encodeURIComponent(hid) + '/read', undefined);
+  }
+
+  async function markAllNotificationsRead() {
+    await apiJson('PUT', '/api/notifications/histories/read/all', undefined);
+  }
+
+  function markAllNotificationsReadBestEffort() {
+    if (!currentUser) return;
+    // UI 즉시 반영(요구: 클릭 시 다 읽음 처리). 실패해도 다음 refresh 에서 정합성 회복.
+    try {
+      updateNotifBadge([]);
+    } catch (e) {}
+    markAllNotificationsRead().catch(function (e) {
+      console.warn('[notif] markAll failed', e);
+    });
+  }
+
+  function ensureNotifHandlersBoundOnce() {
+    var el = getNotifEls();
+    if (!el.btnBell || el.btnBell.__bound) return;
+    el.btnBell.__bound = true;
+    el.btnBell.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      setNotifOpen(!notifIsOpen);
+    });
+    if (el.btnRefresh) {
+      el.btnRefresh.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        refreshNotifications();
+      });
+    }
+    if (el.btnMarkAll) {
+      el.btnMarkAll.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        markAllNotificationsReadBestEffort();
+        refreshNotifications();
+      });
+    }
+
+    // 이벤트 위임: 항목 클릭 → 단건 읽음 처리
+    if (el.list && !el.list.__boundClick) {
+      el.list.__boundClick = true;
+      el.list.addEventListener('click', async function (ev) {
+        var target = ev && ev.target ? ev.target : null;
+        if (!target) return;
+        var item = target.closest ? target.closest('.notif-item') : null;
+        if (!item) return;
+        var hid = item.getAttribute('data-hid');
+        if (!hid) return;
+        try {
+          await markNotificationRead(hid);
+          // 목록 유지(페이지 1로 리셋하지 않음): 로컬 상태만 즉시 반영
+          notifAllRows = (notifAllRows || []).map(function (r) {
+            if (!r || String(r.id) !== String(hid)) return r;
+            var copy = Object.assign({}, r);
+            copy.isRead = true;
+            return copy;
+          });
+          updateNotifBadge(notifAllRows);
+          if (notifIsOpen) renderNotifications(notifAllRows);
+        } catch (e) {
+          alert('알림 읽음 처리 실패: ' + (e.message || e));
+        }
+      });
+    }
+
+    // 무한 스크롤: 하단 근접 시 다음 페이지 로드
+    if (el.list && !el.list.__boundScroll) {
+      el.list.__boundScroll = true;
+      el.list.addEventListener('scroll', function () {
+        if (!notifIsOpen) return;
+        if (notifIsBusy) return;
+        if (!notifTotalPages || notifPageNum >= notifTotalPages) return;
+        var node = el.list;
+        var nearBottom = (node.scrollTop + node.clientHeight) >= (node.scrollHeight - 40);
+        if (!nearBottom) return;
+        loadNotificationsPage(notifPageNum + 1, true);
+      }, { passive: true });
+    }
+
+    document.addEventListener('click', function (ev) {
+      var wrap = getNotifEls().wrap;
+      if (!notifIsOpen || !wrap) return;
+      if (wrap.contains(ev.target)) return;
+      setNotifOpen(false);
+    });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && notifIsOpen) setNotifOpen(false);
+    });
+  }
+
+  function syncNotificationAuthUi(isLoggedIn) {
+    var el = getNotifEls();
+    if (!el.wrap) return;
+    ensureNotifHandlersBoundOnce();
+    el.wrap.classList.toggle('hidden', !isLoggedIn);
+    setNotifOpen(false);
+    notifLastRows = [];
+    updateNotifBadge([]);
+    if (notifPollTimer) {
+      clearInterval(notifPollTimer);
+      notifPollTimer = null;
+    }
+    if (!isLoggedIn) return;
+    // 로그인 직후 배지 즉시 로딩 + 이후 주기적 갱신
+    refreshNotifications();
+    notifPollTimer = setInterval(function () {
+      refreshNotifications();
+    }, 20_000);
+  }
+
+  if (btnOwnerWarmupLevels) {
+    btnOwnerWarmupLevels.addEventListener('click', function () {
+      if (!currentUser || currentUser.userType !== 'OWNER') {
+        alert('사장(OWNER)으로 로그인한 경우에만 확인할 수 있습니다.');
+        return;
+      }
+      warmupLevelsTwice();
+    });
+  }
+
+  // details를 펼쳤을 때 1회만 워밍업 실행 (원하면 버튼으로 반복)
+  if (ownerLevelDetails) {
+    ownerLevelDetails.addEventListener('toggle', function () {
+      if (!ownerLevelDetails.open) return;
+      if (!currentUser || currentUser.userType !== 'OWNER') return;
+      // 이미 측정 결과가 있으면 자동 실행은 하지 않음
+      if (ownerLevelFetchStat && ownerLevelFetchStat.textContent && ownerLevelFetchStat.textContent !== '—') return;
+      warmupLevelsTwice();
+    });
+  }
+
+  function isChildUser() {
+    return currentUser && currentUser.userType === 'CHILD';
+  }
+
+  async function refreshMyFavorites() {
+    myFavoriteStoreIds = new Set();
+    if (!isChildUser()) return;
+    try {
+      const res = await apiJson('GET', '/api/favorites?pageNum=1&perPage=500&sortField=id&sortDirection=desc');
+      const arr = (res && res.favorites) ? res.favorites : [];
+      arr.forEach(function (f) {
+        if (f && f.storeId != null) myFavoriteStoreIds.add(Number(f.storeId));
+      });
+      // 찜 목록 로딩 타이밍 때문에 목록/상세 하트가 어긋날 수 있어 즉시 재렌더링
+      if (lastStoreListData) {
+        renderStoreCards(lastStoreListData);
+      }
+      var detailHeart = document.getElementById('btnToggleFavoriteHeart');
+      if (detailHeart && selectedStoreId != null) {
+        detailHeart.innerHTML = heartSvg(myFavoriteStoreIds.has(Number(selectedStoreId)));
+      }
+    } catch (e) {
+      console.warn('[favorite] refresh failed', e);
+    }
+  }
+
+  function heartSvg(filled) {
+    if (filled) {
+      return (
+        '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="text-rose-600">' +
+          '<path fill="currentColor" d="M12 21s-7-4.534-10-9.5C-.5 7.5 2 4 5.5 4 7.54 4 9.24 5.17 10 6.38 10.76 5.17 12.46 4 14.5 4 18 4 20.5 7.5 22 11.5 19 16.466 12 21 12 21z"/>' +
+        '</svg>'
+      );
+    }
+    return (
+      '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="text-rose-600">' +
+        '<path fill="none" stroke="currentColor" stroke-width="2" d="M12 21s-7-4.534-10-9.5C-.5 7.5 2 4 5.5 4 7.54 4 9.24 5.17 10 6.38 10.76 5.17 12.46 4 14.5 4 18 4 20.5 7.5 22 11.5 19 16.466 12 21 12 21z"/>' +
+      '</svg>'
+    );
+  }
+
+  async function toggleFavorite(storeId) {
+    const sid = Number(storeId);
+    const res = await apiJson('POST', '/api/favorites/stores/' + sid);
+    const isFav = !!(res && res.isFavorite);
+    if (isFav) myFavoriteStoreIds.add(sid);
+    else myFavoriteStoreIds.delete(sid);
+    return isFav;
+  }
+
+  function updateSelectedScheduleText() {
+    var el = document.getElementById('selectedScheduleText');
+    if (!el) return;
+    if (!selectedDay) {
+      el.textContent = '선택된 일정이 없습니다.';
+      el.className = 'text-slate-600';
+      return;
+    }
+    var sid = pickedScheduleId && pickedScheduleId.value ? pickedScheduleId.value.trim() : '';
+    if (!sid) {
+      el.textContent = '날짜를 선택했습니다. 시간을 선택해 주세요.';
+      el.className = 'text-slate-600';
+      return;
+    }
+    var slot = lastDailySlots.find(function (s) { return String(s.id) === sid; });
+    var timeStr = slot ? String(slot.startTime || '').slice(0, 5) : '';
+    el.textContent = '선택된 일정 : ' + viewYear + '년 ' + viewMonth + '월 ' + selectedDay + '일 ' + timeStr;
+    el.className = 'font-medium text-emerald-800';
+  }
+
+  function updateReserveVisibility() {
+    const flowOpen = reservationFlowSection && !reservationFlowSection.classList.contains('hidden');
+    const showReserve = selectedStoreId && selectedDay;
+    if (childReserveHint) childReserveHint.classList.add('hidden');
+    reservePanel.classList.toggle('hidden', !showReserve || !flowOpen);
+    const btn = document.getElementById('btnReserveSubmit');
+    if (btn) btn.disabled = false;
+  }
+
+  async function refreshMe() {
+    try {
+      const me = await apiJson('GET', '/api/users/me');
+      setAuthUi(me);
+      await refreshMyFavorites();
+    } catch (e) {
+      setAuthUi(null);
+    }
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', async function (ev) {
+    ev.preventDefault();
+    const loginId = document.getElementById('loginId').value.trim();
+    const password = document.getElementById('password').value;
+    try {
+      await apiJson('POST', '/api/users/login', { loginId: loginId, password: password });
+      await refreshMe();
+      await loadStores(1);
+    } catch (e) {
+      alert('로그인 실패: ' + (e.message || e));
+    }
+  });
+
+  /* ---------- 로컬 회원가입 (이메일 인증 + /api/users/signup) ---------- */
+  (function setupLocalSignup() {
+    var signupRole = 'owner';
+    var suEmailVerified = false;
+    var suTimerId = null;
+    var suTimeLeft = 0;
+
+    var tabOwner = document.getElementById('signupTabOwner');
+    var tabChild = document.getElementById('signupTabChild');
+    var ownerFields = document.getElementById('suOwnerFields');
+    var childFields = document.getElementById('suChildFields');
+    var btnSend = document.getElementById('btnSuSendCode');
+    var btnVerify = document.getElementById('btnSuVerify');
+    var btnSubmit = document.getElementById('btnSuSubmit');
+    var codeRow = document.getElementById('suCodeRow');
+    var suTimer = document.getElementById('suTimer');
+    var suMsg = document.getElementById('suMsg');
+    var suEmailStatus = document.getElementById('suEmailStatus');
+
+    function setSignupMsg(text, isError) {
+      if (!suMsg) return;
+      suMsg.textContent = text || '';
+      suMsg.className = 'text-xs min-h-[1rem] ' + (isError ? 'text-rose-700' : 'text-slate-600');
+    }
+
+    function clearSuTimer() {
+      if (suTimerId) {
+        clearInterval(suTimerId);
+        suTimerId = null;
+      }
+      suTimeLeft = 0;
+      if (suTimer) {
+        suTimer.classList.add('hidden');
+        suTimer.textContent = '';
+      }
+    }
+
+    function startSuTimer(seconds) {
+      clearSuTimer();
+      suTimeLeft = seconds;
+      if (suTimer) suTimer.classList.remove('hidden');
+      function tick() {
+        if (suTimeLeft <= 0) {
+          clearSuTimer();
+          return;
+        }
+        var m = Math.floor(suTimeLeft / 60);
+        var s = suTimeLeft % 60;
+        if (suTimer) {
+          suTimer.textContent = '남은 시간 ' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+        suTimeLeft--;
+      }
+      tick();
+      suTimerId = setInterval(tick, 1000);
+    }
+
+    function setEmailVerified(ok) {
+      suEmailVerified = !!ok;
+      if (btnVerify) btnVerify.disabled = suEmailVerified;
+      if (btnSubmit) btnSubmit.disabled = !suEmailVerified;
+      if (suEmailStatus) {
+        suEmailStatus.classList.toggle('hidden', !suEmailVerified);
+        suEmailStatus.textContent = suEmailVerified ? '이메일 인증이 완료되었습니다. 나머지 정보를 입력한 뒤 가입하세요.' : '';
+        suEmailStatus.className =
+          'text-[11px] ' + (suEmailVerified ? 'text-emerald-700 font-medium' : 'hidden');
+      }
+    }
+
+    function resetEmailFlow() {
+      suEmailVerified = false;
+      setEmailVerified(false);
+      clearSuTimer();
+      if (codeRow) codeRow.classList.add('hidden');
+      var c = document.getElementById('suCode');
+      if (c) c.value = '';
+    }
+
+    function syncTabs() {
+      if (!tabOwner || !tabChild || !ownerFields || !childFields) return;
+      var onOwner = signupRole === 'owner';
+      tabOwner.className =
+        'signup-tab flex-1 py-2 text-xs font-semibold rounded-md ' +
+        (onOwner ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-white');
+      tabChild.className =
+        'signup-tab flex-1 py-2 text-xs font-semibold rounded-md ' +
+        (!onOwner ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-white');
+      ownerFields.classList.toggle('hidden', !onOwner);
+      childFields.classList.toggle('hidden', onOwner);
+      resetEmailFlow();
+      setSignupMsg('');
+    }
+
+    if (tabOwner) {
+      tabOwner.addEventListener('click', function () {
+        signupRole = 'owner';
+        syncTabs();
+      });
+    }
+    if (tabChild) {
+      tabChild.addEventListener('click', function () {
+        signupRole = 'child';
+        syncTabs();
+      });
+    }
+    syncTabs();
+
+    if (btnSend) {
+      btnSend.addEventListener('click', async function () {
+        var emailEl = document.getElementById('suEmail');
+        var email = emailEl && emailEl.value ? emailEl.value.trim() : '';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          setSignupMsg('올바른 이메일 형식을 입력해 주세요.', true);
+          return;
+        }
+        setSignupMsg('');
+        btnSend.disabled = true;
+        try {
+          await apiJson('POST', '/api/auth/email/send-code', { email: email });
+          if (codeRow) codeRow.classList.remove('hidden');
+          startSuTimer(180);
+          setEmailVerified(false);
+          setSignupMsg('인증 메일을 발송했습니다. 메일함을 확인해 주세요.', false);
+        } catch (e) {
+          setSignupMsg('발송 실패: ' + (e && e.message ? e.message : e), true);
+        } finally {
+          btnSend.disabled = false;
+        }
+      });
+    }
+
+    if (btnVerify) {
+      btnVerify.addEventListener('click', async function () {
+        var emailEl = document.getElementById('suEmail');
+        var codeEl = document.getElementById('suCode');
+        var email = emailEl && emailEl.value ? emailEl.value.trim() : '';
+        var code = codeEl && codeEl.value ? codeEl.value.trim() : '';
+        if (!email || !code) {
+          setSignupMsg('이메일과 인증번호를 입력해 주세요.', true);
+          return;
+        }
+        btnVerify.disabled = true;
+        try {
+          await apiJson('POST', '/api/auth/email/verify-code', { email: email, code: code });
+          setEmailVerified(true);
+          clearSuTimer();
+          setSignupMsg('인증에 성공했습니다. 회원가입을 진행할 수 있습니다.', false);
+        } catch (e) {
+          setSignupMsg('인증 실패: ' + (e && e.message ? e.message : e), true);
+        } finally {
+          if (!suEmailVerified) btnVerify.disabled = false;
+        }
+      });
+    }
+
+    if (btnSubmit) {
+      btnSubmit.addEventListener('click', async function () {
+        if (!suEmailVerified) {
+          setSignupMsg('이메일 인증을 먼저 완료해 주세요.', true);
+          return;
+        }
+        var email = (document.getElementById('suEmail') && document.getElementById('suEmail').value || '').trim();
+        var pw = document.getElementById('suPassword') && document.getElementById('suPassword').value;
+        var pw2 = document.getElementById('suPassword2') && document.getElementById('suPassword2').value;
+        var phone = (document.getElementById('suPhone') && document.getElementById('suPhone').value || '').trim();
+        if (!pw || pw !== pw2) {
+          setSignupMsg('비밀번호와 비밀번호 확인이 일치하지 않습니다.', true);
+          return;
+        }
+        btnSubmit.disabled = true;
+        try {
+          if (signupRole === 'owner') {
+            var storeName = (document.getElementById('suStoreName') && document.getElementById('suStoreName').value || '').trim();
+            var biz = (document.getElementById('suBizNo') && document.getElementById('suBizNo').value || '').trim();
+            if (!/^\d{10}$/.test(biz)) {
+              setSignupMsg('사업자등록번호는 숫자 10자리여야 합니다.', true);
+              btnSubmit.disabled = false;
+              return;
+            }
+            await apiJson('POST', '/api/users/signup/owner', {
+              loginId: email,
+              password: pw,
+              passwordConfirm: pw2,
+              name: storeName,
+              phone: phone,
+              businessNumber: biz
+            });
+            setSignupMsg('매장 회원가입이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.', false);
+          } else {
+            var cname = (document.getElementById('suChildName') && document.getElementById('suChildName').value || '').trim();
+            var nick = (document.getElementById('suNickname') && document.getElementById('suNickname').value || '').trim();
+            var fk = (document.getElementById('suFileKey') && document.getElementById('suFileKey').value || '').trim();
+            var fp = (document.getElementById('suFilePath') && document.getElementById('suFilePath').value || '').trim();
+            if (!cname || !nick || !fk || !fp) {
+              setSignupMsg('아동 가입: 이름·닉네임·증빙 fileKey·filePath 를 모두 입력해 주세요.', true);
+              btnSubmit.disabled = false;
+              return;
+            }
+            await apiJson('POST', '/api/users/signup/child', {
+              loginId: email,
+              password: pw,
+              passwordConfirm: pw2,
+              name: cname,
+              phone: phone,
+              nickname: nick,
+              images: [{ fileKey: fk, filePath: fp, displayOrder: '0' }]
+            });
+            setSignupMsg('아동 회원가입이 완료되었습니다.', false);
+          }
+        } catch (e) {
+          setSignupMsg('가입 실패: ' + (e && e.message ? e.message : e), true);
+        } finally {
+          btnSubmit.disabled = !suEmailVerified;
+        }
+      });
+    }
+  })();
+
+  btnLogout.addEventListener('click', async function () {
+    try {
+      await apiJson('POST', '/api/users/logout', {});
+      setAuthUi(null);
+      myFavoriteStoreIds = new Set();
+      await loadStores(1);
+      alert('로그아웃되었습니다.');
+    } catch (e) {
+      alert('로그아웃 실패: ' + (e.message || e));
+    }
+  });
+
+  function updateChildResPaginationUi() {
+    var pager = document.getElementById('childReservationsPager');
+    var info = document.getElementById('childResPageInfo');
+    var lbl = document.getElementById('childResPageNum');
+    var prev = document.getElementById('btnChildResPrev');
+    var next = document.getElementById('btnChildResNext');
+    if (!pager || !info) return;
+    if (!childResTotalCount) {
+      pager.classList.add('hidden');
+      return;
+    }
+    pager.classList.remove('hidden');
+    var from = (childResPageNum - 1) * CHILD_RES_PER_PAGE + 1;
+    var to = Math.min(childResPageNum * CHILD_RES_PER_PAGE, childResTotalCount);
+    info.textContent = '전체 ' + childResTotalCount + '건 · ' + from + '–' + to + '번째';
+    lbl.textContent = childResPageNum + ' / ' + childResTotalPages;
+    prev.disabled = childResPageNum <= 1;
+    next.disabled = childResPageNum >= childResTotalPages;
+  }
+
+  /** 모달이 열릴 때 뒤 페이지 스크롤 고정. 여러 모달이 겹치면(depth) 마지막이 닫힐 때까지 유지. */
+  var bookingModalBodyScrollLockDepth = 0;
+  var bookingModalBodyScrollY = 0;
+  function enterBookingModalBodyScrollLock() {
+    if (bookingModalBodyScrollLockDepth === 0) {
+      bookingModalBodyScrollY = window.scrollY || window.pageYOffset || 0;
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = '-' + bookingModalBodyScrollY + 'px';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+    }
+    bookingModalBodyScrollLockDepth++;
+  }
+  function leaveBookingModalBodyScrollLock() {
+    if (bookingModalBodyScrollLockDepth <= 0) return;
+    bookingModalBodyScrollLockDepth--;
+    if (bookingModalBodyScrollLockDepth > 0) return;
+    var y = bookingModalBodyScrollY;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    window.scrollTo(0, y);
+  }
+
+  function openChildResModal() {
+    var el = document.getElementById('childResModal');
+    if (el && typeof el.showModal === 'function') {
+      var wasOpen = el.open;
+      try {
+        el.showModal();
+      } catch (err) {}
+      if (!wasOpen) enterBookingModalBodyScrollLock();
+    }
+  }
+  function closeChildResModal() {
+    var el = document.getElementById('childResModal');
+    if (el && typeof el.close === 'function') {
+      try {
+        el.close();
+      } catch (err) {}
+    }
+  }
+  function openOwnerResModal() {
+    var el = document.getElementById('ownerResModal');
+    if (el && typeof el.showModal === 'function') {
+      var wasOpen = el.open;
+      try {
+        el.showModal();
+      } catch (err) {}
+      if (!wasOpen) enterBookingModalBodyScrollLock();
+    }
+  }
+  function closeOwnerResModal() {
+    var el = document.getElementById('ownerResModal');
+    if (el && typeof el.close === 'function') {
+      try {
+        el.close();
+      } catch (err) {}
+    }
+  }
+
+  function openOwnerScheduleModal() {
+    var el = document.getElementById('ownerScheduleModal');
+    if (el && typeof el.showModal === 'function') {
+      var wasOpen = el.open;
+      try {
+        el.showModal();
+      } catch (err) {}
+      if (!wasOpen) enterBookingModalBodyScrollLock();
+    }
+  }
+  /** 예약 목록 모달이 위에 열려 있으면 먼저 닫고 스케줄 모달을 닫음 */
+  function closeOwnerScheduleModal() {
+    var resEl = document.getElementById('ownerResModal');
+    if (resEl && resEl.open && typeof resEl.close === 'function') {
+      try {
+        resEl.close();
+      } catch (err) {}
+    }
+    var el = document.getElementById('ownerScheduleModal');
+    if (el && typeof el.close === 'function') {
+      try {
+        el.close();
+      } catch (err) {}
+    }
+  }
+
+  document.getElementById('childResModal').addEventListener('close', leaveBookingModalBodyScrollLock);
+  document.getElementById('ownerResModal').addEventListener('close', leaveBookingModalBodyScrollLock);
+  document.getElementById('ownerScheduleModal').addEventListener('close', leaveBookingModalBodyScrollLock);
+
+  async function loadChildReservations(page) {
+    if (!currentUser || currentUser.userType !== 'CHILD') return;
+    if (typeof page === 'number' && page >= 1) {
+      childResPageNum = page;
+    }
+    var out = document.getElementById('childReservationsOut');
+    out.innerHTML = '<p class="p-8 text-center text-slate-500">불러오는 중…</p>';
+    openChildResModal();
+    try {
+      var url = '/api/childrens/reservations?pageNum=' + childResPageNum +
+        '&perPage=' + CHILD_RES_PER_PAGE +
+        '&statusFilter=ALL&sortField=scheduleDate&sortDirection=asc';
+      var data = await apiJson('GET', url);
+      childResTotalCount = data.totalCount != null ? Number(data.totalCount) : 0;
+      var tp = data.totalPages != null ? Number(data.totalPages) : 1;
+      childResTotalPages = Math.max(1, tp);
+      if (childResPageNum > childResTotalPages && childResTotalPages >= 1 && childResTotalCount > 0) {
+        childResPageNum = childResTotalPages;
+        return loadChildReservations();
+      }
+      var rows = sortByScheduleDateTime(data.reservations || []);
+      if (!rows.length && childResTotalCount === 0) {
+        out.innerHTML = '<p class="p-8 text-center text-slate-500">예약이 없습니다.</p>';
+        document.getElementById('childReservationsPager').classList.add('hidden');
+        return;
+      }
+      if (!rows.length) {
+        out.innerHTML = '<p class="p-8 text-center text-slate-500">이 페이지에 항목이 없습니다.</p>';
+        updateChildResPaginationUi();
+        return;
+      }
+      out.innerHTML =
+        '<table class="w-full min-w-[52rem] border-collapse text-left text-sm">' +
+        '<thead class="sticky top-0 z-10 border-b-2 border-slate-200 bg-slate-100 shadow-sm">' +
+        '<tr>' +
+        '<th class="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">ID</th>' +
+        '<th class="min-w-[12rem] px-3 py-3 font-semibold text-slate-700">가게</th>' +
+        '<th class="min-w-[13rem] px-3 py-3 font-semibold text-slate-700">일시</th>' +
+        '<th class="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">상태</th>' +
+        '<th class="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">인원</th>' +
+        '<th class="min-w-[9rem] px-3 py-3 font-semibold text-slate-700">작업</th>' +
+        '</tr></thead><tbody>' +
+        rows.map(function (r) {
+          var dt =
+            '<span class="block whitespace-nowrap">' +
+            escapeHtml(String(r.scheduleDate || '')) +
+            '</span>' +
+            '<span class="mt-0.5 block text-xs text-slate-500 whitespace-nowrap">' +
+            escapeHtml(String(r.startTime || '')) +
+            '</span>';
+          return (
+            '<tr class="border-b border-slate-100 hover:bg-emerald-50/40">' +
+            '<td class="px-3 py-3 align-top text-slate-800 tabular-nums">' +
+            r.id +
+            '</td>' +
+            '<td class="px-3 py-3 align-top leading-snug break-words">' +
+            escapeHtml(r.storeName || '') +
+            '</td>' +
+            '<td class="px-3 py-3 align-top text-slate-800">' +
+            dt +
+            '</td>' +
+            '<td class="px-3 py-3 align-top">' +
+            reservationStatusHtml(r.status) +
+            '</td>' +
+            '<td class="px-3 py-3 align-top tabular-nums">' +
+            (r.people != null ? r.people : '') +
+            '</td>' +
+            '<td class="px-3 py-3 align-top whitespace-nowrap">' +
+            childReservationActionsHtml(r) +
+            '</td>' +
+            '</tr>'
+          );
+        }).join('') +
+        '</tbody></table>';
+      updateChildResPaginationUi();
+    } catch (e) {
+      closeChildResModal();
+      out.innerHTML = '';
+      document.getElementById('childReservationsPager').classList.add('hidden');
+      alert('내 예약 조회 실패: ' + (e.message || e));
+    }
+  }
+
+  document.getElementById('btnChildReservations').addEventListener('click', function () {
+    loadChildReservations(1);
+  });
+  document.getElementById('btnChildResPrev').addEventListener('click', function () {
+    if (childResPageNum > 1) loadChildReservations(childResPageNum - 1);
+  });
+  document.getElementById('btnChildResNext').addEventListener('click', function () {
+    if (childResPageNum < childResTotalPages) loadChildReservations(childResPageNum + 1);
+  });
+  document.getElementById('btnChildResModalClose').addEventListener('click', closeChildResModal);
+  document.getElementById('childResModal').addEventListener('click', function (e) {
+    if (e.target === document.getElementById('childResModal')) closeChildResModal();
+  });
+
+  document.getElementById('btnOpenOwnerScheduleModal').addEventListener('click', openOwnerScheduleModal);
+  document.getElementById('btnOwnerScheduleModalClose').addEventListener('click', closeOwnerScheduleModal);
+  document.getElementById('ownerScheduleModal').addEventListener('click', function (e) {
+    if (e.target === document.getElementById('ownerScheduleModal')) closeOwnerScheduleModal();
+  });
+
+  const ownerStoreSelect = document.getElementById('ownerStoreSelect');
+
+  document.getElementById('btnOwnerStores').addEventListener('click', async function () {
+    if (!currentUser || currentUser.userType !== 'OWNER') return;
+    try {
+      const data = await apiJson('GET', '/api/owners/stores?pageNum=1&perPage=50&sortField=id&sortDirection=asc');
+      const stores = data.stores || [];
+      ownerStoreSelect.innerHTML = stores.length
+        ? stores.map(function (s) {
+            return '<option value="' + s.id + '">' + escapeHtml(s.name) + ' (id:' + s.id + ')</option>';
+          }).join('')
+        : '<option value="">가게 없음</option>';
+    } catch (e) {
+      alert('내 가게 목록 실패: ' + (e.message || e));
+    }
+  });
+
+  document.getElementById('ownerScheduleForm').addEventListener('submit', async function (ev) {
+    ev.preventDefault();
+    if (!currentUser || currentUser.userType !== 'OWNER') {
+      alert('사장(OWNER)만 스케줄을 등록할 수 있습니다.');
+      return;
+    }
+    const storeId = ownerStoreSelect.value;
+    if (!storeId) {
+      alert('가게를 먼저 선택하세요. 「내 가게 목록 불러오기」를 누르세요.');
+      return;
+    }
+    const scheduleDate = document.getElementById('osDate').value;
+    const startTime = document.getElementById('osStart').value;
+    const endTime = document.getElementById('osEnd').value;
+    const maxPeople = parseInt(document.getElementById('osMax').value, 10);
+    if (!scheduleDate || !startTime || !endTime) {
+      alert('날짜를 선택하고, 시작 시간은 그리드에서 선택하세요. (종료는 자동)');
+      return;
+    }
+    const body = {
+      storeSchedules: [{
+        scheduleDate: scheduleDate,
+        startTime: startTime.length === 5 ? startTime : startTime.slice(0, 5),
+        endTime: endTime.length === 5 ? endTime : endTime.slice(0, 5),
+        maxPeople: maxPeople
+      }]
+    };
+    try {
+      await apiJson('POST', '/api/owners/stores/' + storeId + '/schedules', body);
+      alert('스케줄이 등록되었습니다.');
+    } catch (e) {
+      alert('스케줄 등록 실패: ' + (e.message || e));
+    }
+  });
+
+  function updateOwnerResPaginationUi() {
+    var pager = document.getElementById('ownerBookingsPager');
+    var info = document.getElementById('ownerResPageInfo');
+    var lbl = document.getElementById('ownerResPageNum');
+    var prev = document.getElementById('btnOwnerResPrev');
+    var next = document.getElementById('btnOwnerResNext');
+    if (!pager || !info) return;
+    if (!ownerResTotalCount) {
+      pager.classList.add('hidden');
+      return;
+    }
+    pager.classList.remove('hidden');
+    var from = (ownerResPageNum - 1) * OWNER_RES_PER_PAGE + 1;
+    var to = Math.min(ownerResPageNum * OWNER_RES_PER_PAGE, ownerResTotalCount);
+    info.textContent = '전체 ' + ownerResTotalCount + '건 · ' + from + '–' + to + '번째';
+    lbl.textContent = ownerResPageNum + ' / ' + ownerResTotalPages;
+    prev.disabled = ownerResPageNum <= 1;
+    next.disabled = ownerResPageNum >= ownerResTotalPages;
+  }
+
+  async function loadOwnerBookings(page) {
+    if (!currentUser || currentUser.userType !== 'OWNER') return;
+    var storeId = ownerStoreSelect.value;
+    var out = document.getElementById('ownerBookingsOut');
+    if (!storeId) {
+      alert('가게를 선택하세요.');
+      return;
+    }
+    if (typeof page === 'number' && page >= 1) {
+      ownerResPageNum = page;
+    }
+    out.innerHTML = '<p class="p-8 text-center text-slate-500">불러오는 중…</p>';
+    openOwnerResModal();
+    try {
+      var url = '/api/owners/stores/' + storeId + '/reservations?pageNum=' + ownerResPageNum +
+        '&perPage=' + OWNER_RES_PER_PAGE +
+        '&statusFilter=ALL&sortField=scheduleDate&sortDirection=asc';
+      var data = await apiJson('GET', url);
+      ownerResTotalCount = data.totalCount != null ? Number(data.totalCount) : 0;
+      var tp = data.totalPages != null ? Number(data.totalPages) : 1;
+      ownerResTotalPages = Math.max(1, tp);
+      if (ownerResPageNum > ownerResTotalPages && ownerResTotalPages >= 1 && ownerResTotalCount > 0) {
+        ownerResPageNum = ownerResTotalPages;
+        return loadOwnerBookings();
+      }
+      var rows = sortByScheduleDateTime(data.reservations || []);
+      if (!rows.length && ownerResTotalCount === 0) {
+        out.innerHTML = '<p class="p-8 text-center text-slate-500">예약이 없습니다.</p>';
+        document.getElementById('ownerBookingsPager').classList.add('hidden');
+        return;
+      }
+      if (!rows.length) {
+        out.innerHTML = '<p class="p-8 text-center text-slate-500">이 페이지에 항목이 없습니다.</p>';
+        updateOwnerResPaginationUi();
+        return;
+      }
+      out.innerHTML =
+        '<table class="w-full min-w-[52rem] border-collapse text-left text-sm">' +
+        '<thead class="sticky top-0 z-10 border-b-2 border-slate-200 bg-slate-100 shadow-sm">' +
+        '<tr>' +
+        '<th class="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">ID</th>' +
+        '<th class="min-w-[10rem] px-3 py-3 font-semibold text-slate-700">닉네임</th>' +
+        '<th class="min-w-[13rem] px-3 py-3 font-semibold text-slate-700">일시</th>' +
+        '<th class="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">상태</th>' +
+        '<th class="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">인원</th>' +
+        '<th class="min-w-[10rem] px-3 py-3 font-semibold text-slate-700">작업</th>' +
+        '</tr></thead><tbody>' +
+        rows.map(function (r) {
+          var dt =
+            '<span class="block whitespace-nowrap">' +
+            escapeHtml(String(r.scheduleDate || '')) +
+            '</span>' +
+            '<span class="mt-0.5 block text-xs text-slate-500 whitespace-nowrap">' +
+            escapeHtml(String(r.startTime || '')) +
+            '</span>';
+          return (
+            '<tr class="border-b border-slate-100 hover:bg-amber-50/40">' +
+            '<td class="px-3 py-3 align-top text-slate-800 tabular-nums">' +
+            r.id +
+            '</td>' +
+            '<td class="px-3 py-3 align-top leading-snug break-words">' +
+            escapeHtml(r.childNickname || '') +
+            '</td>' +
+            '<td class="px-3 py-3 align-top text-slate-800">' +
+            dt +
+            '</td>' +
+            '<td class="px-3 py-3 align-top">' +
+            reservationStatusHtml(r.status) +
+            '</td>' +
+            '<td class="px-3 py-3 align-top tabular-nums">' +
+            (r.people != null ? r.people : '') +
+            '</td>' +
+            '<td class="px-3 py-3 align-top">' +
+            ownerReservationActionsHtml(r) +
+            '</td>' +
+            '</tr>'
+          );
+        }).join('') +
+        '</tbody></table>';
+      updateOwnerResPaginationUi();
+    } catch (e) {
+      closeOwnerResModal();
+      out.innerHTML = '';
+      document.getElementById('ownerBookingsPager').classList.add('hidden');
+      alert('예약 목록 조회 실패: ' + (e.message || e));
+    }
+  }
+
+  document.getElementById('btnOwnerBookings').addEventListener('click', function () {
+    loadOwnerBookings(1);
+  });
+  document.getElementById('btnOwnerResPrev').addEventListener('click', function () {
+    if (ownerResPageNum > 1) loadOwnerBookings(ownerResPageNum - 1);
+  });
+  document.getElementById('btnOwnerResNext').addEventListener('click', function () {
+    if (ownerResPageNum < ownerResTotalPages) loadOwnerBookings(ownerResPageNum + 1);
+  });
+  document.getElementById('btnOwnerResModalClose').addEventListener('click', closeOwnerResModal);
+  document.getElementById('ownerResModal').addEventListener('click', function (e) {
+    if (e.target === document.getElementById('ownerResModal')) closeOwnerResModal();
+  });
+
+  const storeGrid = document.getElementById('storeGrid');
+  const detailPanel = document.getElementById('detailPanel');
+  const storeDetail = document.getElementById('storeDetail');
+  const calendarGrid = document.getElementById('calendarGrid');
+  const monthLabel = document.getElementById('monthLabel');
+  const slotPanel = document.getElementById('slotPanel');
+  const slotList = document.getElementById('slotList');
+  const reservePanel = document.getElementById('reservePanel');
+  const pickedScheduleId = document.getElementById('pickedScheduleId');
+  const peopleCount = document.getElementById('peopleCount');
+  const reservationFlowSection = document.getElementById('reservationFlowSection');
+
+  function pad2(n) {
+    return String(n).padStart(2, '0');
+  }
+
+  /** "HH:mm" 시작 시각에 정확히 1시간 더함 (예: 21:00 → 22:00) */
+  function addOneHourHHmm(hhmm) {
+    var parts = String(hhmm).split(':');
+    var h = parseInt(parts[0], 10);
+    var m = parseInt(parts[1] || '0', 10);
+    h += 1;
+    return pad2(h) + ':' + pad2(m);
+  }
+
+  function initOwnerTimeGrid() {
+    var grid = document.getElementById('ownerTimeGrid');
+    var osStart = document.getElementById('osStart');
+    var osEnd = document.getElementById('osEnd');
+    var endLabel = document.getElementById('ownerEndTimeLabel');
+    if (!grid) return;
+    grid.innerHTML = '';
+    var hour;
+    for (hour = 9; hour <= 21; hour++) {
+      var label = pad2(hour) + ':00';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.setAttribute('data-start', label);
+      btn.className = 'rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-800 transition hover:border-indigo-400 hover:bg-indigo-50/50 focus:outline-none focus:ring-2 focus:ring-indigo-400';
+      btn.textContent = label;
+      btn.addEventListener('click', function (ev) {
+        var el = ev.currentTarget;
+        var start = el.getAttribute('data-start');
+        osStart.value = start;
+        var endT = addOneHourHHmm(start);
+        osEnd.value = endT;
+        endLabel.textContent = endT;
+        grid.querySelectorAll('button[data-start]').forEach(function (b) {
+          var on = b.getAttribute('data-start') === start;
+          b.className = on
+            ? 'rounded-lg border-2 border-indigo-500 bg-indigo-50 py-2.5 text-sm font-semibold text-indigo-900 shadow-sm ring-1 ring-indigo-200'
+            : 'rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-800 transition hover:border-indigo-400 hover:bg-indigo-50/50 focus:outline-none focus:ring-2 focus:ring-indigo-400';
+        });
+      });
+      grid.appendChild(btn);
+    }
+    osStart.value = '';
+    osEnd.value = '';
+    endLabel.textContent = '—';
+  }
+
+  function storeSortButtonClass(active) {
+    return active
+      ? 'store-sort-btn px-3 py-1.5 text-xs font-medium rounded-md transition bg-emerald-600 text-white shadow-sm'
+      : 'store-sort-btn px-3 py-1.5 text-xs font-medium rounded-md transition text-slate-700 hover:bg-white';
+  }
+
+  function syncStoreSortUi() {
+    // 좌표가 있어야만 거리순 정렬을 "활성화"
+    var hasGeo = !!(storeGeoLat && storeGeoLng);
+    var distBtn = document.querySelector('#storeSortGroup [data-store-sort="distance"]');
+    if (distBtn) {
+      // 숨기지 말고 비활성 느낌을 강하게
+      distBtn.setAttribute('data-disabled', hasGeo ? '0' : '1');
+      distBtn.setAttribute('aria-disabled', hasGeo ? 'false' : 'true');
+      distBtn.title = hasGeo ? '' : '내 위치가 필요합니다';
+      if (!hasGeo) {
+        distBtn.className = 'store-sort-btn px-3 py-1.5 text-xs font-medium rounded-md transition bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70';
+      }
+    }
+
+    // 현재 모드가 distance인데 좌표가 사라졌으면 name으로 되돌림
+    if (storeSortMode === 'distance' && !hasGeo) {
+      storeSortMode = 'name';
+    }
+
+    document.querySelectorAll('#storeSortGroup [data-store-sort]').forEach(function (btn) {
+      var mode = btn.getAttribute('data-store-sort');
+      // distance는 위에서 비활성 스타일을 강제했으니, 좌표 있을 때만 일반 스타일 적용
+      if (mode === 'distance' && !(storeGeoLat && storeGeoLng)) return;
+      btn.className = storeSortButtonClass(mode === storeSortMode);
+    });
+  }
+
+  /** API: 거리순 asc, 좋아요순 desc, 이름순 asc */
+  function buildStoreListQueryString() {
+    var sortField;
+    var sortDirection;
+    if (storeSortMode === 'distance') {
+      sortField = 'distance';
+      sortDirection = 'asc';
+    } else if (storeSortMode === 'favoriteCount') {
+      sortField = 'favoriteCount';
+      sortDirection = 'desc';
+    } else {
+      sortField = 'name';
+      sortDirection = 'asc';
+    }
+    var q = 'pageNum=' + storePageNum +
+      '&perPage=' + STORE_PER_PAGE +
+      '&sortField=' + encodeURIComponent(sortField) +
+      '&sortDirection=' + encodeURIComponent(sortDirection);
+    var kwEl = document.getElementById('storeKeywordInput');
+    var kw = kwEl && kwEl.value ? kwEl.value.trim() : '';
+    if (kw) {
+      q += '&keyword=' + encodeURIComponent(kw);
+    }
+    var catEl = document.getElementById('storeCategorySelect');
+    var cid = catEl && catEl.value ? String(catEl.value).trim() : '';
+    if (cid) {
+      q += '&categoryId=' + encodeURIComponent(cid);
+    }
+    // lat/lng는 "거리 표시"를 위한 옵션 (정렬과 무관). 입력 UI는 없고 내부 상태만 전송.
+    if (storeGeoLat && storeGeoLng) {
+      q += '&lat=' + encodeURIComponent(storeGeoLat) + '&lng=' + encodeURIComponent(storeGeoLng);
+    }
+    return q;
+  }
+
+  function setStoreSortMode(mode, resetPage) {
+    if (mode !== 'distance' && mode !== 'favoriteCount' && mode !== 'name') return;
+    storeSortMode = mode;
+    syncStoreSortUi();
+    if (resetPage) {
+      storePageNum = 1;
+    }
+  }
+
+  function updateStorePaginationUi() {
+    const info = document.getElementById('storePageInfo');
+    const lbl = document.getElementById('storePageNum');
+    const prev = document.getElementById('btnStorePrev');
+    const next = document.getElementById('btnStoreNext');
+    if (!storeTotalCount) {
+      info.textContent = '등록된 가게가 없습니다.';
+      lbl.textContent = '0 / 0';
+      prev.disabled = true;
+      next.disabled = true;
+      return;
+    }
+    var from = (storePageNum - 1) * STORE_PER_PAGE + 1;
+    var to = Math.min(storePageNum * STORE_PER_PAGE, storeTotalCount);
+    info.textContent = '전체 ' + storeTotalCount + '건 · ' + from + '–' + to + '번째';
+    lbl.textContent = storePageNum + ' / ' + storeTotalPages;
+    prev.disabled = storePageNum <= 1;
+    next.disabled = storePageNum >= storeTotalPages;
+  }
+
+  /** API distance(km) → 표시용 문자열 */
+  function formatDistanceKm(d) {
+    if (d === null || d === undefined) return '';
+    var n = Number(d);
+    if (isNaN(n)) return '';
+    var rounded = Math.round(n * 100) / 100;
+    return String(rounded) + ' km';
+  }
+
+  function renderStoreCards(data) {
+    const stores = data.stores || [];
+    storeGrid.innerHTML = '';
+    if (!stores.length) {
+      storeGrid.innerHTML = '<p class="text-sm text-slate-500 col-span-full">이 페이지에 가게가 없습니다.</p>';
+      return;
+    }
+    stores.forEach(function (s) {
+      const card = document.createElement('div');
+      card.className =
+        'relative text-left w-full border border-slate-200 rounded-lg p-3 hover:border-indigo-400 hover:bg-indigo-50/40 transition flex gap-3 items-start cursor-pointer';
+      var imgs = s.images || [];
+      var thumbUrl = imgs.length > 0 ? imgs[0] : '';
+      var thumbBlock = thumbUrl
+        ? '<div class="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-slate-200 bg-slate-100">' +
+          '<img src="' +
+          escapeHtml(String(thumbUrl)) +
+          '" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async" />' +
+          '</div>'
+        : '<div class="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center text-[10px] text-slate-400 leading-tight text-center px-1">이미지<br/>없음</div>';
+      var distRow = '';
+      // lat/lng를 보냈다면 정렬과 무관하게 distance가 내려올 수 있으므로 값이 있으면 표시
+      var dk = formatDistanceKm(s.distance);
+      if (dk) {
+        distRow =
+          '<div class="text-xs font-semibold text-indigo-700 mt-1.5 tabular-nums">' +
+          '거리 ' + escapeHtml(dk) +
+          '</div>';
+      }
+      card.innerHTML =
+        thumbBlock +
+        '<div class="min-w-0 flex-1">' +
+        '<div class="font-medium text-slate-800">' +
+        escapeHtml(s.name) +
+        '</div>' +
+        '<div class="text-xs text-slate-500 mt-1 line-clamp-2">' +
+        escapeHtml(s.address || '') +
+        '</div>' +
+        distRow +
+        '<div class="mt-2 flex flex-wrap gap-1 text-[10px]">' +
+        (s.isOpen ? '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">영업중</span>' : '<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">영업준비</span>') +
+        (s.isSharing ? '<span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-800">공유</span>' : '') +
+        '</div>' +
+        '</div>';
+
+      // 목록 찜 토글 하트(아동만)
+      if (isChildUser()) {
+        const filled = myFavoriteStoreIds.has(Number(s.id));
+        const favBtn = document.createElement('button');
+        favBtn.type = 'button';
+        favBtn.className = 'absolute top-2 right-2 w-9 h-9 rounded-full bg-white/90 border border-slate-200 shadow-sm flex items-center justify-center hover:bg-white';
+        favBtn.setAttribute('aria-label', '찜 토글');
+        favBtn.innerHTML = heartSvg(filled);
+        favBtn.addEventListener('click', async function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          favBtn.disabled = true;
+          try {
+            await toggleFavorite(s.id);
+            favBtn.innerHTML = heartSvg(myFavoriteStoreIds.has(Number(s.id)));
+            // evict 후 재조회로 favoriteCount 갱신 체감
+            await loadStores(storePageNum);
+            if (selectedStoreId && Number(selectedStoreId) === Number(s.id)) {
+              await openStoreDetail(selectedStoreId, s.name);
+            }
+          } catch (err) {
+            alert('찜 토글 실패: ' + (err.message || err));
+          } finally {
+            favBtn.disabled = false;
+          }
+        });
+        card.appendChild(favBtn);
+      }
+
+      card.addEventListener('click', function () {
+        openStoreDetail(s.id, s.name);
+      });
+      storeGrid.appendChild(card);
+    });
+  }
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /**
+   * API 예약 상태 코드 → 한글 라벨 + 색 배지 (WAITING, CONFIRMED, CANCELED, COMPLETED)
+   */
+  function reservationStatusHtml(status) {
+    var s = String(status || '').trim().toUpperCase();
+    var styles = {
+      WAITING: { label: '예약중', badge: 'bg-amber-100 text-amber-900 border-amber-300' },
+      CONFIRMED: { label: '예약 확정', badge: 'bg-emerald-100 text-emerald-900 border-emerald-300' },
+      CANCELED: { label: '예약 취소됨', badge: 'bg-slate-200 text-slate-700 border-slate-400' },
+      COMPLETED: { label: '이용 완료', badge: 'bg-sky-100 text-sky-900 border-sky-300' }
+    };
+    var m = styles[s];
+    if (!m) {
+      return '<span class="inline-block px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-600 text-[11px]" title="' + escapeHtml(String(status || '')) + '">' + escapeHtml(status || '—') + '</span>';
+    }
+    return '<span class="inline-block px-2 py-0.5 rounded-md border text-[11px] font-medium whitespace-nowrap ' + m.badge + '">' + m.label + '</span>';
+  }
+
+  /** 아동: WAITING·CONFIRMED 만 취소 API 허용 (완료/취소됨 제외) */
+  function childReservationActionsHtml(r) {
+    var st = String(r.status || '').trim().toUpperCase();
+    if (st === 'WAITING' || st === 'CONFIRMED') {
+      return '<button type="button" class="child-res-act px-1.5 py-0.5 rounded text-[10px] border border-rose-300 text-rose-800 hover:bg-rose-50" data-rid="' + r.id + '">예약 취소</button>';
+    }
+    return '<span class="text-slate-400 text-[11px]">—</span>';
+  }
+
+  /** 사장: 승인(WAITING)·이용완료(CONFIRMED)·취소(대기/확정) */
+  function ownerReservationActionsHtml(r) {
+    var st = String(r.status || '').trim().toUpperCase();
+    var parts = [];
+    if (st === 'WAITING') {
+      parts.push('<button type="button" class="owner-res-act mr-0.5 mb-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-600 text-white hover:bg-emerald-700" data-act="approve" data-rid="' + r.id + '">승인</button>');
+      parts.push('<button type="button" class="owner-res-act mr-0.5 mb-0.5 px-1.5 py-0.5 rounded text-[10px] border border-slate-400 text-slate-700 hover:bg-slate-100" data-act="owner-cancel" data-rid="' + r.id + '">취소</button>');
+    } else if (st === 'CONFIRMED') {
+      parts.push('<button type="button" class="owner-res-act mr-0.5 mb-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-sky-600 text-white hover:bg-sky-700" data-act="complete" data-rid="' + r.id + '">이용완료</button>');
+      parts.push('<button type="button" class="owner-res-act mr-0.5 mb-0.5 px-1.5 py-0.5 rounded text-[10px] border border-slate-400 text-slate-700 hover:bg-slate-100" data-act="owner-cancel" data-rid="' + r.id + '">취소</button>');
+    } else {
+      parts.push('<span class="text-slate-400 text-[11px]">—</span>');
+    }
+    return '<div class="flex flex-wrap items-center gap-0.5 max-w-[10rem]">' + parts.join('') + '</div>';
+  }
+
+  async function loadStoreCategories() {
+    var sel = document.getElementById('storeCategorySelect');
+    if (!sel) return;
+    try {
+      var arr = await apiJson('GET', '/api/stores/categories');
+      var opts = '<option value="">전체</option>';
+      (arr || []).forEach(function (c) {
+        if (c && c.id != null) {
+          opts +=
+            '<option value="' +
+            String(c.id) +
+            '">' +
+            escapeHtml(String(c.name != null ? c.name : '')) +
+            '</option>';
+        }
+      });
+      sel.innerHTML = opts;
+    } catch (e) {
+      sel.innerHTML = '<option value="">(카테고리 로드 실패)</option>';
+      console.warn('카테고리 목록 실패:', e);
+    }
+  }
+
+  function renderRecentChips(keywords) {
+    var el = document.getElementById('storeRecentChips');
+    if (!el) return;
+    if (!keywords || !keywords.length) {
+      el.innerHTML = '<span class="text-slate-400 text-[11px]">저장된 최근 검색어가 없습니다.</span>';
+      return;
+    }
+    el.innerHTML = keywords
+      .map(function (kw) {
+        return (
+          '<button type="button" class="recent-kw-chip px-2.5 py-1 rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-emerald-50 hover:border-emerald-200 text-[11px] shadow-sm" data-kw-enc="' +
+          encodeURIComponent(kw) +
+          '">' +
+          escapeHtml(kw) +
+          '</button>'
+        );
+      })
+      .join('');
+  }
+
+  async function refreshRecentKeywords() {
+    var el = document.getElementById('storeRecentChips');
+    if (!el) return;
+    try {
+      var list = await apiJson('GET', '/api/stores/recent-keywords', undefined, recentSearchHeaders());
+      renderRecentChips(Array.isArray(list) ? list : []);
+    } catch (e) {
+      el.innerHTML =
+        '<span class="text-amber-800 text-[11px]">최근 검색어를 불러오지 못했습니다. (Redis 미기동·연결 확인)</span>';
+    }
+  }
+
+  async function recordRecentKeyword(raw) {
+    var t = raw && String(raw).trim();
+    if (!t) return;
+    try {
+      await apiJson('POST', '/api/stores/recent-keywords', { keyword: t }, recentSearchHeaders());
+      await refreshRecentKeywords();
+    } catch (e) {
+      console.warn('최근 검색어 저장 실패', e);
+    }
+  }
+
+  async function loadStores(page) {
+    if (typeof page === 'number' && page >= 1) {
+      storePageNum = page;
+    }
+    try {
+      const data = await apiJson('GET', '/api/stores?' + buildStoreListQueryString());
+      lastStoreListData = data;
+      storeTotalCount = data.totalCount != null ? Number(data.totalCount) : 0;
+      var tp = data.totalPages != null ? Number(data.totalPages) : 1;
+      storeTotalPages = Math.max(1, tp);
+      if (storePageNum > storeTotalPages && storeTotalPages >= 1) {
+        storePageNum = storeTotalPages;
+        return loadStores();
+      }
+      renderStoreCards(data);
+      updateStorePaginationUi();
+    } catch (e) {
+      alert('가게 목록 조회 실패: ' + (e.message || e));
+    }
+  }
+
+  document.getElementById('btnLoadStores').addEventListener('click', function () {
+    loadStores(1);
+  });
+
+  var storeSearchForm = document.getElementById('storeSearchForm');
+  if (storeSearchForm) {
+    storeSearchForm.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var kwEl = document.getElementById('storeKeywordInput');
+      var kwVal = kwEl && kwEl.value ? kwEl.value.trim() : '';
+      loadStores(1).then(function () {
+        if (kwVal) {
+          return recordRecentKeyword(kwVal);
+        }
+      });
+    });
+  }
+  var storeRecentWrap = document.getElementById('storeRecentWrap');
+  if (storeRecentWrap) {
+    storeRecentWrap.addEventListener('click', function (e) {
+      var btn = e.target.closest('.recent-kw-chip');
+      if (!btn) return;
+      var enc = btn.getAttribute('data-kw-enc');
+      if (enc == null || enc === '') return;
+      var kw = decodeURIComponent(enc);
+      var kwInput = document.getElementById('storeKeywordInput');
+      if (kwInput) kwInput.value = kw;
+      loadStores(1);
+    });
+  }
+  document.getElementById('btnStoreSearchReset').addEventListener('click', function () {
+    var kw = document.getElementById('storeKeywordInput');
+    var cat = document.getElementById('storeCategorySelect');
+    if (kw) kw.value = '';
+    if (cat) cat.value = '';
+    loadStores(1);
+  });
+
+  document.getElementById('storeSortGroup').addEventListener('click', function (ev) {
+    var btn = ev.target.closest('[data-store-sort]');
+    if (!btn) return;
+    var mode = btn.getAttribute('data-store-sort');
+    if (mode === 'distance' && !(storeGeoLat && storeGeoLng)) {
+      setStoreGeoStatus('좌표 없음', 'error');
+      return;
+    }
+    setStoreSortMode(mode, true);
+    loadStores(1);
+  });
+
+  document.getElementById('btnStoreMyLocation').addEventListener('click', function () {
+    if (!navigator.geolocation) {
+      alert('이 브라우저는 위치 정보를 지원하지 않습니다.');
+      return;
+    }
+    var btn = document.getElementById('btnStoreMyLocation');
+    if (btn) btn.disabled = true;
+    setStoreGeoStatus('위치 가져오는 중…', 'loading');
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        setStoreGeo(pos.coords.latitude, pos.coords.longitude);
+        setStoreGeoStatus('좌표 설정됨', 'ok');
+        if (btn) btn.disabled = false;
+        loadStores(1);
+      },
+      function (err) {
+        if (btn) btn.disabled = false;
+        var code = err && err.code ? err.code : 0;
+        var msg = err && err.message ? err.message : '';
+        var label = 'UNKNOWN';
+        if (code === 1) label = 'PERMISSION_DENIED';
+        else if (code === 2) label = 'POSITION_UNAVAILABLE';
+        else if (code === 3) label = 'TIMEOUT';
+
+        // alert 대신 상태로 보여주고(공간 적게), 원인 파악에 필요한 정보는 남김
+        setStoreGeoStatus('실패(' + label + ')', 'error');
+        console.warn('[geo] getCurrentPosition failed', { code: code, label: label, message: msg, err: err });
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 }
+    );
+  });
+  document.getElementById('btnStorePrev').addEventListener('click', function () {
+    if (storePageNum > 1) loadStores(storePageNum - 1);
+  });
+  document.getElementById('btnStoreNext').addEventListener('click', function () {
+    if (storePageNum < storeTotalPages) loadStores(storePageNum + 1);
+  });
+
+  async function openStoreDetail(storeId, name) {
+    selectedStoreId = storeId;
+    selectedDay = null;
+    lastDailySlots = [];
+    pickedScheduleId.value = '';
+    if (peopleCount) peopleCount.value = '1';
+    detailPanel.classList.remove('hidden');
+    if (reservationFlowSection) reservationFlowSection.classList.add('hidden');
+    slotPanel.classList.add('hidden');
+    reservePanel.classList.add('hidden');
+    childReserveHint.classList.add('hidden');
+    updateSelectedScheduleText();
+
+    // 리뷰 섹션은 storeDetail과 분리된 별도 카드로 렌더링
+    var storeReviewSection = document.getElementById('storeReviewSection');
+    if (storeReviewSection) storeReviewSection.innerHTML = '';
+
+    var detailUrl = '/api/stores/' + storeId;
+    if (storeGeoLat && storeGeoLng) {
+      detailUrl += '?lat=' + encodeURIComponent(storeGeoLat) + '&lng=' + encodeURIComponent(storeGeoLng);
+    }
+
+    try {
+      const detail = await apiJson('GET', detailUrl);
+      const s = detail.store;
+      var heading = document.getElementById('detailPanelHeading');
+      if (heading) heading.textContent = s.name || '매장 정보';
+
+      var gal = document.getElementById('storeDetailGallery');
+      var imgs = s.images || [];
+      if (gal) {
+        if (imgs.length) {
+          gal.classList.remove('hidden');
+          gal.innerHTML =
+            '<div class="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory">' +
+            imgs.map(function (u) {
+              var src = escapeHtml(String(u));
+              return (
+                '<div class="snap-start shrink-0 w-36 h-36 sm:w-40 sm:h-40 rounded-xl overflow-hidden border border-slate-200 bg-slate-100">' +
+                '<img src="' + src + '" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async" />' +
+                '</div>'
+              );
+            }).join('') +
+            '</div>';
+        } else {
+          gal.classList.add('hidden');
+          gal.innerHTML = '';
+        }
+      }
+
+      const bh = sortBusinessHours(s.businessHours || []);
+
+      function tagChipClass(i) {
+        // 알록달록한 팔레트(배경/보더/텍스트). 가독성 우선.
+        var palette = [
+          'bg-sky-50 text-sky-800 border-sky-200',
+          'bg-emerald-50 text-emerald-800 border-emerald-200',
+          'bg-amber-50 text-amber-900 border-amber-200',
+          'bg-violet-50 text-violet-800 border-violet-200',
+          'bg-rose-50 text-rose-800 border-rose-200',
+          'bg-lime-50 text-lime-800 border-lime-200',
+          'bg-indigo-50 text-indigo-800 border-indigo-200',
+          'bg-teal-50 text-teal-800 border-teal-200'
+        ];
+        return palette[i % palette.length];
+      }
+
+      const tags = (s.tagNames || []).map(function (t, idx) {
+        var txt = escapeHtml(t);
+        return (
+          '<span class="inline-flex items-center gap-1 mr-1 mb-1 px-2 py-1 rounded-full border text-[11px] font-medium shadow-sm ' +
+          tagChipClass(idx) +
+          '">' +
+          '<span class="opacity-70" aria-hidden="true">#</span>' +
+          txt +
+          '</span>'
+        );
+      }).join('');
+
+      var distLine = '';
+      if (s.distance != null && s.distance !== undefined && !isNaN(Number(s.distance))) {
+        distLine =
+          '<div class="sm:col-span-2"><span class="text-slate-500">거리</span><br/><span class="font-medium text-indigo-800 tabular-nums">' +
+          escapeHtml(String(Math.round(Number(s.distance) * 100) / 100)) +
+          ' km</span></div>';
+      }
+
+      storeDetail.innerHTML =
+        '<div class="grid sm:grid-cols-2 gap-2">' +
+        '<div><span class="text-slate-500">이름</span><br/><strong>' + escapeHtml(s.name) + '</strong></div>' +
+        '<div><span class="text-slate-500">카테고리</span><br/>' + escapeHtml(s.categoryName || '') + '</div>' +
+        '<div class="sm:col-span-2"><span class="text-slate-500">주소</span><br/>' + escapeHtml(s.address || '') + '</div>' +
+        '<div><span class="text-slate-500">전화</span><br/>' + escapeHtml(s.phone || '') + '</div>' +
+        '<div class="flex items-center justify-between gap-2">' +
+          '<div class="flex items-center gap-3">' +
+            '<div><span class="text-slate-500">찜</span> <span class="font-medium">' + (s.favoriteCount != null ? s.favoriteCount : '-') + '</span></div>' +
+            '<div><span class="text-slate-500">조회수</span> <span class="font-medium tabular-nums">' + (s.viewCount != null ? s.viewCount : '-') + '</span></div>' +
+          '</div>' +
+          (isChildUser()
+            ? '<button type="button" id="btnToggleFavoriteHeart" class="w-9 h-9 rounded-full bg-white border border-rose-200 text-rose-700 shadow-sm flex items-center justify-center hover:bg-rose-50" aria-label="찜 토글">' +
+                heartSvg(myFavoriteStoreIds.has(Number(selectedStoreId))) +
+              '</button>'
+            : '<span class="text-[11px] text-slate-400">아동 로그인 시 가능</span>') +
+        '</div>' +
+        distLine +
+        '</div>' +
+        '<div class="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-100 text-amber-900 text-xs">' +
+        '<strong>어린이·청소년 이용 안내</strong><br/>연령 전용 필드는 없고, 소개·태그를 확인하세요.' +
+        '</div>' +
+        '<div class="mt-2"><span class="text-slate-500 text-xs">한줄 소개</span><p class="mt-0.5">' + escapeHtml(s.intro || '—') + '</p></div>' +
+        '<div class="mt-2"><span class="text-slate-500 text-xs">상세 소개</span><p class="mt-0.5 whitespace-pre-wrap">' + escapeHtml(s.introduction || '—') + '</p></div>' +
+        '<div class="mt-2"><span class="text-slate-500 text-xs">태그</span><div class="mt-1">' + (tags || '<span class="text-slate-400 text-xs">—</span>') + '</div></div>' +
+        (bh && bh.length
+          ? (
+            '<div class="mt-4"><span class="text-slate-500 text-xs font-medium">영업시간 (요일 순)</span>' +
+            '<table class="mt-1 w-full text-xs border border-slate-200 rounded overflow-hidden">' +
+            '<thead class="bg-slate-50"><tr><th class="text-left p-2">요일</th><th class="text-left p-2">오픈</th><th class="text-left p-2">마감</th></tr></thead><tbody>' +
+            bh.map(function (row) {
+              return '<tr class="border-t border-slate-100"><td class="p-2">' + escapeHtml(String(row.businessDay)) + '</td><td class="p-2">' + escapeHtml(String(row.openTime)) + '</td><td class="p-2">' + escapeHtml(String(row.closeTime)) + '</td></tr>';
+            }).join('') +
+            '</tbody></table></div>'
+          )
+          : '');
+
+      // 리뷰(댓글) HTML은 storeDetail 밖(별도 카드)에 렌더링
+      var reviewSectionHtml =
+        '<section class="mt-6">' +
+          '<div class="rounded-3xl border border-slate-200 bg-white shadow-md overflow-hidden">' +
+            '<div class="px-5 py-4 bg-gradient-to-r from-indigo-50 via-white to-slate-50 border-b border-slate-200">' +
+              '<div class="flex flex-wrap items-center justify-between gap-2">' +
+                '<div class="min-w-[10rem]">' +
+                  '<div class="flex items-center gap-2">' +
+                    '<span class="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-600 text-white text-sm font-bold" aria-hidden="true">✍</span>' +
+                    '<div class="text-base font-semibold text-slate-900">리뷰</div>' +
+                    '<span id="reviewTotalCountBadge" class="ml-1 inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-700">0개</span>' +
+                  '</div>' +
+                  '<div class="mt-0.5 text-[11px] text-slate-500">GET <code>/api/reviews/stores/{storeId}</code></div>' +
+                '</div>' +
+                '<div class="flex items-center gap-2">' +
+                  '<button type="button" id="btnReloadReviews" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm">새로고침</button>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="px-5 py-4 bg-white">' +
+              '<div id="reviewWriteWrap" class="' + (isChildUser() ? '' : 'hidden') + ' rounded-2xl border border-emerald-200 bg-emerald-50/30 p-4">' +
+                '<div class="flex items-start justify-between gap-3">' +
+                  '<div>' +
+                    '<div class="text-sm font-semibold text-emerald-900">리뷰 작성</div>' +
+                    '<div class="text-[11px] text-slate-500 mt-0.5">아동만 · 이용완료(COMPLETED) 예약만 가능</div>' +
+                  '</div>' +
+                  '<span class="text-[10px] px-2 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold">POST /api/reviews/stores/{storeId}</span>' +
+                '</div>' +
+                '<div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">' +
+                  '<div class="sm:col-span-1">' +
+                    '<label class="block text-[11px] font-semibold text-slate-700 mb-1">예약 선택</label>' +
+                    '<select id="reviewReservationSelect" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400">' +
+                      '<option value="">불러오는 중…</option>' +
+                    '</select>' +
+                    '<p class="mt-1 text-[10px] text-slate-500">내 예약 · 리뷰 미작성 · 이 가게</p>' +
+                  '</div>' +
+                  '<div class="sm:col-span-2">' +
+                    '<label class="block text-[11px] font-semibold text-slate-700 mb-1">내용</label>' +
+                    '<textarea id="reviewContentInput" rows="3" maxlength="500" placeholder="감사 리뷰를 남겨주세요 (최대 500자)" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400"></textarea>' +
+                    '<div class="mt-2 flex flex-wrap items-center justify-between gap-2">' +
+                      '<span id="reviewWriteStatus" class="text-[11px] text-slate-500"></span>' +
+                      '<button type="button" id="btnSubmitReview" class="px-4 py-2 rounded-xl bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 shadow-sm">등록</button>' +
+                    '</div>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+
+              '<div id="reviewHintNonChild" class="' + (isChildUser() ? 'hidden' : '') + ' mt-4 text-[12px] text-slate-600 rounded-xl border border-slate-200 bg-white px-3 py-2">' +
+                '<strong class="text-slate-800">리뷰 작성 조건</strong> · 아동(CHILD) 로그인 + 이용완료(COMPLETED) 예약' +
+              '</div>' +
+
+              '<div id="reviewList" class="mt-4 space-y-2"></div>' +
+              '<div id="reviewPager" class="mt-4 flex items-center justify-between gap-2">' +
+                '<button type="button" id="btnReviewPrev" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">이전</button>' +
+                '<div class="text-[11px] text-slate-500"><span id="reviewPageLabel">—</span></div>' +
+                '<button type="button" id="btnReviewNext" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">다음</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</section>';
+
+      if (storeReviewSection) {
+        storeReviewSection.innerHTML = reviewSectionHtml;
+      }
+
+      // --------------------
+      // 리뷰(댓글) 기능
+      // --------------------
+      var reviewPageNum = 1;
+      var reviewTotalPages = 1;
+
+      function reviewCardHtml(r) {
+        var nick = escapeHtml(r && r.nickname ? r.nickname : '익명');
+        var content = escapeHtml(r && r.content ? r.content : '');
+        var dt = escapeHtml(r && r.createAt ? String(r.createAt) : '');
+        return (
+          '<div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">' +
+            '<div class="flex items-center justify-between gap-2">' +
+              '<div class="text-xs font-semibold text-slate-800">' + nick + '</div>' +
+              '<div class="text-[11px] text-slate-400 tabular-nums">' + dt + '</div>' +
+            '</div>' +
+            '<div class="mt-2 text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">' + content + '</div>' +
+          '</div>'
+        );
+      }
+
+      async function loadReviews(page) {
+        if (!selectedStoreId) return;
+        if (typeof page === 'number' && page >= 1) reviewPageNum = page;
+        var listEl = document.getElementById('reviewList');
+        var lblEl = document.getElementById('reviewPageLabel');
+        var totalEl = document.getElementById('reviewTotalCountBadge');
+        var prevBtn = document.getElementById('btnReviewPrev');
+        var nextBtn = document.getElementById('btnReviewNext');
+        if (listEl) listEl.innerHTML = '<div class="text-[11px] text-slate-500 px-1 py-2">불러오는 중…</div>';
+        try {
+          var url = '/api/reviews/stores/' + selectedStoreId +
+            '?pageNum=' + reviewPageNum +
+            '&perPage=5&sortField=id&sortDirection=desc';
+          var data = await apiJson('GET', url);
+          var rows = (data && data.reviews) ? data.reviews : [];
+          var tc = data && data.totalCount != null ? Number(data.totalCount) : rows.length;
+          var tp = data && data.totalPages != null ? Number(data.totalPages) : 1;
+          reviewTotalPages = Math.max(1, tp);
+          if (totalEl) totalEl.textContent = (isNaN(tc) ? 0 : tc) + '개';
+          if (reviewPageNum > reviewTotalPages) {
+            reviewPageNum = reviewTotalPages;
+          }
+          if (!rows.length) {
+            if (listEl) listEl.innerHTML = '<div class="text-[11px] text-slate-500 px-1 py-2">아직 리뷰가 없습니다.</div>';
+          } else {
+            if (listEl) listEl.innerHTML = rows.map(reviewCardHtml).join('');
+          }
+          if (lblEl) lblEl.textContent = reviewPageNum + ' / ' + reviewTotalPages;
+          if (prevBtn) prevBtn.disabled = reviewPageNum <= 1;
+          if (nextBtn) nextBtn.disabled = reviewPageNum >= reviewTotalPages;
+        } catch (e) {
+          if (listEl) listEl.innerHTML = '<div class="text-[11px] text-rose-700 px-1 py-2">리뷰 조회 실패: ' + escapeHtml(e.message || e) + '</div>';
+          if (lblEl) lblEl.textContent = '—';
+          if (totalEl) totalEl.textContent = '—';
+        }
+      }
+
+      async function loadWritableReservations() {
+        var sel = document.getElementById('reviewReservationSelect');
+        if (!sel) return;
+        if (!isChildUser()) {
+          sel.innerHTML = '<option value="">(아동 로그인 필요)</option>';
+          return;
+        }
+        try {
+          // COMPLETED 예약만 불러오고, 현재 가게 + reviewed=false만 남김
+          var url = '/api/childrens/reservations?pageNum=1&perPage=50&statusFilter=COMPLETED&sortField=scheduleDate&sortDirection=desc';
+          var data = await apiJson('GET', url);
+          var arr = (data && data.reservations) ? data.reservations : [];
+          var filtered = arr.filter(function (r) {
+            if (!r) return false;
+            if (String(r.status || '').toUpperCase() !== 'COMPLETED') return false;
+            if (r.reviewed === true) return false;
+            return Number(r.storeId) === Number(selectedStoreId);
+          });
+          if (!filtered.length) {
+            sel.innerHTML = '<option value="">(작성 가능한 예약 없음)</option>';
+            return;
+          }
+          sel.innerHTML = '<option value="">예약을 선택하세요</option>' + filtered.map(function (r) {
+            var date = r.scheduleDate ? String(r.scheduleDate) : '';
+            var start = r.startTime ? String(r.startTime).slice(0,5) : '';
+            var label = '예약 #' + r.id + ' · ' + date + ' ' + start;
+            return '<option value="' + String(r.id) + '">' + escapeHtml(label) + '</option>';
+          }).join('');
+        } catch (e) {
+          sel.innerHTML = '<option value="">(예약 로드 실패)</option>';
+        }
+      }
+
+      async function submitReview() {
+        if (!isChildUser()) {
+          alert('아동(CHILD) 로그인 후 작성할 수 있습니다.');
+          return;
+        }
+        if (!selectedStoreId) return;
+        var sel = document.getElementById('reviewReservationSelect');
+        var input = document.getElementById('reviewContentInput');
+        var statusEl = document.getElementById('reviewWriteStatus');
+        var btn = document.getElementById('btnSubmitReview');
+        if (!sel || !input || !btn) return;
+        var reservationId = sel.value ? String(sel.value).trim() : '';
+        var content = input.value ? input.value.trim() : '';
+        if (!reservationId) {
+          alert('예약을 선택하세요. (이용완료 예약만 리뷰 작성 가능)');
+          return;
+        }
+        if (!content) {
+          alert('리뷰 내용을 입력하세요.');
+          return;
+        }
+        btn.disabled = true;
+        if (statusEl) statusEl.textContent = '등록 중…';
+        try {
+          await apiJson('POST', '/api/reviews/stores/' + selectedStoreId, {
+            reservationId: Number(reservationId),
+            content: content
+          });
+          if (statusEl) statusEl.textContent = '등록 완료';
+          input.value = '';
+          await loadWritableReservations(); // reviewed=true 반영 위해 다시 로드
+          await loadReviews(1);
+        } catch (e) {
+          if (statusEl) statusEl.textContent = '';
+          alert('리뷰 등록 실패: ' + (e.message || e));
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      var reloadBtn = document.getElementById('btnReloadReviews');
+      if (reloadBtn) reloadBtn.addEventListener('click', function () { loadReviews(reviewPageNum); });
+      var prevBtn = document.getElementById('btnReviewPrev');
+      if (prevBtn) prevBtn.addEventListener('click', function () { if (reviewPageNum > 1) loadReviews(reviewPageNum - 1); });
+      var nextBtn = document.getElementById('btnReviewNext');
+      if (nextBtn) nextBtn.addEventListener('click', function () { if (reviewPageNum < reviewTotalPages) loadReviews(reviewPageNum + 1); });
+      var submitBtn = document.getElementById('btnSubmitReview');
+      if (submitBtn) submitBtn.addEventListener('click', submitReview);
+
+      // 최초 로드
+      loadReviews(1);
+      loadWritableReservations();
+
+      // 찜 토글(하트): cache evict → 다음 GET에서 favoriteCount 갱신 확인용
+      var favBtn = document.getElementById('btnToggleFavoriteHeart');
+      if (favBtn) {
+        favBtn.addEventListener('click', async function () {
+          if (!selectedStoreId) return;
+          favBtn.disabled = true;
+          try {
+            await toggleFavorite(selectedStoreId);
+            // evict 후 재조회 (상세 + 목록)
+            await openStoreDetail(selectedStoreId, s.name);
+            await loadStores(storePageNum);
+          } catch (err) {
+            alert('찜 토글 실패: ' + (err.message || err));
+          } finally {
+            favBtn.disabled = false;
+          }
+        });
+      }
+
+      updateReserveVisibility();
+      detailPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      alert('가게 상세 조회 실패: ' + (e.message || e));
+    }
+  }
+
+  document.getElementById('btnBackToStoreList').addEventListener('click', function () {
+    var list = document.getElementById('storeListSection');
+    if (list) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  document.getElementById('btnOpenReservationFlow').addEventListener('click', function () {
+    if (!selectedStoreId) return;
+    if (reservationFlowSection) reservationFlowSection.classList.remove('hidden');
+    viewYear = new Date().getFullYear();
+    viewMonth = new Date().getMonth() + 1;
+    selectedDay = null;
+    pickedScheduleId.value = '';
+    lastDailySlots = [];
+    slotPanel.classList.add('hidden');
+    if (peopleCount) peopleCount.value = '1';
+    updateSelectedScheduleText();
+    updateReserveVisibility();
+    loadMonthSchedules().then(function () {
+      if (reservationFlowSection) {
+        reservationFlowSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  function daysInMonth(y, m) {
+    return new Date(y, m, 0).getDate();
+  }
+
+  function updateMonthLabel() {
+    monthLabel.textContent = viewYear + '년 ' + viewMonth + '월';
+  }
+
+  async function loadMonthSchedules() {
+    if (!selectedStoreId) return;
+    updateMonthLabel();
+    try {
+      const data = await apiJson('GET', '/api/stores/' + selectedStoreId + '/schedules?year=' + viewYear + '&month=' + viewMonth);
+      monthlySummaries = data.dateSummaries || [];
+      renderCalendar();
+    } catch (e) {
+      alert('월 스케줄 조회 실패: ' + (e.message || e));
+    }
+  }
+
+  function summaryByDay(day) {
+    const key = viewYear + '-' + String(viewMonth).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+    for (let i = 0; i < monthlySummaries.length; i++) {
+      const d = monthlySummaries[i].date;
+      if (!d) continue;
+      const ds = String(d).slice(0, 10);
+      if (ds === key) return monthlySummaries[i];
+    }
+    return null;
+  }
+
+  function renderCalendar() {
+    const firstWeekday = new Date(viewYear, viewMonth - 1, 1).getDay();
+    const monFirst = firstWeekday === 0 ? 6 : firstWeekday - 1;
+    const dim = daysInMonth(viewYear, viewMonth);
+    const headers = ['월','화','수','목','금','토','일'];
+    const now = new Date();
+    let html = '';
+    headers.forEach(function (h) {
+      html += '<div class="font-medium text-slate-500 py-1">' + h + '</div>';
+    });
+    for (let i = 0; i < monFirst; i++) {
+      html += '<div></div>';
+    }
+    for (let d = 1; d <= dim; d++) {
+      const sum = summaryByDay(d);
+      const avail = sum ? sum.availableSlots : null;
+      const isSel = selectedDay === d;
+      const isToday =
+        now.getFullYear() === viewYear && now.getMonth() + 1 === viewMonth && now.getDate() === d;
+      const base = 'cursor-pointer rounded-lg border py-2 px-1 transition ';
+      const cls = isSel
+        ? base + 'border-emerald-700 bg-emerald-700 text-white shadow-md'
+        : base + 'border-slate-200 hover:border-emerald-400 bg-white';
+      const sub = avail === null || avail === undefined
+        ? ''
+        : '<div class="text-[10px] mt-0.5 ' + (isSel ? 'text-emerald-100' : (avail > 0 ? 'text-emerald-600' : 'text-slate-400')) + '">잔여 ' + avail + '</div>';
+      const todayMark = isToday
+        ? '<div class="text-[9px] leading-none mb-0.5 ' + (isSel ? 'text-emerald-200' : 'text-slate-400') + '">TODAY</div>'
+        : '';
+      html += '<div class="' + cls + '" data-day="' + d + '">' + todayMark + '<div class="font-medium">' + d + '</div>' + sub + '</div>';
+    }
+    calendarGrid.innerHTML = html;
+    calendarGrid.querySelectorAll('[data-day]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        const day = parseInt(el.getAttribute('data-day'), 10);
+        selectDay(day);
+      });
+    });
+  }
+
+  async function selectDay(day) {
+    selectedDay = day;
+    renderCalendar();
+    if (!selectedStoreId) return;
+    slotPanel.classList.remove('hidden');
+    slotList.innerHTML = '<p class="text-xs text-slate-500">불러오는 중…</p>';
+    pickedScheduleId.value = '';
+    updateSelectedScheduleText();
+    updateReserveVisibility();
+    try {
+      const data = await apiJson('GET', '/api/stores/' + selectedStoreId + '/schedules?year=' + viewYear + '&month=' + viewMonth + '&day=' + day);
+      const slots = sortSlots(data.scheduleSlots || []);
+      lastDailySlots = slots;
+      if (!slots.length) {
+        slotList.innerHTML = '<p class="text-xs text-slate-500">이 날짜에 등록된 스케줄이 없습니다.</p>';
+        updateSelectedScheduleText();
+        return;
+      }
+      slotList.innerHTML = '';
+      slots.forEach(function (slot) {
+        var disabled = slot.isAvailable === false;
+        var start = String(slot.startTime || '').slice(0, 5);
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.disabled = disabled;
+        btn.setAttribute('data-slot-id', String(slot.id));
+        btn.setAttribute('title', '슬롯 ' + slot.id + ' · 최대 ' + (slot.maxPeople != null ? slot.maxPeople : '?') + '명');
+        if (disabled) {
+          btn.className =
+            'px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed text-sm font-medium';
+          btn.textContent = start + ' (마감)';
+        } else {
+          btn.className =
+            'slot-pick-btn px-4 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-semibold hover:border-emerald-500 hover:bg-emerald-50/60 transition';
+          btn.textContent = start;
+          btn.addEventListener('click', function () {
+            slotList.querySelectorAll('.slot-pick-btn').forEach(function (b) {
+              b.className =
+                'slot-pick-btn px-4 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-semibold hover:border-emerald-500 hover:bg-emerald-50/60 transition';
+            });
+            btn.className =
+              'slot-pick-btn px-4 py-2.5 rounded-xl border-2 border-emerald-700 bg-emerald-700 text-white text-sm font-semibold shadow';
+            pickedScheduleId.value = String(slot.id);
+            updateReserveVisibility();
+            updateSelectedScheduleText();
+          });
+        }
+        slotList.appendChild(btn);
+      });
+    } catch (e) {
+      slotList.innerHTML = '';
+      alert('일별 스케줄 조회 실패: ' + (e.message || e));
+    }
+  }
+
+  document.getElementById('btnPrevMonth').addEventListener('click', function () {
+    viewMonth--;
+    if (viewMonth < 1) {
+      viewMonth = 12;
+      viewYear--;
+    }
+    selectedDay = null;
+    loadMonthSchedules();
+  });
+  document.getElementById('btnNextMonth').addEventListener('click', function () {
+    viewMonth++;
+    if (viewMonth > 12) {
+      viewMonth = 1;
+      viewYear++;
+    }
+    selectedDay = null;
+    loadMonthSchedules();
+  });
+
+  document.getElementById('reserveForm').addEventListener('submit', async function (ev) {
+    ev.preventDefault();
+    var sidRaw = pickedScheduleId && pickedScheduleId.value ? pickedScheduleId.value.trim() : '';
+    var people = parseInt(peopleCount && peopleCount.value ? peopleCount.value : '0', 10);
+    if (isNaN(people)) people = 0;
+    var scheduleId = parseInt(sidRaw, 10);
+    if (isNaN(scheduleId)) scheduleId = 0;
+    var storeId = selectedStoreId != null ? selectedStoreId : 0;
+    try {
+      await apiJson('POST', '/api/childrens/stores/' + storeId + '/reservations', {
+        storeScheduleId: scheduleId,
+        people: people
+      });
+      alert('예약 요청이 접수되었습니다.');
+      if (selectedDay) selectDay(selectedDay);
+    } catch (e) {
+      alert('예약 실패: ' + (e.message || e));
+    }
+  });
+
+  (function initReserveConcurrencyPanel() {
+    var btnRun = document.getElementById('btnReserveConcurrencyRun');
+    var btnClear = document.getElementById('btnReserveConcurrencyClear');
+    var nInput = document.getElementById('reserveConcurrencyN');
+    var out = document.getElementById('reserveConcurrencyOut');
+    var statusEl = document.getElementById('reserveConcurrencyStatus');
+    if (!btnRun || !btnClear || !nInput || !out || !statusEl) return;
+
+    function setOut(text) {
+      out.textContent = text || '';
+      out.classList.toggle('hidden', !out.textContent);
+    }
+
+    btnClear.addEventListener('click', function () {
+      statusEl.textContent = '';
+      setOut('');
+    });
+
+    btnRun.addEventListener('click', async function () {
+      var sidRaw = pickedScheduleId && pickedScheduleId.value ? pickedScheduleId.value.trim() : '';
+      var scheduleId = parseInt(sidRaw, 10);
+      var storeId = selectedStoreId != null ? selectedStoreId : 0;
+      var people = parseInt(peopleCount && peopleCount.value ? peopleCount.value : '0', 10);
+      if (isNaN(people)) people = 0;
+      if (isNaN(scheduleId) || scheduleId <= 0) {
+        alert('먼저 날짜/시간(일정)을 선택해 주세요.');
+        return;
+      }
+      if (!currentUser || currentUser.userType !== 'CHILD') {
+        alert('아동(CHILD) 계정으로 로그인해야 테스트할 수 있습니다.');
+        return;
+      }
+      var n = parseInt(nInput.value || '10', 10);
+      if (isNaN(n) || n < 2) n = 2;
+      if (n > 50) n = 50;
+      nInput.value = String(n);
+
+      btnRun.disabled = true;
+      statusEl.textContent = '요청 전송 중... (N=' + n + ')';
+      setOut('');
+
+      var startedAt = Date.now();
+      var jobs = Array.from({ length: n }).map(function (_, i) {
+        return apiJson('POST', '/api/childrens/stores/' + storeId + '/reservations', {
+          storeScheduleId: scheduleId,
+          people: people
+        }).then(function (data) {
+          return { ok: true, idx: i + 1, data: data };
+        }).catch(function (err) {
+          return { ok: false, idx: i + 1, message: (err && err.message) ? String(err.message) : String(err) };
+        });
+      });
+
+      var results = await Promise.all(jobs);
+      var ok = results.filter(function (r) { return r.ok; });
+      var fail = results.filter(function (r) { return !r.ok; });
+      var elapsed = Date.now() - startedAt;
+
+      var failTop = fail.slice(0, 8).map(function (r) { return '- #' + r.idx + ': ' + r.message; }).join('\n');
+      var okTop = ok.slice(0, 5).map(function (r) { return '- #' + r.idx + ': ' + JSON.stringify(r.data); }).join('\n');
+
+      statusEl.textContent = '완료 · 성공 ' + ok.length + ' / 실패 ' + fail.length + ' · ' + elapsed + 'ms';
+      setOut(
+        '[동시성 테스트 결과]\n' +
+        '- storeId: ' + storeId + '\n' +
+        '- storeScheduleId: ' + scheduleId + '\n' +
+        '- people: ' + people + '\n' +
+        '- N: ' + n + '\n' +
+        '- success: ' + ok.length + '\n' +
+        '- fail: ' + fail.length + '\n\n' +
+        (okTop ? ('[성공 예시]\n' + okTop + '\n\n') : '') +
+        (failTop ? ('[실패 예시]\n' + failTop + '\n') : '')
+      );
+
+      btnRun.disabled = false;
+    });
+  })();
+
+  document.getElementById('btnPeopleMinus').addEventListener('click', function () {
+    if (!peopleCount) return;
+    var v = parseInt(peopleCount.value, 10) || 1;
+    if (v > 1) peopleCount.value = String(v - 1);
+  });
+  document.getElementById('btnPeoplePlus').addEventListener('click', function () {
+    if (!peopleCount) return;
+    var v = parseInt(peopleCount.value, 10);
+    if (isNaN(v) || v < 1) v = 1;
+    peopleCount.value = String(v + 1);
+  });
+
+  document.getElementById('ownerBookingsOut').addEventListener('click', function (e) {
+    var btn = e.target.closest('.owner-res-act');
+    if (!btn) return;
+    e.preventDefault();
+    var rid = btn.getAttribute('data-rid');
+    var act = btn.getAttribute('data-act');
+    if (!rid || !act) return;
+    (async function () {
+      try {
+        if (act === 'approve') {
+          await apiJson('POST', '/api/owners/reservations/' + rid + '/approve');
+          alert('예약이 승인(확정)되었습니다.');
+        } else if (act === 'complete') {
+          await apiJson('POST', '/api/owners/reservations/' + rid + '/complete');
+          alert('이용 완료 처리되었습니다.');
+        } else if (act === 'owner-cancel') {
+          var reason = window.prompt('취소 사유 (최대 30자)', '');
+          if (reason === null) return;
+          await apiJson('POST', '/api/owners/reservations/' + rid + '/cancel', { cancelReason: (reason || '사업자 취소').slice(0, 30) });
+          alert('예약이 취소되었습니다.');
+        }
+        await loadOwnerBookings(ownerResPageNum);
+      } catch (err) {
+        alert('처리 실패: ' + (err.message || err));
+      }
+    })();
+  });
+
+  document.getElementById('childReservationsOut').addEventListener('click', function (e) {
+    var btn = e.target.closest('.child-res-act');
+    if (!btn) return;
+    e.preventDefault();
+    var rid = btn.getAttribute('data-rid');
+    if (!rid) return;
+    (async function () {
+      try {
+        var reason = window.prompt('취소 사유 (선택, 최대 30자)', '');
+        if (reason === null) return;
+        await apiJson('POST', '/api/childrens/reservations/' + rid + '/cancel', { cancelReason: (reason || '').slice(0, 30) });
+        alert('예약이 취소되었습니다.');
+        await loadChildReservations(childResPageNum);
+      } catch (err) {
+        alert('취소 실패: ' + (err.message || err));
+      }
+    })();
+  });
+
+  initOwnerTimeGrid();
+  (function initStoreListSort() {
+    syncStoreSortUi();
+  })();
+  refreshMe();
+  loadStoreCategories()
+    .then(function () {
+      return loadStores(1);
+    })
+    .then(function () {
+      return refreshRecentKeywords();
+    });
+
+  /** 채팅 UI: partials/chat-modals.html + js/onharu-chat-ui.js */
+  (function loadOnharuChatUi() {
+    var host = document.getElementById('onharu-chat-modals-host');
+    if (!host) return;
+    fetch('/partials/chat-modals.html', { credentials: 'same-origin' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(function (html) {
+        host.innerHTML = html;
+        if (typeof window.initOnharuChatUi !== 'function') {
+          console.error('[index] /js/onharu-chat-ui.js 가 로드되지 않았습니다.');
+          return;
+        }
+        window.initOnharuChatUi({
+          apiJson: apiJson,
+          getCurrentUser: function () {
+            return currentUser;
+          }
+        });
+      })
+      .catch(function (e) {
+        console.error('[index] 채팅 UI 로드 실패', e);
+        host.innerHTML = '<p class="p-4 text-sm text-rose-600">채팅 UI를 불러오지 못했습니다. (partials/chat-modals.html)</p>';
+      });
+  })();
+
+})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+package com.backend.onharu.domain.support.error;
+
+import org.springframework.boot.logging.LogLevel;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+/**
+ * 애플리케이션 전역에서 사용되는 공통 에러 타입을 정의하는 enum입니다.
+ * 
+ * 각 에러 타입은 ErrorCode, 메시지, 로그 레벨을 포함합니다.
+ */
+@AllArgsConstructor
+@Getter
+public enum ErrorType implements IErrorType {
+    NOT_FOUND(ErrorCode.NOT_FOUND, "리소스를 찾을 수 없습니다.", LogLevel.ERROR),
+    BAD_REQUEST(ErrorCode.BAD_REQUEST, "잘못된 요청입니다.", LogLevel.ERROR),
+    FORBIDDEN(ErrorCode.FORBIDDEN, "접근 권한이 없습니다.", LogLevel.WARN),
+    INTERNAL_SERVER_ERROR(ErrorCode.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.", LogLevel.ERROR),
+    KEY_NOT_FOUND_OR_NULL(ErrorCode.INTERNAL_SERVER_ERROR, "키를 찾을 수 없거나 null입니다.", LogLevel.ERROR);    
+
+    private final ErrorCode code;
+    private final String message;
+    private final LogLevel logLevel;
+
+    static final class Messages {
+        static final String USER_ID_REQUIRED = "사용자 ID는 필수입니다.";
+
+        private Messages() {
+        }
+    }
+
+    /**
+     * 파일 업로드/다운로드 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum FileOperation implements IErrorType {
+        FILE_NOT_FOUND(ErrorCode.NOT_FOUND, "파일을 찾을 수 없습니다.", LogLevel.ERROR),
+        FILE_DOWNLOAD_ERROR(ErrorCode.BAD_REQUEST, "파일 다운로드 중 오류가 발생했습니다.", LogLevel.ERROR),
+        FILE_UPLOAD_ERROR(ErrorCode.BAD_REQUEST, "파일 업로드 중 오류가 발생했습니다.", LogLevel.ERROR),
+        FILE_UPLOAD_INVALID_MIME_TYPE_ERROR(ErrorCode.BAD_REQUEST, "유효하지 않은 MIME 타입 또는 확장자입니다.", LogLevel.ERROR),
+        FILE_DELETE_ERROR(ErrorCode.BAD_REQUEST, "파일 삭제 중 오류가 발생했습니다.", LogLevel.ERROR),
+        MINIO_CLIENT_ERROR(ErrorCode.BAD_REQUEST, "MinIO 클라이언트 오류가 발생했습니다.", LogLevel.ERROR),
+        CSV_PROCESSING_ERROR(ErrorCode.BAD_REQUEST, "CSV 파일을 처리하는 중 오류가 발생했습니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 이메일 인증 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum EmailAuthentication implements IErrorType {
+        EMAIL_AUTHENTICATION_NOT_FOUND(ErrorCode.BAD_REQUEST, "이메일 인증을 찾을 수 없습니다.", LogLevel.ERROR),
+        EMAIL_AUTHENTICATION_TOO_MANY_REQUEST(ErrorCode.BAD_REQUEST, "짧은 시간 내 많은 이메일 인증 요청입니다.", LogLevel.ERROR),
+        EMAIL_ALREADY_VERIFIED(ErrorCode.BAD_REQUEST, "이미 인증이 완료된 이메일 입니다.", LogLevel.ERROR),
+        EMAIL_TOKEN_EXPIRED(ErrorCode.FORBIDDEN, "이메일 인증 토큰이 만료되었습니다.", LogLevel.ERROR),
+        EMAIL_TOKEN_MISMATCH(ErrorCode.BAD_REQUEST, "이메일 인증 토큰이 일치하지 않습니다.", LogLevel.ERROR),
+        EMAIL_NOT_VERIFIED(ErrorCode.FORBIDDEN, "이메일 인증 되지 않았습니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 사용자 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum User implements IErrorType {
+        USER_NOT_FOUND(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다.", LogLevel.ERROR),
+        USER_MUST_NOT_BE_NULL(ErrorCode.NOT_FOUND, "사용자 정보는 필수입니다.", LogLevel.ERROR),
+        USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, Messages.USER_ID_REQUIRED, LogLevel.ERROR),
+        LOGIN_ID_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "로그인 ID는 필수입니다.", LogLevel.ERROR),
+        USER_ID_ALREADY_EXISTS(ErrorCode.CONFLICT, "이미 존재하는 사용자 ID입니다.", LogLevel.WARN),
+        PASSWORD_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "비밀번호는 필수입니다.", LogLevel.ERROR),
+        PASSWORD_CONFIRM_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "비밀번호 확인은 필수입니다.", LogLevel.ERROR),
+        PASSWORD_CONFIRM_MISMATCH(ErrorCode.BAD_REQUEST, "비밀번호와 비밀번호 확인이 일치하지 않습니다.", LogLevel.ERROR),
+        USER_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "이름은 필수입니다.", LogLevel.ERROR),
+        USER_NAME_MUST_BE_NO_MORE_THAN_30_CHARACTERS_LONG(ErrorCode.BAD_REQUEST, "사용자 이름은 30자 이내여야 합니다.", LogLevel.ERROR),
+        PHONE_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "전화번호는 필수입니다.", LogLevel.ERROR),
+        PHONE_INVALID_FORMAT(ErrorCode.BAD_REQUEST, "잘못된 전화번호 형식 입니다.", LogLevel.ERROR),
+        USER_TYPE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사용자 유형은 필수입니다.", LogLevel.ERROR),
+        PROVIDER_TYPE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "제공자 유형은 필수입니다.", LogLevel.ERROR),
+        LOGIN_ID_OR_PASSWORD_MISMATCH(ErrorCode.BAD_REQUEST, "아이디 또는 비밀번호가 잘못되었습니다.", LogLevel.ERROR),
+        USER_STATUS_LOCKED(ErrorCode.FORBIDDEN, "계정이 잠김 상태입니다.", LogLevel.ERROR),
+        USER_STATUS_BLOCKED(ErrorCode.FORBIDDEN, "계정이 차단 상태입니다.", LogLevel.ERROR),
+        USER_STATUS_DELETED(ErrorCode.FORBIDDEN, "계정이 삭제 상태입니다.", LogLevel.ERROR),
+        USER_TYPE_NOT_CHANGE(ErrorCode.FORBIDDEN, "배정받지 않는 사용자만 전환이 가능합니다", LogLevel.ERROR),
+        USER_TYPE_MUST_BE_CHILD_OR_OWNER(ErrorCode.BAD_REQUEST, "사용자 타입이 아동 또는 사업자이어야 합니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 사업자 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Owner implements IErrorType {
+        OWNER_NOT_FOUND(ErrorCode.NOT_FOUND, "사업자 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        OWNER_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사업자 정보는 필수입니다.", LogLevel.ERROR),
+        OWNER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사업자 ID는 필수입니다.", LogLevel.ERROR),
+        OWNER_LOGIN_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "사업자 로그인 ID는 필수입니다.", LogLevel.ERROR),
+        BUSINESS_NUMBER_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "사업자 번호는 필수입니다.", LogLevel.ERROR),
+        BUSINESS_NUMBER_MUST_BE_TEN_DIGITS(ErrorCode.BAD_REQUEST, "사업자 등록번호는 숫자 10자리로 구성되어야 합니다.", LogLevel.ERROR),
+        LEVEL_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "등급 ID는 필수입니다.", LogLevel.ERROR),
+        STORE_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "매장명은 필수입니다.", LogLevel.ERROR),
+        SAME_LEVEL_CAN_NOT_BE_ASSIGNED(ErrorCode.BAD_REQUEST, "이미 동일한 등급입니다.", LogLevel.ERROR),
+        OWNER_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, Messages.USER_ID_REQUIRED, LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 아동 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Child implements IErrorType {
+        CHILD_NOT_FOUND(ErrorCode.NOT_FOUND, "아동 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        CHILD_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 정보는 필수입니다.", LogLevel.ERROR),
+        CHILD_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 ID는 필수입니다.", LogLevel.ERROR),
+        CHILD_LOGIN_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 로그인 ID는 필수입니다.", LogLevel.ERROR),
+        CERTIFICATE_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "증명서 파일 경로는 필수입니다.", LogLevel.ERROR),
+        NICKNAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "닉네임은 필수입니다.", LogLevel.ERROR),
+        NICKNAME_INVALID_FORMAT(ErrorCode.BAD_REQUEST, "닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.", LogLevel.ERROR),
+        NICKNAME_MUST_BE_NO_MORE_THAN_100_CHARACTERS_LONG(ErrorCode.BAD_REQUEST, "닉네임은 100자 이내여야 합니다.", LogLevel.ERROR),
+        CHILD_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, Messages.USER_ID_REQUIRED, LogLevel.ERROR)
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 소셜 사용자 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum UserOAuth implements IErrorType {
+        USER_O_AUTH_NOT_FOUND(ErrorCode.NOT_FOUND, "소셜 사용자 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        USER_O_AUTH_LOGIN_FAILED(ErrorCode.UNAUTHORIZED, "소셜 로그인이 실패했습니다.", LogLevel.ERROR),
+        UNSUPPORTED_PROVIDER(ErrorCode.BAD_REQUEST, "지원하지 않는 소셜 제공자 입니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 등급 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Level implements IErrorType {
+        LEVEL_NOT_FOUND(ErrorCode.NOT_FOUND, "등급 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        LEVEL_NAME_NOT_FOUND(ErrorCode.NOT_FOUND, "해당되는 이름의 등급을 찾을 수 없습니다.", LogLevel.ERROR),
+        NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "등급명은 필수입니다.", LogLevel.ERROR),
+        LEVEL_CONDITION_NUMBER_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "등급 조건 횟수는 필수입니다.", LogLevel.ERROR),
+        NEXT_LEVEL_NOT_FOUND(ErrorCode.BAD_REQUEST, "다음 등급을 찾을 수 없습니다.", LogLevel.ERROR)
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 가게 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Store implements IErrorType {
+        STORE_NOT_FOUND(ErrorCode.NOT_FOUND, "가게 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        STORE_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "가게 ID는 필수입니다.", LogLevel.ERROR),
+        STORE_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "가게 이름은 필수입니다.", LogLevel.ERROR),
+        STORE_OWNER_MISMATCH(ErrorCode.BAD_REQUEST, "사업자가 가게의 주인이 아닙니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+        
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+    
+
+    /**
+     * 가게 일정 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum StoreSchedule implements IErrorType {
+        STORE_SCHEDULE_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "가게 일정 ID는 필수입니다.", LogLevel.ERROR),
+        STORE_SCHEDULE_SCHEDULE_DATE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "영업일자는 필수입니다.", LogLevel.ERROR),
+        STORE_SCHEDULE_START_TIME_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "영업 시작 시간은 필수입니다.", LogLevel.ERROR),
+        STORE_SCHEDULE_END_TIME_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "영업 종료 시간은 필수입니다.", LogLevel.ERROR),
+        STORE_SCHEDULE_NOT_FOUND(ErrorCode.NOT_FOUND, "가게 일정 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        STORE_SCHEDULE_DUPLICATE(ErrorCode.BAD_REQUEST, "중복된 일정이 존재합니다. 같은 날짜와 시간에 일정을 등록할 수 없습니다.", LogLevel.WARN),
+        STORE_SCHEDULE_CANNOT_DELETE_HAS_RESERVATIONS(ErrorCode.CONFLICT, "예약 이력이 있는 일정은 삭제할 수 없습니다.", LogLevel.WARN),
+        STORE_SCHEDULE_TIME_EXPIRED(ErrorCode.BAD_REQUEST, "이미 시간이 지난 일정은 등록할 수 없습니다.", LogLevel.WARN),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+    /**
+     * 태그 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Tag implements IErrorType {
+        TAG_ID_MUST_NOT_BE_NULL(ErrorCode.NOT_FOUND, "태그 ID 는 필수입니다.", LogLevel.ERROR),
+        TAG_IDS_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "태그 ID 리스트는 필수입니다.", LogLevel.ERROR),
+        TAG_NOT_FOUND(ErrorCode.NOT_FOUND, "태그 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        TAG_ALREADY_EXISTS(ErrorCode.BAD_REQUEST, "이미 존재하는 태그입니다.", LogLevel.WARN),
+        TAG_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "태그 이름은 필수입니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 예약 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Reservation implements IErrorType {
+        RESERVATION_NOT_FOUND(ErrorCode.NOT_FOUND, "예약 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        RESERVATION_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "예약 ID는 필수입니다.", LogLevel.ERROR),
+        RESERVATION_STORE_SCHEDULE_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "가게 일정 ID는 필수입니다.", LogLevel.ERROR),
+        RESERVATION_PEOPLE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "인원 수는 필수입니다.", LogLevel.ERROR),
+        RESERVATION_STATUS_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "예약 상태는 필수입니다.", LogLevel.ERROR),
+        RESERVATION_DATE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "예약 날짜는 필수입니다.", LogLevel.ERROR),
+        RESERVATION_CHILD_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "아동 ID는 필수입니다.", LogLevel.ERROR),
+        RESERVATION_CHILD_ID_MISMATCH(ErrorCode.BAD_REQUEST, "예약자와 현재 로그인한 아동 정보가 일치하지 않습니다.", LogLevel.ERROR),
+        RESERVATION_STORE_ID_MISMATCH(ErrorCode.BAD_REQUEST, "해당 예약은 요청한 가게의 예약이 아닙니다.", LogLevel.ERROR),
+        RESERVATION_ALREADY_EXISTS(ErrorCode.BAD_REQUEST, "이미 예약된 가게 일정입니다.", LogLevel.WARN),
+        RESERVATION_SCHEDULE_TIME_EXPIRED(ErrorCode.BAD_REQUEST, "이미 시간이 지난 일정은 예약할 수 없습니다.", LogLevel.WARN),
+        RESERVATION_NOT_COMPLETED(ErrorCode.BAD_REQUEST, "예약이 완료되지 않은 상태입니다.", LogLevel.ERROR),
+        RESERVATION_PEOPLE_EXCEEDS_MAX(ErrorCode.BAD_REQUEST, "예약 인원이 최대 수용 인원을 초과합니다.", LogLevel.WARN),
+        RESERVATION_STATUS_COMPLETED_CANNOT_CANCEL(ErrorCode.BAD_REQUEST, "완료된 예약은 취소할 수 없습니다.", LogLevel.ERROR),
+        RESERVATION_STATUS_CANCELED_ALREADY_CANCELED(ErrorCode.BAD_REQUEST, "이미 취소된 예약입니다.", LogLevel.ERROR),
+        RESERVATION_STATUS_CANNOT_CONFIRM(ErrorCode.BAD_REQUEST, "대기 상태가 아닌 예약은 확정할 수 없습니다.", LogLevel.ERROR),
+        RESERVATION_STATUS_CANNOT_COMPLETE(ErrorCode.BAD_REQUEST, "확정된 예약만 완료할 수 있습니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 카테고리 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Category implements IErrorType {
+        CATEGORY_NOT_FOUND(ErrorCode.NOT_FOUND, "카테고리 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        CATEGORY_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "카테고리 ID는 필수입니다.", LogLevel.ERROR),
+        CATEGORY_NAME_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "카테고리 이름은 필수입니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 찜하기 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Favorite implements IErrorType {
+        FAVORITE_NOT_FOUND(ErrorCode.NOT_FOUND, "찜하기 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 알림 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Notification implements IErrorType {
+        NOTIFICATION_NOT_FOUND(ErrorCode.NOT_FOUND, "알림 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        NOTIFICATION_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, Messages.USER_ID_REQUIRED, LogLevel.ERROR),
+        NOTIFICATION_HISTORY_NOT_FOUND(ErrorCode.NOT_FOUND, "알림 히스토리를 찾을 수 없습니다.", LogLevel.ERROR),
+        NOTIFICATION_HISTORY_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "알림 히스토리 ID는 필수입니다.", LogLevel.ERROR),
+        NOTIFICATION_HISTORY_USER_ID_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "알림 히스토리 수신자 ID는 필수입니다.", LogLevel.ERROR),
+        NOTIFICATION_HISTORY_TYPE_MUST_NOT_BE_NULL(ErrorCode.BAD_REQUEST, "알림 유형은 필수입니다.", LogLevel.ERROR),
+        NOTIFICATION_HISTORY_TITLE_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "알림 제목은 필수입니다.", LogLevel.ERROR),
+        NOTIFICATION_HISTORY_MESSAGE_MUST_NOT_BE_BLANK(ErrorCode.BAD_REQUEST, "알림 메시지는 필수입니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 리뷰 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Review implements IErrorType {
+        REVIEW_NOT_FOUND(ErrorCode.NOT_FOUND, "리뷰 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+
+    /**
+     * 채팅 관련 에러 타입
+     */
+    @AllArgsConstructor
+    public enum Chat implements IErrorType {
+        CHAT_ROOM_NOT_FOUND(ErrorCode.NOT_FOUND, "채팅방 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        CAN_NOT_CHAT_WITH_ONESELF(ErrorCode.NOT_FOUND, "자기 자신과 채팅할 수 없습니다.", LogLevel.ERROR),
+        /** SecurityContext 에 로그인 사용자가 없을 때 (익명 요청 등) */
+        CHAT_AUTHENTICATION_REQUIRED(ErrorCode.UNAUTHORIZED, "채팅방 이용을 위해 로그인이 필요합니다.", LogLevel.WARN),
+        CHAT_PARTICIPANTS_NOT_FOUND(ErrorCode.NOT_FOUND, "채팅참여자 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        CHAT_MESSAGE_NOT_FOUND(ErrorCode.NOT_FOUND, "채팅메시지 정보를 찾을 수 없습니다.", LogLevel.ERROR),
+        ;
+
+        private final ErrorCode code;
+        private final String message;
+        private final LogLevel logLevel;
+
+        @Override
+        public ErrorCode getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+    }
+}

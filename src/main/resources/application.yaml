@@ -1,3 +1,34 @@
 spring:
+  # Thymeleaf MVC 자동 설정은 사용하지 않음(메일 본문 전용 SpringTemplateEngine 만 등록)
+  thymeleaf:
+    enabled: false
+  main:
+    allow-bean-definition-overriding: true
+  profiles:
+    active: dev
+    include: swagger
   application:
     name: onharu
+
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 100m # 세션 유지 시간 (100분)
+      secure: true   # HTTPS 환경이므로 true로 설정
+      http-only: true # HTTP Only 쿠키 사용
+
+# Logging 설정
+logging:
+  level:
+    root: INFO
+    com.backend.onharu: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: false
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# URL 환경변수
+app:
+  url:
+    front: ${SERVER_FRONT_URL}
+    back: ${SERVER_BACK_URL}

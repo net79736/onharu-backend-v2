@@ -1,0 +1,418 @@
+package com.backend.onharu.interfaces.api.controller.impl;
+
+import static com.backend.onharu.domain.common.enums.UserType.CHILD;
+import static com.backend.onharu.interfaces.api.common.util.PageableUtil.getCurrentPage;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.backend.onharu.application.ChildFacade;
+import com.backend.onharu.application.dto.MyBookingSummaryResult;
+import com.backend.onharu.domain.reservation.dto.ReservationCommand.CancelReservationCommand;
+import com.backend.onharu.domain.reservation.dto.ReservationCommand.CreateReservationCommand;
+import com.backend.onharu.domain.reservation.model.Reservation;
+import com.backend.onharu.domain.reservation.support.ReservationSearchSortResolver;
+import com.backend.onharu.interfaces.api.common.dto.ResponseDTO;
+import com.backend.onharu.interfaces.api.common.util.PageableUtil;
+import com.backend.onharu.interfaces.api.controller.IChildrenController;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.BookStoreRequest;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.BookStoreResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.CancelReservationRequest;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCardResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetCertificateResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingDetailResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingListResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingSummaryResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.GetMyBookingsRequest;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardRequest;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.IssueCardResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.ReservationResponse;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.UpdateCardRequest;
+import com.backend.onharu.interfaces.api.dto.ChildControllerDto.UpdateCertificateRequest;
+import com.backend.onharu.utils.SecurityUtils;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * 결식 아동 관련 API를 제공하는 컨트롤러 구현체입니다.
+ * 
+ * 결식 아동 카드, 증명서 관리 및 관심 가게 목록 조회 기능을 제공합니다.
+ */
+@Slf4j
+@RestController
+@RequestMapping("/api/childrens")
+@RequiredArgsConstructor
+public class ChildrenControllerImpl implements IChildrenController {
+
+    private final ChildFacade childFacade;
+
+    /**
+     * 결식 아동 카드 등록
+     * 
+     * POST /children/cards
+     * 새로운 결식 아동 카드를 등록합니다.
+     *
+     * @param request 카드 등록 요청
+     * @return 결식 아동 카드 등록 결과
+     */
+    @Override
+    @PostMapping("/cards")
+    public ResponseEntity<ResponseDTO<IssueCardResponse>> issueCard(
+            @RequestBody IssueCardRequest request
+    ) {
+        log.info("결식 아동 카드 등록 요청: {}", request);
+        
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 결식 아동 카드 수정
+     * 
+     * PUT /api/childrens/cards/{cardId}
+     * 특정 카드 정보를 수정합니다.
+     *
+     * @param cardId 카드 ID
+     * @param request 카드 수정 요청
+     * @return 결식 아동 카드 수정 결과
+     */
+    @Override
+    @PutMapping("/cards/{cardId}")
+    public ResponseEntity<ResponseDTO<Void>> updateCard(
+            @PathVariable("cardId") Long cardId,
+            @RequestBody UpdateCardRequest request
+    ) {
+        log.info("결식 아동 카드 수정 요청: cardId={}, request={}", cardId, request);
+        
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 결식 아동 카드 삭제
+     * 
+     * DELETE /api/childrens/cards/{cardId}
+     * 특정 카드를 삭제합니다.
+     *
+     * @param cardId 카드 ID
+     * @return
+     */
+    @Override
+    @DeleteMapping("/cards/{cardId}")
+    public ResponseEntity<ResponseDTO<Void>> deleteCard(
+            @PathVariable("cardId") Long cardId
+    ) {
+        log.info("결식 아동 카드 삭제 요청: cardId={}", cardId);
+        
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 결식 아동 카드 재발급 요청
+     * 
+     * POST /api/childrens/cards/{cardId}/reissue
+     * 카드 재발급을 요청합니다.
+     *
+     * @param cardId 카드 ID
+     * @return 재발급 요청 결과
+     */
+    @Override
+    @PostMapping("/cards/{cardId}/reissue")
+    public ResponseEntity<ResponseDTO<Void>> reissueCard(
+            @PathVariable("cardId") Long cardId
+    ) {
+        log.info("결식 아동 카드 재발급 요청: cardId={}", cardId);
+        
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 결식 아동 카드 조회
+     * 
+     * GET /api/childrens/cards/{cardId}
+     * 특정 카드 정보를 조회합니다.
+     *
+     * @param cardId 카드 ID
+     * @return 카드 정보
+     */
+    @Override
+    @GetMapping("/cards/{cardId}")
+    public ResponseEntity<ResponseDTO<GetCardResponse>> getMyCard(
+            @PathVariable("cardId") Long cardId
+    ) {
+        log.info("결식 아동 카드 조회 요청: cardId={}", cardId);
+        
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 결식 아동 증명서 등록
+     * 
+     * POST /api/childrens/certificate
+     * 증명서를 등록합니다. (첨부파일 포함)
+     *
+     * @param request 증명서 등록 요청
+     * @param file 증명서 파일
+     * @return 등록 결과
+     */
+    @Override
+    @PostMapping("/certificate")
+    public ResponseEntity<ResponseDTO<Void>> uploadCertificate(
+            @RequestPart UpdateCertificateRequest request,
+            @RequestPart MultipartFile file
+    ) {
+        log.info("결식 아동 증명서 등록 요청: request={}, fileName={}", request, file.getOriginalFilename());
+        
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 결식 아동 증명서 수정
+     * 
+     * PUT /api/childrens/certificate/{certificateId}
+     * 증명서를 수정합니다. (첨부파일 포함)
+     *
+     * @param certificateId 증명서 ID
+     * @param request 증명서 수정 요청
+     * @param file 증명서 파일
+     * @return 수정 결과
+     */
+    @Override
+    @PutMapping("/certificate/{certificateId}")
+    public ResponseEntity<ResponseDTO<Void>> updateMyCertificate(
+            @PathVariable("certificateId") Long certificateId,
+            @RequestPart UpdateCertificateRequest request,
+            @RequestPart MultipartFile file
+    ) {
+        log.info("결식 아동 증명서 수정 요청: certificateId={}, request={}, fileName={}", 
+                certificateId, request, file.getOriginalFilename());
+        
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 결식 아동 증명서 삭제
+     * 
+     * DELETE /api/childrens/certificate/{certificateId}
+     * 증명서를 삭제합니다. (첨부파일 포함)
+     *
+     * @param certificateId 증명서 ID
+     * @return 삭제 결과
+     */
+    @Override
+    @DeleteMapping("/certificate/{certificateId}")
+    public ResponseEntity<ResponseDTO<Void>> removeMyCertificate(
+            @PathVariable("certificateId") Long certificateId
+    ) {
+        log.info("결식 아동 증명서 삭제 요청: certificateId={}", certificateId);
+        
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 결식 아동 증명서 조회
+     * 
+     * GET /api/childrens/certificate/{certificateId}
+     * 증명서를 조회합니다. (첨부파일 포함)
+     *
+     * @param certificateId 증명서 ID
+     * @return 증명서 정보
+     */
+    @Override
+    @GetMapping("/certificate/{certificateId}")
+    public ResponseEntity<ResponseDTO<GetCertificateResponse>> getMyCertificate(
+            @PathVariable("certificateId") Long certificateId
+    ) {
+        log.info("결식 아동 증명서 조회 요청: certificateId={}", certificateId);
+        
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 가게 예약 생성
+     * 
+     * POST /api/childrens/stores/{storeId}/reservations
+     * 새로운 예약을 생성합니다.
+     *
+     * @param storeId 가게 ID
+     * @param request 예약 생성 요청
+     * @return 생성된 예약 정보
+     */
+    @Override
+    @PostMapping("/stores/{storeId}/reservations")
+    public ResponseEntity<ResponseDTO<BookStoreResponse>> bookStore(
+            @PathVariable("storeId") Long storeId,
+            @RequestBody BookStoreRequest request
+    ) {
+        Long childId = SecurityUtils.getCurrentUserId();
+
+        log.info("예약 생성 요청: childId={}, storeId={}, request={}", childId, storeId, request);
+
+        childFacade.reserve(new CreateReservationCommand(childId, request.storeScheduleId(), request.people()));
+        
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 예약 취소
+     * 
+     * POST /api/childrens/reservations/{reservationId}/cancel
+     * 기존 예약을 취소합니다.
+     *
+     * @param reservationId 예약 ID
+     * @return 취소 결과
+     */
+    @Override
+    @PostMapping("/reservations/{reservationId}/cancel")
+    public ResponseEntity<ResponseDTO<Void>> cancelStore(
+            @PathVariable("reservationId") Long reservationId,
+            @Valid @RequestBody CancelReservationRequest request
+    ) {
+        Long childId = SecurityUtils.getCurrentUserId();
+
+        log.info("예약 취소 요청: childId={}, reservationId={}", childId, reservationId);
+
+        childFacade.cancelReservation(new CancelReservationCommand(reservationId, CHILD, request.cancelReason()), childId);
+        
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(null));
+    }
+
+    /**
+     * 예약 신청 목록 조회
+     * 
+     * GET /api/childrens/reservations
+     * 내가 신청한 예약 목록을 조회합니다.
+     *
+     * @return 내 예약 목록
+     */
+    @Override
+    @GetMapping("/reservations")
+    public ResponseEntity<ResponseDTO<GetMyBookingListResponse>> getMyBookings(
+            @ModelAttribute GetMyBookingsRequest request
+    ) {
+        Long childId = SecurityUtils.getCurrentUserId();
+
+        log.info("예약 신청 목록 조회 요청: childId={}, request={}", childId, request);
+
+        // 정렬 기준 변환
+        String sortField = ReservationSearchSortResolver.resolve(request.sortField());
+
+        Pageable pageable = PageableUtil.ofOneBased(
+            request.pageNum(),
+            request.perPage(),
+            sortField,
+            request.sortDirection()
+        );
+
+        Page<Reservation> reservations = childFacade.getMyBookings(childId, List.of(request.statusFilter()), pageable); // 내 예약 목록 조회
+        // 리뷰가 작성된 예약 ID 목록 조회
+        Set<Long> reviewedReservationIds = childFacade.getMyReviewWrittenReservationIds(
+                reservations.getContent().stream().map(Reservation::getId).toList()
+        ).stream().collect(Collectors.toSet());
+        
+        List<ReservationResponse> reservationResponses = reservations.getContent().stream()
+                .map(reservation -> new ReservationResponse(
+                        reservation,
+                        reviewedReservationIds.contains(reservation.getId()) // 리뷰가 작성된 예약 ID 목록에 포함되어 있는지 여부
+                ))
+                .toList();
+
+        GetMyBookingListResponse response = new GetMyBookingListResponse(
+            reservationResponses,
+            reservations.getTotalElements(),
+            getCurrentPage(reservations),
+            reservations.getTotalPages(),
+            reservations.getSize()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
+    }
+
+    /**
+     * 예약 신청 상세 조회
+     * 
+     * GET /api/childrens/reservations/{reservationId}
+     * 내가 신청한 특정 예약의 상세 정보를 조회합니다.
+     *
+     * @param reservationId 예약 ID
+     * @return 예약 상세 정보
+     */
+    @Override
+    @GetMapping("/reservations/{reservationId}")
+    public ResponseEntity<ResponseDTO<GetMyBookingDetailResponse>> getMyBooking(
+            @PathVariable("reservationId") Long reservationId
+    ) {
+        Long childId = SecurityUtils.getCurrentUserId();
+        
+        log.info("예약 신청 상세 조회 요청: childId={}, reservationId={}", childId, reservationId);
+
+        Reservation reservation = childFacade.getMyBooking(reservationId, childId);
+        // 리뷰가 작성된 예약 ID 목록에 포함되어 있는지 여부
+        boolean reviewed = childFacade.getMyReviewWrittenReservationIds(List.of(reservationId))
+                .contains(reservationId);
+        
+        ReservationResponse reservationResponse = new ReservationResponse(reservation, reviewed);
+
+        GetMyBookingDetailResponse response = new GetMyBookingDetailResponse(reservationResponse);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
+    }
+
+    @Override
+    @GetMapping("/reservations/summary")
+    public ResponseEntity<ResponseDTO<GetMyBookingSummaryResponse>> getMyBookingSummary() {
+        Long childId = SecurityUtils.getCurrentUserId();
+
+        log.info("요약된 예약 목록 조회 요청: childId={}", childId);
+
+        // Facade 에서 엔티티 레벨 결과 조회 (다가오는 예약 + 리뷰 대상 예약)
+        MyBookingSummaryResult summaryResult = childFacade.getMyBookingSummary(childId);
+
+        // 엔티티 → 응답 DTO 변환        
+        List<ReservationResponse> upcomingResponses = summaryResult.upcomingReservations().stream()
+                .map(reservation -> new ReservationResponse(reservation, false))
+                .toList();
+
+        List<ReservationResponse> reviewTargetResponses = summaryResult.reviewTargetReservations().stream()
+                .map(reservation -> new ReservationResponse(reservation, false))
+                .toList();
+
+        GetMyBookingSummaryResponse response = new GetMyBookingSummaryResponse(
+                upcomingResponses,
+                reviewTargetResponses
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.success(response));
+    }
+}

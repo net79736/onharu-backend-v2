@@ -1,0 +1,64 @@
+spring:
+  config:
+    import:
+      - application-smtp.yaml
+      - application-oauth.yaml
+      - application-nts.yaml
+      - application-jpa-logging.yaml
+      - optional:application-kafka.yaml
+      - optional:application-rabbitmq.yaml
+  application:
+    name: onharu
+    is-secure: false
+    front-domain: localhost
+
+  # 데이터소스 설정
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    # HikariCP: 기본 10 · 30s timeout 로는 k6 100 VU 부하테스트에서 풀이 즉시 포화되어
+    # clientInboundChannel 스레드가 getConnection 에서 30 s 대기하다 타임아웃 됨.
+    hikari:
+      maximum-pool-size: ${SPRING_DATASOURCE_HIKARI_MAX:30}
+      minimum-idle: ${SPRING_DATASOURCE_HIKARI_MIN_IDLE:10}
+      connection-timeout: ${SPRING_DATASOURCE_HIKARI_CONN_TIMEOUT:10000}
+      pool-name: OnharuHikari
+
+  # JPA 설정
+  jpa:
+    hibernate:
+      # 개발 환경에서는 스키마 변경(예: 조회수 컬럼 추가)을 자동 반영할 수 있도록 update를 기본값으로 둡니다.
+      # 운영/CI에서는 환경변수(JPA_DDL_AUTO)로 validate 등을 강제하세요.
+      ddl-auto: ${JPA_DDL_AUTO}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  # Redis (최근 검색어 — 미기동 시 앱 기동 실패, 예: docker run -d -p 6379:6379 redis:7-alpine)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+# MinIO 설정 (로컬 개발용)
+minio:
+  url: ${MINIO_URL:https://onharu-api-v2.votex.co.kr/minio}
+  access-key: ${MINIO_ACCESS_KEY:admin}
+  secret-key: ${MINIO_SECRET_KEY:Password123}
+  region: ${MINIO_REGION:us-east-1}
+  bucket: ${MINIO_BUCKET:onharu-minio}
+
+# 가게 검색 기본 반경 설정
+store:
+  search:
+    default-radius-km: 20  # 기본 반경 20km
+    recent-keywords:
+      max-items: 10 # 최근 검색어 최대 개수
+      max-keyword-length: 30 # 최근 검색어 최대 길이
+      ttl-seconds: 30 # 최근 검색어 유지 시간
+
+# 서버 설정
+server:
+  port: 8080
