@@ -11,7 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.backend.onharu.event.listener.ReservationNotificationHistoryHandler;
+import com.backend.onharu.event.listener.ReservationNotificationHistoryListener;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 
@@ -22,7 +22,7 @@ class ReservationNotificationRabbitListenerTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock
-    private ReservationNotificationHistoryHandler handler;
+    private ReservationNotificationHistoryListener handler;
 
     @Mock
     private Channel channel;

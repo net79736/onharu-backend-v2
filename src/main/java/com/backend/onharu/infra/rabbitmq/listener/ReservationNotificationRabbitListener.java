@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.backend.onharu.domain.common.enums.NotificationHistoryType;
 import com.backend.onharu.domain.support.error.CoreException;
-import com.backend.onharu.event.listener.ReservationNotificationHistoryHandler;
+import com.backend.onharu.event.listener.ReservationNotificationHistoryListener;
 import com.backend.onharu.event.model.ReservationEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ReservationNotificationRabbitListener {
 
     private final ObjectMapper objectMapper;
-    private final ReservationNotificationHistoryHandler reservationNotificationHistoryHandler;
+    private final ReservationNotificationHistoryListener reservationNotificationHistoryHandler;
 
     @RabbitListener(queues = "${onharu.rabbitmq.reservation-notifications-queue:onharu.reservation.notifications}")
     public void onReservationNotification(

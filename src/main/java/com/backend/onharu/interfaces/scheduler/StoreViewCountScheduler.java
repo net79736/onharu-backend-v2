@@ -1,4 +1,4 @@
-package com.backend.onharu.interfaces.shceduler;
+package com.backend.onharu.interfaces.scheduler;
 
 import org.springframework.scheduling.annotation.Scheduled;
 

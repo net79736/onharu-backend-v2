@@ -19,7 +19,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import com.backend.onharu.infra.kafka.KafkaProducer;
+import com.backend.onharu.infra.kafka.producer.KafkaProducer;
 
 /**
  * coupon-issue-v3 {@code KafkaIntegrationTest} / movie {@code @EmbeddedKafka} 패턴과 동일한 축:

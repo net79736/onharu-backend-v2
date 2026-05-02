@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ReservationNotificationHistoryHandler {
+public class ReservationNotificationHistoryListener {
     private static final String CANCEL_REASON_PREFIX = "\n취소사유: ";
     private static final String RELATED_ENTITY_TYPE = Reservation.class.getSimpleName();
 

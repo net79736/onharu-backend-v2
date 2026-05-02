@@ -7,6 +7,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import com.backend.onharu.infra.kafka.consumer.OnharuSystemKafkaConsumer;
+
 /**
  * {@link OnharuSystemKafkaConsumer} 와 동일 토픽을 별도 consumer group 으로 구독해 통합 테스트에서 수신 검증.
  */
