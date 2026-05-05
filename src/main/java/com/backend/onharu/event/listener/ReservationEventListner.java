@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ReservationEventListner {
     private final ObjectProvider<ReservationNotificationRabbitPublishPort> reservationNotificationRabbitPublisherProvider; // RabbitMQ 발행 서비스 제공자
-    private final ReservationNotificationHistoryHandler reservationNotificationHistoryHandler; // 알림 히스토리 저장 핸들러
+    private final ReservationNotificationHistoryListener reservationNotificationHistoryHandler; // 알림 히스토리 저장 핸들러
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleReservationEvent(ReservationEvent event) {

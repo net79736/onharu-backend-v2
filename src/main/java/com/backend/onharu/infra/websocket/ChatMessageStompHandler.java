@@ -11,7 +11,7 @@ import com.backend.onharu.application.ChatFacade;
 import com.backend.onharu.domain.chat.dto.ChatMessageCommand.CreateChatMessageCommand;
 import com.backend.onharu.domain.event.ChatKafkaOutboxPort;
 import com.backend.onharu.domain.support.ChatStompDestination;
-import com.backend.onharu.infra.kafka.KafkaProducer;
+import com.backend.onharu.infra.kafka.producer.KafkaProducer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

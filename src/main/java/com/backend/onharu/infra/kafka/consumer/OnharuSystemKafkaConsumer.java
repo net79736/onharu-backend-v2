@@ -1,4 +1,4 @@
-package com.backend.onharu.infra.kafka;
+package com.backend.onharu.infra.kafka.consumer;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;

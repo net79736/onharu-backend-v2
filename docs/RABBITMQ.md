@@ -3,7 +3,7 @@
 온하루 채팅에서 RabbitMQ 는 두 가지 역할을 맡는다.
 
 1. **STOMP Broker Relay** — WebSocket 채팅 프레임의 브로드캐스트 (수평 확장 용).
-2. **AMQP 이벤트 큐 `onharu.chat.events`** — 채팅 이벤트 후처리 훅 (알림/통계/검색 인덱서 등).
+2. **AMQP 이벤트 큐 `onharu.chat.events`** — 채팅 이벤트 후처리 훅 (알림/통계/검색 인덱서 등).  
 
 STOMP 클라이언트 시점 흐름은 [`docs/STOMP.md`](./STOMP.md), Kafka 아웃박스와의 관계는 [`docs/chat-kafka-flow.md`](./chat-kafka-flow.md) 를 참고.
 

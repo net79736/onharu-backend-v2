@@ -1,4 +1,4 @@
-package com.backend.onharu.infra.kafka.outbox.scheduler;
+package com.backend.onharu.interfaces.scheduler;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;

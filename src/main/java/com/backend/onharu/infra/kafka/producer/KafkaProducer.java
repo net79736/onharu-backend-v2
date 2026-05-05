@@ -1,4 +1,4 @@
-package com.backend.onharu.infra.kafka;
+package com.backend.onharu.infra.kafka.producer;
 
 import java.util.concurrent.CompletableFuture;
 
