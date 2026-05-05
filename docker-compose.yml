@@ -200,6 +200,33 @@ services:
     networks:
       - onharu-network
 
+  # Elasticsearch 8 (가게 검색 인덱싱·벤치 — 로컬 단일 노드, 보안 비활성)
+  # 호스트 앱: SPRING_ELASTICSEARCH_URIS=http://localhost:9200, ONHARU_ELASTICSEARCH_ENABLED=true
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: onharu-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - onharu-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"' || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
+
   # ----------------------------------------
   # Jenkins CI (컨트롤러 Java 17 — jenkins/jenkins:lts-jdk17)
   # ----------------------------------------
@@ -312,4 +339,6 @@ volumes:
   kafka_data:
     driver: local
   rabbitmq_data:
+    driver: local
+  elasticsearch_data:
     driver: local

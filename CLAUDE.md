@@ -21,7 +21,7 @@ Gradle wrapper with Java 17 (Spring Boot 3.3.4).
 ./gradlew sonarqube                     # Requires SONAR_HOST_URL, SONAR_TOKEN env
 ```
 
-Infrastructure (MySQL, Redis, RabbitMQ, Kafka+ZK, MinIO, SonarQube, Jenkins) via `docker-compose up -d`. MySQL is exposed on **3307** in dev (`application-dev.yaml`), not the compose-default 3306 — only start the service you need from compose or override `SPRING_DATASOURCE_URL`.
+Infrastructure (MySQL, Redis, RabbitMQ, Kafka+ZK, Elasticsearch, MinIO, SonarQube, Jenkins) via `docker-compose up -d`. MySQL is exposed on **3307** in dev (`application-dev.yaml`), not the compose-default 3306 — only start the service you need from compose or override `SPRING_DATASOURCE_URL`. Elasticsearch is **9200** (`elasticsearch` 서비스); 앱 연동은 `ONHARU_ELASTICSEARCH_ENABLED=true` 및 `SPRING_ELASTICSEARCH_URIS` (기본 `http://localhost:9200`).
 
 k6 load tests live under `load-test/` — `./load-test/run.sh`. Without `K6_COOKIE`/`K6_BEARER_TOKEN` it runs the public smoke script; with either it runs the authenticated domain script and opens `report-last.html`.
 
@@ -49,6 +49,11 @@ Chat events have two paths controlled by `onharu.kafka.outbox.enabled`:
 1. `false` → STOMP handler publishes directly through `KafkaProducer`.
 2. `true` → events are inserted into `outbox_events` (see `domain/outbox/`, `infra/kafka/outbox/`) and a scheduler relays them to Kafka. Use this when you need atomicity with the DB write.
 
+### Elasticsearch (optional)
+
+- `onharu.elasticsearch.enabled` (default **false** via `application-elasticsearch.yaml`) — when `false`, no `ElasticsearchClient` bean is registered and the app does not connect to ES. `Elasticsearch*AutoConfiguration` is excluded from `OnharuApplication`; the client is built in `config.ElasticsearchConfig` when enabled.
+- `application-elasticsearch.yaml` is `optional:` imported in dev (same pattern as Kafka/Rabbit). Client version follows Spring Boot BOM (8.13.x with Boot 3.3.4); compose image `elasticsearch:8.13.4` matches.
+
 ### Security / auth
 
 - **Session-based auth only.** `infra/security/jwt` is empty — there is no JWT token flow. REST identifies users via Spring Security session cookies (see `SecurityConfig`, `SessionConfig`, `LocalUser`/`SocialUser`).
@@ -69,7 +74,7 @@ Chat events have two paths controlled by `onharu.kafka.outbox.enabled`:
 
 ## Profiles
 
-`application.yaml` sets `spring.profiles.active=dev, include=swagger`. `application-dev.yaml` then imports `smtp`, `oauth`, `nts`, `jpa-logging` (required) and `kafka`, `rabbitmq` (optional). When adding a new profile YAML, follow the `optional:` prefix convention if the corresponding backing service is gated by an `enabled` flag.
+`application.yaml` sets `spring.profiles.active=dev, include=swagger`. `application-dev.yaml` then imports `smtp`, `oauth`, `nts`, `jpa-logging` (required) and `kafka`, `rabbitmq`, `elasticsearch` (optional). When adding a new profile YAML, follow the `optional:` prefix convention if the corresponding backing service is gated by an `enabled` flag.
 
 ## Further docs
 

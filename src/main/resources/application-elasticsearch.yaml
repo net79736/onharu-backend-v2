@@ -1,0 +1,11 @@
+# Elasticsearch — dev 프로필에서만 optional import (Kafka / Rabbit 과 동일 패턴)
+# 로컬 ES 없이 앱만 띄우려면: onharu.elasticsearch.enabled=false 또는 ONHARU_ELASTICSEARCH_ENABLED=false
+onharu:
+  elasticsearch:
+    enabled: ${ONHARU_ELASTICSEARCH_ENABLED:false}
+
+spring:
+  elasticsearch:
+    uris: ${SPRING_ELASTICSEARCH_URIS:http://localhost:9200}
+    connection-timeout: 5s
+    socket-timeout: 60s
