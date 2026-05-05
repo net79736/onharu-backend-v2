@@ -1,0 +1,39 @@
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 3,
+      "number_of_replicas": 2,
+      "refresh_interval": "1s"
+    }
+  },
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "id": { "type": "long" },
+      "ownerId": { "type": "long" },
+      "categoryId": { "type": "long" },
+      "name": {
+        "type": "text",
+        "fields": {
+          "keyword": { "type": "keyword", "ignore_above": 256 }
+        }
+      },
+      "address": {
+        "type": "text",
+        "fields": {
+          "keyword": { "type": "keyword", "ignore_above": 256 }
+        }
+      },
+      "phone": { "type": "keyword" },
+      "introduction": { "type": "text" },
+      "intro": { "type": "text" },
+      "isOpen": { "type": "boolean" },
+      "isSharing": { "type": "boolean" },
+      "createdAt": { "type": "date" },
+      "createdBy": { "type": "keyword" },
+      "location": { "type": "geo_point" },
+      "tags": { "type": "keyword" }
+    }
+  }
+}
+
