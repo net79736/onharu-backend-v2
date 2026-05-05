@@ -97,6 +97,8 @@ dependencies {
 	implementation 'org.springframework.kafka:spring-kafka'
 	// RabbitMQ (로컬: docker-compose rabbitmq + application-rabbitmq.yaml + onharu.rabbitmq.enabled=true)
 	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+	// Elasticsearch (선택: application-elasticsearch.yaml + onharu.elasticsearch.enabled=true)
+	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
 	testImplementation 'org.awaitility:awaitility:4.2.2'
 }
