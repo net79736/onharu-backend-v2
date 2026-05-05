@@ -3,6 +3,19 @@
 onharu:
   elasticsearch:
     enabled: ${ONHARU_ELASTICSEARCH_ENABLED:false}
+    reindex:
+      stores:
+        enabled: ${ONHARU_ELASTICSEARCH_REINDEX_STORES_ENABLED:false}
+        # 기본값은 bench 인덱스(`stores`). 필요 시 ES_STORES_INDEX_NAME 과 동일하게 맞춰 사용
+        index-name: ${ONHARU_ELASTICSEARCH_REINDEX_STORES_INDEX_NAME:stores}
+        # 안전장치: 기본 dry-run (true면 ES에 실제 적재하지 않고 진행 로그만)
+        dry-run: ${ONHARU_ELASTICSEARCH_REINDEX_STORES_DRY_RUN:true}
+        # 한 번에 bulk로 넣을 문서 수 (1000~5000 권장)
+        batch-size: ${ONHARU_ELASTICSEARCH_REINDEX_STORES_BATCH_SIZE:1000}
+        # id 커서 (0부터 시작)
+        from-id: ${ONHARU_ELASTICSEARCH_REINDEX_STORES_FROM_ID:0}
+        # 진행 로그 주기 (배치 단위)
+        log-every-batches: ${ONHARU_ELASTICSEARCH_REINDEX_STORES_LOG_EVERY_BATCHES:10}
 
 spring:
   elasticsearch:
